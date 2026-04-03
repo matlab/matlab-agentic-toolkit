@@ -1,0 +1,6 @@
+{
+  "matlab": {
+    "command": "matlab-mcp-core-server",
+    "args": ["--matlab-display-mode", "nodesktop"]
+  }
+}

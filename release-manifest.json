@@ -1,0 +1,38 @@
+{
+  "version": "0.1.0",
+  "include": [
+    "licenses",
+    "skills-catalog/toolkit/matlab-agentic-toolkit-setup",
+    "skills-catalog/matlab-core/testing",
+    "skills-catalog/matlab-core/creating-live-scripts",
+    "skills-catalog/matlab-core/building-apps",
+    "skills-catalog/matlab-core/reviewing-code",
+    "skills-catalog/matlab-core/debugging",
+    "skills-catalog/matlab-core/modernizing-code",
+    "skills-catalog/README.md",
+    ".claude-plugin",
+    ".cursor-plugin",
+    ".agents",
+    ".codex-plugin",
+    ".codex-mcp.json",
+    "gemini-extension.json",
+    "CONTRIBUTING.md",
+    "GETTING_STARTED.md",
+    "LICENSE",
+    "README.md",
+    "SECURITY.md"
+  ],
+  "exclude": [
+    "tools/**/*.md",
+    "tools/**/agents.md",
+    "tools/serializer/**/*.md",
+    "tools/autolayout/**/*.md",
+    "tools/autolayout/Issues/**",
+    "licenses/**/*.m",
+    "skills-catalog/**/examples/*.m",
+    "tools/**/*.m",
+    ".lychee*",
+    ".cspell*",
+    ".github/**"
+  ]
+}
