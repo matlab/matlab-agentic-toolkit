@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.DS_Store
+.codex-local/
 
 # C extensions
 *.so
@@ -170,9 +172,8 @@ junit-results.xml
 *-results.md
 builtin_blocks_*.json
 
-# VS Code settings (keep mcp.json for Copilot/MCP integration)
-.vscode/*
-!.vscode/mcp.json
+# VS Code settings
+.vscode/
 
 # Work notes (local planning, not for distribution)
 .work/

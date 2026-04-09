@@ -1,12 +1,11 @@
-# manifest.yaml — Tooling metadata for testing
+# manifest.yaml — Tooling metadata for reviewing-code
 schema_version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "1.0"
+version: "1.1"
 matlab-release: ">=R2020b"
 requires-tools:
   - evaluate_matlab_code
-  - run_matlab_test_file
   - check_matlab_code
 requires-skills: []
 requires-products: []

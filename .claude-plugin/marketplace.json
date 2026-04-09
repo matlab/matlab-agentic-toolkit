@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "toolkit",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Setup and management for the MATLAB Agentic Toolkit. Detects MATLAB, installs the MCP server, registers the Claude Code plugin, and verifies the environment.",
       "author": {
         "name": "MathWorks"
@@ -20,22 +20,16 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "MATLAB skills and MCP tools for AI coding agents. Testing, debugging, reviewing code, creating Live Scripts, building apps, and modernizing code.",
       "author": {
         "name": "MathWorks"
       },
-      "keywords": ["matlab", "mcp", "testing", "reviewing-code", "debugging", "modernizing-code"],
+      "keywords": ["matlab", "mcp", "matlab-testing", "matlab-reviewing-code", "matlab-debugging", "matlab-modernizing-code"],
       "source": "./",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-core/",
-      "mcpServers": {
-        "matlab": {
-          "command": "matlab-mcp-core-server",
-          "args": ["--matlab-display-mode", "nodesktop"]
-        }
-      }
+      "skills": "./skills-catalog/matlab-core/"
     }
   ]
 }

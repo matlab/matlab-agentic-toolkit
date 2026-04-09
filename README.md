@@ -12,23 +12,25 @@ The toolkit works with today's leading AI coding agents and is designed to evolv
 ## How It Works
 The toolkit has two jobs. First, it gives your agent a live connection to MATLAB — so it can run code, execute tests, and analyze results, not just read and write files. Second, it provides curated expertise (called *skills*) that teach your agent how an experienced MATLAB engineer would approach a task. Your agent reads the relevant skill, then uses the MATLAB connection to do the work.
 
-The toolkit ships ready-made configurations for each supported platform. Configuration is automated for Claude Code; other platforms require manual configuration. 
+The toolkit ships automated setup for all supported platforms. Clone the repository, launch your agent, and ask it to set up the toolkit.
 
 
 ## Supported Platforms
 
-| Platform | Manifest | Status |
-|----------|----------|--------|
-| [Claude Code](https://claude.ai/code) | `.claude-plugin/marketplace.json` | Tested |
-| [GitHub&reg; Copilot](https://github.com/features/copilot) | User-created `.vscode/mcp.json` | Untested |
-| [Cursor](https://www.cursor.com/) | `.cursor-plugin/plugin.json` | Untested |
-| [OpenAI&reg; Codex](https://openai.com/codex) | `.codex-plugin/plugin.json` | Untested |
-| [Sourcegraph Amp](https://ampcode.com/) | `.amp/settings.json` | Untested |
-| [Gemini&trade; CLI](https://github.com/google-gemini/gemini-cli) | `gemini-extension.json` | Untested |
+| Platform | Setup | Notes |
+|----------|-------|-------|
+| [Claude Code](https://claude.ai/code) | Automated | Also supports [no-clone marketplace install](#claude-code-marketplace-install) (skills only) |
+| [GitHub&reg; Copilot](https://github.com/features/copilot) | Automated | |
+| [OpenAI&reg; Codex](https://openai.com/codex) | Automated | |
+| [Gemini&trade; CLI](https://github.com/google-gemini/gemini-cli) | Automated | |
+| [Sourcegraph Amp](https://ampcode.com/) | Automated | |
+| [Cursor](https://www.cursor.com/) | Manual | Untested |
+
+> Automated setup has been verified with basic workflows on each platform except Cursor. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
 
 ## Quick Start
 
-> **Full walkthrough:** See the [Getting Started guide](GETTING_STARTED.md) for detailed instructions, verification steps, and troubleshooting.
+> **Full walkthrough:** See the [Getting Started guide](GETTING_STARTED.md) for detailed instructions, platform-specific notes, verification steps, and troubleshooting.
 
 **Prerequisites:**
 * MATLAB R2020b or later
@@ -37,28 +39,34 @@ The toolkit ships ready-made configurations for each supported platform. Configu
 
 The MATLAB Agentic Toolkit helps you install and configure the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server), or can be configured to use your existing installation.
 
-### Claude Code
-Clone this repository. Launch Claude Code from the repository root folder.
+### Full Setup (recommended)
+
+Clone the repository, launch your agent from the toolkit directory, and ask it to set up the toolkit.
+
 ```bash
 git clone https://github.com/matlab/matlab-agentic-toolkit.git
 cd matlab-agentic-toolkit
-claude
 ```
 
-Ask Claude to `"set up the toolkit"`. It finds MATLAB, installs the MCP server, registers the plugin, and verifies the environment. Once complete, start a new Claude Code session in any project directory — MATLAB skills and MCP tools are available everywhere.
+Launch your agent (`claude`, `codex`, `gemini`, etc.) and ask:
 
-### Other Agents
-Any agent that supports MCP can use the toolkit. Install the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) binary and point your agent's MCP configuration at it:
-
-```json
-{
-  "command": "/path/to/matlab-mcp-core-server"
-}
+```
+Set up the MATLAB Agentic Toolkit
 ```
 
-For skills, point your agent at `skills-catalog/matlab-core/` (domain skills). Each skill is a self-contained `SKILL.md`.
+Setup looks for your MATLAB installation(s), downloads the MCP server, writes your agent's global configuration, and registers skills. Once complete, start a new session in any project directory — MATLAB tools and skills are available everywhere.
 
-See the [Getting Started guide](GETTING_STARTED.md) for platform-specific instructions, manual MCP server installation, and how to add skills to an existing MCP setup.
+<a id="claude-code-marketplace-install"></a>
+> **Claude Code — no clone required:** If you already have the [MCP server](https://github.com/matlab/matlab-mcp-core-server) configured, you can add skills directly without cloning:
+> ```bash
+> claude plugin marketplace add "https://github.com/matlab/matlab-agentic-toolkit"
+> claude plugin install matlab-core@matlab-agentic-toolkit
+> ```
+> This installs skills only. Your existing MCP configuration is not modified. See the [Getting Started guide](GETTING_STARTED.md#adding-skills-only) for details.
+
+### Already Have the MCP Server?
+
+If you installed the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) yourself, you just need skills. See [Adding Skills Only](GETTING_STARTED.md#adding-skills-only) in the Getting Started guide.
 
 ### Verify
 Ask your agent:
@@ -93,12 +101,12 @@ Skills are organized in the [skills catalog](skills-catalog/).
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `testing` | Generate and run unit tests with `matlab.unittest`. Parameterized tests, fixtures, coverage |
-| `creating-live-scripts` | Create plain-text Live Scripts with rich text, equations, and inline figures (R2025a+) |
-| `building-apps` | Build apps programmatically with `uifigure`, `uigridlayout`, components, and `uihtml` |
-| `reviewing-code` | Review code for quality, performance, and adherence to MathWorks coding standards |
-| `debugging` | Diagnose errors via MCP eval. Programmatic breakpoints, diagnostic instrumentation |
-| `modernizing-code` | Replace deprecated MATLAB functions and anti-patterns with modern equivalents |
+| `matlab-testing` | Generate and run unit tests with `matlab.unittest`. Parameterized tests, fixtures, coverage |
+| `matlab-creating-live-scripts` | Create plain-text Live Scripts with rich text, equations, and inline figures (R2025a+) |
+| `matlab-building-apps` | Build apps programmatically with `uifigure`, `uigridlayout`, components, and `uihtml` |
+| `matlab-reviewing-code` | Review code for quality, performance, and adherence to MathWorks coding standards |
+| `matlab-debugging` | Diagnose errors via MCP eval. Programmatic breakpoints, diagnostic instrumentation |
+| `matlab-modernizing-code` | Replace deprecated MATLAB functions and anti-patterns with modern equivalents |
 
 ## Trademarks
 MATLAB and Simulink are registered trademarks of The MathWorks, Inc. See [mathworks.com/trademarks](https://www.mathworks.com/trademarks) for a list of additional trademarks. Other product or brand names may be trademarks or registered trademarks of their respective holders.
@@ -107,7 +115,7 @@ MATLAB and Simulink are registered trademarks of The MathWorks, Inc. See [mathwo
 We welcome feedback through [GitHub Issues](https://github.com/matlab/matlab-agentic-toolkit/issues). Pull requests are reviewed for ideas and feedback but are not merged from external contributors. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Contact Support
-MathWorks encourages you to use this repository and provide feedback. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or email [genai-support@mathworks.com](mailto:genai-support@mathworks.com). For MATLAB MCP Core Server issues and support, see the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) repository. 
+MathWorks encourages you to use this repository and provide feedback. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or email [genai-support@mathworks.com](mailto:genai-support@mathworks.com). For MATLAB MCP Core Server issues and support, see the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) repository.
 
 #
 When using the MATLAB Agentic Toolkit and MATLAB MCP Core Server, you should thoroughly review and validate all tool calls before you run them. Always keep a human in the loop for important actions and only proceed once you are confident the call will do exactly what you expect. For more information, see [User Interaction Model (MCP)](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#user-interaction-model) and [Security Considerations (MCP)](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#security-considerations).

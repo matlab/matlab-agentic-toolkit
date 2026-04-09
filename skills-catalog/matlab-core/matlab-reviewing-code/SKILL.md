@@ -1,5 +1,5 @@
 ---
-name: reviewing-code
+name: matlab-reviewing-code
 description: Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. Uses check_matlab_code and matlab_coding_guidelines. Use when reviewing code, checking style, finding code smells, assessing quality, or preparing code for handoff or publication.
 license: MathWorks BSD-3-Clause
 metadata:
@@ -21,9 +21,9 @@ Systematically review MATLAB code for quality, correctness, performance, and adh
 
 ## When NOT to Use
 
-- User wants to debug a runtime error — use `debugging` instead
+- User wants to debug a runtime error — use `matlab-debugging` instead
 - User wants to optimize performance — use performance profiling skills
-- User wants to generate tests — use `testing` instead
+- User wants to generate tests — use `matlab-testing` instead
 
 ## Workflow
 
@@ -191,4 +191,4 @@ Present findings in this format:
 - Verify every public function has an H1 help text line
 - Use `codeIssues` for directory-wide analysis (R2022b+)
 - Do not suggest changes that alter behavior — review is read-only assessment
-- For deprecated API migration details, use the `modernizing-code` skill
+- For deprecated API migration details, use the `matlab-modernizing-code` skill

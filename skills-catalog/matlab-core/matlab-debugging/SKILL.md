@@ -1,5 +1,5 @@
 ---
-name: debugging
+name: matlab-debugging
 description: Diagnose MATLAB errors and unexpected behavior via MCP eval. Programmatic breakpoints (dbstop/dbclear), error traps, diagnostic instrumentation, workspace inspection, and common error patterns. Use when debugging functions, tracing errors, inspecting variables, setting breakpoints, or diagnosing runtime failures.
 license: MathWorks BSD-3-Clause
 metadata:
@@ -21,9 +21,9 @@ Diagnose MATLAB errors and unexpected behavior by combining MCP-based execution 
 
 ## When NOT to Use
 
-- Code quality review without a runtime problem — use `reviewing-code` instead
+- Code quality review without a runtime problem — use `matlab-reviewing-code` instead
 - Performance profiling — use performance optimization skills
-- Writing tests for correctness — use `testing` instead
+- Writing tests for correctness — use `matlab-testing` instead
 
 ## Critical: Agent vs. User Debugging
 

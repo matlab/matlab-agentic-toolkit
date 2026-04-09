@@ -23,12 +23,12 @@ Foundational skills that underpin every MATLAB workflow — testing, debugging, 
 
 | Skill | Description |
 |-------|-------------|
-| `testing` | Generate and run unit tests using `matlab.unittest`. Parameterized tests, fixtures, coverage |
-| `creating-live-scripts` | Create plain-text Live Scripts with rich text, equations, and inline figures (R2025a+) |
-| `building-apps` | Build apps programmatically with `uifigure`, `uigridlayout`, components, and `uihtml` |
-| `reviewing-code` | Review MATLAB code for quality, performance, and adherence to MathWorks coding standards |
-| `debugging` | Diagnose errors via MCP eval. Programmatic breakpoints, diagnostic instrumentation |
-| `modernizing-code` | Replace deprecated MATLAB functions and anti-patterns with modern equivalents |
+| `matlab-testing` | Generate and run unit tests using `matlab.unittest`. Parameterized tests, fixtures, coverage |
+| `matlab-creating-live-scripts` | Create plain-text Live Scripts with rich text, equations, and inline figures (R2025a+) |
+| `matlab-building-apps` | Build apps programmatically with `uifigure`, `uigridlayout`, components, and `uihtml` |
+| `matlab-reviewing-code` | Review MATLAB code for quality, performance, and adherence to MathWorks coding standards |
+| `matlab-debugging` | Diagnose errors via MCP eval. Programmatic breakpoints, diagnostic instrumentation |
+| `matlab-modernizing-code` | Replace deprecated MATLAB functions and anti-patterns with modern equivalents |
 
 ## How Skills Are Installed
 

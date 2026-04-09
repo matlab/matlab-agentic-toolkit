@@ -2,7 +2,8 @@
 * text=auto
 
 # Internal-only directories — excluded from the public branch.
-# The publish-public.sh script reads these entries to determine what to remove.
+# The sync-to-public.sh script reads these entries to determine what to remove.
 .meta/       export-ignore
 .claude/     export-ignore
 utilities/   export-ignore
+docs/        export-ignore

@@ -1,0 +1,99 @@
+name: Bug Report
+description: Report a bug with the MATLAB Agentic Toolkit
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill out the information below to help us investigate.
+
+  - type: input
+    id: matlab-release
+    attributes:
+      label: MATLAB Release
+      description: "Run `matlabRelease.Release` in MATLAB and paste the result (e.g., R2025b)"
+      placeholder: "R2025b"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - Windows
+        - macOS (Intel)
+        - macOS (Apple Silicon)
+        - Linux
+    validations:
+      required: true
+
+  - type: dropdown
+    id: agent-platform
+    attributes:
+      label: Agent Platform
+      description: Which coding agent were you using?
+      options:
+        - Claude Code
+        - GitHub Copilot
+        - Cursor
+        - Codex
+        - Amp
+        - Gemini CLI
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: agent-platform-other
+    attributes:
+      label: Other Agent Platform
+      description: "If you selected 'Other' above, which agent platform were you using?"
+      placeholder: "e.g., Windsurf, Roo Code"
+    validations:
+      required: false
+
+  - type: input
+    id: mcp-server-version
+    attributes:
+      label: MCP Server Version
+      description: "Version of the MATLAB MCP Core Server, if applicable"
+      placeholder: "e.g., 0.2.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Provide a minimal sequence of steps to reproduce the issue.
+      placeholder: |
+        1. Open Claude Code in a project with ...
+        2. Run the skill ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened? Include error messages or screenshots if available.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other information that might help (logs, screenshots, workarounds tried).
+    validations:
+      required: false

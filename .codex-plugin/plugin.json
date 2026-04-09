@@ -8,7 +8,6 @@
   "license": "MathWorks BSD-3-Clause",
   "keywords": ["matlab", "mcp", "testing", "debugging", "code-review", "live-scripts", "app-builder"],
   "skills": "./skills-catalog/",
-  "mcpServers": "./.codex-mcp.json",
   "interface": {
     "displayName": "MATLAB Agentic Toolkit",
     "shortDescription": "Core MATLAB skills and MCP tools for AI coding agents.",

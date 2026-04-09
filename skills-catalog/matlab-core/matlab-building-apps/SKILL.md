@@ -1,5 +1,5 @@
 ---
-name: building-apps
+name: matlab-building-apps
 description: Build MATLAB apps programmatically using uifigure, uigridlayout, UI components, callbacks, and uihtml for web integration. Use when creating GUIs, dashboards, interactive tools, apps with sliders/buttons/dropdowns, or embedding HTML/JavaScript components.
 license: MathWorks BSD-3-Clause
 metadata:

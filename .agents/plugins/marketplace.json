@@ -1,15 +1,21 @@
 {
-  "schema_version": "1.0",
   "name": "matlab-agentic-toolkit",
-  "display_name": "MATLAB Agentic Toolkit",
-  "description": "Core MATLAB skills and MCP tools for AI coding agents. Testing, debugging, code review, Live Scripts, App Builder, and code modernization.",
-  "version": "0.1.0",
-  "publisher": "mathworks",
-  "source": {
-    "source": "local",
-    "path": "../../"
+  "interface": {
+    "displayName": "MATLAB Agentic Toolkit"
   },
-  "policy": {
-    "installation": "INSTALLED_BY_DEFAULT"
-  }
+  "plugins": [
+    {
+      "name": "matlab-agentic-toolkit",
+      "description": "Core MATLAB skills and MCP tools for AI coding agents. Testing, debugging, code review, Live Scripts, App Builder, and code modernization.",
+      "version": "0.1.0",
+      "source": {
+        "source": "local",
+        "path": "../../"
+      },
+      "policy": {
+        "installation": "INSTALLED_BY_DEFAULT"
+      },
+      "category": "Development"
+    }
+  ]
 }

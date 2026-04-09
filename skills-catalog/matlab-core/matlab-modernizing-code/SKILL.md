@@ -1,5 +1,5 @@
 ---
-name: modernizing-code
+name: matlab-modernizing-code
 description: >
   Modernize deprecated MATLAB functions and patterns. Use when
   check_matlab_code or checkcode reports "not recommended" or
@@ -27,8 +27,8 @@ Replace deprecated MATLAB functions and anti-patterns with modern equivalents. T
 
 ## When NOT to Use
 
-- Reviewing code quality broadly — use `reviewing-code` (which may then trigger this skill)
-- Debugging runtime errors — use `debugging`
+- Reviewing code quality broadly — use `matlab-reviewing-code` (which may then trigger this skill)
+- Debugging runtime errors — use `matlab-debugging`
 - Performance profiling — use performance skills (though anti-patterns below overlap)
 
 ## Quick Reference: Top Deprecated Functions

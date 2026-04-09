@@ -1,8 +1,10 @@
 # Getting Started with the MATLAB&reg; Agentic Toolkit
 
-This guide takes you from download to your first agent-driven MATLAB interaction. By the end, your agent will run MATLAB code, list installed toolboxes, and generate a unit test.
+This guide walks you through setup of the MATLAB Agentic Toolkit. Once complete, the toolkit will be configured globally, for you to use on any project.  
 
 > For a project overview, tool/skill reference, and documentation links, see the [README](README.md).
+
+> Automated setup has been verified with basic workflows on each platform except Cursor. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
 
 ---
 
@@ -11,69 +13,175 @@ This guide takes you from download to your first agent-driven MATLAB interaction
 Before you begin, make sure you have:
 
 - [ ] **MATLAB R2020b or later** installed
-- [ ] **An AI coding agent** that supports MCP. Turn-key configurations are included for [Claude Code](https://claude.ai/code), [Cursor](https://www.cursor.com/), [OpenAI&reg; Codex](https://openai.com/codex), [GitHub&reg; Copilot](https://github.com/features/copilot), [Sourcegraph Amp](https://ampcode.com/), and [Gemini&trade; CLI](https://github.com/google-gemini/gemini-cli). **Tested platform:** Claude Code. Other platforms are provided as-is.
+- [ ] **An AI coding agent** that supports MCP — see [Supported Platforms](README.md#supported-platforms)
 - [ ] **Git&trade;** (to clone the toolkit)
 
 ---
 
-## Quick Start (Claude Code)
+## Choose Your Path
 
-Clone the repository, then launch Claude.
+| Path | When to use | What you get |
+|------|-------------|--------------|
+| [**Full Setup**](#full-setup) | First time; want everything automated | MCP server binary + skills + global configuration |
+| [**Adding Skills Only**](#adding-skills-only) | Already have the [MCP server](https://github.com/matlab/matlab-mcp-core-server) configured | Skills/prompts only; no MCP changes |
+
+---
+
+## Full Setup
+
+Full setup clones the toolkit repository, then uses your agent to automate the entire configuration. This is the recommended path for first-time users.
+
+### What Setup Does
+
+1. **Installs the MCP server** — downloads the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) binary to `~/.local/bin/`
+2. **Configures your agent** — connects the MCP server to your agent via global config, defaulting to the most recent MATLAB found (you can change this during setup)
+3. **Registers skills** — adds MATLAB skills via the platform's native plugin system or global skill links
+4. **Verifies** — confirms the MCP server can reach MATLAB and reports an environment summary
+
+Setup is re-runnable. Run it again to upgrade the MCP server, switch MATLAB versions, or fix a broken configuration.
+
+### Step 1: Clone and Launch
+
+Clone the toolkit to a permanent location outside your project directories (e.g., `~/tools/` or `~/repos/`). Most platforms reference this clone via symbolic links, so the toolkit needs to stay in place after setup.
 
 ```bash
 git clone https://github.com/matlab/matlab-agentic-toolkit.git
 cd matlab-agentic-toolkit
-claude
 ```
 
-Then inside Claude Code, ask Claude to set up the toolkit:
+Then launch your agent:
+
+| Platform | Launch command |
+|----------|---------------|
+| Claude Code | `claude` |
+| OpenAI Codex | `codex` |
+| Gemini CLI | `gemini` |
+| GitHub Copilot | Open folder in VS Code, then start Copilot chat |
+| Sourcegraph Amp | `amp` |
+| Cursor | Open folder in Cursor |
+
+### Step 2: Run Setup
+
+Ask your agent:
 
 ```
 Set up the MATLAB Agentic Toolkit
 ```
 
-That's it. Claude reads the repository's `CLAUDE.md`, finds the setup instructions, and walks you through the process (e.g., which MATLAB to use if you have several installed, and which scope to install the plugin at). Once setup completes, start a new Claude Code session in any project directory — MATLAB skills and MCP tools are available everywhere.
+The setup skill walks you through detection, planning, and execution. It presents all decisions (which MATLAB to use, display mode, etc.) before making any changes.
 
-> **Tip:** After the first setup, `/matlab-setup` is available as a slash command for re-running setup (e.g., to upgrade the MCP server or switch MATLAB versions).
+After setup completes, start a **new session in any project directory** — MATLAB tools and skills are available everywhere.
 
-> **Tip:** Choose a location for the toolkit outside your project directories. The toolkit is shared across all your projects.
+> **Tip:** After the first setup, you can re-run setup at any time to upgrade the MCP server, switch MATLAB versions, or fix a broken configuration. In Claude Code, use the `/matlab-setup` slash command. In other agents, ask "Set up the MATLAB Agentic Toolkit" from the toolkit directory.
+
+### How Configuration Works per Platform
+
+Setup writes two things: an MCP server configuration (so your agent can talk to MATLAB) and skill registrations (so your agent has MATLAB expertise). The details vary by platform. For more on how skills update, see [Updating](#updating).
+
+| Platform | MCP Configuration | Skills Delivery | How To Update Toolkit |
+|----------|------------------|-----------------|-------------------|
+| Claude Code | `~/.claude/.mcp.json` | Plugin cache | Re-run setup or reinstall plugin |
+| GitHub Copilot | `~/.vscode/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
+| OpenAI Codex | `~/.codex/config.toml` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
+| Gemini CLI | `~/.gemini/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
+| Sourcegraph Amp | `~/.config/amp/settings.json` | `amp.skills.path` direct ref | `git pull` in toolkit repo, re-run setup |
+| Cursor | `~/.cursor/mcp.json` | `.cursor-plugin/` discovery | Manual |
+
+**How skill symlinks work:** Most platforms discover skills from `~/.agents/skills/`. Setup creates symbolic links from that directory to the individual skill directories in your toolkit clone. When you run `git pull`, the linked skills update automatically. If new skills are added to the toolkit, re-run setup to create the additional symlinks.
+
+> **Where we're headed:** As agent platforms mature their marketplace and plugin systems, the goal is to move toward a simple marketplace-based install for all platforms — add the MATLAB Agentic Toolkit marketplace, install the MATLAB Core plugin, and the plugin handles everything including MCP server installation and configuration. The current clone-and-setup workflow is expected to be a temporary work-around to help provide a good out-of-the-box experience in the meantime.
+
+
+### Platform-Specific Notes
+
+**Claude Code** — Setup registers the toolkit via the plugin marketplace and writes MCP config to `~/.claude/.mcp.json`. Skills are cached by the plugin system. To re-run setup, use `/matlab-setup` or ask Claude to set up the toolkit.
+
+**GitHub Copilot** — Setup writes global MCP config to `~/.vscode/settings.json` and creates skill symlinks in `~/.agents/skills/`. Reload VS Code after setup completes (Cmd/Ctrl + Shift + P, then "Developer: Reload Window").
+
+**OpenAI Codex** — Setup uses `codex mcp add` if available, otherwise writes `~/.codex/config.toml` directly. Skills are installed as global symlinks in `~/.agents/skills/`. After setup, you may want to tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`:
+- `tool_timeout_sec = 600` — increases the tool timeout from the default (which is too short for many MATLAB operations like test suites and simulations). Increase further for very long-running tasks.
+- `env_vars = ['WINDIR']` — **Windows only.** Required for Simulink to work, since Codex strips environment variables from MCP server subprocesses by default.
+
+**Gemini CLI** — Setup writes global config to `~/.gemini/settings.json` and creates skill symlinks in `~/.agents/skills/`. Start a new Gemini session after setup. Alternatively, you can install the toolkit as a Gemini extension (see [Installing as a Gemini Extension](#installing-as-a-gemini-extension) below).
+
+**Sourcegraph Amp** — Setup writes to `~/.config/amp/settings.json` using the `amp.` prefix for all keys. Skills load directly from the toolkit via `amp.skills.path` (no symlinks needed). If you have `amp.mcpPermissions` rules that block MCP servers, setup will detect this and ask before making changes.
+
+**Cursor** — Setup writes `~/.cursor/mcp.json`. If automation fails, copy `templates/mcp.json` to `~/.cursor/mcp.json` manually and update the paths. Cursor is the only platform without automated setup verification — this configuration is **untested and provided as-is**.
+
+### Installing as a Gemini Extension
+
+You can install the toolkit as a Gemini CLI extension. The extension does not include MCP server configuration (MCP config is system-specific — binary path, MATLAB root, display mode), so you configure MCP separately.
+
+1. **Install and configure the MCP server** following the steps in [Installing the MCP Server Manually](#installing-the-mcp-server-manually), then add it to `~/.gemini/settings.json`:
+   ```json
+   {
+     "mcpServers": {
+       "matlab": {
+         "command": "/absolute/path/to/matlab-mcp-core-server",
+         "args": ["--matlab-root", "/absolute/path/to/MATLAB/R20XXx", "--matlab-display-mode", "nodesktop"]
+       }
+     }
+   }
+   ```
+
+2. **Install the extension:**
+   ```bash
+   gemini extensions install https://github.com/matlab/matlab-agentic-toolkit
+   ```
+
+3. **Create skill symlinks** so Gemini discovers the toolkit skills:
+   ```bash
+   mkdir -p ~/.agents/skills
+   for skill in ~/.gemini/extensions/matlab-agentic-toolkit/skills-catalog/matlab-core/*/; do
+     ln -s "$skill" ~/.agents/skills/$(basename "$skill")
+   done
+   ```
+
+4. **Start a new Gemini session** and verify: ask "What version of MATLAB is running?"
+
+> **Tip:** For a fully automated setup that handles all of the above, use the [Full Setup](#full-setup) workflow instead.
 
 ---
 
-## What Setup Does
+<a id="adding-skills-only"></a>
+## Adding Skills Only
 
-1. **Detects your platform** — OS and architecture
-2. **Finds MATLAB** — searches PATH, common install locations, and macOS Spotlight
-3. **Downloads the MCP server** — fetches the correct [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) binary from GitHub releases to `~/.local/bin/`
-4. **Generates `.mcp.json`** — writes the MCP server configuration with your system-specific paths
-5. **Registers the plugin** — adds the toolkit marketplace and installs the `matlab-core` plugin via `claude plugin install`
-6. **Verifies** — confirms the MCP server can reach MATLAB and reports the environment summary
+If you already have the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) installed and configured, you only need skills.
 
-Setup is re-runnable. Run it again (via `/matlab-setup` or by asking Claude) to upgrade the MCP server, switch MATLAB versions, or fix a broken configuration.
+### Claude Code (no clone required)
 
----
-
-## Already Have the MCP Server?
-
-If you have already installed and configured the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server), you can skip server installation and just add the skills.
-
-**Claude Code:** Install the plugin, which adds skills without changing your existing MCP configuration:
+Add skills directly via the plugin marketplace:
 
 ```bash
-cd /path/to/matlab-agentic-toolkit
-claude plugin marketplace add "$(pwd)"
+claude plugin marketplace add "https://github.com/matlab/matlab-agentic-toolkit"
 claude plugin install matlab-core@matlab-agentic-toolkit
 ```
 
-When prompted, choose your preferred scope (per-project, per-user, or global). Your existing `.mcp.json` or MCP server configuration is not modified.
+Choose your preferred scope (per-project, per-user, or global) when prompted. Your existing MCP configuration is not modified.
 
-**Other agents:** Point your agent's skill/prompt directory at `skills-catalog/matlab-core/` (domain skills). Each skill is a self-contained `SKILL.md` with a `manifest.yaml`. No changes to your MCP configuration are needed.
+> To also get the setup skill (for managing the MCP server later), additionally run:
+> `claude plugin install toolkit@matlab-agentic-toolkit`
+
+### Other Platforms
+
+Point your agent's skill or prompt directory at `skills-catalog/matlab-core/`. Each skill is a self-contained `SKILL.md` with a `manifest.yaml`.
+
+For platforms that discover skills from `~/.agents/skills/`, create symlinks:
+
+```bash
+mkdir -p ~/.agents/skills
+for skill in /path/to/matlab-agentic-toolkit/skills-catalog/matlab-core/*/; do
+  ln -s "$skill" ~/.agents/skills/$(basename "$skill")
+done
+```
+
+Replace `/path/to/matlab-agentic-toolkit` with the actual path to your toolkit clone.
 
 ---
 
 ## Installing the MCP Server Manually
 
-If you are not using Claude Code, or prefer to install the MCP server yourself, follow these steps.
+If you prefer to install the MCP server yourself rather than using the automated setup, follow these steps.
 
 ### 1. Download the binary
 
@@ -119,94 +227,13 @@ Unblock-File -Path "$env:USERPROFILE\.local\bin\matlab-mcp-core-server.exe"
 
 > **macOS note:** If macOS blocks the binary (Gatekeeper), go to **System Settings > Privacy & Security** and click **"Allow Anyway"** next to the blocked binary.
 
----
+### 4. Configure your agent
 
-## Other Agent Platforms
-
-Each platform below needs two things: an MCP server connection and (optionally) skills. If you haven't installed the MCP server binary yet, see [Installing the MCP Server Manually](#installing-the-mcp-server-manually) above.
-
-In the configuration examples below, replace `/path/to/matlab-mcp-core-server` with the actual path to your installed binary (e.g., `~/.local/bin/matlab-mcp-core-server`).
-
-### GitHub Copilot
-
-Create `.vscode/mcp.json` in your workspace (this file is not included in the toolkit since it is workspace-specific):
-
-```json
-{
-  "servers": {
-    "matlab": {
-      "type": "stdio",
-      "command": "/path/to/matlab-mcp-core-server"
-    }
-  }
-}
-```
-
-**Skills:** Copy or symlink skill directories from `skills-catalog/matlab-core/` (domain skills) into your project, or reference them in your Copilot instructions file.
-
-### Cursor
-
-The toolkit includes `.cursor-plugin/plugin.json` with skills and MCP configuration.
-
-1. Open the toolkit directory in Cursor, or symlink `.cursor-plugin/` into your project root.
-2. Edit `.cursor-plugin/plugin.json` and replace `"/path/to/matlab-mcp-core-server"` with the absolute path to your installed binary.
-
-Cursor discovers plugins from the `.cursor-plugin/` directory at the project root.
-
-### OpenAI Codex
-
-The toolkit includes pre-configured files for Codex:
-
-| File | Purpose |
-|------|---------|
-| `.agents/plugins/marketplace.json` | Plugin registry |
-| `.codex-plugin/plugin.json` | Plugin definition with skills and MCP reference |
-| `.codex-mcp.json` | MCP server configuration |
-
-To use the toolkit with Codex:
-
-1. Edit `.codex-mcp.json` and replace `"/path/to/matlab-mcp-core-server"` with the absolute path to your installed binary.
-2. Open or symlink the toolkit directory so Codex can discover the plugin.
-
-> **Note:** Codex uses `.codex-mcp.json` instead of `.mcp.json` to avoid conflicts with Claude Code, which auto-detects `.mcp.json` at the project root.
-
-### Sourcegraph Amp
-
-The toolkit includes `.amp/settings.json` which configures the MCP server. Amp will prompt you to approve the workspace MCP server on first open.
-
-1. Edit `.amp/settings.json` and replace `"/path/to/matlab-mcp-core-server"` with the absolute path to your installed binary.
-
-**Skills:** Install the toolkit skills:
-```bash
-amp skill add /path/to/matlab-agentic-toolkit/skills-catalog/matlab-core
-```
-
-### Gemini CLI
-
-The toolkit includes `gemini-extension.json` for MCP server configuration.
-
-1. Edit `gemini-extension.json` and replace `"/path/to/matlab-mcp-core-server"` with the absolute path to your installed binary.
-2. Reference the extension from your Gemini CLI configuration (typically `~/.gemini/settings.json`) by adding it to the `extensions` array. See the [Gemini CLI documentation](https://github.com/google-gemini/gemini-cli) for details.
-
-**Skills:** Copy skill directories from `skills-catalog/matlab-core/` (domain skills) into your project or reference them in your Gemini instructions.
-
-### Other Agents
-
-Any coding agent that supports MCP can use the toolkit. You need two things:
-
-1. **MCP server** — point your agent's MCP configuration at the installed binary:
-   ```json
-   {
-     "command": "/path/to/matlab-mcp-core-server"
-   }
-   ```
-2. **Skills** *(optional)* — if your agent supports skill/prompt files, point it at `skills-catalog/matlab-core/` (domain skills). Each skill is a `SKILL.md` with a `manifest.yaml`.
+Point your agent's MCP configuration at the installed binary. See the [How Configuration Works per Platform](#how-configuration-works-per-platform) table for configuration file locations, or consult your agent's documentation.
 
 ---
 
-## Step-by-Step Verification
-
-After setup, confirm everything works.
+## Verification
 
 ### Check that skills are loaded
 
@@ -215,12 +242,12 @@ If your agent shows loaded skills or plugins in its UI (e.g., Claude Code's `/sk
 | Skill | Description |
 |-------|-------------|
 | **matlab-agentic-toolkit-setup** | Install and configure the toolkit, install MCP server |
-| **testing** | Generate and run unit tests with `matlab.unittest` |
-| **creating-live-scripts** | Create plain-text Live Scripts (R2025a+) |
-| **building-apps** | Build apps programmatically with `uifigure` |
-| **reviewing-code** | Review code for quality and MathWorks&reg; coding standards |
-| **debugging** | Diagnose errors via MCP eval |
-| **modernizing-code** | Replace deprecated functions with modern equivalents |
+| **matlab-testing** | Generate and run unit tests with `matlab.unittest` |
+| **matlab-creating-live-scripts** | Create plain-text Live Scripts (R2025a+) |
+| **matlab-building-apps** | Build apps programmatically with `uifigure` |
+| **matlab-reviewing-code** | Review code for quality and MathWorks&reg; coding standards |
+| **matlab-debugging** | Diagnose errors via MCP eval |
+| **matlab-modernizing-code** | Replace deprecated functions with modern equivalents |
 
 ### Try it out
 
@@ -248,7 +275,7 @@ Create a plain-text Live Script that demonstrates curve fitting with sample data
 
 ---
 
-## Updating the Toolkit
+## Updating
 
 The toolkit has two independently versioned components: the **toolkit itself** (skills, configurations, and documentation in this repository) and the **MCP server binary** ([MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server)). Update each one separately.
 
@@ -261,18 +288,21 @@ cd /path/to/matlab-agentic-toolkit
 git pull
 ```
 
-This updates all skills, platform configurations, and documentation. No reinstallation is needed — your agent picks up the changes on its next session.
+What happens after `git pull`:
 
-**Marketplace-aware platforms:** If your agent platform has a marketplace or plugin registry (e.g., Claude Code, Cursor, Codex, Gemini CLI), it may detect toolkit updates automatically through its native update mechanism. Check your platform's documentation for details.
-
-**Claude Code:** The plugin marketplace tracks the toolkit repository. You can also re-run setup at any time (via `/matlab-setup` or by asking Claude) to pull the latest configuration and verify your environment.
+| Platform | Effect |
+|----------|--------|
+| Copilot, Codex, Gemini CLI | Existing skills update immediately (symlinks point into the repo). If new skills were added, re-run setup to create the new symlinks. |
+| Sourcegraph Amp | Skills update immediately (`amp.skills.path` reads the repo directly), including new skills. |
+| Claude Code | Skills may be cached by the plugin system — re-run setup or reinstall the plugin to refresh. |
+| Cursor | Skills update if the project is open; re-run setup for configuration changes. |
 
 ### Updating the MCP server
 
 The MCP server binary is released independently from the toolkit. To update it:
 
-- **Claude Code:** Re-run setup (`/matlab-setup` or ask Claude to set up the toolkit). Setup detects the installed version, downloads a newer release if available, and updates the configuration.
-- **Other platforms:** Download the latest binary from [MATLAB MCP Core Server releases](https://github.com/matlab/matlab-mcp-core-server/releases/latest) and replace the existing binary. See [Installing the MCP Server Manually](#installing-the-mcp-server-manually) for platform-specific instructions.
+- **Automated:** Re-run setup (e.g., `/matlab-setup` in Claude Code, or ask any agent to set up the toolkit). Setup detects the installed version and downloads a newer release if available.
+- **Manual:** Download the latest binary from [MATLAB MCP Core Server releases](https://github.com/matlab/matlab-mcp-core-server/releases/latest) and replace the existing binary. See [Installing the MCP Server Manually](#installing-the-mcp-server-manually) for platform-specific instructions.
 
 > **Tip:** Watch or star the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) repository on GitHub to get notified of new releases.
 
@@ -285,10 +315,11 @@ The MCP server binary is released independently from the toolkit. To update it:
 | Setup can't find MATLAB | Non-standard install location | Provide the path when prompted |
 | MCP server download fails | Network/proxy/firewall | Download manually from [GitHub releases](https://github.com/matlab/matlab-mcp-core-server/releases), place in `~/.local/bin/`, re-run setup |
 | macOS blocks the MCP server binary | Gatekeeper quarantine | Setup handles this automatically. If still blocked (MDM), go to System Settings > Privacy & Security > Allow Anyway |
-| Agent doesn't list MATLAB skills | Plugin not installed | Re-run setup or manually run `claude plugin install matlab-core@matlab-agentic-toolkit` |
-| MCP tools fail to connect | MCP server not running or wrong path | Re-run setup to regenerate config. Check that MATLAB is running |
-| `evaluate_matlab_code` returns errors | MATLAB not running or not on PATH | Start MATLAB, or re-run setup to update the MATLAB root path |
-| Config has `/path/to/matlab-mcp-core-server` | Placeholder not replaced | Edit the config file and replace with the actual path to your installed binary |
+| Agent doesn't list MATLAB skills | Plugin not installed or skills not linked | Re-run setup; for Claude Code, try `claude plugin install matlab-core@matlab-agentic-toolkit` |
+| MCP tools fail to connect | MCP server binary missing or wrong path in configuration | Re-run setup to regenerate configuration. Verify binary exists: `~/.local/bin/matlab-mcp-core-server --version` |
+| `evaluate_matlab_code` returns errors | Wrong `--matlab-root` path, license issue, or MATLAB startup failure | Verify MATLAB can start: `<matlab-root>/bin/matlab -nodesktop -r "disp('ok'),quit"`. Check license status. Re-run setup to correct the MATLAB root path |
+| Codex tool calls time out | Default tool timeout too short for MATLAB | Add `tool_timeout_sec = 600` (or higher) to `[mcp_servers.matlab]` in `~/.codex/config.toml` |
+| Simulink fails in Codex on Windows | Missing `WINDIR` environment variable | Add `env_vars = ['WINDIR']` to `[mcp_servers.matlab]` in `~/.codex/config.toml` |
 
 ---
 
