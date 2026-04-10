@@ -80,7 +80,7 @@ Setup writes two things: an MCP server configuration (so your agent can talk to 
 
 | Platform | MCP Configuration | Skills Delivery | How To Update Toolkit |
 |----------|------------------|-----------------|-------------------|
-| Claude Code | `~/.claude/.mcp.json` | Plugin cache | Re-run setup or reinstall plugin |
+| Claude Code | `~/.claude/settings.json` | Plugin cache | Re-run setup or reinstall plugin |
 | GitHub Copilot | `~/.vscode/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
 | OpenAI Codex | `~/.codex/config.toml` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
 | Gemini CLI | `~/.gemini/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
@@ -94,7 +94,7 @@ Setup writes two things: an MCP server configuration (so your agent can talk to 
 
 ### Platform-Specific Notes
 
-**Claude Code** — Setup registers the toolkit via the plugin marketplace and writes MCP config to `~/.claude/.mcp.json`. Skills are cached by the plugin system. To re-run setup, use `/matlab-setup` or ask Claude to set up the toolkit.
+**Claude Code** — Setup registers the toolkit via the plugin marketplace and uses `claude mcp add -s user` to register the MCP server globally. Skills are cached by the plugin system. To re-run setup, use `/matlab-setup` or ask Claude to set up the toolkit.
 
 **GitHub Copilot** — Setup writes global MCP config to `~/.vscode/settings.json` and creates skill symlinks in `~/.agents/skills/`. Reload VS Code after setup completes (Cmd/Ctrl + Shift + P, then "Developer: Reload Window").
 
@@ -305,6 +305,38 @@ The MCP server binary is released independently from the toolkit. To update it:
 - **Manual:** Download the latest binary from [MATLAB MCP Core Server releases](https://github.com/matlab/matlab-mcp-core-server/releases/latest) and replace the existing binary. See [Installing the MCP Server Manually](#installing-the-mcp-server-manually) for platform-specific instructions.
 
 > **Tip:** Watch or star the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) repository on GitHub to get notified of new releases.
+
+---
+
+## Per-Project Configuration
+
+Automated setup configures the toolkit **globally** — MATLAB tools and skills are available in every session regardless of which project you open. Global configuration is the easiest way to get started since it just works whenever you create or open a project.
+
+You can also configure the MCP server at the project level. This keeps your tools and skills scoped to the projects that need them, and it helps teams — when the config is committed to version control, anyone who clones the repo gets the MATLAB connection automatically (provided they have the MCP server binary installed; see [Installing the MCP Server Manually](#installing-the-mcp-server-manually)).
+
+### Template files
+
+The [`templates/`](templates/) directory contains starter configurations for each platform. Copy the appropriate template into the root folder of your project, update the paths, and commit it to version control.
+
+| Platform | Template | Project location |
+|----------|----------|-----------------|
+| GitHub Copilot | `templates/vscode-mcp.json` | `.vscode/mcp.json` |
+| Cursor | `templates/mcp.json` | `.cursor/mcp.json` |
+| Sourcegraph Amp | `templates/amp-settings.json` | `.amp/settings.json` |
+| OpenAI Codex | `templates/codex-mcp.json` | `.codex/config.json` in project root |
+
+> **Claude Code** uses `claude plugin install` with scope selection (per-project, per-user, or global) rather than a project config file. See [Adding Skills Only](#adding-skills-only).
+
+### Example: GitHub Copilot
+
+```bash
+mkdir -p .vscode
+cp /path/to/matlab-agentic-toolkit/templates/vscode-mcp.json .vscode/mcp.json
+```
+
+Then edit `.vscode/mcp.json` to replace the placeholder paths with your actual MCP server binary and MATLAB root paths.
+
+> **Note:** Per-project configs contain absolute paths to the MCP server binary and MATLAB root, which vary across machines. If your team uses different OS platforms or install locations, consider documenting the expected paths in your project README.
 
 ---
 

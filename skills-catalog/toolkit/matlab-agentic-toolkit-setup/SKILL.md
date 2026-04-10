@@ -4,7 +4,7 @@ description: Install and configure the MATLAB Agentic Toolkit — detect MATLAB,
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # MATLAB Agentic Toolkit Setup
@@ -16,6 +16,38 @@ Automated onboarding for the MATLAB Agentic Toolkit. Detects MATLAB, downloads a
 > **Experimental platforms:** Cursor, Codex, Amp are provided as-is; setup will guide you through each step and provide manual fallback instructions if anything fails.
 
 This skill does NOT require the MATLAB MCP server — it uses shell commands for everything until the final verification step.
+
+## Welcome Message
+
+Before doing any work, print a welcome message to the user. This sets expectations for what's about to happen and why they may be asked to approve actions. Use a friendly, personal tone with "I" statements. The message should cover:
+
+```
+Welcome! My goal is to get you set up with the MATLAB Agentic Toolkit so you
+can use MATLAB tools and skills with your agent for your projects.
+
+Here's what I'll do:
+
+1. Look around your computer to find your MATLAB installation(s) and check
+   whether the MCP server is already installed. Depending on your permissions
+   settings, you may be asked to approve some of these steps — I'm just
+   reading system info, not changing anything yet.
+
+2. Come back to you with a plan showing what I found and what I'd like to
+   configure. You'll have a chance to adjust any choices before I make changes.
+
+3. Once you approve, I'll install the MCP server (if needed), configure your
+   agent to use it for your other projects, and verify the connection to MATLAB.
+
+This setup configures everything globally — once it's done, MATLAB tools and
+skills will be available in every session, regardless of which project you're
+working in. This is the easiest way to get started. If you later want to scope
+the configuration to specific projects, the Getting Started guide covers that.
+
+If you'd rather set things up manually, the Getting Started guide has
+step-by-step instructions: GETTING_STARTED.md
+```
+
+Adapt the wording naturally — don't recite it verbatim — but cover all three points. After printing the welcome message, proceed directly to Phase 1 without waiting for a response.
 
 ## When to Use
 
@@ -45,6 +77,8 @@ The goal is to ask the user **once** for all decisions, then execute without fur
 ---
 
 ## Phase 1: Discovery
+
+Print a brief status message before starting: **"Scanning your system for MATLAB installations and checking the current setup. You may be asked to approve some read-only commands — I'm just gathering information, not making any changes yet."**
 
 Run all of these checks silently — do not prompt the user during this phase. Collect all results for presentation in Phase 2.
 
@@ -107,6 +141,12 @@ For other platforms, check if their global config files already have a `matlab` 
 
 Check environment and CLI tools: `claude --version` (Claude Code), `$CURSOR_TRACE` (Cursor), `codex --version` (Codex), `amp --version` (Amp), `gemini --version` (Gemini CLI), `$VSCODE_*` (Copilot). If ambiguous, ask the user.
 
+### 1g. Check for legacy artifacts
+
+Read the platform-specific reference file and check for any items listed in its **Legacy Artifacts** section (if present). Record what was found — these will be shown in the plan and cleaned up during Phase 3.
+
+**Reference file resolution:** On re-runs (when `~/.matlab-agentic-toolkit/config.json` exists), resolve reference files from `toolkitRoot` in that config (e.g., `<toolkitRoot>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/reference/<filename>`), not from the skill's base directory. This avoids reading stale cached versions when the skill is loaded from a plugin cache.
+
 ---
 
 ## Phase 2: Plan
@@ -135,6 +175,7 @@ Proposed actions:
   MCP server:    Download v0.7.0 to ~/.local/bin/matlab-mcp-core-server
   Display mode:  nodesktop (MATLAB runs headless; windows still open for plots)
   Agent config:  Configure MCP server globally (available in all sessions)
+  Migration:     (none)
 
 Proceed with this plan? You can adjust any choice:
   - Pick a different MATLAB: "use 2" or provide a path
@@ -142,6 +183,8 @@ Proceed with this plan? You can adjust any choice:
   - Change display: "use desktop" (full MATLAB GUI visible)
   - Configure a different agent: "use Cursor" or "use Amp"
 ```
+
+The **Migration** row shows legacy artifacts found in Phase 1g. If none were found, show `(none)`. If artifacts were found, list what will be cleaned up, e.g., `Remove ~/.claude/.mcp.json (migrated to claude mcp add)`.
 
 For non-Claude platforms, clearly note "EXPERIMENTAL — untested, provided as-is" and that manual fallback will be provided if automated setup fails.
 
@@ -170,6 +213,8 @@ Once the user confirms — move to Phase 3. If they adjust choices, update the p
 
 ## Phase 3: Execute
 
+Print a brief status message before starting: **"Great — executing the plan now. I'll be downloading, writing config files, and registering skills. You may be asked to approve some of these actions depending on your permissions settings."**
+
 Carry out the approved plan. Do NOT prompt the user during this phase — all decisions were made in Phase 2.
 
 ### 3a. Install MCP server (if needed)
@@ -187,6 +232,10 @@ Post-download: `chmod +x` (macOS/Linux), `xattr -d com.apple.quarantine` (macOS)
 Verify: `~/.local/bin/matlab-mcp-core-server --version`
 
 If download fails, provide the direct URL for manual download.
+
+### 3b-migrate. Clean up legacy artifacts
+
+If Phase 1g found any legacy artifacts, clean them up now according to the instructions in the platform reference file's **Legacy Artifacts** section. Only remove artifacts after the new configuration has been written successfully (i.e., run this after 3b-platform, not before).
 
 ### 3b-shared. Register global skills (Copilot, Codex, Gemini)
 
@@ -251,13 +300,53 @@ Echo back:
 - File path: `~/.vscode/settings.json`
 - MATLAB entry was added/updated
 
+#### Claude Code
+
+Uses `claude mcp add` CLI to register the MCP server globally. Do NOT write `~/.claude/.mcp.json` manually — that file is not read by Claude Code.
+
+**Step 1: Add the marketplace**
+
+```bash
+claude plugin marketplace add "https://github.com/matlab/matlab-agentic-toolkit"
+```
+
+If already registered, this is a no-op.
+
+**Step 2: Install plugins**
+
+```bash
+claude plugin install matlab-core@matlab-agentic-toolkit
+claude plugin install toolkit@matlab-agentic-toolkit
+```
+
+Claude's native prompt will ask the user to choose scope. Do NOT implement your own scope selection.
+
+**Step 3: Register MCP server**
+
+```bash
+claude mcp add-json -s user matlab '{"command":"<MCP_SERVER_PATH>","args":["--matlab-root","<MATLAB_ROOT>","--matlab-display-mode","<DISPLAY_MODE>"]}'
+```
+
+This registers the server at user scope (available in all projects). If a `matlab` entry already exists, it is overwritten. MCP tools become available in the next session.
+
+**Step 4: Verify plugin installation**
+
+```bash
+claude plugin list 2>&1
+```
+
+If `claude` CLI plugin commands fail, skip plugin installation — skills can be used by reading SKILL.md files directly. The MCP registration (Step 3) works independently via `claude mcp add`, which is a core CLI command.
+
+Echo back the `claude mcp add-json` command that was run and confirm it succeeded.
+
+See `reference/claude-code-setup-guidance.md` for legacy artifact cleanup and additional troubleshooting details.
+
 #### Other platforms
 
 **Read** the platform-specific reference file (located in the `reference/` directory next to this skill file) and follow its instructions exactly. Use the toolkit root to resolve the path: `<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/reference/<filename>`.
 
 | Platform | Reference file |
 |----------|---------------|
-| Claude Code | `reference/claude-code-setup-guidance.md` |
 | Cursor | `reference/cursor-setup-guidance.md` |
 | OpenAI Codex | `reference/codex-setup-guidance.md` |
 | Sourcegraph Amp | `reference/amp-setup-guidance.md` |
@@ -286,13 +375,18 @@ mkdir -p ~/.matlab-agentic-toolkit
   "mcpServerVersion": "<VERSION>",
   "displayMode": "<DISPLAY_MODE>",
   "configuredPlatforms": ["<PLATFORM>"],
+  "setupSkillVersion": "<SKILL_VERSION>",
   "lastSetup": "<ISO_8601_TIMESTAMP>"
 }
 ```
 
+The `setupSkillVersion` field records the skill `metadata.version` from the YAML front matter of this file. This allows future runs to detect when the skill has been updated and whether migration steps may apply.
+
 ---
 
 ## Phase 4: Verify
+
+Print a brief status message: **"Setup is done — verifying the connection to MATLAB."**
 
 Verification depends on the agent platform.
 
