@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Copyright 2026 The MathWorks, Inc.
 set -euo pipefail
 
 toolkit_root="${1:-}"
@@ -23,9 +24,9 @@ link_skill() {
   printf 'Linked %s -> %s\n' "${skills_root}/${link_name}" "${source_dir}"
 }
 
-while IFS= read -r skill_dir; do
-  link_skill "${skill_dir}"
-done < <(find "${toolkit_root}/skills-catalog/matlab-core" "${toolkit_root}/skills-catalog/toolkit" \
-  -mindepth 1 -maxdepth 1 -type d | sort)
+# Auto-discover all published skills (directories containing manifest.yaml).
+while IFS= read -r manifest; do
+  link_skill "$(dirname "${manifest}")"
+done < <(find "${toolkit_root}/skills-catalog" -path '*/skills-catalog/*/*/manifest.yaml' | sort)
 
 printf '\nSkills directory: %s\n' "${skills_root}"

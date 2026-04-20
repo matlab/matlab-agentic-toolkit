@@ -1,0 +1,52 @@
+[
+  {
+    "id": "batch-insert-verify",
+    "name": "Batch insert and verify with SQLite",
+    "description": "Tests that the agent uses sqlwrite for batch insert and verifies by reading data back",
+    "prompt": "Write MATLAB code to insert a table of 5 sensor readings (columns: SensorID, Timestamp, Value) into a SQLite database table called 'readings'. Then verify the insert by reading the data back.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Uses sqlwrite for the batch insert (not row-by-row loop)", "expected": "sqlwrite(conn, ...readings..., data)"},
+      {"id": "a2", "type": "convention_followed", "description": "Creates a MATLAB table with correct column names before inserting", "expected": "table(..., VariableNames=[\"SensorID\", \"Timestamp\", \"Value\"])"},
+      {"id": "a3", "type": "convention_followed", "description": "Verifies the insert by reading data back with sqlread", "expected": "sqlread(conn, \"readings\")"},
+      {"id": "a4", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn)"},
+      {"id": "a5", "type": "convention_followed", "description": "Does NOT hardcode any credentials", "expected": "No literal passwords in code"}
+    ]
+  },
+  {
+    "id": "atomic-multi-table-transaction",
+    "name": "Atomic multi-table insert with transaction control",
+    "description": "Tests that the agent uses proper transaction control for atomic multi-table writes",
+    "prompt": "Write MATLAB code to atomically update two database tables: insert a new order into 'orders' and insert its line items into 'order_items'. If either insert fails, roll back both. Use transaction control.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Sets conn.AutoCommit to 'off' before the transaction", "expected": "conn.AutoCommit = 'off'"},
+      {"id": "a2", "type": "convention_followed", "description": "Uses try/catch block wrapping both sqlwrite calls", "expected": "try...sqlwrite...sqlwrite...catch"},
+      {"id": "a3", "type": "convention_followed", "description": "Calls commit(conn) in the try block after both writes succeed", "expected": "commit(conn)"},
+      {"id": "a4", "type": "convention_followed", "description": "Calls rollback(conn) in the catch block", "expected": "rollback(conn)"},
+      {"id": "a5", "type": "convention_followed", "description": "Restores AutoCommit to 'on' after the transaction block", "expected": "conn.AutoCommit = 'on'"},
+      {"id": "a6", "type": "convention_followed", "description": "Does NOT write each table independently without transaction protection", "expected": "Both sqlwrite calls inside try block"}
+    ]
+  },
+  {
+    "id": "chunked-bulk-insert",
+    "name": "Chunked bulk insert for large data",
+    "description": "Tests that the agent chunks large data for sqlwrite instead of inserting row-by-row",
+    "prompt": "I have a MATLAB table with 50,000 rows of results. Write code to insert them into a database table called 'results' efficiently, handling potential memory issues.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Does NOT insert rows one at a time in a loop", "expected": "No sqlwrite(conn, ..., data(i,:)) in a per-row loop"},
+      {"id": "a2", "type": "convention_followed", "description": "Implements a chunked loop (splits data into slices and calls sqlwrite on each slice)", "expected": "Loop with chunkSize and sqlwrite on data(startIdx:endIdx, :)"},
+      {"id": "a3", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn)"}
+    ]
+  },
+  {
+    "id": "sqlupdate-with-rowfilter",
+    "name": "Update rows with sqlupdate and rowfilter",
+    "description": "Tests that the agent uses the modern sqlupdate with rowfilter approach",
+    "prompt": "Update rows in the 'products' table where Category is 'Electronics' to set Discount to 0.15. Use the modern approach.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Uses sqlupdate (not raw SQL UPDATE via execute)", "expected": "sqlupdate(conn, ...)"},
+      {"id": "a2", "type": "convention_followed", "description": "Uses rowfilter to specify the Category == 'Electronics' condition", "expected": "rowfilter(\"Category\") with .Category == \"Electronics\""},
+      {"id": "a3", "type": "convention_followed", "description": "Creates a data table with the Discount value to apply", "expected": "table(0.15, VariableNames=\"Discount\")"},
+      {"id": "a4", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn)"}
+    ]
+  }
+]

@@ -24,3 +24,10 @@ We aim to acknowledge new issues within **2 business days** and apply triage lab
 
 - Check the [Getting Started](https://github.com/matlab/matlab-agentic-toolkit#getting-started) guide for setup and usage instructions.
 - Search [existing issues](https://github.com/matlab/matlab-agentic-toolkit/issues) to see if your question or bug has already been reported.
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

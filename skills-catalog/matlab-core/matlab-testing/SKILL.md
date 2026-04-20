@@ -269,3 +269,10 @@ Load these on demand — most tests only need what's in this file.
 - Keep test methods focused — test one behavior per method
 - Tests must be independent and compatible with parallel execution
 - Run tests via the `run_matlab_test_file` MCP tool for automatic result capture
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

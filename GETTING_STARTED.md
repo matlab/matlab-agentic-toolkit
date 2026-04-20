@@ -118,7 +118,7 @@ You can install the toolkit as a Gemini CLI extension. The extension does not in
      "mcpServers": {
        "matlab": {
          "command": "/absolute/path/to/matlab-mcp-core-server",
-         "args": ["--matlab-root", "/absolute/path/to/MATLAB/R20XXx", "--matlab-display-mode", "nodesktop"]
+         "args": ["--matlab-root", "/absolute/path/to/MATLAB/R20XXx", "--matlab-display-mode", "desktop"]
        }
      }
    }
@@ -243,11 +243,11 @@ If your agent shows loaded skills or plugins in its UI (e.g., Claude Code's `/sk
 |-------|-------------|
 | **matlab-agentic-toolkit-setup** | Install and configure the toolkit, install MCP server |
 | **matlab-testing** | Generate and run unit tests with `matlab.unittest` |
-| **matlab-creating-live-scripts** | Create plain-text Live Scripts (R2025a+) |
-| **matlab-building-apps** | Build apps programmatically with `uifigure` |
-| **matlab-reviewing-code** | Review code for quality and MathWorks&reg; coding standards |
+| **matlab-create-live-script** | Create plain-text Live Scripts (R2025a+) |
+| **matlab-build-app** | Build apps programmatically with `uifigure` |
+| **matlab-review-code** | Review code for quality and MathWorks&reg; coding standards |
 | **matlab-debugging** | Diagnose errors via MCP eval |
-| **matlab-modernizing-code** | Replace deprecated functions with modern equivalents |
+| **matlab-modernize-code** | Replace deprecated functions with modern equivalents |
 
 ### Try it out
 
@@ -353,10 +353,13 @@ Then edit `.vscode/mcp.json` to replace the placeholder paths with your actual M
 | Codex tool calls time out | Default tool timeout too short for MATLAB | Add `tool_timeout_sec = 600` (or higher) to `[mcp_servers.matlab]` in `~/.codex/config.toml` |
 | Simulink fails in Codex on Windows | Missing `WINDIR` environment variable | Add `env_vars = ['WINDIR']` to `[mcp_servers.matlab]` in `~/.codex/config.toml` |
 
----
 
-Copyright 2025-2026 The MathWorks, Inc.
-
----
 
 MATLAB and Simulink are registered trademarks of The MathWorks, Inc. See [mathworks.com/trademarks](https://www.mathworks.com/trademarks) for a list of additional trademarks. Other product or brand names may be trademarks or registered trademarks of their respective holders.
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

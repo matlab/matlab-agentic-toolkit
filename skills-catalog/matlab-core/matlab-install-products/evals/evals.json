@@ -1,0 +1,119 @@
+[
+  {
+    "id": "windows-install-simulink-r2025a",
+    "name": "Install Simulink on Windows via mpm",
+    "description": "Tests the full Windows workflow: confirmation, plan display, PowerShell safety gate, input file preparation, and install command generation",
+    "prompt": "I need to install Simulink for R2025a on my Windows machine. Put it in C:\\MATLAB\\R2025a. My username is testuser.",
+    "expected_output": "Agent confirms selections, displays installation plan, writes .ps1 scripts with Write tool, downloads mpm from correct URL, and never uses powershell.exe -Command",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Agent confirms release, destination, and products before executing",
+        "expected": "A confirmation message listing R2025a, C:\\MATLAB\\R2025a, and Simulink before any commands run"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Agent displays an installation plan after confirmation and before execution",
+        "expected": "A plan showing numbered steps: download mpm, prepare input file, run installation, verify"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent writes PowerShell scripts via the Write file tool, never uses powershell.exe -Command",
+        "expected": "All .ps1 files created with Write tool; invoked with powershell.exe ... -File <path>"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Agent uses the correct mpm download URL for Windows",
+        "expected": "https://www.mathworks.com/mpm/win64/mpm"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Agent never uses powershell.exe -Command inline",
+        "expected": "powershell.exe -Command"
+      }
+    ]
+  },
+  {
+    "id": "linux-install-matlab-and-toolbox-r2025b",
+    "name": "Install MATLAB and Signal Processing Toolbox on Linux",
+    "description": "Tests Linux workflow: correct mpm URL, input file from GitHub, product lookup, and verification artifact",
+    "prompt": "Install MATLAB and Signal Processing Toolbox for 25b on my Linux box. Install to /usr/local/MATLAB/R2025b.",
+    "expected_output": "Agent expands '25b' to 'R2025b', downloads input file from GitHub, uses correct product identifiers from template, uses Linux mpm URL, and verifies completion artifact",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Agent expands shorthand release '25b' to 'R2025b'",
+        "expected": "R2025b appears in confirmation and commands, not '25b'"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Agent downloads the release-specific input file template from GitHub",
+        "expected": "mpm-input-files/R2025b"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent looks up exact product.<Name> identifiers from the input file rather than guessing",
+        "expected": "product.MATLAB and product.Signal_Processing_Toolbox (or the exact identifier from the template)"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Agent uses the correct mpm download URL for Linux",
+        "expected": "https://www.mathworks.com/mpm/glnxa64/mpm"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Agent checks for the completion artifact after installation",
+        "expected": "/usr/local/MATLAB/R2025b/bin/matlab"
+      }
+    ]
+  },
+  {
+    "id": "windows-no-inline-powershell",
+    "name": "Windows safety gate enforcement",
+    "description": "Tests that the agent strictly follows the Windows safety gate when generating PowerShell for mpm installation",
+    "prompt": "Use mpm to install MATLAB R2025a to C:\\Program Files\\MATLAB\\R2025a on Windows. My username is devuser.",
+    "expected_output": "Agent creates scripts via Write tool (no heredoc or echo), uses timestamped working folder, elevates with Start-Process -Verb RunAs, and cleans up after verification",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_excludes",
+        "description": "Agent never uses bash heredoc to create .ps1 files",
+        "expected": "cat > "
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Agent never uses echo redirection to create scripts",
+        "expected": "echo "
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent creates a timestamped working folder in the user's temp directory",
+        "expected": "A folder path like C:/Users/devuser/AppData/Local/Temp/mpm-YYYYMMDD-HHMMSS"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Agent uses Start-Process -Verb RunAs for the mpm install step on Windows",
+        "expected": "Start-Process with -Verb RunAs in the install script"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Agent cleans up the working folder after successful verification",
+        "expected": "rm -rf or Remove-Item of the working folder after confirming matlab.exe exists"
+      }
+    ]
+  }
+]

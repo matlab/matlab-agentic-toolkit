@@ -21,3 +21,10 @@ Reference MCP server configurations for manual setup. Each file is a starting po
 | `amp-settings.json` | Sourcegraph Amp | `~/.config/amp/settings.json` (global) or `.amp/settings.json` (project) |
 
 For full instructions, see the [Getting Started guide](../GETTING_STARTED.md).
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

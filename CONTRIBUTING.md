@@ -6,6 +6,9 @@ MathWorks welcomes your feedback on the MATLAB Agentic Toolkit.
 - **Pull Requests**: MathWorks reviews all contributions but does not merge external pull requests. Your ideas may influence development of future releases.
 
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----
+

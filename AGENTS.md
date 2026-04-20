@@ -9,13 +9,20 @@ For MATLAB implementation tasks, prefer the domain skills in `skills-catalog/mat
 
 - `skills-catalog/matlab-core/matlab-testing/SKILL.md`
 - `skills-catalog/matlab-core/matlab-debugging/SKILL.md`
-- `skills-catalog/matlab-core/matlab-reviewing-code/SKILL.md`
-- `skills-catalog/matlab-core/matlab-modernizing-code/SKILL.md`
-- `skills-catalog/matlab-core/matlab-building-apps/SKILL.md`
-- `skills-catalog/matlab-core/matlab-creating-live-scripts/SKILL.md`
+- `skills-catalog/matlab-core/matlab-review-code/SKILL.md`
+- `skills-catalog/matlab-core/matlab-modernize-code/SKILL.md`
+- `skills-catalog/matlab-core/matlab-build-app/SKILL.md`
+- `skills-catalog/matlab-core/matlab-create-live-script/SKILL.md`
 
 When setting up Codex:
 
 - Configure the MATLAB MCP server globally so it is available in every repo.
 - Install global skill references from this repo into `~/.agents/skills` so updates continue to come from this clone after `git pull`.
 - Prefer Codex's native `codex mcp add` command when it is available.
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

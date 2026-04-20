@@ -6,30 +6,94 @@
   },
   "plugins": [
     {
-      "name": "toolkit",
-      "version": "0.2.1",
-      "description": "Setup and management for the MATLAB Agentic Toolkit. Detects MATLAB, installs the MCP server, registers the Claude Code plugin, and verifies the environment.",
+      "name": "matlab-app-building",
+      "version": "0.1.0",
+      "description": "MATLAB app building skills for AI coding agents. App Designer, uifigure, uigridlayout, UI components, callbacks, and uihtml for web integration.",
       "author": {
         "name": "MathWorks"
       },
-      "keywords": ["matlab", "setup", "mcp", "configuration"],
+      "keywords": [
+        "matlab",
+        "app-building",
+        "app-designer",
+        "uifigure"
+      ],
       "source": "./",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/toolkit/"
+      "skills": "./skills-catalog/matlab-app-building/"
     },
     {
       "name": "matlab-core",
-      "version": "0.2.1",
-      "description": "MATLAB skills and MCP tools for AI coding agents. Testing, debugging, reviewing code, creating Live Scripts, building apps, and modernizing code.",
+      "version": "0.3.0",
+      "description": "Foundational MATLAB skills for AI coding agents. Debugging, testing, code review, and Live Script creation. Every toolkit user needs these skills, and other plugins can assume they are available.",
       "author": {
         "name": "MathWorks"
       },
-      "keywords": ["matlab", "mcp", "matlab-testing", "matlab-reviewing-code", "matlab-debugging", "matlab-modernizing-code"],
+      "keywords": [
+        "matlab",
+        "debugging",
+        "testing",
+        "code-review",
+        "live-scripts"
+      ],
       "source": "./",
       "category": "development",
       "strict": false,
       "skills": "./skills-catalog/matlab-core/"
+    },
+    {
+      "name": "matlab-software-development",
+      "version": "0.1.0",
+      "description": "MATLAB software development skills for AI coding agents. Source control, build tools, packaging, code modernization, and development workflows.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "software-development",
+        "packaging",
+        "modernization"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/matlab-software-development/"
+    },
+    {
+      "name": "reporting-and-database-access",
+      "version": "0.1.0",
+      "description": "Reporting and database access skills for AI coding agents. Database Toolbox and MATLAB Report Generator.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "database",
+        "reporting"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/reporting-and-database-access/"
+    },
+    {
+      "name": "toolkit",
+      "version": "0.2.2",
+      "description": "Setup and management for the MATLAB Agentic Toolkit. Detects MATLAB, installs the MCP server, registers with your AI coding agent, and verifies the environment.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "setup",
+        "mcp",
+        "configuration"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/toolkit/"
     }
   ]
 }

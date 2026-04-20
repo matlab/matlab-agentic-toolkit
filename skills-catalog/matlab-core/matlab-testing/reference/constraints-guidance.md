@@ -62,3 +62,10 @@ testCase.verifyThat(array, EveryElementOf(IsGreaterThan(0)));
 ## Custom Constraints
 
 Extend `matlab.unittest.constraints.Constraint` for domain-specific checks. Implement `satisfiedBy(~, actual)` (returns logical) and `getDiagnosticFor(constraint, actual)` (returns `StringDiagnostic`). Use via `testCase.verifyThat(value, MyConstraint)`.
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

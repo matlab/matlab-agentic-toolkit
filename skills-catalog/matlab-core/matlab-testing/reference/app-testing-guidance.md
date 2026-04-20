@@ -286,3 +286,10 @@ testCase.verifyEqual(app.RunButton.Enable, testCase.ON);
 - For apps with long callbacks, poll with `pause`/`drawnow` and a timeout — never use a fixed `pause` alone
 - Test one behavior per method — keep tests focused and independent
 - Use parameterized tests to cover dropdown options and configuration combinations
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

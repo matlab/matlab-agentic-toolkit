@@ -1,8 +1,9 @@
+# Copyright 2026 The MathWorks, Inc.
 # manifest.yaml — Tooling metadata for matlab-agentic-toolkit-setup
 schema_version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "2.1"
+version: "2.2"
 matlab-release: ">=R2020b"
 requires-tools: []
 requires-skills: []

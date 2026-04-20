@@ -1,0 +1,46 @@
+[
+  {
+    "id": "sensor-orm-class-definition",
+    "name": "Sensor ORM Class Definition",
+    "description": "Tests ability to define a Mappable class with PrimaryKey, ColumnType, nargin guard, and custom methods",
+    "prompt": "Create a MATLAB ORM class called Sensor that maps to a 'sensors' database table with columns: SensorID (int, primary key), Location (string), Type (string), CalibrationDate (datetime mapped to date column type). Include a method recalibrate() that sets CalibrationDate to today.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Class inherits from database.orm.mixin.Mappable", "expected": "classdef line includes < database.orm.mixin.Mappable"},
+      {"id": "a2", "type": "convention_followed", "description": "classdef has TableName = 'sensors' attribute", "expected": "classdef (TableName = \"sensors\") or equivalent"},
+      {"id": "a3", "type": "convention_followed", "description": "SensorID property block has PrimaryKey attribute", "expected": "properties (PrimaryKey) block containing SensorID"},
+      {"id": "a4", "type": "convention_followed", "description": "CalibrationDate property block has ColumnType = 'date' attribute", "expected": "properties (ColumnType = \"date\") block containing CalibrationDate"},
+      {"id": "a5", "type": "convention_followed", "description": "Constructor handles nargin == 0 case", "expected": "if nargin == 0 guard in constructor"},
+      {"id": "a6", "type": "convention_followed", "description": "recalibrate method sets CalibrationDate to datetime('today')", "expected": "method recalibrate that assigns datetime(\"today\") to CalibrationDate"},
+      {"id": "a7", "type": "convention_followed", "description": "Class defined in its own .m file named Sensor.m", "expected": "File is named Sensor.m, one class per file"}
+    ]
+  },
+  {
+    "id": "sqlite-orm-workflow",
+    "name": "Complete SQLite ORM Workflow",
+    "description": "Tests a full ORM workflow: connect, define class, write, filtered read, update, verify",
+    "prompt": "Write a complete ORM workflow using SQLite: create a Product class, connect to a local SQLite database, write 3 products, read them back with a price filter under $20, update the quantity of the filtered products, and verify the update.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Uses sqlite() to create a local database connection"},
+      {"id": "a2", "type": "convention_followed", "description": "Product class inherits from Mappable with PrimaryKey", "expected": "Product < database.orm.mixin.Mappable with a PrimaryKey property"},
+      {"id": "a3", "type": "convention_followed", "description": "Uses ormwrite to insert product objects", "expected": "ormwrite(conn, ...) call with product array"},
+      {"id": "a4", "type": "convention_followed", "description": "Uses ormread with RowFilter to filter by price", "expected": "ormread(conn, \"Product\", RowFilter=...) with price filter"},
+      {"id": "a5", "type": "convention_followed", "description": "Uses ormupdate to push modified objects back to database", "expected": "ormupdate(conn, ...) call after modifying quantity"},
+      {"id": "a6", "type": "convention_followed", "description": "Verifies update by re-reading from database", "expected": "Second ormread after ormupdate to confirm changes"},
+      {"id": "a7", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn) at end of workflow"},
+      {"id": "a8", "type": "code_executes", "description": "Code runs without error via evaluate_matlab_code"}
+    ]
+  },
+  {
+    "id": "employee-orm2sql-schema",
+    "name": "Employee ORM Class with orm2sql",
+    "description": "Tests defining an ORM class for an existing table and using orm2sql for schema verification",
+    "prompt": "I have an existing database table 'employees' with columns EmployeeID (int), Name (text), Department (text), Salary (real). Write the ORM class and show me the SQL it would generate with orm2sql.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Class inherits from database.orm.mixin.Mappable", "expected": "classdef line includes < database.orm.mixin.Mappable"},
+      {"id": "a2", "type": "convention_followed", "description": "PrimaryKey defined on EmployeeID", "expected": "properties (PrimaryKey) containing EmployeeID"},
+      {"id": "a3", "type": "convention_followed", "description": "Property names or ColumnName attributes match database columns", "expected": "Properties map to EmployeeID, Name, Department, Salary columns"},
+      {"id": "a4", "type": "convention_followed", "description": "Uses orm2sql to inspect generated SQL", "expected": "orm2sql(conn, \"Employee\") call to view CREATE TABLE statement"},
+      {"id": "a5", "type": "convention_followed", "description": "Constructor handles nargin == 0", "expected": "if nargin == 0 guard in constructor"}
+    ]
+  }
+]

@@ -149,3 +149,10 @@ test:
   script:
     - matlab -batch "buildtool"
 ```
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

@@ -26,13 +26,15 @@ Codex also honors `CODEX_HOME` for testing. If `CODEX_HOME` is set, the effectiv
 $CODEX_HOME/config.toml
 ```
 
-## Preferred MCP Configuration Path
+## MCP Configuration Path
 
-Prefer Codex's native MCP management command when it is available:
+**Always use** Codex's native MCP management command:
 
 ```bash
 codex mcp add matlab -- "<MCP_SERVER_PATH>" --matlab-root "<MATLAB_ROOT>" --matlab-display-mode "<DISPLAY_MODE>"
 ```
+
+This is the required approach because it handles path escaping correctly on all platforms (including Windows backslashes in TOML).
 
 Observed behavior in `codex-cli 0.118.0`:
 
@@ -42,7 +44,7 @@ Observed behavior in `codex-cli 0.118.0`:
 
 ### Fallback TOML Block
 
-If `codex mcp add` is unavailable, write or update this section manually:
+If `codex mcp add` fails, write or update this section manually:
 
 ```toml
 [mcp_servers.matlab]
@@ -52,6 +54,8 @@ tool_timeout_sec = 600
 ```
 
 **CRITICAL:** The TOML key must be `mcp_servers` with an underscore. `mcp-servers` is silently ignored.
+
+**CRITICAL (Windows only):** TOML treats backslash (`\`) as an escape character. When writing Windows paths into TOML strings, you **must** double every backslash. For example, write `C:\\Users\\Name\\.local\\bin\\matlab-mcp-core-server.exe`, NOT `C:\Users\Name\.local\bin\matlab-mcp-core-server.exe`. Single backslashes produce invalid escape sequences (`\U`, `\N`, etc.) that silently corrupt the config file.
 
 ### Required Extra Fields
 
@@ -69,12 +73,12 @@ tool_timeout_sec = 600   # increase for long-running tasks
 env_vars = ['WINDIR']   # required for Simulink on Windows
 ```
 
-The complete Windows TOML block should look like:
+The complete Windows TOML block should look like (note doubled backslashes):
 
 ```toml
 [mcp_servers.matlab]
-command = "<MCP_SERVER_PATH>"
-args = ["--matlab-root", "<MATLAB_ROOT>", "--matlab-display-mode", "<DISPLAY_MODE>"]
+command = "C:\\Users\\Name\\.local\\bin\\matlab-mcp-core-server.exe"
+args = ["--matlab-root", "C:\\Program Files\\MATLAB\\R2025b", "--matlab-display-mode", "nodesktop"]
 tool_timeout_sec = 600
 env_vars = ['WINDIR']
 ```
@@ -137,13 +141,11 @@ After it completes, report:
 
 ### Step 3: Add or update the MATLAB MCP server
 
-Preferred:
-
 ```bash
 codex mcp add matlab -- "<MCP_SERVER_PATH>" --matlab-root "<MATLAB_ROOT>" --matlab-display-mode "<DISPLAY_MODE>"
 ```
 
-If the CLI command fails because it is unavailable in the installed Codex version, update `~/.codex/config.toml` manually using the TOML block above.
+This handles path escaping correctly on all platforms. If the command fails, fall back to editing `~/.codex/config.toml` manually using the fallback TOML block above (paying careful attention to the Windows backslash escaping warning).
 
 ### Step 3b: Add required extra fields
 
@@ -206,10 +208,10 @@ If automated setup fails:
    - `<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup`
    - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-testing`
    - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-debugging`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-reviewing-code`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-modernizing-code`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-building-apps`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-creating-live-scripts`
+   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-review-code`
+   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-modernize-code`
+   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-build-app`
+   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-create-live-script`
 4. Restart Codex
 
 ## Plugin Visibility (`/plugins`)
@@ -238,3 +240,10 @@ If all three are true, your setup is complete — regardless of what `/plugins` 
 - Current Codex CLI exposes `codex mcp ...` commands but does **not** expose a stable public plugin-install command
 - Global skills come from `~/.agents/skills`, not from `.codex-plugin/`
 - User config can be overridden by project config (`.codex/config.toml`) or CLI flags
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

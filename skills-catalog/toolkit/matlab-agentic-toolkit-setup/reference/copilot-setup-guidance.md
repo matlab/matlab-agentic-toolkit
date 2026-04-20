@@ -86,7 +86,7 @@ with open(settings_path, 'w') as f:
 Replace placeholders:
 - `<MCP_SERVER_PATH>` — absolute path to the binary (detected in Phase 1)
 - `<MATLAB_ROOT>` — absolute path to the MATLAB installation (detected in Phase 1)
-- `<DISPLAY_MODE>` — `nodesktop` (default) or `desktop` (from Phase 2 plan)
+- `<DISPLAY_MODE>` — `desktop` (default) or `nodesktop` (from Phase 2 plan)
 
 **Important:** Preserve all other settings in `~/.vscode/settings.json` — only add or update the `mcp.servers.matlab` entry.
 
@@ -150,7 +150,7 @@ If automation encounters an error, provide the user with manual instructions:
 >        "command": "/path/to/matlab-mcp-core-server",
 >        "args": [
 >          "--matlab-root", "/path/to/MATLAB/R2025b",
->          "--matlab-display-mode", "nodesktop"
+>          "--matlab-display-mode", "desktop"
 >        ]
 >      }
 >    }
@@ -168,7 +168,7 @@ If automation encounters an error, provide the user with manual instructions:
 >       "command": "/path/to/matlab-mcp-core-server",
 >       "args": [
 >         "--matlab-root", "/path/to/MATLAB/R2025b",
->         "--matlab-display-mode", "nodesktop"
+>         "--matlab-display-mode", "desktop"
 >       ]
 >     }
 >   }
@@ -217,3 +217,10 @@ The setup skill (SKILL.md Phase 3b) should:
 6. If anything fails, provide the manual fallback instructions above
 
 See SKILL.md Phase 3b for the implementation.
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

@@ -107,3 +107,10 @@ end
 2. **Verify interactions sparingly** — focus on outcomes, not implementation
 3. **Keep mocks simple** — complex mock setup = design smell
 4. **Prefer stubs over mocks** — when you don't need to verify calls
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

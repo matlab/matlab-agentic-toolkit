@@ -36,12 +36,12 @@ The MCP server must be in global settings (not bundled in a skill) because it is
 
 **Note:** All Amp settings use the `amp.` prefix. The MCP servers key is `amp.mcpServers` (not just `mcpServers`).
 
-**Windows:** Use backslash paths for `command`, `args`, and `amp.skills.path`. Use semicolons (`;`) instead of colons (`:`) to separate multiple paths in `amp.skills.path`.
+**Windows:** Paths in JSON must have backslashes escaped — either use forward slashes (`C:/Program Files/MATLAB/R2025b`) or double every backslash (`C:\\Program Files\\MATLAB\\R2025b`). Raw backslashes produce invalid JSON. Use semicolons (`;`) instead of colons (`:`) to separate multiple paths in `amp.skills.path`.
 
 Replace:
 - `<MCP_SERVER_PATH>` — absolute path to the binary (e.g., `~/.local/bin/matlab-mcp-core-server`)
 - `<MATLAB_ROOT>` — absolute path to the MATLAB installation
-- `<DISPLAY_MODE>` — `nodesktop` (default) or `desktop`
+- `<DISPLAY_MODE>` — `desktop` (default) or `nodesktop`
 - `<TOOLKIT_ROOT>` — absolute path to the cloned toolkit repository
 
 ## Phase 3b: Write Config
@@ -129,7 +129,7 @@ If automated config writing fails, tell the user:
 >      "amp.mcpServers": {
 >        "matlab": {
 >          "command": "<MCP_SERVER_PATH>",
->          "args": ["--matlab-root", "<MATLAB_ROOT>", "--matlab-display-mode", "nodesktop"]
+>          "args": ["--matlab-root", "<MATLAB_ROOT>", "--matlab-display-mode", "desktop"]
 >        }
 >      },
 >      "amp.skills.path": "<TOOLKIT_ROOT>/skills-catalog/matlab-core:<TOOLKIT_ROOT>/skills-catalog/toolkit"
@@ -153,3 +153,10 @@ After the user restarts Amp:
 > - Check `~/.config/amp/settings.json` (or `%USERPROFILE%\.config\amp\settings.json` on Windows) contains `amp.mcpServers.matlab`
 > - Verify the binary runs: `~/.local/bin/matlab-mcp-core-server --version` (or `%USERPROFILE%\.local\bin\matlab-mcp-core-server.exe --version` on Windows)
 > - Run `amp skill list` to confirm MATLAB skills are visible
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

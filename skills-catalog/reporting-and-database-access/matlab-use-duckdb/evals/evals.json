@@ -1,0 +1,187 @@
+[
+  {
+    "id": "parquet-group-by-aggregation",
+    "name": "Analytical Engine — Query Parquet with GROUP BY",
+    "description": "Tests in-memory DuckDB connection, fetch with read_parquet, and SQL aggregation",
+    "prompt": "Connect to DuckDB and query a Parquet file called 'sales_2024.parquet' to get total revenue by region, sorted by revenue descending.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses duckdb() for in-memory connection, not database() or JDBC",
+        "expected": "duckdb()"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses fetch (not sqlread) for file-based query",
+        "expected": "fetch"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "SQL uses read_parquet with single-quoted file path",
+        "expected": "read_parquet('sales_2024.parquet')"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "SQL contains GROUP BY and aggregation",
+        "expected": "GROUP BY"
+      }
+    ]
+  },
+  {
+    "id": "dev-database-join-aggregation",
+    "name": "Development Database with JOIN and Aggregation",
+    "description": "Tests file-based connection, sqlwrite for multiple tables, and fetch with SQL JOIN",
+    "prompt": "Create a portable development database from two MATLAB tables (patients and visits), then query patients over age 50 who have more than 3 visits.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses duckdb with a filename for file-based persistent connection",
+        "expected": "duckdb("
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses sqlwrite to insert both tables into the database",
+        "expected": "sqlwrite"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses fetch with SQL JOIN for cross-table query (not sqlread)",
+        "expected": "JOIN"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "SQL contains GROUP BY with HAVING for visit count filter",
+        "expected": "HAVING"
+      }
+    ]
+  },
+  {
+    "id": "out-of-memory-csv-preprocessing",
+    "name": "Out-of-Memory CSV Preprocessing",
+    "description": "Tests DuckDB as analytical engine for large CSV files that don't fit in memory",
+    "prompt": "I have a 20GB CSV file called 'telemetry.csv' with columns: timestamp, device_id, temperature, humidity, battery_level. I need the average temperature and humidity per device for devices where battery_level is above 20%, but the file is too large to load into MATLAB.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses duckdb() for in-memory connection (no persistence needed)",
+        "expected": "duckdb()"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses fetch with SQL on read_csv for the telemetry file",
+        "expected": "read_csv('telemetry.csv')"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Pushes battery_level filter to DuckDB SQL (not filtered in MATLAB after loading)",
+        "expected": "battery_level"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use readtable or readmatrix on the large file",
+        "expected": "readtable"
+      }
+    ]
+  },
+  {
+    "id": "glob-pattern-and-extensions",
+    "name": "Multi-File Glob Query and Extension Installation",
+    "description": "Tests glob patterns for multiple files and DuckDB extension installation",
+    "prompt": "Query multiple Parquet files in a 'data/logs/' directory to count events by type, then install the httpfs extension to also query a remote Parquet file.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses glob pattern in read_parquet for multiple local files",
+        "expected": "*.parquet"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Installs httpfs extension with execute",
+        "expected": "INSTALL httpfs"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Loads httpfs extension with execute",
+        "expected": "LOAD httpfs"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Uses fetch with SQL for all file-based queries (not sqlread)",
+        "expected": "fetch"
+      }
+    ]
+  },
+  {
+    "id": "readonly-rowfilter-named-table",
+    "name": "Read-Only Access with RowFilter on Named Table",
+    "description": "Tests read-only file-based connection, sqlread with RowFilter for named tables",
+    "prompt": "Open an existing DuckDB database file 'inventory.duckdb' in read-only mode, read the 'products' table filtering for items where quantity < 10, and import the results into MATLAB for visualization.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses duckdb with ReadOnly=true for read-only access",
+        "expected": "ReadOnly=true"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses sqlread (not fetch) for named database table",
+        "expected": "sqlread"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses RowFilter to push filter to DuckDB",
+        "expected": "rowfilter"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Closes connection with close(conn)",
+        "expected": "close(conn)"
+      }
+    ]
+  }
+]

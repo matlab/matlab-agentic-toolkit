@@ -7,7 +7,7 @@
         "--matlab-root",
         "/path/to/MATLAB/R2025b",
         "--matlab-display-mode",
-        "nodesktop"
+        "desktop"
       ]
     }
   }

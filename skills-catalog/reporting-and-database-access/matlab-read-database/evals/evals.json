@@ -1,0 +1,43 @@
+[
+  {
+    "id": "single-table-filter-select",
+    "name": "Single table import with filter and column selection",
+    "description": "Tests Pattern 1: sqlread with RowFilter and databaseImportOptions for pushdown column selection and row filtering on a single table.",
+    "prompt": "Import only the OrderID and Total columns from a SQLite database table called 'orders' where Total > 100. Use pushdown filtering, not client-side filtering.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Uses sqlread (not fetch) for single-table import", "expected": "sqlread called with table name"},
+      {"id": "a2", "type": "convention_followed", "description": "Uses RowFilter to push the Total > 100 filter to the database", "expected": "RowFilter with Total > 100 condition"},
+      {"id": "a3", "type": "convention_followed", "description": "Uses databaseImportOptions with SelectedVariableNames to select only OrderID and Total", "expected": "opts.SelectedVariableNames includes OrderID and Total"},
+      {"id": "a4", "type": "convention_followed", "description": "Does NOT import all rows and filter in MATLAB afterward", "expected": "No post-import filtering on the result table"},
+      {"id": "a5", "type": "convention_followed", "description": "Verifies connection with isopen(conn)", "expected": "isopen(conn) check present"},
+      {"id": "a6", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn) called"}
+    ]
+  },
+  {
+    "id": "two-table-join-filter-select",
+    "name": "Two-table join with filter and post-join column selection",
+    "description": "Tests Pattern 3: sqlinnerjoin with RowFilter, then column selection in MATLAB after the join (since join functions do not accept databaseImportOptions).",
+    "prompt": "Join the 'orders' table with the 'customers' table on CustomerID, filtering for orders where Status is 'shipped'. Return only OrderID, CustomerName, and Total columns.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Uses sqlinnerjoin (not raw SQL JOIN) for the two-table join", "expected": "sqlinnerjoin called"},
+      {"id": "a2", "type": "convention_followed", "description": "Passes Keys='CustomerID' or equivalent to sqlinnerjoin", "expected": "Keys parameter with CustomerID"},
+      {"id": "a3", "type": "convention_followed", "description": "Uses RowFilter for the Status filter (pushed to database)", "expected": "RowFilter with Status == shipped"},
+      {"id": "a4", "type": "convention_followed", "description": "Does NOT pass databaseImportOptions to sqlinnerjoin", "expected": "No opts argument to sqlinnerjoin"},
+      {"id": "a5", "type": "convention_followed", "description": "Selects columns in MATLAB after the join (post-join selection)", "expected": "Table indexing to select columns after join"},
+      {"id": "a6", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn) called"}
+    ]
+  },
+  {
+    "id": "three-table-join-fetch-sql",
+    "name": "Three-table join using fetch with explicit SQL",
+    "description": "Tests Pattern 4: fetch with explicit SQL for 3+ table joins, since pushdown joins only support exactly 2 tables.",
+    "prompt": "Join orders, customers, and products tables to get a report of customer names, product names, and order totals for orders over $500. Use the most appropriate approach.",
+    "assertions": [
+      {"id": "a1", "type": "convention_followed", "description": "Uses fetch with explicit SQL (not sqlinnerjoin) because 3+ tables are involved", "expected": "fetch called with SQL string"},
+      {"id": "a2", "type": "convention_followed", "description": "SQL query contains JOIN clauses connecting all three tables", "expected": "INNER JOIN or JOIN for orders-customers and orders-products"},
+      {"id": "a3", "type": "convention_followed", "description": "SQL query contains WHERE clause for the $500 filter", "expected": "WHERE clause with > 500"},
+      {"id": "a4", "type": "convention_followed", "description": "Does NOT attempt to chain multiple sqlinnerjoin calls", "expected": "No sqlinnerjoin in the code"},
+      {"id": "a5", "type": "convention_followed", "description": "Closes connection with close(conn)", "expected": "close(conn) called"}
+    ]
+  }
+]

@@ -1,0 +1,113 @@
+{
+  "skill": "matlab-debugging",
+  "version": "2.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Data-Dependent Index Error",
+      "description": "Debug an index error that only occurs for certain input data (empty bin), requiring runtime inspection to diagnose",
+      "prompt": "My function binData crashes for some inputs but not others. Can you debug it?\n\nThe function is at: evals/fixtures/binData.m\nRun it with: binData([1.5 3.2 2.8 7.1], [0 2 4 6 8 10])",
+      "context": {
+        "files": ["evals/fixtures/binData.m"],
+        "setup": "Ensure the fixtures directory is on the MATLAB path"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent runs the code in MATLAB to reproduce the error rather than only reading the source",
+          "expected": "Agent uses evaluate_matlab_code or run_matlab_file to execute binData and observe the actual error"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent inspects runtime state to identify which bin is empty",
+          "expected": "Agent evaluates the mask or binValues for specific loop iterations to determine which bin(s) have no data"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent identifies root cause as indexing into an empty array when a bin has no values",
+          "expected": "Agent explains that bins [4,6) and/or [8,10) are empty, causing binValues to be empty, and binValues(1) fails"
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Agent proposes a fix that handles empty bins and verifies it runs"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "NaN from Operation Chain",
+      "description": "Trace NaN through a multi-step computation where the root cause is Inf*0, not a direct 0/0",
+      "prompt": "My function computeScore returns NaN but I cannot figure out why. The inputs look fine — no NaN or Inf in the data.\n\nThe function is at: evals/fixtures/computeScore.m\nRun it with: computeScore([10 5 5 8], [8 5 3 6])",
+      "context": {
+        "files": ["evals/fixtures/computeScore.m"],
+        "setup": "Ensure the fixtures directory is on the MATLAB path"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent inspects intermediate variables (delta, pctChange, weights) to trace where NaN appears",
+          "expected": "Agent evaluates sub-expressions step by step rather than just reading the code"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent identifies the full causal chain: delta=0 leads to weights=Inf leads to Inf*0=NaN",
+          "expected": "Agent traces that at index 2, delta=0, so 1/abs(0)=Inf, and pctChange(2)*weights(2)=0*Inf=NaN"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Agent does not suggest blanket NaN removal as the fix",
+          "expected": "fillmissing|rmmissing|nanmean|omitnan|nansum"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Agent uses no-desktop-safe debugging (no dbstop if naninf)",
+          "expected": "Agent does not use dbstop if naninf or dbstop if error (which would hang in no-desktop mode)"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Nested Call Stack with Desktop-Mode Awareness",
+      "description": "Debug an error deep in a helper function called from a loop, requiring stack navigation and desktop-mode-aware strategy",
+      "prompt": "My function batchProcess crashes on the second dataset but I am not sure why. Can you debug it?\n\nThe function is at: evals/fixtures/batchProcess.m\nRun it with: batchProcess({[1 2 3 4 5], [NaN Inf -Inf NaN], [10 20 30]})",
+      "context": {
+        "files": ["evals/fixtures/batchProcess.m"],
+        "setup": "Ensure the fixtures directory is on the MATLAB path"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent checks desktop mode before choosing a debugging strategy",
+          "expected": "Agent runs desktop('-inuse') and adapts strategy accordingly (try-catch or run-then-inspect in no-desktop mode)"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent traces the error to the helper function analyzeOne and identifies which dataset fails",
+          "expected": "Agent identifies that dataset 2 ([NaN Inf -Inf NaN]) causes the failure in analyzeOne"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent identifies root cause: all-non-finite data produces empty cleaned array, leading to round(0.25*0)=0 index",
+          "expected": "Agent traces that isfinite removes all elements, length(sorted)=0, round(0)=0, sorted(0) is invalid index"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Agent does NOT use pausing breakpoints (dbstop if error) in no-desktop mode",
+          "expected": "Agent avoids dbstop if error, dbstop if naninf, or unconditional line breakpoints when desktop('-inuse') is false"
+        }
+      ]
+    }
+  ]
+}

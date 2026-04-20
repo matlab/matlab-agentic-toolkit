@@ -1,3 +1,4 @@
+# Copyright 2026 The MathWorks, Inc.
 param(
     [string]$ToolkitRoot = ""
 )
@@ -20,11 +21,13 @@ try {
     New-Item -ItemType Directory -Force -Path $skillsRoot | Out-Null
 }
 
-$skillDirs = @()
-$skillDirs += Get-ChildItem -Directory (Join-Path $ToolkitRoot "skills-catalog\matlab-core")
-$skillDirs += Get-ChildItem -Directory (Join-Path $ToolkitRoot "skills-catalog\toolkit")
+# Auto-discover all published skills (directories containing manifest.yaml).
+$skillDirs = Get-ChildItem -Recurse -Filter "manifest.yaml" -Path (Join-Path $ToolkitRoot "skills-catalog") |
+    Where-Object { ($_.FullName -replace '\\','/') -match 'skills-catalog/[^/]+/[^/]+/manifest\.yaml$' } |
+    ForEach-Object { $_.Directory } |
+    Sort-Object FullName
 
-foreach ($skillDir in $skillDirs | Sort-Object FullName) {
+foreach ($skillDir in $skillDirs) {
     $linkPath = Join-Path $skillsRoot $skillDir.Name
     if (Test-Path $linkPath) {
         Remove-Item -Force -Recurse $linkPath

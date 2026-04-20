@@ -114,3 +114,10 @@ end
 3. **Group related values in structs** — keeps input/expected together
 4. **Keep parameter tables small** — growing tables may mean the tests are testing different logic
 5. **Use the right level** — `TestParameter` for test data, `ClassSetupParameter` for expensive shared fixtures
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

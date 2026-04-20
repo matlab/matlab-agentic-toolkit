@@ -5,7 +5,7 @@
       "--matlab-root",
       "/path/to/MATLAB",
       "--matlab-display-mode",
-      "nodesktop"
+      "desktop"
     ]
   }
 }

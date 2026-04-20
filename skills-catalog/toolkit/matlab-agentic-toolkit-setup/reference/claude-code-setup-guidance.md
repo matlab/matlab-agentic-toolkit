@@ -16,8 +16,12 @@ MCP server config is managed by the `claude mcp add -s user` command, which writ
 
 ### Step 1: Add the marketplace
 
+Derive the marketplace URL from the toolkit repo's own origin remote, so the registered marketplace always matches where the user cloned from:
+
 ```bash
-claude plugin marketplace add "https://github.com/matlab/matlab-agentic-toolkit"
+cd <toolkit-root>
+MARKETPLACE_URL=$(git remote get-url origin)
+claude plugin marketplace add "$MARKETPLACE_URL"
 ```
 
 If the marketplace is already registered, this is a no-op. Continue to the next step.
@@ -42,6 +46,8 @@ claude mcp add-json -s user matlab '{"command":"<MCP_SERVER_PATH>","args":["--ma
 Replace `<MCP_SERVER_PATH>`, `<MATLAB_ROOT>`, and `<DISPLAY_MODE>` with the values from the setup plan.
 
 **Important:** This command must run at the system terminal (via the Bash tool), not as an inline Claude Code command. If a `matlab` entry already exists, the command will overwrite it.
+
+**Windows path escaping:** The JSON string passed to `claude mcp add-json` must have backslashes doubled. For example, use `C:\\Users\\Name\\.local\\bin\\matlab-mcp-core-server.exe`, not `C:\Users\Name\.local\bin\matlab-mcp-core-server.exe`. Single backslashes produce invalid JSON escape sequences (`\U`, `\N`, etc.).
 
 The MCP tools become available in the next session (or immediately if the session is restarted).
 
@@ -115,3 +121,10 @@ fprintf('MATLAB %s (%s) — ready.\n', v.Version, v.Release);
 If MCP tools are not available in the current session:
 
 > The plugin was just installed. Start a **new Claude Code session** to activate the MATLAB MCP tools, then verify with: "What version of MATLAB is running?"
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

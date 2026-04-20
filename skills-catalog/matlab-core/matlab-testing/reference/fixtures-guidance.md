@@ -75,3 +75,10 @@ classdef (SharedTestFixtures = {DatabaseFixture}) ...
     end
 end
 ```
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

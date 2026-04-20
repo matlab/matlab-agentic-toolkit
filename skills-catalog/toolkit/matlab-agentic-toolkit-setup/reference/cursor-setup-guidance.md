@@ -30,7 +30,7 @@ Cursor stores MCP server configuration in JSON files. The global config at `~/.c
 Replace:
 - `<MCP_SERVER_PATH>` — absolute path to the binary (e.g., `/Users/jane/.local/bin/matlab-mcp-core-server`)
 - `<MATLAB_ROOT>` — absolute path to the MATLAB installation (e.g., `/Applications/MATLAB_R2025b.app`)
-- `<DISPLAY_MODE>` — `nodesktop` (default) or `desktop`
+- `<DISPLAY_MODE>` — `desktop` (default) or `nodesktop`
 
 ## Phase 3b: Write Config
 
@@ -78,7 +78,7 @@ If automated config writing fails, tell the user:
 >    ```json
 >    "matlab": {
 >      "command": "<MCP_SERVER_PATH>",
->      "args": ["--matlab-root", "<MATLAB_ROOT>", "--matlab-display-mode", "nodesktop"]
+>      "args": ["--matlab-root", "<MATLAB_ROOT>", "--matlab-display-mode", "desktop"]
 >    }
 >    ```
 > 3. Save the file and restart Cursor
@@ -96,3 +96,10 @@ After the user restarts Cursor:
 > - Check `~/.cursor/mcp.json` exists and contains the `matlab` entry
 > - Verify the binary runs: `~/.local/bin/matlab-mcp-core-server --version`
 > - Check Cursor's MCP server status in the Cursor settings UI
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

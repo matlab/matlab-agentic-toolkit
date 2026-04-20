@@ -1,0 +1,107 @@
+[
+  {
+    "id": "windows-list-products-by-path",
+    "name": "List installed products given a Windows matlabroot path",
+    "description": "Tests path inference, prodcontents.json reading, name cleanup, MATLABabetical sorting, and output format",
+    "prompt": "What MATLAB products are installed at C:\\Program Files\\MATLAB\\R2025a?",
+    "expected_output": "Agent reads prodcontents.json, derives Windows support package root, strips version and platform tokens from names, sorts MATLABabetically, and uses exact table format from skill",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Agent reads prodcontents.json from the correct path",
+        "expected": "Reads C:\\Program Files\\MATLAB\\R2025a\\appdata\\prodcontents.json"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Agent derives the correct Windows support package root",
+        "expected": "Checks C:\\ProgramData\\MATLAB\\SupportPackages\\R2025a\\appdata\\prodcontents.json"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent strips version and platform tokens from product names",
+        "expected": "Display names like 'MATLAB', 'Simulink' — not 'MATLAB 25.1 win64'"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Agent sorts products in MATLABabetical order",
+        "expected": "MATLAB first, then MATLAB Copilot (if present), then Simulink (if present), then Simulink Copilot (if present), then alphabetical"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Agent outputs using the exact table format from the skill",
+        "expected": "Heading with release name, 'Installed at:' path, products table, support packages section"
+      }
+    ]
+  },
+  {
+    "id": "linux-list-by-release-shorthand",
+    "name": "List installed products using release shorthand on Linux",
+    "description": "Tests release shorthand expansion, Linux default path construction, and platform inference",
+    "prompt": "Show me what's installed for 25a on Linux.",
+    "expected_output": "Agent expands '25a' to 'R2025a', constructs /usr/local/MATLAB/R2025a path, derives Linux support package root, and outputs only the final formatted table",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Agent expands '25a' to 'R2025a'",
+        "expected": "R2025a in the resolved path and output heading"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Agent constructs the correct Linux default matlabroot",
+        "expected": "/usr/local/MATLAB/R2025a"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent derives the correct Linux support package root",
+        "expected": "/usr/local/MATLAB/SupportPackages/R2025a"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Agent executes silently and only shows the final formatted output",
+        "expected": "No narration of intermediate steps — just the final table"
+      }
+    ]
+  },
+  {
+    "id": "macos-path-inference",
+    "name": "Infer macOS platform from path and handle .app suffix",
+    "description": "Tests macOS path format recognition, .app suffix stripping, and macOS support package root",
+    "prompt": "What products are in /Applications/MATLAB_R2025a.app?",
+    "expected_output": "Agent infers macOS platform from path, strips .app suffix to extract R2025a, uses macOS support package root, and reads prodcontents.json from macOS matlabroot",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Agent infers macOS from the /Applications/MATLAB_ path prefix",
+        "expected": "Agent treats this as a macOS installation without asking for platform"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Agent strips .app to extract release name R2025a",
+        "expected": "Release = R2025a (not 'R2025a.app' or 'MATLAB_R2025a.app')"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Agent uses the correct macOS support package root",
+        "expected": "~/Library/Application Support/MathWorks/MATLAB/SupportPackages/R2025a"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Agent reads prodcontents.json from the macOS matlabroot",
+        "expected": "/Applications/MATLAB_R2025a.app/appdata/prodcontents.json"
+      }
+    ]
+  }
+]

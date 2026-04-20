@@ -5,7 +5,7 @@
   "mcpServers": {
     "matlab": {
       "command": "/path/to/matlab-mcp-core-server",
-      "args": ["--matlab-root", "/path/to/MATLAB/R20XXx", "--matlab-display-mode", "nodesktop"]
+      "args": ["--matlab-root", "/path/to/MATLAB/R20XXx", "--matlab-display-mode", "desktop"]
     }
   }
 }

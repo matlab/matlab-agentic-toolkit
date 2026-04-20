@@ -173,14 +173,14 @@ Agent platform:  Claude Code (detected)
 Proposed actions:
   MATLAB:        Use R2025b (/Applications/MATLAB_R2025b.app)
   MCP server:    Download v0.7.0 to ~/.local/bin/matlab-mcp-core-server
-  Display mode:  nodesktop (MATLAB runs headless; windows still open for plots)
+  Display mode:  desktop (full MATLAB desktop visible)
   Agent config:  Configure MCP server globally (available in all sessions)
   Migration:     (none)
 
 Proceed with this plan? You can adjust any choice:
   - Pick a different MATLAB: "use 2" or provide a path
   - Keep existing server: "use server at /path/to/binary"
-  - Change display: "use desktop" (full MATLAB GUI visible)
+  - Change display: "use nodesktop" (MATLAB runs headless; windows still open for plots)
   - Configure a different agent: "use Cursor" or "use Amp"
 ```
 
@@ -198,7 +198,7 @@ For OpenAI Codex specifically, the plan must cover **both**:
 |----------|---------|-----------------|
 | Which MATLAB | Newest release found | User picks by number or provides a path |
 | MCP server | Download latest to `~/.local/bin/` | User says "use existing" or provides a path |
-| Display mode | `nodesktop` | User says "use desktop" |
+| Display mode | `desktop` | User says "use nodesktop" |
 | Agent platform | Auto-detected | User says "use [platform]" |
 
 ### If no MATLAB found
@@ -253,7 +253,7 @@ bash "<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/scripts
 powershell -ExecutionPolicy Bypass -File "<TOOLKIT_ROOT>\skills-catalog\toolkit\matlab-agentic-toolkit-setup\scripts\install-global-skills.ps1" -ToolkitRoot "<TOOLKIT_ROOT>"
 ```
 
-These create symlinks such as:
+These scripts auto-discover all published skills (any directory under `skills-catalog/` that contains a `manifest.yaml`) and create symlinks such as:
 ```text
 ~/.agents/skills/matlab-testing        -> <TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-testing
 ~/.agents/skills/matlab-debugging      -> <TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-debugging
@@ -306,20 +306,24 @@ Uses `claude mcp add` CLI to register the MCP server globally. Do NOT write `~/.
 
 **Step 1: Add the marketplace**
 
+Derive the marketplace URL from the toolkit repo's own origin remote, so the registered marketplace always matches where the user cloned from:
+
 ```bash
-claude plugin marketplace add "https://github.com/matlab/matlab-agentic-toolkit"
+MARKETPLACE_URL=$(git -C "<TOOLKIT_ROOT>" remote get-url origin)
+claude plugin marketplace add "$MARKETPLACE_URL"
 ```
 
 If already registered, this is a no-op.
 
-**Step 2: Install plugins**
+**Step 2: Install all plugins**
+
+Read `<TOOLKIT_ROOT>/.claude-plugin/marketplace.json`, extract the `name` field from each entry in the `plugins` array, and install every plugin:
 
 ```bash
-claude plugin install matlab-core@matlab-agentic-toolkit
-claude plugin install toolkit@matlab-agentic-toolkit
+claude plugin install <plugin-name>@matlab-agentic-toolkit
 ```
 
-Claude's native prompt will ask the user to choose scope. Do NOT implement your own scope selection.
+Run one `claude plugin install` command per plugin. Claude's native prompt will ask the user to choose scope. Do NOT implement your own scope selection.
 
 **Step 3: Register MCP server**
 
@@ -425,7 +429,7 @@ If verification fails:
 1. Verify `matlab-mcp-core-server` is accessible (`which matlab-mcp-core-server`)
 2. Try running the server manually to diagnose:
    ```bash
-   ~/.local/bin/matlab-mcp-core-server --matlab-root <path> --matlab-display-mode nodesktop 2>&1 | head -20
+   ~/.local/bin/matlab-mcp-core-server --matlab-root <path> --matlab-display-mode desktop 2>&1 | head -20
    ```
 3. Look for "Application startup complete" in the output
 
@@ -454,6 +458,7 @@ When setup is run again: read existing config as defaults, run full discovery, p
 - Collect all information silently in Phase 1; present all decisions together in Phase 2
 - On failure, provide an actionable message — never show raw errors without context
 - For non-Claude platforms, always provide manual fallback instructions
+- **Windows path escaping:** JSON and TOML both treat `\` as an escape character. When writing Windows paths to config files or passing them in CLI commands (like `claude mcp add-json`), you must either use forward slashes (`C:/Users/Name/...`) or double every backslash (`C:\\Users\\Name\\...`). Raw backslashes produce invalid escape sequences that silently corrupt config files. Python's `json.dump()` handles this automatically when paths are passed as string values — prefer programmatic writes over string interpolation.
 
 ## Guardrails
 
@@ -475,3 +480,10 @@ When setup is run again: read existing config as defaults, run full discovery, p
 - Skip the verification step
 - Prompt the user during Phase 1 (discovery) or Phase 3 (execution)
 - Claim untested platforms are fully supported
+
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----
+

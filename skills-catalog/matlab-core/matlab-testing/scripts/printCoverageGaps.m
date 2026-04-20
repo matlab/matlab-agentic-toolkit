@@ -67,3 +67,4 @@ for i = 1:numel(decs)
         end
     end
 end
+% Copyright 2026 The MathWorks, Inc.
