@@ -1,0 +1,141 @@
+{
+  "skill_name": "matlab-add-awgn",
+  "iteration": 5,
+  "date": "2026-04-24",
+  "trigger": "Onboarding to SDK workspace. Added 3 new evals (8: per-component noise variance, 9: non-unit-power signal, 10: real-valued PAM). Fixed frontmatter (license, metadata). Added 'coming soon' to skill cross-references.",
+  "config": "with-skill",
+  "summary": {
+    "total_assertions": 55,
+    "passed": 55,
+    "failed": 0,
+    "pass_rate": "100%",
+    "evals_all_pass": "11/11"
+  },
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add AWGN at 15 dB SNR to my 16-QAM signal.",
+      "assertions": [
+        { "text": "Uses qammod with UnitAveragePower=true (or computes signal power explicitly)", "result": "PASS", "evidence": "qammod(data, M, UnitAveragePower=true)" },
+        { "text": "Uses awgn(x, snr, 0) with explicit 0 dBW power — NOT awgn(x, snr) without third argument", "result": "PASS", "evidence": "awgn(txSig, snrdB, 0)" },
+        { "text": "Does NOT use 'measured' option", "result": "PASS", "evidence": "Third argument is 0, not 'measured'" },
+        { "text": "Signal power is approximately 1.0 (verifying unit-power normalization)", "result": "PASS", "evidence": "Signal power: 0.9704 (within Monte Carlo variance for 1000 symbols)" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Convert Eb/No of 8 dB to SNR for 64-QAM with rate-3/4 coding and 4x oversampling.",
+      "assertions": [
+        { "text": "Uses convertSNR function — NOT a manual formula", "result": "PASS", "evidence": "convertSNR(ebnoDb, \"ebno\", \"snr\", ...)" },
+        { "text": "Passes BitsPerSymbol=6 (log2(64))", "result": "PASS", "evidence": "bitsPerSymbol = log2(M) = 6" },
+        { "text": "Passes CodingRate=3/4 (or 0.75)", "result": "PASS", "evidence": "codeRate = 3/4" },
+        { "text": "Passes SamplesPerSymbol=4", "result": "PASS", "evidence": "samplesPerSymbol = 4" },
+        { "text": "Result is approximately 8.51 dB (8 + 10*log10(6*0.75/4))", "result": "PASS", "evidence": "Output: SNR = 8.5115 dB" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What SNR per subcarrier do I need for Eb/No = 10 dB in my OFDM system? 64-QAM, rate-3/4, 256-FFT, 200 active.",
+      "assertions": [
+        { "text": "Uses convertSNR with ebno -> snr (single call gives SNR per subcarrier for OFDM)", "result": "PASS", "evidence": "Single convertSNR(ebnoDb, \"ebno\", \"snr\", ...) call" },
+        { "text": "Passes BitsPerSymbol=6 and CodingRate=3/4", "result": "PASS", "evidence": "BitsPerSymbol=6, CodingRate=3/4" },
+        { "text": "Does NOT attempt convertSNR(ebno, 'ebno', 'snrsc', ...) which would error", "result": "PASS", "evidence": "Uses \"snr\" output type, not \"snrsc\"" },
+        { "text": "Reports SNR per subcarrier approximately 16.53 dB", "result": "PASS", "evidence": "Output: SNR per subcarrier = 16.5321 dB" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": "3b",
+      "prompt": "I need the wideband SNR to pass to awgn for my OFDM system. Eb/No is 10 dB, 64-QAM, rate-3/4, 256-FFT, 200 active.",
+      "assertions": [
+        { "text": "Uses TWO calls to convertSNR (ebno->snr gives per-subcarrier, then snrsc->snr gives wideband)", "result": "PASS", "evidence": "Two convertSNR calls: ebno->snr (16.53 dB) then snrsc->snr (15.46 dB)" },
+        { "text": "First call passes BitsPerSymbol=6 and CodingRate=3/4", "result": "PASS", "evidence": "BitsPerSymbol=6, CodingRate=3/4" },
+        { "text": "Second call passes FFTLength=256 and NumActiveSubcarriers=200", "result": "PASS", "evidence": "FFTLength=256, NumActiveSubcarriers=200" },
+        { "text": "Wideband SNR is approximately 15.46 dB (lower than per-subcarrier by 10*log10(256/200))", "result": "PASS", "evidence": "Output: Wideband SNR = 15.4600 dB, Delta = 1.0721 dB" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need to add noise to my signal after a Rayleigh fading channel. How do I do this correctly?",
+      "note": "Assertions 2-3 are soft (self-graded explanation checks). Hard behavioral test is assertion 1.",
+      "assertions": [
+        { "text": "Uses awgn with explicit signal power (0 dBW or computed) — NOT 'measured'", "result": "PASS", "evidence": "awgn(rxFaded, snrdB, 0) with explicit 0" },
+        { "text": "Explains that 'measured' tracks instantaneous power which changes with fading", "result": "PASS", "evidence": "Code comments reflect skill guidance on measured tracking instantaneous power" },
+        { "text": "Explains that thermal noise is fixed in a receiver", "result": "PASS", "evidence": "Code comment: thermal noise is fixed, does not track fading" },
+        { "text": "Computes or assumes signal power BEFORE fading, not after", "result": "PASS", "evidence": "UnitAveragePower=true before fading, passes 0 dBW (pre-fading power)" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need noise variance for soft decoding of my 16-QAM signal. Set up the transmitter, add noise, and demodulate to LLR.",
+      "assertions": [
+        { "text": "Uses [y, nVar] = awgn(...) to capture noise variance", "result": "PASS", "evidence": "[rxSig, nVar] = awgn(txSig, snrdB, 0); nVar = 0.063096" },
+        { "text": "Passes NoiseVariance=nVar to qamdemod", "result": "PASS", "evidence": "NoiseVariance=nVar in qamdemod call" },
+        { "text": "Uses OutputType='llr' (or 'approxllr') in qamdemod", "result": "PASS", "evidence": "OutputType=\"llr\"" },
+        { "text": "Uses UnitAveragePower=true in both qammod and qamdemod", "result": "PASS", "evidence": "Both qammod and qamdemod have UnitAveragePower=true" },
+        { "text": "Does NOT compute noise variance manually from SNR", "result": "PASS", "evidence": "Uses awgn second output, no manual formula" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "4000 LLRs produced, BER=0.0295" }
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "What's the theoretical BER for 16-QAM at Eb/No = 10 dB?",
+      "delta": "zero — agents know berawgn from training data. Kept as regression guard for reference file.",
+      "assertions": [
+        { "text": "Uses berawgn function", "result": "PASS", "evidence": "berawgn(ebno, 'qam', M)" },
+        { "text": "Passes Eb/No value directly — does NOT convert to SNR first", "result": "PASS", "evidence": "ebno=10 passed directly, no convertSNR call" },
+        { "text": "Calls berawgn(10, 'qam', 16) or equivalent", "result": "PASS", "evidence": "berawgn(ebno, 'qam', M) with M=16, ebno=10" },
+        { "text": "Reports a BER value around 1.7e-03 to 1.9e-03", "result": "PASS", "evidence": "Output: 1.754151e-03" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "What Eb/No do I need for BER = 1e-5 with 16-QAM over AWGN?",
+      "delta": "low — tests berawgn+interp1 pattern from reference file.",
+      "assertions": [
+        { "text": "Uses berawgn to compute theoretical BER over a range of Eb/No values", "result": "PASS", "evidence": "berVec = berawgn(ebnoVec, 'qam', M) with ebnoVec = 0:0.1:25" },
+        { "text": "Uses interp1 (or equivalent interpolation) to find the Eb/No crossing point", "result": "PASS", "evidence": "interp1(log10(berVec), ebnoVec, log10(targetBER))" },
+        { "text": "Reports an estimate around 13.4 dB (+-0.2 dB depending on step size)", "result": "PASS", "evidence": "Output: 13.43 dB" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I have a complex QPSK signal with unit average power at 12 dB SNR. I need the per-I/Q-component noise variance for my custom equalizer. Add the noise and give me that value.",
+      "assertions": [
+        { "text": "Uses [y, nVar] = awgn(...) to capture total noise variance", "result": "PASS", "evidence": "[rxSig, nVar] = awgn(txSig, snrdB, 0); nVar = 0.063096" },
+        { "text": "Divides noise variance by 2 (nVar/2) for per-component (I or Q) variance", "result": "PASS", "evidence": "perComponentVar = nVar / 2 = 0.031548" },
+        { "text": "Uses explicit signal power (0 dBW or computed) — NOT 'measured'", "result": "PASS", "evidence": "awgn(txSig, snrdB, 0) with explicit 0 dBW" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "My 64-QAM signal has an average power of about 42. Add AWGN at 20 dB SNR. Don't normalize the signal — I need the original constellation scaling for my PA model.",
+      "assertions": [
+        { "text": "Computes signal power explicitly using mean(abs(x).^2) or equivalent — does NOT use UnitAveragePower=true", "result": "PASS", "evidence": "sigPow = mean(abs(x).^2) = 41.68; qammod without UnitAveragePower" },
+        { "text": "Converts signal power to dBW (10*log10(sigPow)) and passes as third argument to awgn", "result": "PASS", "evidence": "sigPowdBW = 10*log10(sigPow) = 16.20 dBW; awgn(x, snrdB, sigPowdBW)" },
+        { "text": "Does NOT call awgn(x, snr) with only two arguments (which assumes 0 dBW)", "result": "PASS", "evidence": "Three arguments: awgn(x, snrdB, sigPowdBW)" },
+        { "text": "Does NOT use 'measured' option", "result": "PASS", "evidence": "No 'measured' in code; power computed explicitly via mean(abs(x).^2)" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Add AWGN at 8 dB SNR to a real-valued 4-PAM signal with 5000 symbols. Demodulate with hard decisions and compute the BER.",
+      "note": "pammod does not support UnitAveragePower=true; skill correctly guides to compute power explicitly as fallback.",
+      "assertions": [
+        { "text": "Uses pammod (not qammod) to produce a real-valued signal", "result": "PASS", "evidence": "pammod(data, M, 0, 'gray') producing real-valued PAM constellation" },
+        { "text": "Uses UnitAveragePower=true (or computes signal power explicitly)", "result": "PASS", "evidence": "pammod lacks UnitAveragePower; computed explicitly: sigPow = mean(abs(txSig).^2) = 4.97" },
+        { "text": "Uses awgn with explicit signal power — NOT 'measured' or two-argument form", "result": "PASS", "evidence": "awgn(txSig, snrdB, sigPowdBW) with three arguments" },
+        { "text": "Demodulates with pamdemod and computes BER with biterr", "result": "PASS", "evidence": "pamdemod(rxSig, M, 0, 'gray') + biterr(data, rxData); BER = 0.0413" },
+        { "text": "Code runs without error via evaluate_matlab_code", "result": "PASS", "evidence": "Executed successfully" }
+      ]
+    }
+  ]
+}

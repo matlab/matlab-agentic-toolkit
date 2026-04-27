@@ -1,0 +1,11 @@
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: product-specific
+version: "1.0"
+matlab-release: ">=R2022a"
+requires-tools:
+  - evaluate_matlab_code
+requires-skills: []
+requires-products:
+  - Communications Toolbox
+toolkit: matlab-agentic-toolkit
