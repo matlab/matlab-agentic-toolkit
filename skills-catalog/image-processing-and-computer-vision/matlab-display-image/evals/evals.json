@@ -1,0 +1,193 @@
+[
+  {
+    "id": "overlay-mask-on-image",
+    "name": "Display a binary mask overlay on an image",
+    "description": "Tests that the skill guides toward using OverlayData instead of manually blending images or using multiple imshow calls",
+    "prompt": "I have a grayscale medical image and a binary segmentation mask. Show me how to display the mask on top of the image with some transparency so I can see both.",
+    "expected_output": "Code using imageshow with OverlayData for the mask, plus OverlayAlpha/OverlayColormap for appearance control. Should not use imshow or manual image blending.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses imageshow for display instead of imshow",
+        "expected": "imageshow"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses the OverlayData property for the mask overlay",
+        "expected": "OverlayData"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not call imshow as a function",
+        "expected": "imshow("
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Sets OverlayAlpha or OverlayColormap for transparency/color control",
+        "expected": "OverlayAlpha or OverlayColormap property is set"
+      }
+    ]
+  },
+  {
+    "id": "app-with-image-viewer",
+    "name": "Build an app with an image display panel",
+    "description": "Tests that the skill guides toward viewer2d parented to uigridlayout with imageshow, not axes with imshow",
+    "prompt": "Create a simple MATLAB app with a uifigure that has a button to load an image file and a panel to display the loaded image. Use a class-based approach.",
+    "expected_output": "A classdef app using viewer2d parented to uigridlayout, imageshow initialized with empty data, and .Data property updated on image load. Should not use axes + imshow.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated app code passes static analysis via checkcode"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses viewer2d for the image display container",
+        "expected": "viewer2d"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses imageshow to display the image in the viewer",
+        "expected": "imageshow"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Creates imageshow with empty data on construction, then updates Data property when image is loaded",
+        "expected": "imageshow([],... or imageshow('') on init, then .Data = on load"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use axes + imshow for the image display",
+        "expected": "axes("
+      }
+    ]
+  },
+  {
+    "id": "annotate-regions-on-image",
+    "name": "Programmatically annotate rectangular regions on an image",
+    "description": "Tests that the skill guides toward uidraw with Position for programmatic annotations instead of rectangle() or plot()",
+    "prompt": "I have an image and a list of bounding boxes from an object detector. Each box is [x, y, width, height]. Show me how to draw these boxes on the image with red outlines and labels.",
+    "expected_output": "Code using imageshow for display and uidraw with Position argument for programmatic rectangle placement. Should not use rectangle() or insertShape.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses imageshow for display",
+        "expected": "imageshow"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses uidraw for annotation placement",
+        "expected": "uidraw"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Passes Position argument to uidraw for programmatic placement (not interactive)",
+        "expected": "Position= or 'Position' argument in uidraw call"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use rectangle(), insertShape, or insertObjectAnnotation for drawing boxes",
+        "expected": "insertObjectAnnotation"
+      }
+    ]
+  },
+  {
+    "id": "streaming-image-display",
+    "name": "Stream updating image data in a loop",
+    "description": "Tests that the skill guides toward reusing imageshow object and updating .Data with PyramidSmoothing set to nearest for streaming performance",
+    "prompt": "I need to display a live feed of images updating in a loop. Each iteration produces a new frame. How do I set this up for smooth, fast display?",
+    "expected_output": "Code using viewer2d and imageshow with PyramidSmoothing='nearest', initialized with empty data, then updating .Data in a loop with drawnow. Should not recreate imageshow each iteration.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses imageshow for display",
+        "expected": "imageshow"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Sets PyramidSmoothing to nearest for streaming performance",
+        "expected": "PyramidSmoothing"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Updates .Data property in the loop instead of recreating imageshow",
+        "expected": ".Data = inside loop body, imageshow created once before loop"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Calls drawnow to flush display updates",
+        "expected": "drawnow"
+      }
+    ]
+  },
+  {
+    "id": "generate-animation-from-frames",
+    "name": "Generate an animation by capturing frames",
+    "description": "Tests that the skill guides toward using getframe with viewer (not figure/axes) so the viewer waits for updates before capturing",
+    "prompt": "I want to generate an animated GIF from a sequence of processed images. How do I capture each frame for the animation?",
+    "expected_output": "Code using viewer2d and imageshow to display frames, with getframe(viewer) to capture each frame. Should pass the viewer to getframe, not a figure or axes handle.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Generated code passes static analysis (checkcode) without errors. Note: getframe loops time out in MCP execution, so this eval uses static analysis only.",
+        "expected": "Code passes checkcode with zero errors"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses imageshow for display",
+        "expected": "imageshow"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses getframe to capture frames",
+        "expected": "getframe"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Passes the viewer object to getframe so it waits for rendering to complete",
+        "expected": "getframe(viewer) where viewer is the viewer2d object"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Uses viewer2d as the display container",
+        "expected": "viewer2d"
+      }
+    ]
+  }
+]

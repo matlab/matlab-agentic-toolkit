@@ -1,0 +1,16 @@
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+matlab-release: ">=R2024a"
+requires-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+requires-skills: []
+requires-products:
+  - Signal Processing Toolbox
+  - DSP System Toolbox
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

@@ -1,0 +1,10 @@
+# Copyright 2026 The MathWorks, Inc.
+description: >
+  Signal processing skills for AI coding agents. Signal Processing Toolbox,
+  DSP System Toolbox, Audio Toolbox, and Wavelet Toolbox.
+keywords:
+  - matlab
+  - signal-processing
+  - dsp
+  - audio
+  - filtering

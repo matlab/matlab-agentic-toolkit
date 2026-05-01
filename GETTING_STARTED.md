@@ -4,7 +4,7 @@ This guide walks you through setup of the MATLAB Agentic Toolkit. Once complete,
 
 > For a project overview, tool/skill reference, and documentation links, see the [README](README.md).
 
-> Automated setup has been verified with basic workflows on each platform except Cursor. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
+> Automated setup has been verified with basic workflows on each platform. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
 
 ---
 
@@ -58,7 +58,6 @@ Then launch your agent:
 | Gemini CLI | `gemini` |
 | GitHub Copilot | Open folder in VS Code, then start Copilot chat |
 | Sourcegraph Amp | `amp` |
-| Cursor | Open folder in Cursor |
 
 ### Step 2: Run Setup
 
@@ -81,11 +80,10 @@ Setup writes two things: an MCP server configuration (so your agent can talk to 
 | Platform | MCP Configuration | Skills Delivery | How To Update Toolkit |
 |----------|------------------|-----------------|-------------------|
 | Claude Code | `~/.claude/settings.json` | Plugin cache | Re-run setup or reinstall plugin |
-| GitHub Copilot | `~/.vscode/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
+| GitHub Copilot | VS Code user-profile `mcp.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
 | OpenAI Codex | `~/.codex/config.toml` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
 | Gemini CLI | `~/.gemini/settings.json` | `~/.agents/skills/` symlinks | `git pull` in toolkit repo, re-run setup |
 | Sourcegraph Amp | `~/.config/amp/settings.json` | `amp.skills.path` direct ref | `git pull` in toolkit repo, re-run setup |
-| Cursor | `~/.cursor/mcp.json` | `.cursor-plugin/` discovery | Manual |
 
 **How skill symlinks work:** Most platforms discover skills from `~/.agents/skills/`. Setup creates symbolic links from that directory to the individual skill directories in your toolkit clone. When you run `git pull`, the linked skills update automatically. If new skills are added to the toolkit, re-run setup to create the additional symlinks.
 
@@ -94,9 +92,9 @@ Setup writes two things: an MCP server configuration (so your agent can talk to 
 
 ### Platform-Specific Notes
 
-**Claude Code** — Setup registers the toolkit via the plugin marketplace and uses `claude mcp add -s user` to register the MCP server globally. Skills are cached by the plugin system. To re-run setup, use `/matlab-setup` or ask Claude to set up the toolkit.
+**Claude Code** — Setup registers the toolkit via the plugin marketplace and uses `claude mcp add-json -s user` to register the MCP server globally. Skills are cached by the plugin system. To re-run setup, use `/matlab-setup` or ask Claude to set up the toolkit.
 
-**GitHub Copilot** — Setup writes global MCP config to `~/.vscode/settings.json` and creates skill symlinks in `~/.agents/skills/`. Reload VS Code after setup completes (Cmd/Ctrl + Shift + P, then "Developer: Reload Window").
+**GitHub Copilot** — Setup writes global MCP config to the VS Code user-profile `mcp.json` (`~/Library/Application Support/Code/User/mcp.json` on macOS, `~/.config/Code/User/mcp.json` on Linux, `%APPDATA%\Code\User\mcp.json` on Windows) and creates skill symlinks in `~/.agents/skills/`. Reload VS Code after setup completes (Cmd/Ctrl + Shift + P, then "Developer: Reload Window").
 
 **OpenAI Codex** — Setup uses `codex mcp add` if available, otherwise writes `~/.codex/config.toml` directly. Skills are installed as global symlinks in `~/.agents/skills/`. After setup, you may want to tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`:
 - `tool_timeout_sec = 600` — increases the tool timeout from the default (which is too short for many MATLAB operations like test suites and simulations). Increase further for very long-running tasks.
@@ -105,8 +103,6 @@ Setup writes two things: an MCP server configuration (so your agent can talk to 
 **Gemini CLI** — Setup writes global config to `~/.gemini/settings.json` and creates skill symlinks in `~/.agents/skills/`. Start a new Gemini session after setup. Alternatively, you can install the toolkit as a Gemini extension (see [Installing as a Gemini Extension](#installing-as-a-gemini-extension) below).
 
 **Sourcegraph Amp** — Setup writes to `~/.config/amp/settings.json` using the `amp.` prefix for all keys. Skills load directly from the toolkit via `amp.skills.path` (no symlinks needed). If you have `amp.mcpPermissions` rules that block MCP servers, setup will detect this and ask before making changes.
-
-**Cursor** — Setup writes `~/.cursor/mcp.json`. If automation fails, copy `templates/mcp.json` to `~/.cursor/mcp.json` manually and update the paths. Cursor is the only platform without automated setup verification — this configuration is **untested and provided as-is**.
 
 ### Installing as a Gemini Extension
 
@@ -237,17 +233,7 @@ Point your agent's MCP configuration at the installed binary. See the [How Confi
 
 ### Check that skills are loaded
 
-If your agent shows loaded skills or plugins in its UI (e.g., Claude Code's `/skills` command), confirm the MATLAB Agentic Toolkit skills are listed:
-
-| Skill | Description |
-|-------|-------------|
-| **matlab-agentic-toolkit-setup** | Install and configure the toolkit, install MCP server |
-| **matlab-testing** | Generate and run unit tests with `matlab.unittest` |
-| **matlab-create-live-script** | Create plain-text Live Scripts (R2025a+) |
-| **matlab-build-app** | Build apps programmatically with `uifigure` |
-| **matlab-review-code** | Review code for quality and MathWorks&reg; coding standards |
-| **matlab-debugging** | Diagnose errors via MCP eval |
-| **matlab-modernize-code** | Replace deprecated functions with modern equivalents |
+If your agent shows loaded skills or plugins in its UI (e.g., Claude Code's `/skills` command), confirm the MATLAB Agentic Toolkit skills are listed. See the [skills catalog](skills-catalog/) for the full list of available skills.
 
 ### Try it out
 
@@ -295,7 +281,6 @@ What happens after `git pull`:
 | Copilot, Codex, Gemini CLI | Existing skills update immediately (symlinks point into the repo). If new skills were added, re-run setup to create the new symlinks. |
 | Sourcegraph Amp | Skills update immediately (`amp.skills.path` reads the repo directly), including new skills. |
 | Claude Code | Skills may be cached by the plugin system — re-run setup or reinstall the plugin to refresh. |
-| Cursor | Skills update if the project is open; re-run setup for configuration changes. |
 
 ### Updating the MCP server
 
@@ -321,7 +306,6 @@ The [`templates/`](templates/) directory contains starter configurations for eac
 | Platform | Template | Project location |
 |----------|----------|-----------------|
 | GitHub Copilot | `templates/vscode-mcp.json` | `.vscode/mcp.json` |
-| Cursor | `templates/mcp.json` | `.cursor/mcp.json` |
 | Sourcegraph Amp | `templates/amp-settings.json` | `.amp/settings.json` |
 | OpenAI Codex | `templates/codex-mcp.json` | `.codex/config.json` in project root |
 

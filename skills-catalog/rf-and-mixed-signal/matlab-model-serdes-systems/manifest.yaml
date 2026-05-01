@@ -1,0 +1,21 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+matlab-release: ">=R2024a"
+requires-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+requires-skills: []
+requires-products:
+  - SerDes Toolbox
+recommended-products:
+  - Simulink  # Required for time-domain simulation and IBIS-AMI model generation
+  - Signal Integrity Toolbox  # Required for AMI validation (serdes.AMI runner and AMI Simulink block)
+  - Simulink Coder  # Required for slbuild DLL generation (R2025b and earlier); optional in R2026a+ (serdes.AMIExport)
+  - Embedded Coder  # Required for slbuild DLL generation (R2025b and earlier); optional in R2026a+ (serdes.AMIExport)
+metadata:
+  author: MathWorks
+toolkit: matlab-agentic-toolkit

@@ -6,9 +6,15 @@ param(
 $ErrorActionPreference = "Stop"
 
 if ([string]::IsNullOrWhiteSpace($ToolkitRoot)) {
-    $ToolkitRoot = (Resolve-Path (Join-Path $PSScriptRoot "..\..\..")).Path
-} else {
-    $ToolkitRoot = (Resolve-Path $ToolkitRoot).Path
+    Write-Error "Usage: install-global-skills.ps1 -ToolkitRoot <toolkit-root>`nExample: powershell -File install-global-skills.ps1 -ToolkitRoot C:\path\to\matlab-agentic-toolkit"
+    exit 1
+}
+
+$ToolkitRoot = (Resolve-Path $ToolkitRoot).Path
+
+if (-not (Test-Path (Join-Path $ToolkitRoot "skills-catalog"))) {
+    Write-Error "skills-catalog not found in $ToolkitRoot.`nEnsure -ToolkitRoot is the matlab-agentic-toolkit repository root."
+    exit 1
 }
 
 # Determine skills directory: prefer ~/.agents/skills/, fall back to

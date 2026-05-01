@@ -2,9 +2,17 @@
 # Copyright 2026 The MathWorks, Inc.
 set -euo pipefail
 
-toolkit_root="${1:-}"
-if [[ -z "${toolkit_root}" ]]; then
-  toolkit_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+if [[ -z "${1:-}" ]]; then
+  printf 'Usage: install-global-skills.sh <toolkit-root>\n' >&2
+  printf 'Example: bash install-global-skills.sh /path/to/matlab-agentic-toolkit\n' >&2
+  exit 1
+fi
+toolkit_root="$1"
+
+if [[ ! -d "${toolkit_root}/skills-catalog" ]]; then
+  printf 'Error: %s/skills-catalog not found.\n' "${toolkit_root}" >&2
+  printf 'Ensure <toolkit-root> is the matlab-agentic-toolkit repository root.\n' >&2
+  exit 1
 fi
 
 # Determine skills directory: prefer ~/.agents/skills/, fall back to

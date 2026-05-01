@@ -26,9 +26,8 @@ The toolkit ships automated setup for all supported platforms. Clone the reposit
 | [OpenAI&reg; Codex](https://openai.com/codex) | Automated | |
 | [Gemini&trade; CLI](https://github.com/google-gemini/gemini-cli) | Automated | |
 | [Sourcegraph Amp](https://ampcode.com/) | Automated | |
-| [Cursor](https://www.cursor.com/) | Manual | Untested |
 
-> Automated setup has been verified with basic workflows on each platform except Cursor. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
+> Automated setup has been verified with basic workflows on each platform. The toolkit is under active development — please [report issues](https://github.com/matlab/matlab-agentic-toolkit/issues) if you encounter problems.
 
 ## Quick Start
 
@@ -94,43 +93,23 @@ The server also provides two MCP resources: `matlab_coding_guidelines` (coding s
 Skills are organized in the [skills catalog](skills-catalog/).
 
 <!-- BEGIN SKILLS -->
-**MATLAB App Building** — MATLAB app building skills for AI coding agents.
+**Image Processing and Computer Vision** — image processing and computer vision skills for AI coding agents.
 
-| Skill | What it teaches your agent |
-|-------|---------------------------|
-| `matlab-build-app` | Build MATLAB apps programmatically using uifigure, uigridlayout, UI components, callbacks, and uihtml for web integration. |
+**MATLAB App Building** — MATLAB app building skills for AI coding agents.
 
 **MATLAB Core** — foundational MATLAB skills for AI coding agents.
 
-| Skill | What it teaches your agent |
-|-------|---------------------------|
-| `matlab-create-live-script` | Create plain-text MATLAB Live Scripts (.m files) with rich text formatting, LaTeX equations, section breaks, and inline figures. |
-| `matlab-debugging` | Diagnose MATLAB errors and unexpected behavior. |
-| `matlab-install-products` | Deterministic workflow to download MATLAB Package Manager (mpm) and install MathWorks products from the OS command line with consistent, repeatable behavior. |
-| `matlab-list-products` | Show all installed MATLAB products and support packages for a given MATLAB installation folder. |
-| `matlab-review-code` | Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. |
-| `matlab-testing` | Generate and run MATLAB unit tests using matlab.unittest and matlab.uitest. |
-
 **MATLAB Software Development** — MATLAB software development skills for AI coding agents.
-
-| Skill | What it teaches your agent |
-|-------|---------------------------|
-| `matlab-modernize-code` | Modernize deprecated MATLAB functions and patterns. |
 
 **Reporting and Database Access** — reporting and database access skills for AI coding agents.
 
-| Skill | What it teaches your agent |
-|-------|---------------------------|
-| `matlab-map-database-objects` | Generates MATLAB Object Relational Mapping (ORM) code using Database Toolbox. |
-| `matlab-read-database` | Reads data from relational databases using MATLAB Database Toolbox pushdown capabilities. |
-| `matlab-use-duckdb` | Generates MATLAB code for DuckDB database operations using Database Toolbox. |
-| `matlab-write-database` | Writes data from MATLAB to relational databases and performs database operations. |
+**RF and Mixed Signal** — RF and mixed-signal skills for AI coding agents.
+
+**Signal Processing** — signal processing skills for AI coding agents.
 
 **Toolkit** — setup and management for the MATLAB Agentic Toolkit.
 
-| Skill | What it teaches your agent |
-|-------|---------------------------|
-| `matlab-agentic-toolkit-setup` | Install and configure the MATLAB Agentic Toolkit — detect MATLAB, install the MCP server, register with your AI coding agent, and verify the environment. |
+**Wireless Communications** — wireless communications skills for AI coding agents.
 
 <!-- END SKILLS -->
 
@@ -141,7 +120,7 @@ MATLAB and Simulink are registered trademarks of The MathWorks, Inc. See [mathwo
 We welcome feedback through [GitHub Issues](https://github.com/matlab/matlab-agentic-toolkit/issues). Pull requests are reviewed for ideas and feedback but are not merged from external contributors. See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Licensing and Usage 
-The MATLAB Agentic Toolkit is licensed with [MathWorks BSD-3 Clause](LICENSE). It is solely for use in conjunction with MathWorks products and service offerings.
+The MATLAB Agentic Toolkit is licensed with [MathWorks BSD-3 Clause](LICENSE.md). It is solely for use in conjunction with MathWorks products and service offerings.
 
 ## Contact Support
 MathWorks encourages you to use this repository and provide feedback. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or email [genai-support@mathworks.com](mailto:genai-support@mathworks.com). For MATLAB MCP Core Server issues and support, see the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) repository.

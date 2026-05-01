@@ -6,6 +6,24 @@
   },
   "plugins": [
     {
+      "name": "image-processing-and-computer-vision",
+      "version": "0.1.0",
+      "description": "Image processing and computer vision skills for AI coding agents. Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Mapping Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "image-processing",
+        "computer-vision",
+        "lidar"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/image-processing-and-computer-vision/"
+    },
+    {
       "name": "matlab-app-building",
       "version": "0.1.0",
       "description": "MATLAB app building skills for AI coding agents. App Designer, uifigure, uigridlayout, UI components, callbacks, and uihtml for web integration.",
@@ -78,8 +96,44 @@
       "skills": "./skills-catalog/reporting-and-database-access/"
     },
     {
+      "name": "rf-and-mixed-signal",
+      "version": "0.1.0",
+      "description": "RF and mixed-signal skills for AI coding agents. RF Toolbox and Mixed-Signal Blockset.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "rf",
+        "mixed-signal"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/rf-and-mixed-signal/"
+    },
+    {
+      "name": "signal-processing",
+      "version": "0.1.0",
+      "description": "Signal processing skills for AI coding agents. Signal Processing Toolbox, DSP System Toolbox, Audio Toolbox, and Wavelet Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "signal-processing",
+        "dsp",
+        "audio",
+        "filtering"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/signal-processing/"
+    },
+    {
       "name": "toolkit",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "description": "Setup and management for the MATLAB Agentic Toolkit. Detects MATLAB, installs the MCP server, registers with your AI coding agent, and verifies the environment.",
       "author": {
         "name": "MathWorks"
@@ -94,6 +148,25 @@
       "category": "development",
       "strict": false,
       "skills": "./skills-catalog/toolkit/"
+    },
+    {
+      "name": "wireless-communications",
+      "version": "0.1.0",
+      "description": "Wireless communications skills for AI coding agents. Communications Toolbox, 5G Toolbox, LTE Toolbox, WLAN Toolbox, Antenna Toolbox, and Satellite Communications Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "wireless",
+        "communications",
+        "5g",
+        "lte"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/wireless-communications/"
     }
   ]
 }

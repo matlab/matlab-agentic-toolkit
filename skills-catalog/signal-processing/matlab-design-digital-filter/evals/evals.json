@@ -1,0 +1,755 @@
+{
+  "skill": "matlab-design-digital-filter",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Lowpass filter for noisy audio",
+      "description": "Design a lowpass FIR filter to clean up a noisy audio signal. Tests the full workflow: spec gathering, architecture selection, designfilt, verification with freqz.",
+      "prompt": "I have audio sampled at 44.1 kHz that has high-frequency noise above 4 kHz. Design a lowpass filter to clean it up. I want linear-phase for offline batch processing. Passband ripple should be under 0.1 dB and stopband attenuation at least 60 dB.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated filter design code runs without error in MATLAB"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses designfilt for filter design",
+          "expected": "designfilt"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Specifies SampleRate in designfilt call",
+          "expected": "SampleRate"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Verifies filter response with freqz",
+          "expected": "freqz"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not use deprecated subplot for multi-panel figures",
+          "expected": "subplot"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Computes transition bandwidth metrics (trans_bw or trans_pct) before selecting architecture",
+          "expected": "Computes trans_bw = Fstop - Fpass or trans_pct = 100 * trans_bw / Fs, or discusses transition bandwidth"
+        },
+        {
+          "id": "a7",
+          "type": "convention_followed",
+          "description": "States passband ripple and stopband attenuation measurements against spec",
+          "expected": "Reports measured ripple and attenuation values and compares to the 0.1 dB / 60 dB spec"
+        },
+        {
+          "id": "a8",
+          "type": "convention_followed",
+          "description": "Writes code to .m file instead of inline evaluation",
+          "expected": "Uses write to file then run_matlab_file, not multi-line inline evaluate_matlab_code"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Narrow transition band bandpass filter",
+      "description": "Design a bandpass filter with a very narrow transition band, requiring efficient alternatives to single-stage FIR. Tests the architecture selection decision tree and efficient-filtering knowledge.",
+      "prompt": "I need a bandpass filter for a 48 kHz signal. Passband is 100-120 Hz, stopband edges at 80 Hz and 140 Hz. Need at least 60 dB stopband attenuation. This is for offline analysis so zero-phase is fine. What are my options and which is most efficient?",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "b1",
+          "type": "code_executes",
+          "description": "Generated filter design code runs without error in MATLAB"
+        },
+        {
+          "id": "b2",
+          "type": "convention_followed",
+          "description": "Identifies this as a narrow transition band problem",
+          "expected": "Computes trans_pct and identifies it as less than 2%, or explicitly states the transition band is narrow relative to sample rate"
+        },
+        {
+          "id": "b3",
+          "type": "output_contains",
+          "description": "Discusses multirate or IFIR as an efficient alternative",
+          "expected": "multirate OR IFIR OR multistage OR decimat"
+        },
+        {
+          "id": "b4",
+          "type": "convention_followed",
+          "description": "Compares at least two candidate architectures with cost metrics",
+          "expected": "Compares MPIS, filter order, or computational cost for at least two approaches (e.g., single-stage FIR vs multirate, or FIR vs IFIR)"
+        },
+        {
+          "id": "b5",
+          "type": "output_contains",
+          "description": "Uses designfilt or fdesign for filter design",
+          "expected": "designfilt OR fdesign"
+        },
+        {
+          "id": "b6",
+          "type": "convention_followed",
+          "description": "Uses filtfilt for zero-phase filtering since user specified offline",
+          "expected": "Uses filtfilt() or explicitly states filtfilt for zero-phase offline filtering"
+        },
+        {
+          "id": "b7",
+          "type": "output_excludes",
+          "description": "Does not use deprecated subplot",
+          "expected": "subplot"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Streaming IIR filter design",
+      "description": "Design a streaming-compatible IIR filter. Tests IIR-specific knowledge: SOS form, stability, System objects, and the streaming vs offline distinction.",
+      "prompt": "Design a real-time streaming lowpass filter for sensor data at 1000 Hz sample rate. Cut off above 50 Hz. I need minimum latency and low computational cost -- IIR is preferred. The filter will process data frame-by-frame in a loop.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "c1",
+          "type": "code_executes",
+          "description": "Generated filter design code runs without error in MATLAB"
+        },
+        {
+          "id": "c2",
+          "type": "output_contains",
+          "description": "Designs an IIR filter (Butterworth, Chebyshev, or Elliptic)",
+          "expected": "butter OR cheby OR ellip OR IIR"
+        },
+        {
+          "id": "c3",
+          "type": "convention_followed",
+          "description": "Uses SOS form for IIR filter to avoid numerical issues",
+          "expected": "Uses SecondOrderSections, SOS, sos, or SystemObject=true in designfilt, or explicitly converts to SOS"
+        },
+        {
+          "id": "c4",
+          "type": "output_excludes",
+          "description": "Does not recommend filtfilt for streaming (filtfilt is offline-only)",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "c5",
+          "type": "convention_followed",
+          "description": "Shows frame-by-frame processing pattern with state preservation",
+          "expected": "Shows a loop that processes frames, using a System object or filter state (zi/zf) to maintain continuity between frames"
+        },
+        {
+          "id": "c6",
+          "type": "output_contains",
+          "description": "Uses designfilt with SampleRate",
+          "expected": "designfilt"
+        },
+        {
+          "id": "c7",
+          "type": "convention_followed",
+          "description": "Verifies filter response (magnitude and/or group delay)",
+          "expected": "Uses freqz, grpdelay, or filterAnalyzer to verify the design"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Compare filter designs in Filter Analyzer",
+      "description": "Design multiple candidate filters and compare them visually in Filter Analyzer. Tests filterAnalyzer usage, multi-filter comparison workflow, and analysis option configuration.",
+      "prompt": "I have vibration data sampled at 10 kHz and need to isolate a 200 Hz component. I'm not sure whether to use an FIR or IIR bandpass filter. Can you design both, compare them side by side in Filter Analyzer showing magnitude and group delay, and recommend which one to use? Passband is 180-220 Hz, stopband edges at 150 Hz and 250 Hz, at least 50 dB stopband attenuation. This is for offline analysis.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "d1",
+          "type": "code_executes",
+          "description": "Generated filter design and comparison code runs without error in MATLAB"
+        },
+        {
+          "id": "d2",
+          "type": "output_contains",
+          "description": "Uses filterAnalyzer to compare designs visually",
+          "expected": "filterAnalyzer"
+        },
+        {
+          "id": "d3",
+          "type": "convention_followed",
+          "description": "Designs at least two candidate filters (FIR and IIR) for comparison",
+          "expected": "Creates at least two digitalFilter objects or filter designs, one FIR and one IIR"
+        },
+        {
+          "id": "d4",
+          "type": "output_contains",
+          "description": "Uses designfilt with SampleRate for filter design",
+          "expected": "SampleRate"
+        },
+        {
+          "id": "d5",
+          "type": "convention_followed",
+          "description": "Shows both magnitude and group delay displays in Filter Analyzer",
+          "expected": "Configures or mentions both magnitude and group delay views in Filter Analyzer"
+        },
+        {
+          "id": "d6",
+          "type": "convention_followed",
+          "description": "Makes a recommendation with quantitative justification (order, group delay, ripple)",
+          "expected": "Recommends FIR or IIR with measured numbers (filter order, group delay, passband ripple, or stopband attenuation)"
+        },
+        {
+          "id": "d7",
+          "type": "output_excludes",
+          "description": "Does not use subplot for multi-panel figures",
+          "expected": "subplot"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Notch filter for power line removal",
+      "description": "Design a notch filter to remove 60 Hz power line interference. Regression test for notchiir requiring FilterOrder parameter.",
+      "prompt": "I have a biomedical signal sampled at 1000 Hz with 60 Hz power line interference. Design a notch filter to remove the 60 Hz component. This is for offline analysis.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "e1",
+          "type": "code_executes",
+          "description": "Generated notch filter code runs without error in MATLAB"
+        },
+        {
+          "id": "e2",
+          "type": "output_contains",
+          "description": "Uses designfilt with notchiir response type",
+          "expected": "notchiir"
+        },
+        {
+          "id": "e3",
+          "type": "output_contains",
+          "description": "Includes FilterOrder parameter in designfilt call",
+          "expected": "FilterOrder"
+        },
+        {
+          "id": "e4",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        },
+        {
+          "id": "e5",
+          "type": "convention_followed",
+          "description": "Verifies notch depth at 60 Hz",
+          "expected": "Uses freqz or filterAnalyzer to check attenuation at or near 60 Hz"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Streaming bandpass IIR with scalar edges",
+      "description": "Design a streaming IIR bandpass filter. Tests bandpass IIR scalar edge gotcha, SystemObject=true, and streaming constraints.",
+      "prompt": "I need a streaming bandpass filter for an audio application. Pass 300 Hz to 3400 Hz, sample rate is 16 kHz. I don't care about phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "f1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "f2",
+          "type": "output_contains",
+          "description": "Uses designfilt bandpassiir with SystemObject=true",
+          "expected": "bandpassiir"
+        },
+        {
+          "id": "f3",
+          "type": "convention_followed",
+          "description": "Uses scalar edge parameters (not vector form) for IIR bandpass",
+          "expected": "Uses PassbandFrequency1, PassbandFrequency2, StopbandFrequency1, StopbandFrequency2 — NOT PassbandFrequency=[f1 f2]"
+        },
+        {
+          "id": "f4",
+          "type": "output_excludes",
+          "description": "Does not use filtfilt for streaming",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "f5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Notch plus lowpass combo",
+      "description": "Design a notch at 60 Hz plus a lowpass FIR for linear-phase. Tests multi-filter pipeline and notch+lowpass combination.",
+      "prompt": "Remove 60 Hz power line interference from a biomedical signal sampled at 500 Hz. I also need to lowpass at 150 Hz. Offline processing, linear phase required.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "g1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "g2",
+          "type": "output_contains",
+          "description": "Uses designfilt notchiir for the notch filter",
+          "expected": "notchiir"
+        },
+        {
+          "id": "g3",
+          "type": "output_contains",
+          "description": "Includes FilterOrder in the notch designfilt call",
+          "expected": "FilterOrder"
+        },
+        {
+          "id": "g4",
+          "type": "convention_followed",
+          "description": "Uses FIR for the lowpass to guarantee linear phase",
+          "expected": "Uses designfilt lowpassfir — not lowpassiir, since user requires linear phase"
+        },
+        {
+          "id": "g5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate in designfilt calls",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Extreme multirate lowpass",
+      "description": "Design a lowpass at 0.5 Hz from a 50 kHz signal. Tests extreme narrow transition requiring multirate approach.",
+      "prompt": "Design a lowpass filter to extract the DC component up to 0.5 Hz from a vibration sensor signal sampled at 50 kHz. Offline, don't care about phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "h1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "h2",
+          "type": "convention_followed",
+          "description": "Recognizes extreme narrow transition and does NOT use single-stage FIR",
+          "expected": "Computes trans_pct << 2% and uses multirate or multistage approach, not single-stage FIR"
+        },
+        {
+          "id": "h3",
+          "type": "output_contains",
+          "description": "Uses multirate or IFIR approach",
+          "expected": "resample OR designMultirateFIR OR decimat OR ifir OR multistage"
+        },
+        {
+          "id": "h4",
+          "type": "output_contains",
+          "description": "Specifies SampleRate in designfilt call for the core filter",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Streaming highpass narrow transition",
+      "description": "Design a streaming linear-phase highpass with narrow transition. Tests streaming + linear-phase + narrow transition interaction.",
+      "prompt": "I need a streaming highpass filter at 20 Hz to remove DC offset and low-frequency drift from an accelerometer at 4 kHz. Linear phase is required. Stopband at 10 Hz with 80 dB attenuation.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "i1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "i2",
+          "type": "convention_followed",
+          "description": "Uses FIR-based design for linear phase (not IIR)",
+          "expected": "Uses FIR filter — not IIR, since user requires linear phase in streaming"
+        },
+        {
+          "id": "i3",
+          "type": "convention_followed",
+          "description": "Recognizes narrow transition and considers efficient alternatives",
+          "expected": "Computes trans_pct = 0.25% and discusses multirate or IFIR, or acknowledges high tap count"
+        },
+        {
+          "id": "i4",
+          "type": "output_excludes",
+          "description": "Does not use filtfilt for streaming",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "i5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "Zero-phase filtfilt doubling awareness",
+      "description": "Design a zero-phase filter with filtfilt. Tests whether the agent accounts for filtfilt doubling the effective attenuation.",
+      "prompt": "Design a zero-phase lowpass filter for offline analysis of an EMG signal sampled at 2 kHz. Passband up to 450 Hz, stopband at 500 Hz, with 80 dB stopband attenuation.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "j1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "j2",
+          "type": "output_contains",
+          "description": "Uses filtfilt for zero-phase",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "j3",
+          "type": "convention_followed",
+          "description": "Acknowledges filtfilt doubles effective attenuation",
+          "expected": "States that filtfilt squares the magnitude response or doubles attenuation in dB"
+        },
+        {
+          "id": "j4",
+          "type": "output_excludes",
+          "description": "Does not use SystemObject with filtfilt",
+          "expected": "SystemObject=true"
+        },
+        {
+          "id": "j5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-11",
+      "name": "IFIR constant rate narrow transition",
+      "description": "Design with IFIR when internal rate change is prohibited. Tests IFIR knowledge path.",
+      "prompt": "I have a 48 kHz sampled audio signal and need to lowpass at 200 Hz with stopband at 250 Hz and 60 dB rejection. I cannot change the internal sample rate. Offline, linear phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "k1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "k2",
+          "type": "convention_followed",
+          "description": "Recognizes narrow transition and considers IFIR",
+          "expected": "Computes trans_pct ~0.10% and uses ifir() or mentions IFIR as an approach since rate change is prohibited"
+        },
+        {
+          "id": "k3",
+          "type": "convention_followed",
+          "description": "Excludes multirate since user prohibits rate change",
+          "expected": "Explicitly states multirate is excluded because user cannot change internal sample rate"
+        },
+        {
+          "id": "k4",
+          "type": "output_contains",
+          "description": "Uses IFIR or acknowledges constant-rate constraint",
+          "expected": "ifir OR IFIR OR constant-rate OR constant rate"
+        },
+        {
+          "id": "k5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-12",
+      "name": "Bandstop zero-phase",
+      "description": "Design a bandstop filter applied with filtfilt. Tests bandstop design and IIR scalar edge gotcha.",
+      "prompt": "Design a bandstop filter to remove a 400-600 Hz interference band from a 8 kHz sampled signal. Offline, zero-phase required.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "l1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "l2",
+          "type": "output_contains",
+          "description": "Uses designfilt for bandstop design",
+          "expected": "designfilt"
+        },
+        {
+          "id": "l3",
+          "type": "output_contains",
+          "description": "Uses filtfilt for zero-phase",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "l4",
+          "type": "convention_followed",
+          "description": "If IIR, uses scalar edge parameters (not vector form)",
+          "expected": "If bandstopiir, uses StopbandFrequency1/StopbandFrequency2 — not vector form"
+        },
+        {
+          "id": "l5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-13",
+      "name": "MPIS cost comparison three architectures",
+      "description": "Compare cost of FIR, IIR, and multirate for a narrow transition. Tests cost() usage and architecture comparison.",
+      "prompt": "Compare the cost of filtering a 96 kHz signal with a lowpass at 1 kHz (stopband 1.2 kHz, 60 dB rejection). Show me the MPIS for single-stage FIR, single-stage IIR, and a multirate pipeline. Streaming, don't care about phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "m1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "m2",
+          "type": "convention_followed",
+          "description": "Designs all three architectures and reports MPIS via cost()",
+          "expected": "Uses cost().MultiplicationsPerInputSample on System objects for FIR, IIR, and multirate pipeline"
+        },
+        {
+          "id": "m3",
+          "type": "convention_followed",
+          "description": "Multirate MPIS is lower than single-stage FIR",
+          "expected": "Multirate pipeline cost is significantly less than single-stage FIR cost"
+        },
+        {
+          "id": "m4",
+          "type": "output_contains",
+          "description": "Uses filterAnalyzer to compare candidates",
+          "expected": "filterAnalyzer"
+        },
+        {
+          "id": "m5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-14",
+      "name": "High-order IIR SOS stability",
+      "description": "Design a high-order IIR filter. Tests SOS form requirement for numerical stability.",
+      "prompt": "Design a highpass Butterworth IIR filter of order 14 at 200 Hz for a 10 kHz signal. Streaming, don't care about phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "n1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "n2",
+          "type": "output_contains",
+          "description": "Uses designfilt for the design",
+          "expected": "designfilt"
+        },
+        {
+          "id": "n3",
+          "type": "convention_followed",
+          "description": "Uses SOS form, not [b,a] polynomial for order 14 IIR",
+          "expected": "Uses designfilt (internal SOS) or SystemObject=true, NOT [b,a] = butter(14,...) which is numerically unstable"
+        },
+        {
+          "id": "n4",
+          "type": "convention_followed",
+          "description": "Warns about numerical stability for high-order IIR",
+          "expected": "Notes or warns that order 14 IIR requires SOS form for stability"
+        },
+        {
+          "id": "n5",
+          "type": "output_excludes",
+          "description": "Does not use filtfilt for streaming",
+          "expected": "filtfilt"
+        }
+      ]
+    }
+    ,
+    {
+      "id": "eval-15",
+      "name": "Bandstop IIR minimum-order elliptic",
+      "description": "Design a minimum-order bandstop IIR using elliptic method. Regression test for bandstopiir requiring PassbandRipple1/2 (not singular PassbandRipple) and singular StopbandAttenuation.",
+      "prompt": "Design a bandstop IIR filter to notch out a 200-400 Hz band from a 4 kHz signal. Use elliptic design for minimum order. I need at least 60 dB stopband attenuation and no more than 1 dB passband ripple. Offline, zero-phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "o1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB on first attempt"
+        },
+        {
+          "id": "o2",
+          "type": "output_contains",
+          "description": "Uses designfilt with bandstopiir response",
+          "expected": "bandstopiir"
+        },
+        {
+          "id": "o3",
+          "type": "convention_followed",
+          "description": "Uses numbered PassbandRipple1 and PassbandRipple2 (not singular PassbandRipple) for minimum-order bandstopiir",
+          "expected": "PassbandRipple1 and PassbandRipple2 both appear in the designfilt call"
+        },
+        {
+          "id": "o4",
+          "type": "convention_followed",
+          "description": "Uses singular StopbandAttenuation (not StopbandAttenuation1/2) for bandstopiir",
+          "expected": "StopbandAttenuation= (singular) — NOT StopbandAttenuation1 or StopbandAttenuation2"
+        },
+        {
+          "id": "o5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-16",
+      "name": "filtfilt halved-spec design recipe",
+      "description": "Design a zero-phase filter using the filtfilt halving recipe. Regression test for exact doubling: design at Rs/2, Rp/2, then verify effective response.",
+      "prompt": "Design a zero-phase lowpass filter for offline processing of an EEG signal at 500 Hz. I need effective stopband attenuation of at least 80 dB at 55 Hz (stopband edge) and effective passband ripple under 0.5 dB up to 45 Hz. Use filtfilt for zero-phase. Show me the design accounting for filtfilt's effect on the specs.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "p1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "p2",
+          "type": "output_contains",
+          "description": "Uses filtfilt for zero-phase filtering",
+          "expected": "filtfilt"
+        },
+        {
+          "id": "p3",
+          "type": "convention_followed",
+          "description": "Designs the filter at halved specs (Rs/2=40 dB, Rp/2=0.25 dB) to account for filtfilt doubling",
+          "expected": "Designs with StopbandAttenuation=40 (or close to 40) and PassbandRipple=0.25 (or close to 0.25), not the full 80/0.5 spec"
+        },
+        {
+          "id": "p4",
+          "type": "convention_followed",
+          "description": "Verifies the effective (post-filtfilt) response, not just the single-pass response",
+          "expected": "Computes or mentions effective/squared magnitude response (2*20*log10(abs(H)) or |H|^2) and checks against the original 80 dB / 0.5 dB specs"
+        },
+        {
+          "id": "p5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate",
+          "expected": "SampleRate"
+        }
+      ]
+    },
+    {
+      "id": "eval-17",
+      "name": "Filter Analyzer mixed sample rates",
+      "description": "Compare two filters designed at different sample rates in Filter Analyzer. Tests FilterNames, SampleRates parameters, and multi-Fs overlay.",
+      "prompt": "I have a two-stage audio pipeline: first an anti-alias lowpass at 48 kHz (passband 3.4 kHz, stopband 4 kHz, 80 dB rejection), then after decimating by 6 a cleanup lowpass at 8 kHz (passband 3 kHz, stopband 3.4 kHz, 60 dB rejection). Design both filters and compare them side by side in Filter Analyzer with proper labels and sample rates. Show magnitude and group delay. Offline, linear phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "q1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "q2",
+          "type": "output_contains",
+          "description": "Uses filterAnalyzer for comparison",
+          "expected": "filterAnalyzer"
+        },
+        {
+          "id": "q3",
+          "type": "convention_followed",
+          "description": "Passes FilterNames to label the two filters",
+          "expected": "FilterNames parameter in filterAnalyzer call with descriptive labels for both filters"
+        },
+        {
+          "id": "q4",
+          "type": "convention_followed",
+          "description": "Passes SampleRates to handle different Fs for each filter",
+          "expected": "SampleRates parameter in filterAnalyzer call with [48000 8000] or equivalent two-element specification"
+        },
+        {
+          "id": "q5",
+          "type": "output_contains",
+          "description": "Specifies SampleRate in designfilt calls",
+          "expected": "SampleRate"
+        }
+      ]
+    }
+    ,
+    {
+      "id": "eval-18",
+      "name": "Visualize and compare filters without naming tool",
+      "description": "Design two filters and ask to visualize and compare them without naming filterAnalyzer. Tests whether the skill steers toward filterAnalyzer vs fvtool or manual plots.",
+      "prompt": "Design an FIR and an IIR lowpass filter for a 20 kHz signal, both cutting off at 2 kHz with 60 dB rejection. I want to see their frequency responses and group delays overlaid so I can pick the better one. Offline, don't care about phase.",
+      "context": { "files": [], "setup": "" },
+      "assertions": [
+        {
+          "id": "r1",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "r2",
+          "type": "convention_followed",
+          "description": "Uses filterAnalyzer for visual comparison (not fvtool, fdatool, or manual freqz subplots)",
+          "expected": "filterAnalyzer() called — NOT fvtool, fdatool, filterDesigner, or manual freqz/grpdelay plots"
+        },
+        {
+          "id": "r3",
+          "type": "output_excludes",
+          "description": "Does not use deprecated fvtool",
+          "expected": "fvtool"
+        },
+        {
+          "id": "r4",
+          "type": "output_contains",
+          "description": "Uses designfilt with SampleRate",
+          "expected": "SampleRate"
+        },
+        {
+          "id": "r5",
+          "type": "convention_followed",
+          "description": "Makes a quantitative recommendation between FIR and IIR",
+          "expected": "Recommends one design over the other citing measured numbers (order, group delay, ripple, or attenuation)"
+        }
+      ]
+    }
+  ]
+}

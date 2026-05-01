@@ -1,9 +1,0 @@
-{
-  "name": "matlab-agentic-toolkit",
-  "description": "Core MATLAB skills and MCP tools for AI coding agents. Testing, debugging, code review, Live Scripts, App Builder, and code modernization.",
-  "version": "0.1.0",
-  "author": {
-    "name": "MathWorks"
-  },
-  "skills": "skills-catalog/"
-}

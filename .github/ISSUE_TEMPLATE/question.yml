@@ -41,7 +41,6 @@ body:
       options:
         - Claude Code
         - GitHub Copilot
-        - Cursor
         - Codex
         - Amp
         - Gemini CLI

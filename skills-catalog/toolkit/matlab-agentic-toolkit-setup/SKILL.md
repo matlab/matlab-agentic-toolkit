@@ -1,6 +1,6 @@
 ---
 name: matlab-agentic-toolkit-setup
-description: Install and configure the MATLAB Agentic Toolkit — detect MATLAB, install the MCP server, register with your AI coding agent, and verify the environment. Supports Claude Code, Cursor, Codex, GitHub Copilot, Amp, and Gemini CLI.
+description: Install and configure the MATLAB Agentic Toolkit — detect MATLAB, install the MCP server, register with your AI coding agent, and verify the environment. Supports Claude Code, Codex, GitHub Copilot, Amp, and Gemini CLI.
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
@@ -13,7 +13,7 @@ Automated onboarding for the MATLAB Agentic Toolkit. Detects MATLAB, downloads a
 
 > **Tested platform:** Claude Code. 
 > **Automated platforms:** GitHub Copilot, Gemini CLI (with manual fallback provided).
-> **Experimental platforms:** Cursor, Codex, Amp are provided as-is; setup will guide you through each step and provide manual fallback instructions if anything fails.
+> **Experimental platforms:** Codex, Amp are provided as-is; setup will guide you through each step and provide manual fallback instructions if anything fails.
 
 This skill does NOT require the MATLAB MCP server — it uses shell commands for everything until the final verification step.
 
@@ -139,7 +139,7 @@ For other platforms, check if their global config files already have a `matlab` 
 
 ### 1f. Detect agent platform
 
-Check environment and CLI tools: `claude --version` (Claude Code), `$CURSOR_TRACE` (Cursor), `codex --version` (Codex), `amp --version` (Amp), `gemini --version` (Gemini CLI), `$VSCODE_*` (Copilot). If ambiguous, ask the user.
+Check environment and CLI tools: `claude --version` (Claude Code), `codex --version` (Codex), `amp --version` (Amp), `gemini --version` (Gemini CLI), `$VSCODE_*` (Copilot). If ambiguous, ask the user.
 
 ### 1g. Check for legacy artifacts
 
@@ -181,7 +181,7 @@ Proceed with this plan? You can adjust any choice:
   - Pick a different MATLAB: "use 2" or provide a path
   - Keep existing server: "use server at /path/to/binary"
   - Change display: "use nodesktop" (MATLAB runs headless; windows still open for plots)
-  - Configure a different agent: "use Cursor" or "use Amp"
+  - Configure a different agent: "use Codex" or "use Amp"
 ```
 
 The **Migration** row shows legacy artifacts found in Phase 1g. If none were found, show `(none)`. If artifacts were found, list what will be cleaned up, e.g., `Remove ~/.claude/.mcp.json (migrated to claude mcp add)`.
@@ -266,92 +266,12 @@ Echo back the list of skill links created or updated.
 
 ### 3b-platform. Configure agent platform
 
-**Automated setup for each platform:**
-
-#### GitHub Copilot
-
-Uses `~/.vscode/settings.json`. Automate using Python (jq may not be installed):
-
-```python
-import json, os
-settings_path = os.path.expanduser('~/.vscode/settings.json')
-settings = {}
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
-if 'mcp.servers' not in settings:
-    settings['mcp.servers'] = {}
-settings['mcp.servers']['matlab'] = {
-    'type': 'stdio',
-    'command': '<MCP_SERVER_PATH>',
-    'args': [
-        '--matlab-root', '<MATLAB_ROOT>',
-        '--matlab-display-mode', '<DISPLAY_MODE>'
-    ]
-}
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
-```
-
-Skills are registered via the shared step (3b-shared) — no additional symlinks needed here.
-
-Echo back:
-- File path: `~/.vscode/settings.json`
-- MATLAB entry was added/updated
-
-#### Claude Code
-
-Uses `claude mcp add` CLI to register the MCP server globally. Do NOT write `~/.claude/.mcp.json` manually — that file is not read by Claude Code.
-
-**Step 1: Add the marketplace**
-
-Derive the marketplace URL from the toolkit repo's own origin remote, so the registered marketplace always matches where the user cloned from:
-
-```bash
-MARKETPLACE_URL=$(git -C "<TOOLKIT_ROOT>" remote get-url origin)
-claude plugin marketplace add "$MARKETPLACE_URL"
-```
-
-If already registered, this is a no-op.
-
-**Step 2: Install all plugins**
-
-Read `<TOOLKIT_ROOT>/.claude-plugin/marketplace.json`, extract the `name` field from each entry in the `plugins` array, and install every plugin:
-
-```bash
-claude plugin install <plugin-name>@matlab-agentic-toolkit
-```
-
-Run one `claude plugin install` command per plugin. Claude's native prompt will ask the user to choose scope. Do NOT implement your own scope selection.
-
-**Step 3: Register MCP server**
-
-```bash
-claude mcp add-json -s user matlab '{"command":"<MCP_SERVER_PATH>","args":["--matlab-root","<MATLAB_ROOT>","--matlab-display-mode","<DISPLAY_MODE>"]}'
-```
-
-This registers the server at user scope (available in all projects). If a `matlab` entry already exists, it is overwritten. MCP tools become available in the next session.
-
-**Step 4: Verify plugin installation**
-
-```bash
-claude plugin list 2>&1
-```
-
-If `claude` CLI plugin commands fail, skip plugin installation — skills can be used by reading SKILL.md files directly. The MCP registration (Step 3) works independently via `claude mcp add`, which is a core CLI command.
-
-Echo back the `claude mcp add-json` command that was run and confirm it succeeded.
-
-See `reference/claude-code-setup-guidance.md` for legacy artifact cleanup and additional troubleshooting details.
-
-#### Other platforms
-
 **Read** the platform-specific reference file (located in the `reference/` directory next to this skill file) and follow its instructions exactly. Use the toolkit root to resolve the path: `<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/reference/<filename>`.
 
 | Platform | Reference file |
 |----------|---------------|
-| Cursor | `reference/cursor-setup-guidance.md` |
+| Claude Code | `reference/claude-code-setup-guidance.md` |
+| GitHub Copilot | `reference/copilot-setup-guidance.md` |
 | OpenAI Codex | `reference/codex-setup-guidance.md` |
 | Sourcegraph Amp | `reference/amp-setup-guidance.md` |
 | Gemini CLI | `reference/gemini-cli-setup-guidance.md` |

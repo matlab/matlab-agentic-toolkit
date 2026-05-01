@@ -1,0 +1,165 @@
+{
+  "skill_name": "matlab-add-awgn",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add AWGN at 15 dB SNR to my 16-QAM signal.",
+      "expected_output": "Code that modulates and adds noise with explicit power.",
+      "files": [],
+      "assertions": [
+        "Uses qammod with UnitAveragePower=true (or computes signal power explicitly)",
+        "Uses awgn(x, snr, 0) with explicit 0 dBW power — NOT awgn(x, snr) without third argument",
+        "Does NOT use 'measured' option",
+        "Signal power is approximately 1.0 (verifying unit-power normalization)",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Convert Eb/No of 8 dB to SNR for 64-QAM with rate-3/4 coding and 4x oversampling.",
+      "expected_output": "Single call to convertSNR with correct Name-Value parameters.",
+      "files": [],
+      "assertions": [
+        "Uses convertSNR function — NOT a manual formula",
+        "Passes BitsPerSymbol=6 (log2(64))",
+        "Passes CodingRate=3/4 (or 0.75)",
+        "Passes SamplesPerSymbol=4",
+        "Result is approximately 8.51 dB (8 + 10*log10(6*0.75/4))",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "What SNR per subcarrier do I need for Eb/No = 10 dB in my OFDM system? I'm using 64-QAM, rate-3/4, 256-point FFT with 200 active subcarriers.",
+      "expected_output": "Single convertSNR call: ebno -> snr gives SNR per subcarrier in the OFDM context.",
+      "files": [],
+      "assertions": [
+        "Uses convertSNR with ebno -> snr (single call gives SNR per subcarrier for OFDM)",
+        "Passes BitsPerSymbol=6 and CodingRate=3/4",
+        "Does NOT attempt convertSNR(ebno, 'ebno', 'snrsc', ...) which would error",
+        "Reports SNR per subcarrier approximately 16.53 dB",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": "3b",
+      "prompt": "I need the wideband SNR to pass to awgn for my OFDM system. Eb/No is 10 dB, 64-QAM, rate-3/4, 256-point FFT, 200 active subcarriers.",
+      "expected_output": "Two-step conversion: ebno -> snr (= SNR per subcarrier) then snrsc -> snr (= wideband for awgn).",
+      "files": [],
+      "assertions": [
+        "Uses TWO calls to convertSNR (ebno->snr gives per-subcarrier, then snrsc->snr gives wideband)",
+        "First call passes BitsPerSymbol=6 and CodingRate=3/4",
+        "Second call passes FFTLength=256 and NumActiveSubcarriers=200",
+        "Wideband SNR is approximately 15.46 dB (lower than per-subcarrier by 10*log10(256/200))",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need to add noise to my signal after a Rayleigh fading channel. How do I do this correctly?",
+      "expected_output": "Explains why 'measured' is wrong after fading. Uses explicit power.",
+      "files": [],
+      "note": "Assertions 2-3 are soft (self-graded explanation checks). Hard behavioral test is assertion 1.",
+      "assertions": [
+        "Uses awgn with explicit signal power (0 dBW or computed) — NOT 'measured'",
+        "Explains that 'measured' tracks instantaneous power which changes with fading",
+        "Explains that thermal noise is fixed in a receiver",
+        "Computes or assumes signal power BEFORE fading, not after",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "I need noise variance for soft decoding of my 16-QAM signal. Set up the transmitter, add noise, and demodulate to LLR.",
+      "expected_output": "Full chain: qammod -> awgn (capturing nVar) -> qamdemod with NoiseVariance.",
+      "files": [],
+      "assertions": [
+        "Uses [y, nVar] = awgn(...) to capture noise variance",
+        "Passes NoiseVariance=nVar to qamdemod",
+        "Uses OutputType='llr' (or 'approxllr') in qamdemod",
+        "Uses UnitAveragePower=true in both qammod and qamdemod",
+        "Does NOT compute noise variance manually from SNR",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "What's the theoretical BER for 16-QAM at Eb/No = 10 dB?",
+      "expected_output": "Uses berawgn with Eb/No (not SNR). May load reference file.",
+      "delta": "zero — agents know berawgn from training data. Kept as regression guard for reference file.",
+      "files": [],
+      "assertions": [
+        "Uses berawgn function",
+        "Passes Eb/No value directly — does NOT convert to SNR first",
+        "Calls berawgn(10, 'qam', 16) or equivalent",
+        "Reports a BER value around 1.7e-03 to 1.9e-03",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "What Eb/No do I need for BER = 1e-5 with 16-QAM over AWGN?",
+      "expected_output": "Uses berawgn over a range plus interp1 to find the crossing point. May load reference file.",
+      "delta": "low — tests berawgn+interp1 pattern from reference file.",
+      "files": [],
+      "assertions": [
+        "Uses berawgn to compute theoretical BER over a range of Eb/No values",
+        "Uses interp1 (or equivalent interpolation) to find the Eb/No crossing point",
+        "Reports an estimate around 13.4 dB (±0.2 dB depending on step size)",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "I have a complex QPSK signal with unit average power at 12 dB SNR. I need the per-I/Q-component noise variance for my custom equalizer. Add the noise and give me that value.",
+      "expected_output": "Captures total noise variance from awgn, then divides by 2 for per-component.",
+      "files": [],
+      "assertions": [
+        "Uses [y, nVar] = awgn(...) to capture total noise variance",
+        "Divides noise variance by 2 (nVar/2) for per-component (I or Q) variance",
+        "Uses explicit signal power (0 dBW or computed) — NOT 'measured'",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "My 64-QAM signal has an average power of about 42. Add AWGN at 20 dB SNR. Don't normalize the signal — I need the original constellation scaling for my PA model.",
+      "expected_output": "Computes actual signal power and passes it to awgn as third argument in dBW.",
+      "files": [],
+      "assertions": [
+        "Computes signal power explicitly using mean(abs(x).^2) or equivalent — does NOT use UnitAveragePower=true",
+        "Converts signal power to dBW (10*log10(sigPow)) and passes as third argument to awgn",
+        "Does NOT call awgn(x, snr) with only two arguments (which assumes 0 dBW)",
+        "Does NOT use 'measured' option",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    }
+    ,
+    {
+      "id": 10,
+      "prompt": "Add AWGN at 8 dB SNR to a real-valued 4-PAM signal with 5000 symbols. Demodulate with hard decisions and compute the BER.",
+      "expected_output": "Uses pammod with unit average power, awgn with explicit power, pamdemod, and biterr.",
+      "files": [],
+      "assertions": [
+        "Modulated signal is real-valued (not complex) — uses pammod, comm.PAMModulator, or equivalent PAM scheme",
+        "Uses UnitAveragePower=true (or computes signal power explicitly)",
+        "Uses awgn with explicit signal power — NOT 'measured' or two-argument form",
+        "Demodulates and computes BER with biterr",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I'm simulating a 16-QAM signal through a Rayleigh fading channel with AveragePathGains=[0 -3 -6] dB and NormalizePathGains=false. Add AWGN at 15 dB SNR. The noise level must reflect the actual average received power, not the pre-fading power.",
+      "expected_output": "Computes total average path gain from AveragePathGains, adjusts signal power argument to awgn accordingly.",
+      "files": [],
+      "assertions": [
+        "Computes total average path gain from AveragePathGains — e.g., 10*log10(sum(10.^(gains/10)))",
+        "Adjusts the signal power argument to awgn by the average path gain (not using 0 dBW blindly)",
+        "Does NOT use 'measured' option",
+        "Does NOT ignore NormalizePathGains=false and pass 0 as signal power",
+        "Code runs without error via evaluate_matlab_code"
+      ]
+    }
+  ]
+}

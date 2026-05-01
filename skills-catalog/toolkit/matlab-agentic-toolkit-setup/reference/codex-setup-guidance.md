@@ -95,8 +95,9 @@ The toolkit includes shared helper scripts (used by Copilot, Codex, and Gemini C
 bash "<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/scripts/install-global-skills.sh" "<TOOLKIT_ROOT>"
 ```
 
-This creates or updates symlinks such as:
+The script auto-discovers all skills (directories containing `manifest.yaml`) and creates symlinks in `~/.agents/skills/` pointing back to the toolkit repo.
 
+This creates or updates symlinks, including (but not limited to):
 ```text
 ~/.agents/skills/matlab-testing -> <TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-testing
 ~/.agents/skills/matlab-debugging -> <TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-debugging
@@ -204,14 +205,7 @@ If automated setup fails:
 
 1. Edit `~/.codex/config.toml` manually and add the `[mcp_servers.matlab]` section shown above
 2. Create `~/.agents/skills`
-3. Add directory symlinks or junctions from `~/.agents/skills/<skill-name>` to the corresponding directories in this repo:
-   - `<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-testing`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-debugging`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-review-code`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-modernize-code`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-build-app`
-   - `<TOOLKIT_ROOT>/skills-catalog/matlab-core/matlab-create-live-script`
+3. Run the install-global-skills script to create symlinks for all skills: `bash "<TOOLKIT_ROOT>/skills-catalog/toolkit/matlab-agentic-toolkit-setup/scripts/install-global-skills.sh" "<TOOLKIT_ROOT>"` or the equivalent in PowerShell on Windows.
 4. Restart Codex
 
 ## Plugin Visibility (`/plugins`)

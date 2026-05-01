@@ -14,7 +14,6 @@ Reference MCP server configurations for manual setup. Each file is a starting po
 
 | File | Platform | Copy to |
 |------|----------|---------|
-| `mcp.json` | Cursor | `~/.cursor/mcp.json` (global) or `.cursor/mcp.json` (project) |
 | `codex-mcp.json` | OpenAI Codex | Use `codex mcp add` instead, or edit `~/.codex/config.toml` |
 | `gemini-extension.json` | Gemini CLI | Project root, then `gemini extensions link .` (local dev) or `gemini extensions install` (from GitHub) |
 | `vscode-mcp.json` | GitHub Copilot / VS Code | `.vscode/mcp.json` in each project |

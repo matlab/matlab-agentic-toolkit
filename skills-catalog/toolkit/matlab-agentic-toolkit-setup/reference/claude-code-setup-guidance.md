@@ -28,9 +28,10 @@ If the marketplace is already registered, this is a no-op. Continue to the next 
 
 ### Step 2: Install plugins
 
+Read `<TOOLKIT_ROOT>/.claude-plugin/marketplace.json`, extract the `name` field from each entry in the `plugins` array, and install every plugin:
+
 ```bash
-claude plugin install matlab-core@matlab-agentic-toolkit
-claude plugin install toolkit@matlab-agentic-toolkit
+claude plugin install <plugin-name>@matlab-agentic-toolkit
 ```
 
 Claude's native prompt will ask the user to choose scope for each plugin. Do NOT implement your own scope selection — let Claude Code handle it.
@@ -57,7 +58,7 @@ The MCP tools become available in the next session (or immediately if the sessio
 claude plugin list 2>&1
 ```
 
-Confirm that `matlab-core@matlab-agentic-toolkit` and `toolkit@matlab-agentic-toolkit` appear in the output.
+Confirm that `matlab-core@matlab-agentic-toolkit`, `toolkit@matlab-agentic-toolkit` and the other installed plugins appear in the output.
 
 ## If Plugin Commands Fail
 

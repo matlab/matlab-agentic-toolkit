@@ -8,9 +8,19 @@ This reference file contains **executable automation steps** for Phase 3b of the
 
 ## Overview
 
-GitHub Copilot accesses MCP servers via `~/.vscode/settings.json` (global, user-level config). Setup automates:
+GitHub Copilot reads MCP server configuration from the user-profile `mcp.json`. The path is platform-specific:
 
-1. **Global MCP config** — write to `~/.vscode/settings.json` with absolute paths
+| Platform | User-profile MCP config path |
+|----------|------------------------------|
+| macOS | `~/Library/Application Support/Code/User/mcp.json` |
+| Linux | `~/.config/Code/User/mcp.json` |
+| Windows | `%APPDATA%\Code\User\mcp.json` |
+
+All steps below refer to this file as `<MCP_CONFIG_PATH>`. Resolve it once using the platform detected in Phase 1a.
+
+Setup automates:
+
+1. **Global MCP config** — write to `<MCP_CONFIG_PATH>` with absolute paths
 2. **Global skills** — create symlinks in `~/.agents/skills/` or `~/.copilot/skills/` pointing to `skills-catalog/`
 
 This matches the target workflow: **clone once, setup once, use everywhere**.
@@ -19,23 +29,26 @@ This matches the target workflow: **clone once, setup once, use everywhere**.
 
 ## Phase 3b: Automation Steps
 
-### Step 1: Read and merge VS Code settings
+### Step 0: Resolve config path
 
-Read `~/.vscode/settings.json` as **JSON** (not JSONC to avoid comment parsing complexity):
+Set `MCP_CONFIG_PATH` based on the platform detected in Phase 1a:
 
 ```bash
-if [ -f ~/.vscode/settings.json ]; then
-  SETTINGS_JSON="$HOME/.vscode/settings.json"
-else
-  SETTINGS_JSON=""
-fi
+case "$(uname -s)" in
+  Darwin*)          MCP_CONFIG_PATH="$HOME/Library/Application Support/Code/User/mcp.json" ;;
+  Linux*)           MCP_CONFIG_PATH="$HOME/.config/Code/User/mcp.json" ;;
+  MINGW*|MSYS*|CYGWIN*)  MCP_CONFIG_PATH="$APPDATA/Code/User/mcp.json" ;;
+esac
 ```
 
+### Step 1: Read existing config
+
+Read `<MCP_CONFIG_PATH>` as **JSON**.
 If the file exists, parse it (use a JSON tool like `jq` if available, or a safe JSON reader). If it doesn't exist, start with an empty config:
 
 ```json
 {
-  "mcp.servers": {}
+  "servers": {}
 }
 ```
 
@@ -45,31 +58,31 @@ Merge the MATLAB entry into the config. Use `jq` (if available) for safe JSON ma
 
 **With jq:**
 ```bash
-jq '.["mcp.servers"].matlab = {
+jq '.servers.matlab = {
   "type": "stdio",
   "command": "<MCP_SERVER_PATH>",
   "args": [
     "--matlab-root", "<MATLAB_ROOT>",
     "--matlab-display-mode", "<DISPLAY_MODE>"
   ]
-}' ~/.vscode/settings.json > ~/.vscode/settings.json.tmp && mv ~/.vscode/settings.json.tmp ~/.vscode/settings.json
+}' "$MCP_CONFIG_PATH" > "$MCP_CONFIG_PATH.tmp" && mv "$MCP_CONFIG_PATH.tmp" "$MCP_CONFIG_PATH"
 ```
 
 **Without jq (Python fallback):**
 ```python
-import json
-import os
+import json, os
 
-settings_path = os.path.expanduser('~/.vscode/settings.json')
-settings = {}
-if os.path.exists(settings_path):
-    with open(settings_path, 'r') as f:
-        settings = json.load(f)
+# mcp_config_path: use the platform-appropriate path from the Overview table
 
-if 'mcp.servers' not in settings:
-    settings['mcp.servers'] = {}
+config = {}
+if os.path.exists(mcp_config_path):
+    with open(mcp_config_path, 'r') as f:
+        config = json.load(f)
 
-settings['mcp.servers']['matlab'] = {
+if 'servers' not in config:
+    config['servers'] = {}
+
+config['servers']['matlab'] = {
     'type': 'stdio',
     'command': '<MCP_SERVER_PATH>',
     'args': [
@@ -78,9 +91,9 @@ settings['mcp.servers']['matlab'] = {
     ]
 }
 
-os.makedirs(os.path.dirname(settings_path), exist_ok=True)
-with open(settings_path, 'w') as f:
-    json.dump(settings, f, indent=2)
+os.makedirs(os.path.dirname(mcp_config_path), exist_ok=True)
+with open(mcp_config_path, 'w') as f:
+    json.dump(config, f, indent=2)
 ```
 
 Replace placeholders:
@@ -88,15 +101,15 @@ Replace placeholders:
 - `<MATLAB_ROOT>` — absolute path to the MATLAB installation (detected in Phase 1)
 - `<DISPLAY_MODE>` — `desktop` (default) or `nodesktop` (from Phase 2 plan)
 
-**Important:** Preserve all other settings in `~/.vscode/settings.json` — only add or update the `mcp.servers.matlab` entry.
+**Important:** Preserve all other entries in `<MCP_CONFIG_PATH>` — only add or update the `servers.matlab` entry.
 
-### Step 3: Write settings back to file
+### Step 3: Write config back to file
 
-Write the merged config to `~/.vscode/settings.json`. Use `mkdir -p ~/.vscode` first to ensure the directory exists.
+Write the merged config to `<MCP_CONFIG_PATH>`. Ensure the parent directory exists first:
 
 ```bash
-mkdir -p ~/.vscode
-# Write merged JSON to ~/.vscode/settings.json
+mkdir -p "$(dirname "$MCP_CONFIG_PATH")"
+# Write merged JSON to $MCP_CONFIG_PATH
 # (implementation: use jq, Python json module, or equivalent)
 ```
 
@@ -120,9 +133,9 @@ powershell -ExecutionPolicy Bypass -File "<TOOLKIT_ROOT>\skills-catalog\toolkit\
 
 | Setting | Value |
 |---------|-------|
-| Config file | `~/.vscode/settings.json` (global, user-level) |
+| Config file | User-profile `mcp.json` (see path table in Overview) |
 | Server type | `"type": "stdio"` |
-| MCP key name | `"mcp.servers"` (not `"mcpServers"`) |
+| MCP key name | `"servers"` (not `"mcpServers"` or `"mcp.servers"`) |
 | Skills paths | `~/.agents/skills/`, `~/.copilot/skills/`, `.github/skills/` |
 
 **Quirks:**
@@ -136,26 +149,25 @@ powershell -ExecutionPolicy Bypass -File "<TOOLKIT_ROOT>\skills-catalog\toolkit\
 
 If automation encounters an error, provide the user with manual instructions:
 
-### Option A: Global setup via VS Code Settings UI
+### Option A: Global setup (manual)
 
-> 1. Open VS Code
-> 2. Open Settings (Cmd/Ctrl + ,)
-> 3. Search for "mcp.servers"
-> 4. Click "Edit in settings.json"
-> 5. Add:
+> 1. Open the user-profile `mcp.json` in a text editor (see path table in [Overview](#overview))
+> 2. Add or merge the `matlab` entry under `"servers"`:
 >    ```json
->    "mcp.servers": {
->      "matlab": {
->        "type": "stdio",
->        "command": "/path/to/matlab-mcp-core-server",
->        "args": [
->          "--matlab-root", "/path/to/MATLAB/R2025b",
->          "--matlab-display-mode", "desktop"
->        ]
+>    {
+>      "servers": {
+>        "matlab": {
+>          "type": "stdio",
+>          "command": "/path/to/matlab-mcp-core-server",
+>          "args": [
+>            "--matlab-root", "/path/to/MATLAB/R2025b",
+>            "--matlab-display-mode", "desktop"
+>          ]
+>        }
 >      }
 >    }
 >    ```
-> 6. Save and reload VS Code
+> 3. Save and reload VS Code (Cmd/Ctrl + Shift + P → "Developer: Reload Window")
 
 ### Option B: Project-level setup
 
@@ -186,9 +198,9 @@ bash /path/to/matlab-agentic-toolkit/skills-catalog/toolkit/matlab-agentic-toolk
 
 After the setup skill completes:
 
-1. **Check config file:**
+1. **Check config file** (using the resolved `<MCP_CONFIG_PATH>`):
    ```bash
-   cat ~/.vscode/settings.json | grep -A5 mcp.servers
+   cat "$MCP_CONFIG_PATH"
    ```
    Should contain the `matlab` entry with correct paths.
 
@@ -211,9 +223,9 @@ The setup skill (SKILL.md Phase 3b) should:
 
 1. Call this reference and follow the steps above
 2. Use `jq`, Python, or another safe JSON parser to merge config
-3. Always preserve existing settings (no wholesale replacement)
+3. Always preserve existing entries (no wholesale replacement)
 4. Use the shared `install-global-skills` scripts for skill registration (handles `~/.copilot/skills/` fallback automatically)
-5. Echo back the paths written to `~/.vscode/settings.json` and skill symlinks created
+5. Echo back the path written to and skill symlinks created
 6. If anything fails, provide the manual fallback instructions above
 
 See SKILL.md Phase 3b for the implementation.
@@ -223,4 +235,3 @@ See SKILL.md Phase 3b for the implementation.
 Copyright 2026 The MathWorks, Inc.
 
 ----
-

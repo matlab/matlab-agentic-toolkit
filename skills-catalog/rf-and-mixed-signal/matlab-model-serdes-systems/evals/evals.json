@@ -1,0 +1,2273 @@
+[
+  {
+    "id": "txmodel-not-cell-array",
+    "name": "TxModel/RxModel use Transmitter/Receiver wrappers",
+    "description": "Verifies SerdesSystem is constructed with Transmitter/Receiver objects, not cell arrays",
+    "prompt": "Create a SerdesSystem with a 3-tap FFE transmitter and a CTLE + DFECDR receiver for a 28 Gbps NRZ link.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated SerdesSystem code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "TxModel constructed with Transmitter wrapper",
+        "expected": "Transmitter('Blocks', {serdes.FFE(...)})"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "RxModel constructed with Receiver wrapper",
+        "expected": "Receiver('Blocks', {serdes.CTLE(...), serdes.DFECDR(...)})"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not assign cell array directly to TxModel or RxModel",
+        "expected": "sys.TxModel = {"
+      }
+    ]
+  },
+  {
+    "id": "channel-data-property-names",
+    "name": "ChannelData uses correct property names",
+    "description": "Verifies ChannelData configured with ChannelLossdB, ChannelLossFreq, ChannelDifferentialImpedance",
+    "prompt": "Set up a SerdesSystem with a channel that has 12 dB loss at 14 GHz Nyquist frequency and 100 ohm differential impedance.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code with ChannelData configuration runs in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses ChannelLossdB property",
+        "expected": "ChannelLossdB"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses ChannelLossFreq property",
+        "expected": "ChannelLossFreq"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use wrong property names like .Loss or .TargetFrequency",
+        "expected": ".Loss ="
+      }
+    ]
+  },
+  {
+    "id": "ctle-specification-before-acgain",
+    "name": "CTLE Specification set before ACGain",
+    "description": "Verifies CTLE Specification is set to 'DC Gain and AC Gain' before or with ACGain",
+    "prompt": "Create a CTLE equalizer with 0 dB DC gain and 12 dB AC gain for a PAM4 receiver.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated CTLE construction code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Specification set to 'DC Gain and AC Gain' before or simultaneously with ACGain",
+        "expected": "Specification"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses the DC Gain and AC Gain specification",
+        "expected": "DC Gain and AC Gain"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not set ACGain without correct Specification",
+        "expected": "ACGain without Specification"
+      }
+    ]
+  },
+  {
+    "id": "mode-2-only-on-supported-blocks",
+    "name": "Mode=2 only on CTLE/DFECDR/DFE",
+    "description": "Verifies agent refuses Mode=2 on FFE and AGC, recommends Mode=1 instead",
+    "prompt": "I want to export my FFE and AGC blocks as adaptive AMI parameters. Set Mode=2 on both so they can converge at runtime.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_excludes",
+        "description": "Does not set Mode=2 on serdes.FFE",
+        "expected": "FFE.*Mode.*=.*2"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not set Mode=2 on serdes.AGC",
+        "expected": "AGC.*Mode.*=.*2"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "States only CTLE, DFECDR, and DFE support Mode=2",
+        "expected": "CTLE"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Suggests Mode=1 as alternative for FFE and AGC",
+        "expected": "Mode = 1"
+      }
+    ]
+  },
+  {
+    "id": "init-only-vs-dual-model",
+    "name": "Adaptive blocks require Dual model",
+    "description": "Verifies agent identifies conflict between Init-Only model and Mode=2 adaptive blocks",
+    "prompt": "Create an Init-Only IBIS-AMI Rx model that uses DFECDR with Mode=2 for adaptive equalization.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Identifies that Mode=2 requires a Dual model",
+        "expected": "Dual"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Does not create an Init-Only model with Mode=2 blocks without flagging the conflict",
+        "expected": "cannot"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Explains Init-Only models cannot run GetWave so DFE taps never converge",
+        "expected": "GetWave"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Recommends Init_Returns_Impulse=true AND GetWave_Exists=true",
+        "expected": "Init_Returns_Impulse"
+      }
+    ]
+  },
+  {
+    "id": "column-vectors-for-signal-conversion",
+    "name": "Column vectors for signal conversion functions",
+    "description": "Verifies impulse2pulse and pulse2stateye receive column vectors, not row vectors",
+    "prompt": "Convert an impulse response to a pulse response using impulse2pulse, then compute the statistical eye with pulse2stateye. Use a 128-sample impulse at 16 samples per symbol.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated signal conversion code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Creates impulse as column vector: zeros(128, 1) or equivalent",
+        "expected": "zeros(128, 1)"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not create row vector impulse",
+        "expected": "zeros(1, 128)"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses column-oriented indexing throughout (N-by-1)",
+        "expected": "column vector"
+      }
+    ]
+  },
+  {
+    "id": "jitter-rj-is-rms",
+    "name": "JitterAndNoise Rj is standard deviation",
+    "description": "Verifies Tx_Rj set as RMS standard deviation and Tx_Dj as peak-to-peak per IBIS 7.0",
+    "prompt": "Add jitter and noise to my SerdesSystem with 2 ps RMS random jitter and 8 ps peak-to-peak deterministic jitter on the transmitter.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated JitterAndNoise code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Tx_Rj = 2e-12 as standard deviation",
+        "expected": "Tx_Rj = 2e-12"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets Tx_Dj = 8e-12 as peak-to-peak",
+        "expected": "Tx_Dj = 8e-12"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Mentions Rj is standard deviation per IBIS 7.0",
+        "expected": "standard deviation"
+      }
+    ]
+  },
+  {
+    "id": "no-nonexistent-ibis-functions",
+    "name": "No fabricated IBIS read/write functions",
+    "description": "Verifies agent does not call readIBIS, exportAMI, or generateAMI; explains Simulink model is required",
+    "prompt": "Read an existing .ibs file into MATLAB and export my SerdesSystem directly to an .ami file.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_excludes",
+        "description": "Does not call readIBIS (does not exist)",
+        "expected": "readIBIS"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not call exportAMI (does not exist)",
+        "expected": "exportAMI"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Explains IBIS-AMI generation requires a Simulink model",
+        "expected": "Simulink"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Mentions exportToSimulink as the first step",
+        "expected": "exportToSimulink"
+      }
+    ]
+  },
+  {
+    "id": "wavetype-set-in-matlab",
+    "name": "WaveType set explicitly in MATLAB",
+    "description": "Verifies WaveType is set to 'Impulse' when processing impulse data in standalone MATLAB",
+    "prompt": "Apply a 3-tap FFE to an impulse response in MATLAB standalone (not in Simulink). The impulse is 200 samples long.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets WaveType to 'Impulse' before processing",
+        "expected": "WaveType"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not rely on default WaveType ('Sample') for impulse data",
+        "expected": "default WaveType"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets SymbolTime and SampleInterval on the block",
+        "expected": "SymbolTime"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Explains Simulink sets WaveType automatically but MATLAB requires explicit setting",
+        "expected": "Simulink"
+      }
+    ]
+  },
+  {
+    "id": "char-vector-property-names",
+    "name": "Char vectors for Transmitter constructor",
+    "description": "Verifies Transmitter uses single-quoted 'Blocks' (char vector), not double-quoted string",
+    "prompt": "Build a SerdesSystem with a Transmitter containing an FFE and a Receiver containing a CTLE for a 56 Gbps PAM4 link.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated PAM4 SerdesSystem code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses Transmitter('Blocks', ...) with single-quoted char vector",
+        "expected": "Transmitter('Blocks'"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses Receiver('Blocks', ...) with single-quoted char vector",
+        "expected": "Receiver('Blocks'"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use double-quoted string for Transmitter property name",
+        "expected": "Transmitter(\"Blocks\""
+      }
+    ]
+  },
+  {
+    "id": "analysis-returns-nx2",
+    "name": "analysis() returns Nx2 matrices",
+    "description": "Verifies equalized pulse extracted from column 2 of results.pulse, not treated as vector",
+    "prompt": "Run analysis on my SerdesSystem, extract the equalized pulse response, and compute eye metrics with optPulseMetric.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated analysis and metric extraction code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Extracts equalized pulse from column 2",
+        "expected": "results.pulse(:, 2)"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not pass results.pulse directly to optPulseMetric",
+        "expected": "optPulseMetric(results.pulse,"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Mentions column 1 is unequalized and column 2 is equalized",
+        "expected": "equalized"
+      }
+    ]
+  },
+  {
+    "id": "optpulsemetric-no-jitter",
+    "name": "optPulseMetric is LTI-only",
+    "description": "Verifies agent recommends sys.Metrics.summary for jitter-aware metrics instead of optPulseMetric",
+    "prompt": "I set JitterAndNoise on my system. Now I want the jitter-aware eye height. Should I use optPulseMetric?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "States optPulseMetric is LTI-only",
+        "expected": "LTI"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Recommends sys.Metrics.summary.EH for jitter-aware eye height",
+        "expected": "Metrics"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not recommend optPulseMetric for jitter-aware metrics",
+        "expected": "optPulseMetric for jitter"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Mentions analysis(sys) must be called first to populate Metrics",
+        "expected": "analysis"
+      }
+    ]
+  },
+  {
+    "id": "plotstateye-title-and-layout",
+    "name": "plotStatEye renders into current axes",
+    "description": "Verifies plotStatEye is used correctly with title() and optional multi-panel layouts",
+    "prompt": "Plot the statistical eye diagram for my SerdesSystem and add a custom title 'PCIe Gen5 Rx Eye'.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses title() after plotStatEye to label the axes",
+        "expected": "title("
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Calls plotStatEye(sys) before title",
+        "expected": "plotStatEye"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Creates a figure before plotting",
+        "expected": "figure"
+      }
+    ]
+  },
+  {
+    "id": "serdes-ami-three-arguments",
+    "name": "serdes.AMI called with 3 arguments",
+    "description": "Verifies serdes.AMI is called with (waveIn, impulseIn, clockIn), not just impulseIn",
+    "prompt": "Validate a compiled Rx IBIS-AMI DLL by running its AMI_Init function with a channel impulse response.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Calls ami(waveIn, impulseIn, clockIn) with exactly 3 inputs",
+        "expected": "ami(waveIn, impulseIn, clockIn)"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not call ami with only 1 argument",
+        "expected": "ami(impulseIn)"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses zeros(N,1) or scalar 0 as dummy waveIn for Init-only",
+        "expected": "zeros("
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Captures both outputs: [waveOut, impulseOut] or [~, impulseOut]",
+        "expected": "impulseOut"
+      }
+    ]
+  },
+  {
+    "id": "serdes-ami-clockin-negative-one",
+    "name": "clockIn = -1 when not clock-forwarding",
+    "description": "Verifies clockIn set to -1 for non-clock-forwarding AMI validation",
+    "prompt": "Run the Init function of my compiled AMI model to check its impulse response. I am not using clock forwarding.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses clockIn = -1 when not clock-forwarding",
+        "expected": "clockIn = -1"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not omit clockIn argument",
+        "expected": "ami(waveIn, impulseIn)"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not use clockIn = 0 or clockIn = []",
+        "expected": "clockIn = 0"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets InitOnly = true for Init-only validation",
+        "expected": "InitOnly = true"
+      }
+    ]
+  },
+  {
+    "id": "programmatic-ami-export-r2026a",
+    "name": "serdes.AMIExport for R2026a+",
+    "description": "Verifies serdes.AMIExport used for programmatic AMI generation on R2026a+",
+    "prompt": "I am on R2026a. How do I programmatically generate AMI files and DLLs from my Simulink SerDes model without using the GUI?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Mentions serdes.AMIExport as the recommended approach",
+        "expected": "serdes.AMIExport"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Shows creating AMIExport object from Simulink model name",
+        "expected": "serdes.AMIExport("
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets DLLFiles = true to generate compiled DLLs",
+        "expected": "DLLFiles = true"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Calls export(AMIExport) to trigger generation",
+        "expected": "export("
+      }
+    ]
+  },
+  {
+    "id": "programmatic-ami-export-slbuild",
+    "name": "slbuild for R2025b and earlier",
+    "description": "Verifies slbuild workflow used for AMI generation on R2025b and earlier",
+    "prompt": "I am on R2025b. How do I programmatically build AMI DLLs from my Simulink SerDes model?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses slbuild with model/Tx and model/Rx subsystem paths",
+        "expected": "slbuild("
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions exportToSimulink as prerequisite",
+        "expected": "exportToSimulink"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Notes Simulink Coder and Embedded Coder are required",
+        "expected": "Coder"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not recommend serdes.AMIExport (R2026a+ only)",
+        "expected": "serdes.AMIExport"
+      }
+    ]
+  },
+  {
+    "id": "custom-block-inherits-serdes-abstract",
+    "name": "Custom blocks inherit SerdesAbstractSystemObject",
+    "description": "Verifies custom datapath blocks inherit from serdes.SerdesAbstractSystemObject, not matlab.System",
+    "prompt": "Create a custom datapath block for my SerDes system that implements a non-linear saturation model.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Inherits from serdes.SerdesAbstractSystemObject",
+        "expected": "serdes.SerdesAbstractSystemObject"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not inherit from matlab.System directly",
+        "expected": "matlab.System"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Declares IsLinear and IsTimeInvariant properties",
+        "expected": "IsLinear"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Implements stepImpl method",
+        "expected": "stepImpl"
+      }
+    ]
+  },
+  {
+    "id": "custom-block-wavetype-dispatch",
+    "name": "Custom block dispatches on WaveType",
+    "description": "Verifies custom block stepImpl dispatches on WaveType for Impulse vs Sample processing",
+    "prompt": "Write a custom SerDes datapath block that handles both impulse-domain and sample-by-sample processing correctly.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "stepImpl checks WaveType to branch between Impulse and Sample",
+        "expected": "WaveType"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Handles WaveType = 'Impulse' for Init path",
+        "expected": "Impulse"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Handles WaveType = 'Sample' for GetWave path",
+        "expected": "Sample"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Inherits from serdes.SerdesAbstractSystemObject",
+        "expected": "serdes.SerdesAbstractSystemObject"
+      }
+    ]
+  },
+  {
+    "id": "linux-so-alongside-dll",
+    "name": "Lists .so alongside .dll deliverables",
+    "description": "Verifies agent mentions Linux .so alongside Windows .dll as IBIS-AMI deliverables",
+    "prompt": "What files does the IBIS-AMI generation process produce? I need to deliver models to our EDA team.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Mentions .so (Linux shared object)",
+        "expected": ".so"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions .dll (Windows DLL)",
+        "expected": ".dll"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Mentions .ami and .ibs files",
+        "expected": ".ami"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Mentions cross-compilation for Linux",
+        "expected": "cross"
+      }
+    ]
+  },
+  {
+    "id": "s-parameter-channel-loading",
+    "name": "SParameterChannel with FileName name-value",
+    "description": "Verifies SParameterChannel uses FileName NV pair and feeds ImpulseResponse into ChannelData constructor",
+    "prompt": "I have a measured channel in a .s4p Touchstone file. Load it into my SerdesSystem for analysis.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated S-parameter loading code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses SParameterChannel with FileName name-value pair, not positional",
+        "expected": "SParameterChannel(\"FileName\""
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Feeds ImpulseResponse into ChannelData constructor, not post-hoc assignment",
+        "expected": "ChannelData(\"Impulse\""
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets SampleInterval and StopTime on SParameterChannel object",
+        "expected": "SampleInterval"
+      }
+    ]
+  },
+  {
+    "id": "crosstalk-icn-configuration",
+    "name": "Crosstalk ICN configuration",
+    "description": "Verifies crosstalk configured with EnableCrosstalk, Custom spec, and FEXTICN/NEXTICN in volts",
+    "prompt": "Add FEXT and NEXT crosstalk to my loss-model channel. I want 15 mV FEXT and 10 mV NEXT.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets EnableCrosstalk = true on ChannelData",
+        "expected": "EnableCrosstalk"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets CrosstalkSpecification to Custom",
+        "expected": "Custom"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets FEXTICN = 0.015 and NEXTICN = 0.010 in volts RMS",
+        "expected": "FEXTICN"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not fabricate a Crosstalk object or addAggressor method",
+        "expected": "addAggressor"
+      }
+    ]
+  },
+  {
+    "id": "ami-inputstring-formatting",
+    "name": "AMI InputString uses default root name",
+    "description": "Verifies InputString uses serdes_rx default root name, not Simulink model name",
+    "prompt": "I compiled my SerDes model to AMI DLLs. Now I want to validate the Rx DLL with serdes.AMI. How do I set up the InputString?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses InputString = '(serdes_rx)' with correct default root name",
+        "expected": "serdes_rx"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions generateDefaultInputString for third-party .ami files",
+        "expected": "generateDefaultInputString"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets InitOnly and clockIn = -1 for Init-only validation",
+        "expected": "InitOnly"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not fabricate InputString in XML, JSON, or struct format",
+        "expected": "XML"
+      }
+    ]
+  },
+  {
+    "id": "simulink-sim-parsim-workflow",
+    "name": "Simulink parsim sweep workflow",
+    "description": "Verifies parsim sweep uses SimulationInput, string parameter values, and save_system",
+    "prompt": "I exported my SerdesSystem to Simulink. Now I want to sweep CTLE AC gain from 0 to 20 dB using parsim. Show me the workflow.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates Simulink.SimulationInput array with setBlockParameter",
+        "expected": "Simulink.SimulationInput"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Passes parameter values as strings via num2str or equivalent",
+        "expected": "num2str"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Calls save_system before parsim",
+        "expected": "save_system"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not fabricate sweep functions like simSweep or parameterSweep",
+        "expected": "simSweep"
+      }
+    ]
+  },
+  {
+    "id": "end-to-end-ibis-ami-generation",
+    "name": "End-to-end IBIS-AMI generation workflow",
+    "description": "Verifies the complete path from SerdesSystem design through DLL generation and validation",
+    "prompt": "Walk me through the complete process of creating an IBIS-AMI Tx/Rx model pair from scratch. I have a 56 Gbps PAM4 link with a 3-tap FFE transmitter and CTLE + adaptive DFE receiver. I need to produce .ami, .ibs, and .dll files and then validate the compiled models match the behavioral simulation.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Step 1: Creates SerdesSystem with Transmitter/Receiver wrappers and correct PAM4 settings",
+        "expected": "SerdesSystem"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Step 2: Calls exportToSimulink(sys) to create Simulink model",
+        "expected": "exportToSimulink"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Step 3: Configures and generates via IbisAmiManager or serdes.AMIExport or slbuild",
+        "expected": "AMIExport"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Step 4: Validates compiled DLLs using serdes.AMI with correlation check against behavioral reference",
+        "expected": "serdes.AMI"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Sets ModelTypeRx to Dual model because DFECDR uses Mode=2 adaptive",
+        "expected": "Dual"
+      },
+      {
+        "id": "a6",
+        "type": "output_contains",
+        "description": "Mentions .ami, .ibs, and .dll/.so as output deliverables",
+        "expected": ".ami"
+      }
+    ]
+  },
+  {
+    "id": "ami-parameter-export-flags",
+    "name": "AMI parameter export flags use *AMI suffix",
+    "description": "Verifies get_param/set_param for AMI parameters use the *AMI suffix convention",
+    "prompt": "I want to check which block parameters will be exported to the AMI file, and disable the FFE Mode parameter from being exported. How do I do this programmatically?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses get_param with *AMI suffix to query export status",
+        "expected": "AMI'"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses set_param with ModeAMI to disable FFE Mode export",
+        "expected": "ModeAMI"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not fabricate non-existent set_param parameter names like AMIVersion or ExportAMI",
+        "expected": "AMIVersion"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Shows the block path format: model/Tx/FFE or model/Rx/CTLE",
+        "expected": "/FFE"
+      }
+    ]
+  },
+  {
+    "id": "behavioral-vs-compiled-correlation",
+    "name": "Behavioral vs compiled AMI correlation validation",
+    "description": "Verifies the pattern for comparing behavioral analysis results against compiled DLL output",
+    "prompt": "I built my AMI DLLs. How do I verify the compiled Tx and Rx models produce the same impulse response as my behavioral SerdesSystem simulation?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Gets behavioral reference from analysis(sys) — results.impulse(:,2) for equalized",
+        "expected": "analysis"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Chains Tx AMI Init output into Rx AMI Init input",
+        "expected": "txOut"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses corrcoef or similar to compare behavioral vs compiled output",
+        "expected": "corr"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets RowSize = N to match impulse response length",
+        "expected": "RowSize"
+      }
+    ]
+  },
+  {
+    "id": "redriver-model-configuration",
+    "name": "Redriver IBIS-AMI model configuration",
+    "description": "Verifies redriver (linear repeater without CDR) is configured correctly with AMIExport",
+    "prompt": "I need to build an IBIS-AMI model for a redriver — a linear repeater with CTLE and VGA but no CDR. How do I configure this?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses serdes.VGA for variable gain amplification",
+        "expected": "serdes.VGA"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Does not include DFECDR or CDR in Rx blocks (no clock recovery in redriver)",
+        "expected": "CTLE"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets ModelConfiguration to Redriver on AMIExport",
+        "expected": "Redriver"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not include DFECDR in receiver for a redriver",
+        "expected": "DFECDR"
+      }
+    ]
+  },
+  {
+    "id": "ctle-peaking-frequency-nyquist",
+    "name": "CTLE PeakingFrequency set to Nyquist",
+    "description": "Verifies PeakingFrequency is set to Nyquist = 1/(2*SymbolTime), not left at default 5 GHz",
+    "prompt": "Configure a CTLE for a 56 Gbps PAM4 link with 0 dB DC gain and 10 dB AC gain. The symbol time is 35.71 ps.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated CTLE code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets PeakingFrequency to ~14 GHz (Nyquist for 56 Gbps PAM4)",
+        "expected": "PeakingFrequency"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not leave PeakingFrequency at default 5 GHz",
+        "expected": "5e9"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets Specification to 'DC Gain and AC Gain' to enable ACGain",
+        "expected": "DC Gain and AC Gain"
+      }
+    ]
+  },
+  {
+    "id": "channeldata-impulse-constructor",
+    "name": "ChannelData Impulse via constructor not post-hoc",
+    "description": "Verifies impulse response passed via ChannelData constructor, not assigned after construction",
+    "prompt": "I have an impulse response vector from my own channel simulation. How do I feed it into SerdesSystem instead of using the built-in loss model?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates ChannelData with Impulse and dt as constructor name-value pairs",
+        "expected": "ChannelData(\"Impulse\""
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not assign impulse post-hoc via sys.ChannelData.Impulse = ...",
+        "expected": "ChannelData.Impulse ="
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Passes dt matching the system's SampleInterval",
+        "expected": "\"dt\""
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Passes ChannelData object into SerdesSystem constructor",
+        "expected": "SerdesSystem"
+      }
+    ]
+  },
+  {
+    "id": "eyediagramsi-no-output-capture",
+    "name": "eyeDiagramSI called without output capture",
+    "description": "Verifies eyeDiagramSI step called without capturing output, metrics read via eyeHeight()",
+    "prompt": "Create an eye diagram from a waveform using eyeDiagramSI and measure the eye height.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Calls eye(waveform) without capturing output — no 'eye = eye(waveform)'",
+        "expected": "eye("
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not assign output: eye = eye(waveform) would error",
+        "expected": "= eye(waveform)"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses eyeHeight(eye) to read the eye height metric after stepping",
+        "expected": "eyeHeight"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets SampleInterval, SymbolTime, and Modulation before stepping",
+        "expected": "SampleInterval"
+      }
+    ]
+  },
+  {
+    "id": "dfecdr-sample-by-sample-loop",
+    "name": "DFECDR requires sample-by-sample loop in Sample mode",
+    "description": "Verifies DFECDR in Sample mode is called one sample at a time in a loop, not with full vector",
+    "prompt": "Process a waveform through a DFECDR equalizer in MATLAB standalone using Sample mode with 5 adaptive DFE taps.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Processes samples one at a time in a for loop",
+        "expected": "for"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not pass full waveform vector to DFECDR in Sample mode",
+        "expected": "dfecdr(waveform)"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets WaveType to 'Sample' and Mode to 2 for adaptive",
+        "expected": "WaveType"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets SymbolTime and SampleInterval on the DFECDR object",
+        "expected": "SymbolTime"
+      }
+    ]
+  },
+  {
+    "id": "ctlefit-gpz-workflow",
+    "name": "ctlefit to GPZ Matrix CTLE workflow",
+    "description": "Verifies ctlefit used to extract GPZ matrix from transfer function data for CTLE configuration",
+    "prompt": "I have CTLE transfer function measurements in a CSV file. How do I fit poles and zeros and use them to configure a serdes.CTLE block?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses ctlefit.readcsv to import transfer function data",
+        "expected": "ctlefit.readcsv"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Creates ctlefit object with f, H, and SampleInterval",
+        "expected": "ctlefit("
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Extracts GPZ matrix from fitted object",
+        "expected": ".GPZ"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Creates CTLE with Specification='GPZ Matrix' and GPZ from ctlefit",
+        "expected": "GPZ Matrix"
+      }
+    ]
+  },
+  {
+    "id": "set-param-string-values",
+    "name": "set_param values must be strings",
+    "description": "Verifies set_param block parameters passed as strings, not numeric values",
+    "prompt": "I want to programmatically change the CTLE AC gain to 12 dB and FFE tap weights to [-0.1 0.8 -0.1] in my Simulink SerDes model.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses num2str for scalar parameters like ACGain",
+        "expected": "num2str"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses mat2str for array parameters like TapWeights",
+        "expected": "mat2str"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not pass numeric values directly to set_param",
+        "expected": "'ACGain', 12)"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses correct block path format: model/Rx/CTLE, model/Tx/FFE",
+        "expected": "/CTLE"
+      }
+    ]
+  },
+  {
+    "id": "design-space-sweep",
+    "name": "Design space sweep with analysis() and COMestimate",
+    "description": "Verifies agent creates a parameter sweep loop using analysis() and extracts COM from sys.Metrics.summary.COMestimate",
+    "prompt": "Sweep CTLE AC gain from 0 to 14 dB in steps of 2 dB for a 56 Gbps PAM4 SerdesSystem with 15 dB channel loss. Find the optimal AC gain that maximizes COM.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates SerdesSystem inside or before the sweep loop with correct PAM4 settings",
+        "expected": "SerdesSystem"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Calls analysis(sys) for each sweep iteration",
+        "expected": "analysis(sys)"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Reads COM from sys.Metrics.summary.COMestimate, not optPulseMetric",
+        "expected": "Metrics.summary.COMestimate"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets PeakingFrequency to ~14 GHz (Nyquist for PAM4 at 28 GBaud)",
+        "expected": "PeakingFrequency"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not fabricate a sweep function like serdesSweep or analysisSweep",
+        "expected": "serdesSweep"
+      }
+    ]
+  },
+  {
+    "id": "jitter-decomposition",
+    "name": "Jitter decomposition with jitter() function",
+    "description": "Verifies agent uses jitter() with correct field names (TJrms, DDJpkpk) and Plot=false",
+    "prompt": "I have an equalized waveform from my SerDes system. Decompose its jitter into random, deterministic, data-dependent, and ISI components. I need the results in a script, not interactively.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses jitter() function with SampleInterval and SymbolTime name-value pairs",
+        "expected": "jitter("
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Plot=false to suppress automatic histogram figures",
+        "expected": "Plot=false"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Accesses fields with rms/pkpk suffixes (TJrms, TJpkpk, RJrms, DDJpkpk, ISIpkpk)",
+        "expected": "TJpkpk"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use plain field names like J.TJ or J.RJ (these do not exist)",
+        "expected": "J.TJ "
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Generates a sufficiently long waveform using pulse2wave with prbs for ISI decomposition",
+        "expected": "pulse2wave"
+      }
+    ]
+  },
+  {
+    "id": "full-waveform-processing-chain",
+    "name": "Full waveform processing chain: equalize, analyze, jitter",
+    "description": "Verifies agent builds the complete waveform processing workflow: FFE → CTLE → DFECDR loop → eyeDiagramSI → jitter",
+    "prompt": "I have a captured waveform from a 10 Gbps NRZ link. Stream it through FFE, CTLE, and adaptive DFECDR equalization in MATLAB, then build an eye diagram and decompose jitter on the equalized result.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets WaveType to 'Sample' on all blocks and sets SymbolTime/SampleInterval",
+        "expected": "WaveType"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Processes DFECDR sample-by-sample in a for loop, not with full vector",
+        "expected": "for"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Creates eyeDiagramSI and calls step without output capture, then reads eyeHeight",
+        "expected": "eyeDiagramSI"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Calls jitter() on equalized waveform with Plot=false",
+        "expected": "jitter("
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not pass full waveform vector to DFECDR in Sample mode",
+        "expected": "dfecdr(waveform)"
+      }
+    ]
+  },
+  {
+    "id": "adapted-dfe-taps-from-outparams",
+    "name": "Read adapted DFE taps from results.outparams",
+    "description": "Verifies adapted DFE taps are read from results.outparams, not from the block object which retains initial values",
+    "prompt": "I built a SerdesSystem with a 10-tap adaptive DFECDR (Mode=2) and ran analysis(). How do I read the adapted DFE tap weights that the solver computed?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Reads adapted taps from results.outparams, not sys.RxModel.Blocks{k}.TapWeights",
+        "expected": "outparams"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not read taps from the block object (which still holds initial values)",
+        "expected": "sys.RxModel.Blocks"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Accesses the DFECDR struct field within outparams cell array",
+        "expected": "DFECDR"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Extracts TapWeights from the DFECDR outparams struct",
+        "expected": "TapWeights"
+      }
+    ]
+  },
+  {
+    "id": "metrics-summary-field-names",
+    "name": "Correct Metrics.summary field names and units",
+    "description": "Verifies agent uses correct field names (EH, EW, COMestimate) with correct units, not fabricated names like maxEyeHeight",
+    "prompt": "After running analysis() on my 56 Gbps PAM4 SerdesSystem, I want to extract eye height, eye width, and COM from the statistical analysis results. Print them in mV and ps.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses sys.Metrics.summary.EH for eye height",
+        "expected": "Metrics.summary.EH"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses sys.Metrics.summary.EW for eye width",
+        "expected": "Metrics.summary.EW"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Multiplies EH by 1e3 for mV (EH is in volts)",
+        "expected": "1e3"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Does NOT multiply EW by 1e12 (EW is already in picoseconds)",
+        "expected": "EW"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use fabricated field names like maxEyeHeight or maxEyeWidth",
+        "expected": "maxEyeHeight"
+      }
+    ]
+  },
+  {
+    "id": "full-system-construction",
+    "name": "Full system construction with AnalogModel and JitterAndNoise",
+    "description": "Verifies SerdesSystem includes AnalogModel on Tx/Rx and JitterAndNoise for realistic results",
+    "prompt": "Create a complete, production-quality 56 Gbps PAM4 SerdesSystem with FFE, CTLE, and adaptive DFE. Use a 15 dB loss channel. I need realistic COM numbers.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Includes AnalogModel on Transmitter with R and C parameters",
+        "expected": "AnalogModel"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Includes AnalogModel on Receiver with R and C parameters",
+        "expected": "AnalogModel"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Includes JitterAndNoise object in SerdesSystem construction",
+        "expected": "JitterAndNoise"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sets Signaling to Differential",
+        "expected": "Differential"
+      },
+      {
+        "id": "a5",
+        "type": "code_executes",
+        "description": "Generated SerdesSystem code runs without error in MATLAB"
+      }
+    ]
+  },
+  {
+    "id": "dfe-sweep-reads-outparams",
+    "name": "DFE sweep reads adapted taps from outparams",
+    "description": "Verifies a loss sweep that reports DFE taps reads them from outparams, not block objects",
+    "prompt": "Sweep channel loss from 10 to 30 dB in 5 dB steps for a PAM4 system with 10-tap adaptive DFE. Report COM and the adapted DFE tap weights at each loss level.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates a sweep loop with SerdesSystem and analysis() at each step",
+        "expected": "analysis"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Reads adapted DFE taps from results.outparams, not block object",
+        "expected": "outparams"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Searches outparams cell array for the DFECDR struct entry",
+        "expected": "DFECDR"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Reports COM from sys.Metrics.summary.COMestimate",
+        "expected": "COMestimate"
+      }
+    ]
+  },
+  {
+    "id": "side-by-side-eye-comparison",
+    "name": "Side-by-side eye comparison uses tiledlayout or subplot",
+    "description": "Verifies plotStatEye used in a multi-panel layout with title() for labeling",
+    "prompt": "Create a script that compares two SerdesSystem configurations side by side: one with 10 dB channel loss and one with 20 dB. Show the statistical eye for each and print COM and eye height. Use a 56 Gbps PAM4 link with FFE, CTLE, and adaptive DFE.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses tiledlayout/nexttile or subplot for multi-panel layout",
+        "expected": "tiledlayout"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses title() to label each plotStatEye panel",
+        "expected": "title("
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Reads metrics from sys.Metrics.summary with correct field names (EH, EW, COMestimate)",
+        "expected": "Metrics.summary"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Includes AnalogModel and JitterAndNoise in system construction",
+        "expected": "AnalogModel"
+      }
+    ]
+  },
+  {
+    "id": "comparison-script-generation",
+    "name": "Comparison script writes .m file with correct patterns",
+    "description": "Verifies a comparison/sweep script uses correct patterns: tiledlayout (not subplot), outparams for DFE, EH in volts, EW in ps",
+    "prompt": "Write a MATLAB script that sweeps channel loss from 10 to 25 dB in 5 dB steps for a 56 Gbps PAM4 system with FFE + CTLE + 10-tap adaptive DFE. For each loss level, plot the statistical eye, report COM, eye height in mV, eye width in ps, and the adapted DFE tap weights.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Writes code to a .m file, not inline evaluation",
+        "expected": ".m"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Reads adapted DFE taps from results.outparams, not block object",
+        "expected": "outparams"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Converts EH to mV by multiplying by 1e3 (EH is in volts)",
+        "expected": "1e3"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses EW directly without scaling (already in picoseconds)",
+        "expected": "EW"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Uses tiledlayout/nexttile or subplot for multi-panel eye layout",
+        "expected": "tiledlayout"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Includes AnalogModel on Tx and Rx, JitterAndNoise, and Signaling='Differential'",
+        "expected": "JitterAndNoise"
+      }
+    ]
+  },
+  {
+    "id": "gpz-configselect-requires-mode1",
+    "name": "GPZ ConfigSelect requires Mode=1 to switch rows",
+    "description": "Verifies that when using GPZ Matrix specification with ConfigSelect, Mode is set to 1 (not left at default 0)",
+    "prompt": "I have a GPZ matrix with 6 rows from ctlefit. I want to sweep ConfigSelect from 0 to 5 to compare all 6 CTLE configurations in my SerdesSystem. Show me how to set up the CTLE block.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets Specification to 'GPZ Matrix'",
+        "expected": "GPZ Matrix"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Mode=1 to enable ConfigSelect row switching",
+        "expected": "Mode"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses ConfigSelect (0-indexed) to select GPZ rows",
+        "expected": "ConfigSelect"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not leave Mode at default 0 (which ignores ConfigSelect)",
+        "expected": "'Mode', 0"
+      }
+    ]
+  },
+  {
+    "id": "rx-clock-recovery-jitter-requires-clocked",
+    "name": "Rx clock recovery jitter requires RxClockMode=clocked",
+    "description": "Verifies that when configuring Rx clock recovery jitter, RxClockMode is set to clocked (not ideal)",
+    "prompt": "I want to model CDR jitter on my 56 Gbps PAM4 SerdesSystem. Add 0.5 ps RMS random jitter and 2 ps peak-to-peak deterministic jitter on the Rx clock recovery. Show me how to configure JitterAndNoise.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets RxClockMode to 'clocked' (not 'ideal')",
+        "expected": "clocked"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Rx_Clock_Recovery_Rj to 0.5e-12 (seconds, not UI)",
+        "expected": "Rx_Clock_Recovery_Rj"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets Rx_Clock_Recovery_Dj to 2e-12 (seconds, not UI)",
+        "expected": "Rx_Clock_Recovery_Dj"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use Type='UI' (silently ignored by analysis)",
+        "expected": "\"UI\""
+      }
+    ]
+  },
+  {
+    "id": "jitter-values-from-ui-spec",
+    "name": "Jitter from UI spec converted correctly",
+    "description": "Verifies jitter from a UI spec is configured correctly — either via manual conversion (multiply by symbolTime) or SimpleJitter with Type='UI' and Include=true",
+    "prompt": "A spec says my Tx has 0.05 UI of random jitter and 0.1 UI of deterministic jitter. Configure JitterAndNoise for a 56 Gbps PAM4 system (28 GBaud).",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "References symbolTime for UI-to-seconds conversion or uses SimpleJitter Type='UI'",
+        "expected": "symbolTime"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Tx_Rj and Tx_Dj jitter properties",
+        "expected": "Tx_Rj"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "If using SimpleJitter, sets Include=true (defaults to false otherwise jitter is ignored)",
+        "expected": "JitterAndNoise"
+      }
+    ]
+  },
+  {
+    "id": "sparameter-multi-port-aggressors",
+    "name": "Multi-port S-parameter files include aggressors automatically",
+    "description": "Verifies multi-port files (.s8p/.s12p/.s16p) are loaded with SParameterChannel and full ImpulseResponse matrix passed to ChannelData",
+    "prompt": "Load a 12-port S-parameter file (channel_20dB_2agg.s12p) with 2 aggressors into a 56 Gbps PAM4 SerdesSystem and run analysis including the crosstalk from the aggressors.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses SParameterChannel with FileName name-value pair",
+        "expected": "SParameterChannel(\"FileName\""
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Passes full ImpulseResponse matrix (not just column 1) to ChannelData constructor",
+        "expected": "spCh.ImpulseResponse"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses ChannelData constructor with Impulse and dt name-value pairs",
+        "expected": "ChannelData(\"Impulse\""
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not try to set EnableCrosstalk for S-parameter aggressors (auto-included)",
+        "expected": "EnableCrosstalk"
+      }
+    ]
+  },
+  {
+    "id": "custom-crosstalk-icn-configuration",
+    "name": "Custom crosstalk uses correct ICN configuration",
+    "description": "Verifies Custom crosstalk sets EnableCrosstalk, CrosstalkSpecification, FEXTICN, NEXTICN, and fb correctly",
+    "prompt": "Add crosstalk to a 56 Gbps PAM4 SerdesSystem with 15 dB loss. Use custom ICN values: FEXT = 0.02 V RMS and NEXT = 0.005 V RMS.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Sets EnableCrosstalk to true",
+        "expected": "EnableCrosstalk"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Sets CrosstalkSpecification to Custom",
+        "expected": "Custom"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Sets FEXTICN value",
+        "expected": "FEXTICN"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Sets NEXTICN value",
+        "expected": "NEXTICN"
+      }
+    ]
+  },
+  {
+    "id": "analog-model-parasitic-capacitance",
+    "name": "AnalogModel includes realistic parasitic capacitance",
+    "description": "Verifies Tx and Rx AnalogModel are configured with R and C values for realistic termination modeling",
+    "prompt": "Build a 56 Gbps PAM4 SerdesSystem with realistic analog models. The Tx has 50 ohm termination with 100 fF parasitic capacitance. The Rx has 50 ohm termination with 200 fF parasitic capacitance. Include appropriate rise time.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Tx AnalogModel constructed with R and C parameters",
+        "expected": "AnalogModel('R', 50, 'C'"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Rx AnalogModel constructed with R and C parameters",
+        "expected": "AnalogModel('R', 50, 'C'"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "RiseTime set on Transmitter (approximately 0.3-0.4 × SymbolTime)",
+        "expected": "RiseTime"
+      }
+    ]
+  },
+  {
+    "id": "transmitter-single-quotes",
+    "name": "Transmitter constructor uses single-quoted property names",
+    "description": "Verifies Transmitter is constructed with char vector (single quote) property names, not string (double quote) names which cause an ismember error",
+    "prompt": "Create a 56 Gbps PAM4 SerdesSystem with a 3-tap FFE transmitter with AnalogModel and a CTLE + DFECDR receiver. Use 15 dB channel loss.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated SerdesSystem code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Transmitter uses single-quoted property names (char vectors)",
+        "expected": "Transmitter('Blocks'"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not use double-quoted string for Transmitter property names",
+        "expected": "Transmitter(\"Blocks\""
+      }
+    ]
+  },
+  {
+    "id": "ga-parameter-optimization-setup",
+    "name": "GA-based parameter optimization uses correct formulation",
+    "description": "Verifies agent sets up Genetic Algorithm optimization for SerDes parameters with proper constraints, quantization, and fitness function",
+    "prompt": "Optimize 3-tap FFE weights and CTLE AC gain jointly for a 56 Gbps PAM4 system at 20 dB channel loss. Use a genetic algorithm. The FFE taps should be quantized to 0.02 resolution. Show me the optimal settings and COM.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Uses ga() from Global Optimization Toolbox",
+        "expected": "ga("
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Defines bounds for all optimization variables",
+        "expected": "lb and ub or lower bound and upper bound"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Fitness function uses analysis() with Metrics.summary for COM or EH",
+        "expected": "analysis"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Transmitter uses single-quoted property names in fitness function",
+        "expected": "Transmitter('Blocks'"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Optimizes multiple parameters jointly (not just FFE alone)",
+        "expected": "ACGain or acGain as optimization variable"
+      }
+    ]
+  },
+  {
+    "id": "optimization-eh-vs-com",
+    "name": "Explains EH vs COM tradeoff for optimization fitness metric",
+    "description": "Verifies agent understands and explains the difference between optimizing for eye height vs COM",
+    "prompt": "I want to optimize my SerDes equalization settings for a 56 Gbps PAM4 link. Should I use COM or eye height as the optimization metric? What's the difference?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Explains COM is compliance-oriented (signal-to-noise ratio)",
+        "expected": "COM"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Explains eye height measures voltage margin",
+        "expected": "eye height"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Notes that EH and COM can produce different optimal parameters",
+        "expected": "diverge or different optimal or different results"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "For PAM4 EH, uses min() across eyes (worst-eye metric)",
+        "expected": "min(EH) or worst eye or minimum eye"
+      }
+    ]
+  },
+  {
+    "id": "multi-panel-plot-methods",
+    "name": "Multi-panel layout with SerdesSystem plot methods",
+    "description": "Verifies agent uses plotImpulse/plotPulse/plotAlignedPulse/plotWavePattern with tiledlayout or subplot",
+    "prompt": "Plot the impulse response and pulse response side by side for my SerdesSystem, so I can compare the unequalized and equalized shapes in one figure.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses plotImpulse(sys) for the impulse response panel",
+        "expected": "plotImpulse"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses plotPulse(sys) for the pulse response panel",
+        "expected": "plotPulse"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses tiledlayout/nexttile or subplot for multi-panel layout",
+        "expected": "tiledlayout"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses title() to label each panel",
+        "expected": "title("
+      }
+    ]
+  },
+  {
+    "id": "stimulus-jitter-units-simulink",
+    "name": "Stimulus block jitter units default to UI",
+    "description": "Verifies agent sets jitter unit to Seconds when configuring Simulink Stimulus block with absolute jitter values via set_param",
+    "prompt": "Write a MATLAB script that configures the Simulink Stimulus block to use Serial PRBS with 1 ps RMS random jitter and 3 ps deterministic jitter via set_param.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Sets soRjUnit to Seconds before or alongside setting soRj",
+        "expected": "soRjUnit"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Sets soDjUnit to Seconds before or alongside setting soDj",
+        "expected": "soDjUnit"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses so prefix for Stimulus mask parameters",
+        "expected": "soSpecification"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not set jitter values without overriding units to Seconds",
+        "expected": "soRj.*without.*Unit"
+      }
+    ]
+  },
+  {
+    "id": "vec-units-distinction",
+    "name": "VEC units differ between Metrics.summary and eyeDiagramSI",
+    "description": "Verifies agent correctly reports VEC units when using both statistical and waveform analysis APIs",
+    "prompt": "Analyze a 56 Gbps PAM4 SerDes system using both statistical analysis (analysis/Metrics.summary) and time-domain eye diagram (eyeDiagramSI). Report COM, EH, EW, and VEC from both paths with correct units.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Reports Metrics.summary.VEC in percent (not dB)",
+        "expected": "percent"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Reports eyeDiagramSI vec() in dB (not percent)",
+        "expected": "dB"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Reports EW from Metrics.summary without multiplying by 1e12 (already in ps)",
+        "expected": "already scaled"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Reports eyeWidth from eyeDiagramSI in seconds, converting to ps with 1e12",
+        "expected": "1e12"
+      }
+    ]
+  },
+  {
+    "id": "waveform-load-and-equalize",
+    "name": "Load captured waveform and equalize with CTLE+DFE",
+    "description": "Verifies agent can load a .mat waveform file, set up system objects EQ chain, and measure eye metrics",
+    "prompt": "I have a captured NRZ waveform in data/waveforms/nrz_28GBaud_20dB.mat. The file contains rxWaveform (the signal), plus metadata with baudRate, dt, samplesPerSymbol, and adaptedDfeTaps. Load it and equalize with CTLE (8 dB AC gain) + DFE using the pre-loaded taps from metadata. Measure the eye height and COM with eyeDiagramSI.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets CTLE Specification to 'DC Gain and AC Gain' before ACGain",
+        "expected": "DC Gain and AC Gain"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets WaveType='Sample' on EQ blocks for waveform processing",
+        "expected": "WaveType"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses Mode=1 (fixed taps) when loading pre-adapted taps",
+        "expected": "Mode"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "DFE applied sample-by-sample in a loop",
+        "expected": "for"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Uses eyeDiagramSI for waveform eye measurement",
+        "expected": "eyeDiagramSI"
+      }
+    ]
+  },
+  {
+    "id": "waveform-adaptive-dfe-pam4",
+    "name": "PAM4 waveform with adaptive DFE requires Modulation setting",
+    "description": "Verifies agent sets Modulation on DFECDR for PAM4 and uses adaptive mode with adequate gain",
+    "prompt": "I have a PAM4 captured waveform in a .mat file (28 GBaud, 16 sps). Process it with an adaptive 10-tap DFE (no CTLE). Use Mode=2 with EqualizationGain=5e-3. Measure the eye after the DFE converges.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Sets DFECDR Modulation to 4 for PAM4",
+        "expected": "Modulation"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses Mode=2 for adaptive operation",
+        "expected": "Mode"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets EqualizationGain higher than default for convergence",
+        "expected": "EqualizationGain"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Measures eye on converged portion (skips initial transient)",
+        "expected": "end"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use SamplesPerSymbol property (read-only on DFECDR)",
+        "expected": "SamplesPerSymbol"
+      }
+    ]
+  },
+  {
+    "id": "waveform-channel-convolution",
+    "name": "Channel impulse convolution scales by dt",
+    "description": "Verifies agent multiplies channel impulse by dt when convolving with a waveform (impulse is in V/s)",
+    "prompt": "I have a channel impulse response (in V/s) and a PRBS waveform. Show me how to apply the channel to get the receiver waveform using filter().",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Multiplies impulse by dt before filtering",
+        "expected": "* dt"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses filter() for causal convolution",
+        "expected": "filter("
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not use conv() which doubles the length",
+        "expected": "conv("
+      }
+    ]
+  },
+  {
+    "id": "waveform-stimulus-system-object",
+    "name": "serdes.Stimulus is a streaming system object",
+    "description": "Verifies agent uses correct Stimulus API: SampleInterval (not SamplesPerSymbol), sample-by-sample loop, Specification='PRBS'",
+    "prompt": "Generate a PRBS-13 NRZ waveform at 28 GBaud using serdes.Stimulus with 16 samples per symbol.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses SampleInterval property (not SamplesPerSymbol which doesn't exist)",
+        "expected": "SampleInterval"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets Specification to PRBS",
+        "expected": "PRBS"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Calls stim() in a loop (streaming system object, 1 sample per call)",
+        "expected": "for"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not try to get multiple outputs from stim() (only 1 output)",
+        "expected": "[txWave, t, symbols] = stim"
+      }
+    ]
+  },
+  {
+    "id": "pam4-adapted-taps-time-domain",
+    "name": "Pre-loaded adapted taps fail for PAM4 time-domain",
+    "description": "Verifies agent explains that stat-analysis adapted taps work for NRZ but may fail for PAM4, recommends Mode=2 adaptive DFE",
+    "prompt": "I got adapted DFE taps from analysis() on my PAM4 system. Can I pre-load them into a DFECDR system object for time-domain processing?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Explains taps work for NRZ but may fail for PAM4",
+        "expected": "NRZ"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions PAM4 issue with pre-loaded taps",
+        "expected": "PAM4"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Recommends Mode=2 adaptive DFE for PAM4 time-domain",
+        "expected": "Mode = 2"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Suggests adequate EqualizationGain for convergence",
+        "expected": "EqualizationGain"
+      }
+    ]
+  },
+  {
+    "id": "ctle-overboost-low-loss-pam4",
+    "name": "CTLE over-boost kills PAM4 at low loss",
+    "description": "Verifies agent explains that CTLE can be counterproductive at low loss for PAM4, recommends DFE-only approach",
+    "prompt": "My 56 Gbps PAM4 channel has only 10 dB loss. I added 12 dB CTLE AC gain but COM dropped. Why?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Explains CTLE counterproductive at low loss",
+        "expected": "low loss"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions CTLE boost can hurt performance",
+        "expected": "CTLE"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Recommends DFE-only or no CTLE at low loss",
+        "expected": "DFE"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not suggest adding more CTLE gain",
+        "expected": "increase AC gain"
+      }
+    ]
+  },
+  {
+    "id": "eyeheight-returns-vector-pam",
+    "name": "eyeHeight returns vector for PAM-N",
+    "description": "Verifies agent explains eyeHeight returns N-1 values for PAM-N modulation, recommends min() for worst-case",
+    "prompt": "I called eyeHeight on my PAM4 eyeDiagramSI and got a 3-element vector instead of a scalar. Is this a bug?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Explains N-1 eye openings for PAM-N",
+        "expected": "PAM"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Mentions 3 eyes for PAM4 is correct",
+        "expected": "3"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Recommends min() for worst-case eye height",
+        "expected": "min("
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not say this is a bug",
+        "expected": "bug"
+      }
+    ]
+  },
+  {
+    "id": "eye-linearity-lowercase",
+    "name": "Metrics.summary.eyeLinearity is lowercase",
+    "description": "Verifies agent corrects the capitalization of eyeLinearity field (lowercase, not EyeLinearity)",
+    "prompt": "After analysis, I tried to access sys.Metrics.summary.EyeLinearity but got an error.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "States the field is lowercase eyeLinearity",
+        "expected": "eyeLinearity"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Shows correct syntax with lowercase",
+        "expected": "summary.eyeLinearity"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not use incorrect EyeLinearity capitalization",
+        "expected": "EyeLinearity"
+      }
+    ]
+  },
+  {
+    "id": "compliance-eyemask-margin",
+    "name": "Compliance testing with eyeMask and margin",
+    "description": "Verifies agent uses eyeMask constructor and margin() method for standards-based compliance testing",
+    "prompt": "Test my SerdesSystem against a compliance mask with 15 mV minimum eye height and 0.3 UI minimum width.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates eyeMask object",
+        "expected": "eyeMask"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets EyeHeightThreshold property",
+        "expected": "EyeHeightThreshold"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets EyeWidthThreshold property",
+        "expected": "EyeWidthThreshold"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses margin() method with eyeDiagramSI",
+        "expected": "margin("
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Mentions pass/fail criteria or margin result",
+        "expected": "Pass"
+      }
+    ]
+  },
+  {
+    "id": "max-datarate-sweep-jitter",
+    "name": "Find maximum data rate with jitter constraint",
+    "description": "Verifies agent can sweep symbol time, set JitterAndNoise with correct units, and use EH threshold to find max data rate",
+    "prompt": "For a NRZ SerdesSystem with Tx_Rj=0.01 UI of jitter, a receiver with a 4-tap DFECDR, and channel loss of 20 dB at 14 GHz, find the maximum data rate where eye height at BER=1e-12 is at least 100 mV. Sweep symbol time with a coarse pass then binary search to find the threshold.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated sweep code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "JitterAndNoise Tx_Rj set via direct scalar assignment (not SimpleJitter constructor)",
+        "expected": "jn.Tx_Rj ="
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Jitter value converted from UI to seconds (0.01 * symbolTime)",
+        "expected": "* st"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "ChannelLossFreq explicitly set (not left at 5 GHz default)",
+        "expected": "ChannelLossFreq"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "EH read from sys.Metrics.summary.EH (not fabricated metric)",
+        "expected": "Metrics.summary.EH"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Transmitter or Receiver uses single-quoted property names",
+        "expected": "Receiver('Blocks'"
+      }
+    ]
+  },
+  {
+    "id": "bathtub-curve-generation",
+    "name": "Bathtub curve from eye diagram",
+    "description": "Verifies agent uses bathtub() method on eyeDiagramSI to generate bathtub curves",
+    "prompt": "Generate a bathtub curve from my eye diagram.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses bathtub() method",
+        "expected": "bathtub("
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Calls bathtub on eyeDiagramSI object",
+        "expected": "eyeObj"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Explains bathtub shows BER vs timing offset",
+        "expected": "BER"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not fabricate non-existent bathtub analysis functions",
+        "expected": "generateBathtub"
+      }
+    ]
+  },
+  {
+    "id": "ami-getwave-chunked-loop",
+    "name": "AMI GetWave uses chunked for-loop",
+    "description": "Verifies serdes.AMI GetWave called in a for-loop with BlockSize-length chunks, not as a single call",
+    "prompt": "Run GetWave validation of my compiled Rx IBIS-AMI DLL against a Simulink waveform. I have the channel output and Rx output logged from sim().",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Calls serdes.AMI in a for-loop with BlockSize-length chunks",
+        "expected": "for"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets BlockSize property on serdes.AMI object",
+        "expected": "BlockSize"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Sets SkipFirstBlock = false for MATLAB calling",
+        "expected": "SkipFirstBlock"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Pads waveform to multiple of BlockSize before chunked loop",
+        "expected": "nPad"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not pass entire waveform in a single ami() call without chunking",
+        "expected": "ami(waveform, impulse, clockIn)"
+      }
+    ]
+  },
+  {
+    "id": "ami-skipfirstblock-diagnosis",
+    "name": "SkipFirstBlock diagnosis for MATLAB AMI calls",
+    "description": "Verifies agent identifies SkipFirstBlock as the cause when first block of GetWave output is passthrough",
+    "prompt": "I'm calling serdes.AMI from MATLAB to process a waveform through my compiled Rx DLL. The first 1024 samples look like unprocessed input but the rest looks correct. What's wrong?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Identifies SkipFirstBlock as the issue",
+        "expected": "SkipFirstBlock"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Sets SkipFirstBlock = false",
+        "expected": "false"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Explains default true is for Simulink internal buffering",
+        "expected": "Simulink"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not suggest the DLL is broken or data is corrupt",
+        "expected": "corrupt"
+      }
+    ]
+  },
+  {
+    "id": "pulse2wave-pam4-waveform",
+    "name": "pulse2wave works for PAM4 waveforms",
+    "description": "Verifies agent uses pulse2wave for PAM4 waveform generation without claiming it is NRZ-only",
+    "prompt": "Generate a PAM4 time-domain waveform from a pulse response for eye diagram analysis. I have a 56 Gbps PAM4 system.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Uses pulse2wave for waveform generation",
+        "expected": "pulse2wave"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Does not say pulse2wave is NRZ-only or 2-level only",
+        "expected": "NRZ-only"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not say pulse2wave cannot handle PAM4",
+        "expected": "cannot handle PAM"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Provides a PRBS or symbol pattern as stimulus input",
+        "expected": "prbs"
+      }
+    ]
+  }
+]
