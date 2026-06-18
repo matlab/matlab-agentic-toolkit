@@ -1,0 +1,227 @@
+[
+  {
+    "id": "ofdm-eval-1",
+    "title": "Basic OFDM Tx/Rx with AWGN",
+    "prompt": "Create a basic OFDM system: 64-point FFT, 16-sample cyclic prefix, 52 active subcarriers (no pilots), QPSK modulation. Transmit 200 OFDM symbols over AWGN at SNR per subcarrier = 10 dB. Measure BER and compare to theoretical. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ofdmmod function (not comm.OFDMModulator)", "weight": 1 },
+      { "description": "Uses ofdmdemod with symOffset parameter specified", "weight": 1 },
+      { "description": "Null subcarriers include DC (index 33 for nFFT=64)", "weight": 1 },
+      { "description": "Computes signal power as nActiveSC/nFFT^2 or equivalent (NOT 0, NOT 'measured')", "weight": 2 },
+      { "description": "Converts SNR_sc to wideband SNR using convertSNR with snrsc", "weight": 2 },
+      { "description": "Uses awgn with explicit signal power (not 0 or 'measured')", "weight": 2 },
+      { "description": "Computes theoretical BER using berawgn or equivalent closed-form expression (e.g., erfc) with Eb/No converted from SNR_sc", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      { "description": "Measured BER within 2x of theoretical", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-2",
+    "title": "OFDM with pilots and 16-QAM",
+    "prompt": "Build an OFDM system with 64-FFT, 16 CP, 4 BPSK pilot subcarriers at positions [12, 26, 40, 54], and 16-QAM data on the remaining active subcarriers. Include null subcarriers for guard bands and DC. Transmit 100 symbols over AWGN at SNR_sc = 18 dB. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ofdmmod with 6 arguments (data, nFFT, cpLen, nullIdx, pilotIdx, pilots)", "weight": 2 },
+      { "description": "Uses ofdmdemod with pilotIdx to extract pilots separately", "weight": 1 },
+      { "description": "nullIdx and pilotIdx are vectors of integers in [1, nFFT]", "weight": 1 },
+      { "description": "nDataSC accounts for both nulls and pilots (nFFT - nulls - pilots)", "weight": 1 },
+      { "description": "Signal power based on nActiveSC (data + pilots), not nDataSC alone", "weight": 2 },
+      { "description": "Uses UnitAveragePower=true for qammod/qamdemod", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-3",
+    "title": "SNR conversion and noise addition for coded OFDM",
+    "prompt": "I have an OFDM system with 256-FFT, 64-sample CP, 192 active subcarriers. I'm using 16-QAM with rate-3/4 LDPC coding. The target operating point is SNR per subcarrier = 12 dB. Add noise correctly and compute the equivalent Eb/No for theoretical BER comparison. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Computes signal power as nActiveSC/nFFT^2 or equivalent (NOT 0 dBW, NOT 'measured')", "weight": 2 },
+      { "description": "Uses convertSNR to go from snrsc to snr (wideband) for awgn", "weight": 2 },
+      { "description": "Uses convertSNR with CodingRate=0.75 when computing Eb/No", "weight": 2 },
+      { "description": "Uses awgn with explicit signal power", "weight": 1 },
+      { "description": "NumActiveSubcarriers in convertSNR matches actual active SC count", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-4",
+    "title": "OFDM over frequency-selective fading with equalization",
+    "prompt": "Simulate OFDM (64-FFT, 16 CP, QPSK, 52 active subcarriers) over a 3-tap Rayleigh fading channel with path delays [0 1e-6 2e-6], average path gains [0 -3 -6] dB, sample rate 1 MHz, and maximum Doppler 50 Hz. Add AWGN at SNR_sc = 20 dB. Use MMSE equalization and measure BER. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Creates comm.RayleighChannel with PathGainsOutputPort=true", "weight": 2 },
+      { "description": "Uses ofdmChannelResponse to compute per-subcarrier H (not manual fft)", "weight": 2 },
+      { "description": "Gets pathFilters from info(channel).ChannelFilterCoefficients", "weight": 1 },
+      { "description": "Computes activeIdx correctly for ofdmChannelResponse", "weight": 1 },
+      { "description": "Uses ofdmEqualize with Algorithm='mmse'", "weight": 1 },
+      { "description": "Passes H(:) or H as [(nSC*nSym) x 1] to ofdmEqualize (not [nSC x nSym])", "weight": 2 },
+      { "description": "Uses explicit signal power in awgn (not 'measured' — fading changes power)", "weight": 2 },
+      { "description": "Code runs without error", "weight": 1 },
+      { "description": "BER < 0.05 (equalization working)", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-5",
+    "title": "OFDM parameter design from physical specifications",
+    "prompt": "Design an OFDM system for a 10 MHz bandwidth with 15 kHz subcarrier spacing. The expected channel delay spread is 5 microseconds. Compute the FFT size, CP length, sample rate, number of guard subcarriers, and overhead percentage. Verify the CP exceeds the delay spread. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "FFT size is a power of 2 (uses nextpow2 or similar)", "weight": 1 },
+      { "description": "Sample rate = nFFT * subcarrier spacing", "weight": 1 },
+      { "description": "CP length exceeds the channel delay spread (cpLen >= ceil(delaySpread * sampleRate))", "weight": 1 },
+      { "description": "Comments explain each derivation step (why, not just what)", "weight": 2 },
+      { "description": "Guard subcarriers computed from bandwidth and nFFT", "weight": 1 },
+      { "description": "DC subcarrier (nFFT/2+1) included in nulls", "weight": 1 },
+      { "description": "Overhead analysis includes both CP and guard band contributions", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-6",
+    "title": "Soft demodulation with noise variance",
+    "prompt": "Build an OFDM link with 64-FFT, 16 CP, 52 active subcarriers, 16-QAM, at SNR_sc = 12 dB. Compute LLRs for the demodulated bits to be used in soft decoding. Verify that LLR values have reasonable magnitude. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Captures noise variance from awgn second output: [rxSig, nVar] = awgn(...)", "weight": 2 },
+      { "description": "Scales noise variance to frequency domain: nVar_sc = nVar * nFFT (not nFFT^2)", "weight": 2 },
+      { "description": "Passes nVar_sc to qamdemod via NoiseVariance parameter", "weight": 1 },
+      { "description": "Uses OutputType='approxllr' or 'llr' in qamdemod", "weight": 1 },
+      { "description": "Uses explicit signal power in awgn", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      { "description": "LLR values have magnitude > 5 (not compressed to near-zero)", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-7",
+    "title": "ofdmEqualize dimension handling",
+    "prompt": "I have an OFDM system with 64-FFT, 16 CP, 52 active subcarriers, and 10 OFDM symbols passed through a Rayleigh fading channel. ofdmChannelResponse gives me H of size [52 x 10]. How do I correctly pass this to ofdmEqualize for SISO time-varying equalization? Show the correct approach and explain why passing H directly as [52 x 10] is wrong. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Explains that ofdmEqualize 3-D format interprets dim 2 as Tx antennas (Ns), not symbols", "weight": 2 },
+      { "description": "Shows passing H(:) as [(nSC*nSym) x 1] for time-varying SISO", "weight": 2 },
+      { "description": "Warns that passing H as [nSC x nSym] produces wrong results silently (no error thrown)", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 }
+    ]
+  },
+  {
+    "id": "ofdm-eval-8",
+    "title": "OFDM signal power calculation",
+    "prompt": "I'm adding noise to my OFDM signal using awgn(txSig, snr, 0) but my BER is much worse than theoretical. My OFDM uses 128-FFT with 96 active subcarriers and QPSK. What's wrong and how do I fix it? Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Identifies that awgn(x,snr,0) assumes unit power but OFDM signal power != 1W", "weight": 2 },
+      { "description": "Explains OFDM power = nActiveSC/nFFT^2 due to IFFT 1/N normalization", "weight": 2 },
+      { "description": "Shows correct fix: sigPow = 10*log10(nActiveSC/nFFT^2); awgn(txSig,snr,sigPow)", "weight": 2 },
+      { "description": "Does NOT recommend 'measured' as the fix", "weight": 1 },
+      { "description": "Computes actual power for 128-FFT/96-active: 96/128^2 = 0.00586 = -22.3 dBW", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 }
+    ]
+  },
+  {
+    "id": "ofdm-eval-9",
+    "title": "Schmidl-Cox synchronization for OFDM",
+    "prompt": "Implement Schmidl-Cox synchronization for an OFDM system with nFFT=64, cpLen=16. Design a preamble with repeated half-symbol structure (populate even DFT-order subcarriers). Apply 0.2 subcarrier spacings of CFO and add AWGN at 20 dB SNR. Estimate both timing and fractional CFO from the received preamble. Correct the CFO and verify the estimate is accurate. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Preamble uses even DFT-order subcarriers for half-symbol repetition (not centered-frequency even indices)", "weight": 2 },
+      { "description": "Timing metric uses two-sided normalization |P|^2/(R1*R2) — bounded to [0,1]", "weight": 2 },
+      { "description": "CFO estimate uses angle(P)/pi formula (normalized to subcarrier spacing)", "weight": 2 },
+      { "description": "Uses frequencyOffset for CFO correction (not manual exp(-1j*2*pi*...))", "weight": 2 },
+      { "description": "CFO estimation error < 0.05 subcarrier spacings", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 }
+    ]
+  },
+  {
+    "id": "ofdm-eval-10",
+    "title": "Pilot-based phase tracking with unwrap",
+    "prompt": "Create an OFDM system with nFFT=64, cpLen=16, 4 QPSK pilot subcarriers at positions [12, 26, 40, 54], 16-QAM data on remaining active subcarriers, 100 symbols. Apply a residual CFO of 0.03 subcarrier spacings using frequencyOffset, add AWGN at 15 dB per-subcarrier SNR. After ofdmdemod, implement pilot-based common phase error (CPE) tracking to correct the phase drift. Compare BER with and without phase tracking. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ofdmmod/ofdmdemod with pilotIdx for pilot insertion and extraction", "weight": 2 },
+      { "description": "Extracts pilot phase error using angle(rxPilots ./ txPilots) or equivalent", "weight": 1 },
+      { "description": "Uses unwrap on the phase estimate before applying correction", "weight": 3 },
+      { "description": "Corrects data symbols by multiplying with exp(-1j*cpe)", "weight": 1 },
+      { "description": "Uses frequencyOffset to apply CFO (not manual exp)", "weight": 1 },
+      { "description": "BER with phase tracking significantly lower than without", "weight": 2 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-11",
+    "title": "LDPC-coded OFDM system",
+    "prompt": "Build an LDPC-coded OFDM system: rate-1/2 LDPC code with block length 648, 64-FFT, 16 CP, 52 active subcarriers, 16-QAM modulation, AWGN at SNR_sc = 14 dB. Encode a random message, map coded bits to QAM symbols, modulate with ofdmmod, add noise with correct signal power, demodulate, compute LLR with correct frequency-domain noise variance, decode, and display BER. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ofdmmod/ofdmdemod (not manual IFFT/FFT)", "weight": 2 },
+      { "description": "Uses modern ldpcEncode/ldpcDecode with config objects (not removed comm.LDPCEncoder/Decoder)", "weight": 2 },
+      { "description": "Passes NoiseVariance to qamdemod for proper LLR scaling", "weight": 2 },
+      { "description": "Scales noise variance to frequency domain: nVar_sc = nVar * nFFT", "weight": 2 },
+      { "description": "Uses explicit signal power in awgn (nActiveSC/nFFT^2, not 0 or 'measured')", "weight": 1 },
+      { "description": "Decoder receives LLR (soft) input with OutputType='approxllr' or 'llr'", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      { "description": "BER = 0 (LDPC should fully correct at 14 dB)", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()",
+      "[output_excludes] Does not use removed LDPC System Objects (expected: comm.ldpcencoder|comm.ldpcdecoder)"
+    ]
+  },
+  {
+    "id": "ofdm-eval-12",
+    "title": "Debug MMSE equalization with soft decoding",
+    "prompt": "I have an OFDM system (64-FFT, 16 CP, 52 active subcarriers, 16-QAM, rate-1/2 LDPC with block length 648) over a 3-tap Rayleigh channel with path delays [0 1e-6 2e-6], gains [0 -3 -6] dB, sample rate 1 MHz, Doppler 0 Hz (quasi-static), at a single SNR_sc = 6 dB. When I use ofdmEqualize with Algorithm='mmse', my BER after LDPC decoding is worse than with Algorithm='zf'. What's wrong? Show the correct MMSE usage with soft decoding and demonstrate the fix by comparing wrong vs correct MMSE (do not simulate ZF). Use a small simulation (3 frames, 1 codeword per frame, 5 LDPC iterations) sufficient to show the difference. Create the channel object once before the simulation loop. The script must complete in under 60 seconds — avoid unnecessary loops, use vectorized operations, and do not reset the channel object between frames. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Identifies that MMSE requires correct noise variance and CSI-weighted LLRs for proper soft decoding", "weight": 2 },
+      { "description": "Computes noise variance correctly for ofdmEqualize (per-subcarrier noise variance, not time-domain)", "weight": 2 },
+      { "description": "Uses ofdmChannelResponse with pathFilters from info(channel).ChannelFilterCoefficients", "weight": 1 },
+      { "description": "Reshapes channel estimate to flatten the first two dimensions (nSC and nSym) into one for ofdmEqualize. For example, if the channel estimate is H, for SISO reshape(H, [], 1, 1), and for MIMO reshape(H, [], Ns, Nr)", "weight": 1 },
+      { "description": "Uses soft decoding (LLR from qamdemod with NoiseVariance, fed to ldpcDecode)", "weight": 2 },
+      { "description": "MMSE with correct nVar/CSI produces lower BER than MMSE with wrong nVar (demonstrates the fix works)", "weight": 2 },
+      { "description": "Code runs without error", "weight": 1 }
+    ]
+  },
+  {
+    "id": "ofdm-eval-13",
+    "title": "Comb-type pilot channel estimation and equalization",
+    "prompt": "Build an OFDM system with 128-FFT, 32 CP, 96 active subcarriers, 16-QAM. Insert QPSK pilots on every 4th active subcarrier (comb-type arrangement). Transmit 50 symbols over a 4-tap Rayleigh channel with path delays [0 0.5e-6 1.5e-6 3e-6], gains [0 -2 -5 -8] dB, sample rate 2 MHz, Doppler 20 Hz. At the receiver, estimate the channel using pilot-based estimation, equalize, and measure BER. Add AWGN at SNR_sc = 18 dB. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ofdmChannelEstimate for pilot-based estimation (R2026a+). Pre-R2026a: manual LS with interpolation to all active subcarriers is acceptable.", "weight": 2 },
+      { "description": "Uses ofdmEqualize for equalization (not manual division)", "weight": 2 },
+      { "description": "Pilot-based channel estimation interpolates to all active subcarrier positions before extracting data subcarriers", "weight": 2 },
+      { "description": "Uses ofdmmod/ofdmdemod (or ofdmPilotConfig grid for R2026a workflow)", "weight": 1 },
+      { "description": "Uses explicit signal power in awgn", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      { "description": "BER < 0.1 (estimation and equalization working)", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()"
+    ]
+  },
+  {
+    "id": "ofdm-eval-14",
+    "title": "Multi-codeword LDPC framing over OFDM",
+    "prompt": "Build an OFDM system with 64-FFT, 16 CP, 52 active subcarriers, QPSK, and rate-1/2 LDPC (block length 648). Transmit 5 codewords in a single OFDM frame. Compute how many OFDM symbols are needed, handle any bit padding, modulate all codewords into one ofdmmod call, add AWGN at SNR_sc = 8 dB, demodulate, extract LLRs with correct frequency-domain noise variance, decode each codeword separately, and report per-codeword and overall BER. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Correctly computes number of OFDM symbols needed for 5 codewords", "weight": 2 },
+      { "description": "All codewords packed into one [nDataSC x nSym] grid via single ofdmmod call", "weight": 2 },
+      { "description": "Padding bits handled correctly (zero-padded, excluded from BER)", "weight": 1 },
+      { "description": "Scales noise variance to frequency domain: nVar_sc = nVar * nFFT", "weight": 2 },
+      { "description": "Decodes each codeword separately with correct LLR segment", "weight": 1 },
+      { "description": "Uses explicit signal power in awgn", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()",
+      "[output_excludes] Does not use removed LDPC System Objects (expected: comm.ldpcencoder|comm.ldpcdecoder)"
+    ]
+  },
+  {
+    "id": "ofdm-eval-16",
+    "title": "LDPC coding for pre-R2025a MATLAB",
+    "prompt": "Create an OFDM link simulation with rate 3/4 LDPC coding over AWGN. Use 64-FFT, 16 CP, 52 active subcarriers, 16-QAM. The code must be compatible with MATLAB R2023b (do not use functions introduced after R2023b). Run for 10 frames at SNR_sc = 12 dB and report BER. Write and save a MATLAB script.",
+    "assertions": [
+      { "description": "Uses ldpcQuasiCyclicMatrix to create parity check matrix (not ldpcPCM which requires R2025a)", "weight": 2 },
+      { "description": "Uses ldpcEncoderConfig with a parity check matrix argument (not scalar or Name-Value)", "weight": 2 },
+      { "description": "Does not use comm.LDPCEncoder or comm.LDPCDecoder (removed)", "weight": 2 },
+      { "description": "Uses ofdmmod/ofdmdemod (not direct ifft/fft)", "weight": 1 },
+      { "description": "Passes NoiseVariance to demodulator for LLR scaling", "weight": 1 },
+      { "description": "Scales noise variance to frequency domain (nVar * nFFT)", "weight": 1 },
+      { "description": "BER is reported and reasonable for rate 3/4, 16-QAM at 12 dB", "weight": 1 },
+      { "description": "Code runs without error", "weight": 1 },
+      "[output_excludes] Does not use direct ifft for OFDM modulation (expected: ifft()",
+      "[output_excludes] Does not use removed LDPC System Objects (expected: comm.ldpcencoder|comm.ldpcdecoder)"
+    ]
+  }
+]

@@ -1,0 +1,15 @@
+# matlab-diagnose-parfor manifest
+# Copyright 2026 The MathWorks, Inc.
+
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Diagnose and fix parfor variable classification errors in MATLAB.
+matlab-release: ">=R2021a"
+requires-tools:
+  - check_matlab_code
+requires-skills: []
+requires-products:
+  - Parallel Computing Toolbox
+toolkit: matlab-agentic-toolkit

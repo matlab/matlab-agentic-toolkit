@@ -70,21 +70,11 @@ Use `{mustBePositive}` for `> 0`, or `{mustBeGreaterThan(x, threshold)}` for cus
 
 **Q: The original uses an anonymous-function validator like `@(x) ~isempty(x)`. Don't drop it.**
 
-Anonymous-function validators almost always have a built-in equivalent. Translate them rather than omitting:
-
-| `inputParser` validator | Arguments block equivalent |
-|-------------------------|----------------------------|
-| `@(x) ~isempty(x)` | `{mustBeNonempty}` |
-| `@(x) x > 0` | `{mustBePositive}` |
-| `@(x) x >= 0` | `{mustBeNonnegative}` |
-| `@(x) x < 0` | `{mustBeNegative}` |
-| `@(x) x <= 0` | `{mustBeNonpositive}` |
-| `@(x) isfinite(x)` | `{mustBeFinite}` |
-| `@(x) isreal(x)` | `{mustBeReal}` |
-| `@(x) isnumeric(x) && isreal(x)` | `{mustBeNumeric, mustBeReal}` |
-| `@(x) ismember(x, set)` | `{mustBeMember(x, set)}` |
-| `@(x) ischar(x) \|\| isstring(x)` | `{mustBeTextScalar}` |
-| `@(x) isa(x, 'MyClass')` | `{mustBeA(x, "MyClass")}` |
+Anonymous-function validators almost always have a built-in equivalent —
+see the "Anonymous-Function Validators" mapping table in `SKILL.md` for the
+common cases (`@(x) ~isempty(x)` → `mustBeNonempty`, `@(x) isfinite(x)` →
+`mustBeFinite`, `@(x) isa(x,'MyClass')` → `mustBeA(x, "MyClass")`, etc.).
+Translate, don't omit.
 
 If the anonymous function has no direct equivalent (e.g., it cross-references another argument), keep it as a local validator function and reference it from the arguments block: `x {myCustomValidator}`.
 

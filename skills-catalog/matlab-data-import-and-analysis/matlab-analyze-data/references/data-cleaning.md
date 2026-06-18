@@ -85,18 +85,22 @@ T = fillmissing(T, "constant", "N/A", DataVariables=vartype("string"));
 
 ### Available fill methods
 
-`"constant"`, `"previous"`, `"next"`, `"nearest"`, `"linear"`, `"spline"`, `"pchip"`, `"makima"`, `"movmean"`, `"movmedian"`, `"knn"`, `"mean"` (R2026a+), `"median"` (R2026a+), `"mode"` (R2026a+). Also supports function handles for custom fill logic.
+`"constant"`, `"previous"`, `"next"`, `"nearest"`, `"linear"`, `"spline"`, `"pchip"`, `"makima"`, `"movmean"`, `"movmedian"`, `"knn"`, `"mean"`, `"median"`, `"mode"`. Also supports function handles for custom fill logic.
 
 ### Limit the size of filled gaps
 
-Use `MaxGap` to avoid filling over long stretches of missing data, which could produce misleading interpolated values:
-```matlab
-T = fillmissing(T, "linear", MaxGap=3, DataVariables="Value");
+`MaxGap` specifies the maximum gap to fill **in terms of sample points**, not row count. The gap size is the distance between the nonmissing values surrounding the cluster of NaNs, measured along the sample points axis. Without explicit sample points, the default is `[1 2 3 ...]` (integer-valued row indices), so `MaxGap=5` means "5 rows apart."
 
-% With time-based sample points, MaxGap is in time units
-T = fillmissing(T, "linear", MaxGap=hours(6), ...
-    DataVariables="Temp", SamplePoints="Time");
+```matlab
+% Numeric sample points — MaxGap is in those units
+T = fillmissing(T, "linear", MaxGap=50, ...
+    DataVariables="Reading", SamplePoints="Distance");
+
+% Timetable — row times are the implicit sample points, so MaxGap is a duration
+TT = fillmissing(TT, "linear", MaxGap=hours(24), DataVariables="Loss");
 ```
+
+**Pitfall:** Extracting a column from a timetable (`TT.Value`) discards the row times. `fillmissing(TT.Value, "linear", MaxGap=hours(24))` errors because the extracted vector has default integer-valued sample points. Operate on the full timetable with `DataVariables`, or pass `SamplePoints` explicitly.
 
 ## Use `isoutlier`/`rmoutliers`/`filloutliers` not manual IQR
 
@@ -125,7 +129,20 @@ IQRval = Q3 - Q1;
 isOut = T.Value < (Q1 - 1.5*IQRval) | T.Value > (Q3 + 1.5*IQRval);
 ```
 
-Detection methods: `"median"` (default - 3 scaled MAD), `"mean"` (3 std), `"quartiles"` (1.5x IQR), `"percentiles"` (custom bounds), `"grubbs"`, `"gesd"`, `"movmedian"`, `"movmean"`. Use `ThresholdFactor` to adjust sensitivity.
+Detection methods and their `ThresholdFactor` defaults (controls how aggressively outliers are flagged):
+
+| Method | Outlier criterion | ThresholdFactor default |
+|--------|-------------------|------------------------|
+| `"median"` (default), `"movmedian"` | Scaled MADs from median | 3 |
+| `"mean"`, `"movmean"` | Standard deviations from mean | 3 |
+| `"quartiles"` | IQR multiplier beyond Q1/Q3 | 1.5 |
+| `"grubbs"`, `"gesd"` | Significance level (0 = fewer, 1 = more) | 0.05 |
+| `"percentiles"` | Custom bounds (no ThresholdFactor) | — |
+
+```matlab
+isoutlier(x,"mean",ThresholdFactor=2)        % flag values > 2 std from mean
+isoutlier(x,"quartiles",ThresholdFactor=3)   % widen IQR bounds (fewer outliers)
+```
 
 Fill methods for `filloutliers`: `"center"`, `"clip"`, `"previous"`, `"next"`, `"nearest"`, `"linear"`, `"spline"`, `"pchip"`, `"makima"`, or a numeric scalar (e.g., `NaN` to convert outliers to missing values).
 

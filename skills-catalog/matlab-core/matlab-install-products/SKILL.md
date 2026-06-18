@@ -4,7 +4,7 @@ description: "Deterministic workflow to download MATLAB Package Manager (mpm) an
 license: "MathWorks BSD-3-Clause"
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.2"
 ---
 
 # Installing MATLAB Products with MATLAB Package Manager (mpm) - Deterministic Protocol

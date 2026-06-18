@@ -35,6 +35,33 @@ When using `groupsummary` with tabular input, the output table always includes a
 
 **Prefer string method names over function handles** (e.g., `"mean"` not `@mean`). Named methods use accelerated code paths and are significantly faster on large datasets.
 
+### Methods apply to ALL DataVariables (cartesian product)
+
+When you specify multiple methods and multiple data variables, `groupsummary` applies **every** method to **every** variable. It does NOT map methods 1:1 to variables:
+```matlab
+% This applies BOTH sum and mean to BOTH Loss and Customers (4 output columns):
+G = groupsummary(T,"Region",["sum" "mean"],["Loss" "Customers"]);
+% → Region, GroupCount, sum_Loss, mean_Loss, sum_Customers, mean_Customers
+```
+
+**For different methods on different variables, use separate calls:**
+```matlab
+% Want sum of Loss and mean of Customers? Two calls + join:
+G1 = groupsummary(T,"Region","sum","Loss");
+G2 = groupsummary(T,"Region","mean","Customers");
+G = innerjoin(G1(:,["Region","GroupCount","sum_Loss"]), G2(:,["Region","mean_Customers"]), Keys="Region");
+```
+
+**DataVariables: string array vs cell array have different behavior:**
+```matlab
+% String array — each variable processed independently:
+G = groupsummary(T,"Region","mean",["Loss" "Customers"]);
+
+% Cell array — variables are passed together as multiple inputs to a
+% bivariate function handle (e.g., weighted mean of Loss weighted by Customers):
+G = groupsummary(T,"Region",@(loss,cust) sum(loss.*cust,"omitnan")/sum(cust,"omitnan"), {"Loss","Customers"});
+```
+
 **Pitfall:** Do not use `findgroups`+`accumarray` for aggregation when `groupsummary` can do the job — `groupsummary` is simpler, faster, and works directly with tables. Use `findgroups` alone only when you need group indices without aggregation (e.g., to assign a group ID column).
 
 ### On-the-fly binning
@@ -47,9 +74,12 @@ G = groupsummary(T,"Age",[0 18 35 50 Inf],"mean","Income");
 % Equal-width bins
 G = groupsummary(T,"Score",10,"mean","Value");   % 10 bins
 
-% Time-based binning
-G = groupsummary(TT,"Time","hour","mean","Temperature");
-G = groupsummary(TT,"Time","month",["mean" "std"],"Sales");
+% Time-based binning — sequential (one bin per calendar period)
+G = groupsummary(TT,"Time","month","mean","Temperature");      % Jan 2023, Feb 2023, ...
+
+% Time-based binning — cyclic (collapses across the higher unit to find patterns)
+G = groupsummary(TT,"Time","hourofday","mean","Temperature");  % 0-23
+G = groupsummary(TT,"Time","dayname","mean","Sales");          % "Monday", "Tuesday", ...
 
 % Mix regular grouping and binning
 G = groupsummary(T,{"Region","Age"},{"none",[0 18 35 50 Inf]},"mean","Salary");
@@ -100,8 +130,8 @@ T = groupfilter(T,"Region",@(x) mean(x) > 50,"Sales");
 **Use case 2: Filter individual rows within each group.**
 For example, remove outliers separately within each group rather than globally:
 ```matlab
-% Remove outliers within each group (not across the whole table)
-T = groupfilter(T,"Category",@(x) ~isoutlier(x),"Value");
+% Remove per-group outliers (2 std from mean within each group)
+T = groupfilter(T,"Category",@(x) ~isoutlier(x,"mean",ThresholdFactor=2),"Value");
 
 % Keep only the top 3 rows per group by Value
 T = groupfilter(T,"Category",@topN,"Value");
@@ -117,22 +147,24 @@ The key distinction: when the function returns one logical per group, it filters
 
 ## Use `grouptransform` to transform data within each group
 
-`grouptransform` applies a transformation within each group and returns a same-size result - use it to normalize, fill, center, or apply custom per-group logic without reducing rows:
+`grouptransform` applies a transformation within each group and returns a same-size table — assign the result back to the table variable (`T = grouptransform(T,...)`), not to a single column.
+
+**Valid built-in methods (exhaustive list):** `"zscore"`, `"norm"`, `"meancenter"`, `"rescale"`, `"meanfill"`, `"linearfill"`. Aggregation methods like `"sum"`, `"mean"`, `"std"` are NOT valid for `grouptransform` — use `groupsummary` for aggregation.
+
 ```matlab
-% Normalize values within each group (per-group z-score)
+% Normalize values within each group (per-group z-score), overwriting original column
 T = grouptransform(T,"Category","zscore","Value");
 
-% Other built-in methods:
-%   "norm"       - normalize by 2-norm
-%   "meancenter" - subtract group mean
-%   "rescale"    - rescale to [0, 1] within each group
-%   "meanfill"   - fill missing values with group mean
-%   "linearfill" - fill missing values by linear interpolation within group
+% Add result as a NEW column (keep original intact) with ReplaceValues=false
+T = grouptransform(T,"Category","zscore","Value",ReplaceValues=false);
+% This appends a column named "zscore_Value" to T (named method → "<method>_<Var>")
+% With a function handle, the new column is named "fun_<Var>" (e.g., "fun_Value")
 
-% Custom function handle: return same-size or scalar (broadcast) result
-T.PctOfGroup = grouptransform(T,"Category", ...
-    @(x) x / sum(x) * 100,"Value");
+% Custom function handle for operations not in the built-in list:
+T = grouptransform(T,"Category",@(x) x / sum(x) * 100,"Value");
 ```
+
+**`ReplaceValues` (default: `true`):** By default, `grouptransform` replaces the input column with the transformed result. Set `ReplaceValues=false` when you want to keep the original data and add the transformation as a new column — common for z-scores, percentiles, or group-relative metrics where both raw and normalized values are needed.
 
 ## Use `pivot` not `unstack` workarounds
 ```matlab

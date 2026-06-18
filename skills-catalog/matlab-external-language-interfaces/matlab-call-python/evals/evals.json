@@ -1,0 +1,134 @@
+{
+  "evals": [
+    {
+      "id": 1,
+      "slug": "sklearn-randomforest-from-matlab",
+      "prompt": "Write MATLAB code to train a scikit-learn RandomForestClassifier on the iris dataset with 100 estimators and return predictions to MATLAB as a double array.",
+      "assertions": [
+        "[output_excludes] Does not use pyargs (expected: pyargs()",
+        "[convention_followed] Uses name=value syntax for keyword arguments like n_estimators=100 (expected: Python keyword arguments use MATLAB name=value syntax, not pyargs)",
+        "[code_executes] Generated code runs without error in MATLAB"
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "recover-missing-package-traceback-trap",
+      "prompt": "Run the file evals/files/analyze_data.m and show me the results.",
+      "context": {
+        "files": ["evals/files/analyze_data.m"],
+        "setup": "Run evals/scripts/setup_eval_venv.sh to create a fresh venv with no packages. Point MATLAB pyenv at the venv. The error traceback will show the base Python path (AppData/Local/Programs/Python) which is NOT the correct install target. After eval, run evals/scripts/teardown_eval_venv.sh to clean up."
+      },
+      "assertions": [
+        "[convention_followed] Queries pyenv in MATLAB before any pip install (expected: Agent runs pe = pyenv or pyenv() in MATLAB to get Executable path before attempting pip install)",
+        "[output_excludes] Does not use base Python path from traceback for install (expected: AppData\\Local\\Programs\\Python\\Python312\\python.exe\" -m pip)",
+        "[convention_followed] Uses Bash tool for pip install, not MATLAB system command (expected: pip install performed via Bash tool, not MATLAB system function)",
+        "[code_executes] Script runs successfully after fix"
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "pass-string-array-to-python",
+      "prompt": "Write MATLAB code to pass the string array [\"hello\", \"world\", \"test\"] to Python as a list of strings. Show the result.",
+      "assertions": [
+        "[convention_followed] Uses the correct string array conversion for the MATLAB version (expected: On R2026a+ uses pystringarray; on R2025b and earlier uses py.list(cellstr(...)) or cellstr. Either is correct depending on version.)",
+        "[output_excludes] Does not use pyargs (expected: pyargs()",
+        "[code_executes] Generated code runs without error"
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "int32-type-error",
+      "prompt": "Write MATLAB code to get the 5 most common words from a text string using Python's collections.Counter.",
+      "assertions": [
+        "[code_executes] Generated code runs without TypeError",
+        "[convention_followed] Uses int32() or py.int() for the integer count argument to most_common (expected: integer argument wrapped with int32 or py.int to avoid float-to-int TypeError)"
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "configure-venv",
+      "prompt": "Configure MATLAB to use the Python virtual environment at C:/projects/analysis/.venv and verify it works.",
+      "assertions": [
+        "[convention_followed] Uses pyenv(Version=...) with the venv executable path (expected: pyenv(Version= with path containing .venv)",
+        "[output_excludes] Does not run a venv activation command (expected: Scripts\\activate)"
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "non-import-python-error",
+      "prompt": "Run the file evals/files/transform_data.m and show me the results.",
+      "context": {
+        "files": ["evals/files/transform_data.m"]
+      },
+      "assertions": [
+        "[output_excludes] Does not run pip install (expected: pip install)",
+        "[output_excludes] Does not run pyenv() as a diagnostic step (expected: pe = pyenv)",
+        "[convention_followed] Agent identifies this as a Python code error (not an environment issue) and fixes the code without consulting environment recovery steps (expected: Agent debugs the ValueError in the Python code directly without attempting pip install or environment changes)"
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "prefer-py-dot-over-pyrun",
+      "prompt": "Write MATLAB code to compute the factorial of 12 using Python's math library and display the result.",
+      "assertions": [
+        "[output_contains] Uses py.math.factorial (expected: py.math.factorial)",
+        "[output_excludes] Does not use pyrun for a single function call (expected: pyrun()",
+        "[code_executes] Generated code runs without error"
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "terminate-after-mid-session-install",
+      "prompt": "Run the file evals/files/use_after_install.m and show me the results.",
+      "context": {
+        "files": ["evals/files/use_after_install.m"],
+        "setup": "Before running: ensure pyenv Status is 'Loaded' (run any py.* call first, e.g., py.list([1,2,3])). Then run setup_eval_venv.sh to create a venv without scipy. Point pyenv at the venv. Run py.sys.version to load Python. The script calls py.scipy.stats.norm which will fail with ModuleNotFoundError. After eval, run teardown_eval_venv.sh."
+      },
+      "assertions": [
+        "[convention_followed] Queries pyenv before install (expected: Agent runs pyenv() or pe = pyenv to get Executable path)",
+        "[convention_followed] After pip install succeeds and Python Status was Loaded, follows the reload procedure from SKILL.md — calls terminate(pyenv) for OutOfProcess, or uses importlib reload for InProcess (expected: Agent checks ExecutionMode and applies the correct reload strategy: terminate for OutOfProcess, importlib.reload for InProcess)",
+        "[code_executes] Script runs successfully after fix"
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "identifier-collision-append-val",
+      "prompt": "Write MATLAB code that creates a Python complex number with real part 3.0 and imaginary part 4.5, then extracts and displays both parts.",
+      "assertions": [
+        "[output_excludes] Does not shadow MATLAB builtin with keyword arg (expected: imag=imag)",
+        "[convention_followed] Avoids identifier collision by renaming the variable or using a suffix like Val (expected: If a local variable has the same name as a Python keyword argument, it is renamed — e.g., imagVal=... or uses a literal value directly)",
+        "[code_executes] Generated code runs without error"
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "inprocess-module-reload",
+      "prompt": "I'm running in InProcess mode. I just edited my custom Python module my_utils.py and the changes aren't showing up when I call py.my_utils.process(). How do I reload it without restarting MATLAB?",
+      "assertions": [
+        "[output_contains] Uses importlib.reload to reload the module (expected: py.importlib.reload)",
+        "[output_contains] Uses importlib.import_module to get module reference (expected: py.importlib.import_module)",
+        "[convention_followed] Includes clear all and clear classes before reimporting (expected: clear all followed by clear classes called before importlib operations)",
+        "[convention_followed] Does not suggest terminate(pyenv) as the solution for InProcess mode (expected: Agent recommends importlib reload, not terminate(pyenv), as the fix. Mentioning that terminate is unavailable in InProcess is acceptable, but it should not be proposed as the solution.)"
+      ]
+    },
+    {
+      "id": 11,
+      "slug": "confirm-before-terminate",
+      "prompt": "I installed pandas mid-session and now py.pandas.DataFrame() says 'Unable to resolve the name'. My pyenv shows ExecutionMode=OutOfProcess and Status=Loaded. What should I do?",
+      "assertions": [
+        "[convention_followed] Asks user for confirmation before calling terminate(pyenv) (expected: Agent explains that terminate will restart Python and clear state, then asks for permission before executing. It must NOT execute terminate(pyenv) without first asking.)",
+        "[convention_followed] Correctly identifies this as a stale module cache issue requiring terminate(pyenv) in OutOfProcess mode (expected: Agent identifies the cause and proposes terminate as the solution)"
+      ]
+    },
+    {
+      "id": 12,
+      "slug": "int64-large-value-wrapping",
+      "prompt": "Write MATLAB code to use Python's random.seed() with the value 5000000000 (5 billion) and then generate a random number.",
+      "assertions": [
+        "[convention_followed] Uses int64 or uint64 for the seed value since 5 billion exceeds int32 range (expected: int64(5000000000) or uint64(5000000000) used for the seed argument)",
+        "[output_excludes] Does not use int32 for 5 billion which would overflow (expected: int32(5000000000))",
+        "[code_executes] Generated code runs without error"
+      ]
+    }
+  ]
+}

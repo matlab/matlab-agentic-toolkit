@@ -1,0 +1,286 @@
+{
+  "skill": "matlab-use-cameras",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Webcam Acquisition",
+      "description": "Tests that the agent uses videoinput over webcam for USB camera acquisition",
+      "prompt": "How do I acquire images from my webcam in MATLAB? Write complete working code.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses videoinput function",
+          "expected": "videoinput"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses winvideo adaptor",
+          "expected": "winvideo"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Primary code recommendation uses videoinput, not webcam()",
+          "expected": "The primary recommended code uses videoinput('winvideo', ...) as the camera interface. webcam() is not presented as the recommended approach."
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "GigE Camera Acquisition",
+      "description": "Tests that the agent uses videoinput with gentl adaptor for GigE cameras",
+      "prompt": "Write MATLAB code to connect to a GigE Vision camera and acquire 10 frames.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses videoinput function",
+          "expected": "videoinput"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses gentl adaptor",
+          "expected": "gentl"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Primary code recommendation uses videoinput with gentl, not gigecam()",
+          "expected": "The primary recommended code uses videoinput('gentl', ...) as the GigE camera interface. gigecam() is not presented as the recommended approach. The legacy videoinput('gige', ...) adaptor is not used."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Device Enumeration",
+      "description": "Tests that the agent uses imaqhwinfo for listing cameras",
+      "prompt": "How do I list all available cameras on my system in MATLAB? Write complete working code.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses imaqhwinfo for enumeration",
+          "expected": "imaqhwinfo"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated enumeration code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Primary enumeration uses imaqhwinfo, not webcamlist or gigecamlist",
+          "expected": "The primary recommended code uses imaqhwinfo for device enumeration. webcamlist and gigecamlist are not presented as the recommended enumeration method."
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Preview and Snapshot Workflow",
+      "description": "Tests the multi-step preview then snapshot workflow uses IMAQ",
+      "prompt": "I want to preview live video from my USB camera and then capture a single snapshot in MATLAB. Write complete working code.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses videoinput for connection",
+          "expected": "videoinput"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses preview function",
+          "expected": "preview"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses getsnapshot for capture",
+          "expected": "getsnapshot"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Uses videoinput workflow with proper cleanup, not webcam()",
+          "expected": "The primary recommended code uses videoinput with preview and getsnapshot (not webcam/snapshot). Code includes cleanup steps: stoppreview and/or delete of the videoinput object."
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "CoaXPress Camera Acquisition",
+      "description": "Tests that the agent uses videoinput with gentl adaptor for CoaXPress cameras via frame grabber",
+      "prompt": "I have a CoaXPress camera connected through a Euresys Coaxlink Quad G3 frame grabber. Write MATLAB code to acquire 20 frames from this camera.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses videoinput function",
+          "expected": "videoinput"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses gentl adaptor",
+          "expected": "gentl"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses videoinput with gentl for CoaXPress, not a custom or proprietary interface",
+          "expected": "The primary recommended code uses videoinput('gentl', ...) for the CoaXPress camera. The code does not invent a custom adaptor name or use a non-existent 'coaxpress' adaptor."
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Camera Link Without Frame Grabber Specified",
+      "description": "Tests that the agent asks for frame grabber info when Camera Link camera is mentioned without specifying the frame grabber",
+      "prompt": "I have a Camera Link camera and I want to acquire images in MATLAB. Write the code.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Asks or mentions needing frame grabber information",
+          "expected": "The agent asks the user which frame grabber they are using, or explicitly states that the correct adaptor depends on the frame grabber. The agent does not blindly write code with an assumed adaptor without acknowledging the dependency on the frame grabber."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions videoinput as the interface",
+          "expected": "videoinput"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Mentions gentl as preferred path if GenTL producer available",
+          "expected": "The output mentions that gentl is the preferred adaptor if the frame grabber provides a GenTL producer, or provides gentl as one of the options."
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "GenTL Adaptor Not Found Troubleshooting",
+      "description": "Tests that the agent provides correct setup guidance when user reports gentl adaptor not found",
+      "prompt": "I'm trying to connect to my GigE Vision camera in MATLAB but I get an error saying the gentl adaptor is not found. How do I fix this?",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available",
+        "timeout": 600
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Mentions GenICam Interface support package",
+          "expected": "GenICam"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions Add-On Explorer or matlab.addons as install method",
+          "expected": "Add-On"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Provides verification steps to confirm adaptor is installed",
+          "expected": "The output includes verification steps: checking imaqhwinfo or imaqhwinfo('gentl') to confirm the gentl adaptor appears after installation."
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "First-Time GigE Camera Setup",
+      "description": "Tests that the agent walks through complete first-time GigE setup including GenTL producer",
+      "prompt": "I just purchased a FLIR Blackfly S GigE camera. This is my first time using a GigE camera with MATLAB. Walk me through the complete setup from scratch.",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available",
+        "timeout": 600
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Mentions GenICam Interface support package installation",
+          "expected": "GenICam"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Mentions GenTL producer setup requirement",
+          "expected": "The output explains that a vendor-provided GenTL producer (.cti file) needs to be installed or configured, or mentions the GenTL producer as part of the setup process."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Provides verification code to confirm camera is detected",
+          "expected": "The output includes verification code using imaqhwinfo('gentl') to confirm the camera is detected after setup. FAIL if verification uses the legacy imaqhwinfo('gige') adaptor instead of gentl."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Mentions videoinput as the interface to use after setup",
+          "expected": "videoinput"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "GenTL Producer Not Bundled Clarification",
+      "description": "Tests that the agent correctly explains the GenTL producer is NOT bundled with the MATLAB support package and must be obtained from the camera vendor",
+      "prompt": "I'm trying to use my Allied Vision Alvium USB3 camera in MATLAB. I followed the setup steps but I don't have a producer driver that I heard my colleague say I need. What is this producer driver? How can I get this in MATLAB?",
+      "context": {
+        "setup": "Ensure Image Acquisition Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Clearly states the GenTL producer is NOT bundled with MATLAB or the support package",
+          "expected": "The output clearly states or implies that the GenTL producer (.cti file) is NOT included with MATLAB or the GenICam Interface support package. It must come from the camera or frame grabber vendor separately. FAIL if the output suggests the producer is bundled with, included in, or installed by the MATLAB support package."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Explains how to obtain the producer from the vendor",
+          "expected": "The output explains that the GenTL producer must be obtained from the camera or frame grabber vendor. It should mention specific examples such as Vimba X for Allied Vision, Spinnaker SDK for FLIR, ImpactAcquire for Balluff, or eGrabber for Euresys. FAIL if it only says 'install the producer' without explaining where to get it."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Mentions .cti file as the producer format",
+          "expected": ".cti"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Recommends gentl adaptor for USB3 Vision camera",
+          "expected": "gentl"
+        }
+      ]
+    }
+  ]
+}

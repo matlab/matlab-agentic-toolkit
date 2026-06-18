@@ -1,0 +1,370 @@
+{
+  "skill": "matlab-model-ams-systems",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Spec-Driven Integer-N PLL (5 GHz)",
+      "description": "Build a 5 GHz Integer-N PLL from system specs with moderate phase noise targets. Tests solver selection, reference frequency optimization, PLL Testbench setup, and measurement infrastructure.",
+      "prompt": "Design a 5 GHz Integer-N PLL using Mixed-Signal Blockset with these specs:\n- Output frequency: 5 GHz\n- Reference frequency: up to 100 MHz\n- Lock time: < 1 ms\n- Phase noise @ 100 kHz: < -100 dBc/Hz\n- Phase noise @ 1 MHz: < -125 dBc/Hz\n- Charge pump current: 5 mA\n\nBuild the Simulink model, simulate it, and report the measured phase noise and lock time. Save the model as PLL_5GHz_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses VariableStepDiscrete solver (P1)",
+          "expected": "Model solver is set to VariableStepDiscrete, not ode45/ode23t/ode15s or any continuous solver"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Reference frequency maximized to minimize N",
+          "expected": "fRef >= 50 MHz (preferably 100 MHz), resulting in N <= 100. Agent should NOT choose 10-25 MHz crystal frequency."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "PLL Testbench used for reference AND measurement (P69)",
+          "expected": "Model contains a PLL Testbench block from msbPllMeasurements (NOT a Pulse Generator, Sine Wave, or Clock Generator as reference). PhaseNoiseOption and LockTimeOption are both enabled."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "PFD timing scaled for 5 GHz (P39)",
+          "expected": "PropDelay is set to 50 ps (the block minimum floor). Formula: max(50e-12, min(5e-12, 1/(2*5e9)/10)) = 50e-12. Must NOT be default ~100 ps."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model simulates without error and produces phase noise measurements"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Phase noise targets met or fundamental tradeoff identified",
+          "expected": "Either measured PN meets targets (< -100 @100kHz, < -125 @1MHz) OR agent identifies and explains why targets conflict with given parameters (e.g., CP noise floor analysis)"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Spec-Driven Fractional-N PLL (4.225 GHz)",
+      "description": "Build a 4.225 GHz Fractional-N PLL requiring non-integer division. Tests DSM configuration, Nmin handling, and fractional-specific setup.",
+      "prompt": "Design a 4.225 GHz Fractional-N PLL using Mixed-Signal Blockset:\n- Output frequency: 4.225 GHz\n- Reference frequency: 100 MHz\n- Lock time: < 0.7 ms\n- Phase noise @ 100 kHz: < -100 dBc/Hz\n- Phase noise @ 1 MHz: < -120 dBc/Hz\n- Use 3rd-order Delta-Sigma Modulator\n\nBuild the Simulink model, simulate, and validate. Save as PLL_FracN_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Correct Fractional-N architecture selected",
+          "expected": "Uses 'Fractional N PLL with Delta Sigma Modulator' from msbPllArchitectures (NOT Integer-N Single Modulus)"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Division ratio is fractional (N=42.25)",
+          "expected": "N parameter set to 42.25 (= 4.225e9 / 100e6), NOT rounded to integer 42 or 43"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Nmin set correctly before N (P57)",
+          "expected": "Nmin = 42 (floor of N) is set. Parameter ordering: Nmin before or alongside N to avoid divider range errors."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "DSM order explicitly configured",
+          "expected": "dsm parameter set to '3rd order' as specified in the prompt"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Nonlinear lock time factor applied (P55)",
+          "expected": "Loop bandwidth designed accounting for 2-4x nonlinear settling factor. BW >= 4/(0.7e-3/3) ~ 17 kHz to meet lock time with 3x factor."
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model simulates without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Datasheet-Driven PLL (ADF4351-like, 4.4 GHz)",
+      "description": "Build a PLL from datasheet parameters resembling ADF4351. Tests parameter extraction methodology, PNSYNTH usage, architecture mapping, and VCO characterization.",
+      "prompt": "Model a Fractional-N PLL frequency synthesizer using Mixed-Signal Blockset with these datasheet parameters:\n- Device: Fractional-N with 3rd-order Delta-Sigma Modulator\n- VCO frequency range: 2200-4400 MHz, target output: 4400 MHz\n- Reference input: 10 MHz crystal, R-counter: 1 (fPFD = 10 MHz)\n- Division ratio: N = 440 (integer mode for this test)\n- Charge pump current: 2.5 mA\n- VCO gain (Kvco): 40 MHz/V\n- PNSYNTH (normalized PLL noise floor): -227 dBc/Hz\n- VCO phase noise: [-89, -114, -134, -148] dBc/Hz at [10k, 100k, 1M, 5M] Hz offsets\n- Target loop bandwidth: 60 kHz, phase margin: 48 degrees\n\nBuild the model, compute the expected in-band phase noise floor using the PNSYNTH formula, simulate, and compare measured PN to the analytical prediction. Save as PLL_ADF4351_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "In-band floor computed correctly from PNSYNTH",
+          "expected": "Computes: floor = PNSYNTH + 10*log10(fPFD) + 20*log10(N) = -227 + 10*log10(10e6) + 20*log10(440) = -227 + 70 + 52.9 = -104.1 dBc/Hz (approximately -104 dBc/Hz)"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "VCO phase noise uses only datasheet offsets (no extrapolation)",
+          "expected": "Foffset set to [10e3, 100e3, 1e6, 5e6] and PhaseNoise to [-89, -114, -134, -148] exactly as given. Does NOT add fabricated points at 1 kHz or other offsets."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "VariableStepDiscrete solver and PLL Testbench (P1, P69)",
+          "expected": "Solver is VariableStepDiscrete. PLL Testbench used (not Pulse Generator/Sine Wave)."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "PhaseNoiseFreqOffset on testbench extends beyond fPFD for spur visibility",
+          "expected": "Testbench measurement offsets include at least one frequency > fPFD (10 MHz), e.g., offsets go up to 12-20 MHz to capture PFD spurs"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model simulates and produces phase noise measurement"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Measured PN compared to analytical prediction",
+          "expected": "Agent compares simulated phase noise to the PNSYNTH-derived floor and VCO profile, noting agreement or discrepancy with explanation"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Conflicting Specs Detection (7 GHz, impossible PN + lock time)",
+      "description": "Tests whether the agent identifies physically unrealizable specifications and explains the fundamental tradeoff, rather than silently producing a failing design.",
+      "prompt": "Design a 7 GHz Integer-N PLL using Mixed-Signal Blockset with these specs:\n- Output frequency: 7 GHz (N=70, fRef=100 MHz)\n- Lock time: < 2 us\n- Phase noise @ 200 kHz: < -120 dBc/Hz\n- Phase noise @ 1 MHz: < -135 dBc/Hz\n- Charge pump current: 5 mA\n- CP noise density: 25e-22 A^2/Hz\n\nBuild the model. If the specs conflict, explain why and propose what would be needed to meet them simultaneously.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Identifies the CP noise floor tradeoff",
+          "expected": "Agent computes in-band CP noise floor: 10*log10(Si_cp * (2*pi*N/Icp)^2) = 10*log10(25e-22 * (2*pi*70/0.005)^2) ~ -107 dBc/Hz. Identifies that this floor exceeds -120 target at 200 kHz if BW > 200 kHz."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Explains lock time vs phase noise conflict",
+          "expected": "Agent explains: lock time < 2 us requires BW > ~1 MHz, but PN < -120 @200kHz requires BW << 200 kHz (so 200 kHz is outside the loop BW where VCO noise dominates). These are mutually exclusive with a single-bandwidth loop."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Proposes a solution (gear-shifting or alternative architecture)",
+          "expected": "Agent suggests gear-shifting PLL (wide BW for acquisition, narrow BW for steady-state), higher fRef to reduce N, or other architectural solution. Does NOT just report 'FAIL' and stop."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Still builds a working model optimized for one constraint set",
+          "expected": "Agent builds a model that meets the PN targets (narrow BW ~20 kHz) even though lock time will exceed 2 us. Model uses VariableStepDiscrete solver and simulates successfully."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model simulates and produces measurements"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "High-N Fractional-N PLL (7.235 GHz)",
+      "description": "Build a high-frequency Frac-N PLL with large N requiring manual filter design. Tests thirdOrderPassiveFilterDesign with CompSelectionMethod='Manual', lock time formula, and two-pass simulation strategy.",
+      "prompt": "Design a 7.235 GHz Fractional-N PLL using Mixed-Signal Blockset:\n- Output frequency: 7.235 GHz\n- Reference frequency: 10 MHz (fPFD = 10 MHz)\n- Division ratio: N = 723.5\n- Lock time: < 5 us\n- Charge pump current: 5 mA\n- VCO gain: 50 MHz/V\n- Use 3rd-order passive loop filter, manual component selection\n\nBuild the Simulink model, simulate (lock time only — no PN measurement needed), and report measured lock time. Save as PLL_7GHz_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses thirdOrderPassiveFilterDesign with Manual mode for high N",
+          "expected": "Agent uses thirdOrderPassiveFilterDesign() to compute C1,C2,C3,R2,R3 and sets CompSelectionMethod='Manual'. Does NOT use Automatic mode (which fails for N>50 per P79)."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Loop bandwidth derived from lock time formula",
+          "expected": "Fc derived from 12/t_lock or similar: Fc = min(12/5e-6, fPFD/10) = min(2.4 MHz, 1 MHz) = 1 MHz. BW capped at fPFD/10."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Lock time pass on first simulation (no unnecessary iteration)",
+          "expected": "Agent runs Pass 1 (lock time only), measures lock time, and if it passes with >3x margin does NOT run further sweeps or PN measurement per P86."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Model layout is compact and readable",
+          "expected": "Agent uses arrangeSystem or sets block positions to non-overlapping layout. Blocks not stacked at origin."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Design report includes key parameters",
+          "expected": "Agent reports: filter component values, loop bandwidth, phase margin, and measured lock time."
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model simulates and lock time meets target"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Rapid-Lock Low-N Integer-N PLL (2.4 GHz WiFi)",
+      "description": "Build a low-N Integer-N PLL optimized for fast lock time. Tests Automatic filter design for small N, wide bandwidth selection, and correct solver setup.",
+      "prompt": "Design a 2.4 GHz Integer-N PLL for WiFi using Mixed-Signal Blockset:\n- Output frequency: 2.4 GHz\n- Reference frequency: 100 MHz\n- Division ratio: N = 24\n- Lock time: < 10 us\n- Charge pump current: 5 mA\n- VCO gain: 100 MHz/V\n- Use Automatic filter design\n\nBuild the Simulink model, simulate, and report lock time. Save as PLL_WiFi_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses Automatic filter design for low N",
+          "expected": "CompSelectionMethod='Automatic' with Fc and Phi specified. Low N (24) is within Automatic mode's valid range."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Wide bandwidth selected for fast lock",
+          "expected": "Fc >= 1 MHz (from 12/10e-6 = 1.2 MHz, capped at fPFD/10 = 10 MHz). Agent should select ~1.2 MHz."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "VariableStepDiscrete solver set correctly",
+          "expected": "Solver is VariableStepDiscrete"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Lock time meets target",
+          "expected": "Measured lock time < 10 us"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model simulates without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Integer-N PLL with Dual Modulus Prescaler (1 GHz)",
+      "description": "Build an Integer-N PLL using a Dual Modulus Prescaler. Tests P>S>0 constraint handling, correct parameter-setting order, and pllOpenLoopPlot fallback when it crashes.",
+      "prompt": "Design a 1 GHz Integer-N PLL using Mixed-Signal Blockset with a Dual Modulus Prescaler:\n- Output frequency: 1 GHz\n- Reference frequency: 25 MHz\n- Effective divide ratio: 40 (use dual modulus prescaler)\n- Lock time: < 10 us\n- Charge pump current: 5 mA\n- VCO gain: 20 MHz/V\n- Loop bandwidth: ~1.2 MHz, phase margin: 50 degrees\n- Use 3rd-order passive loop filter, Automatic design\n\nBuild the Simulink model, generate Bode plots (open-loop and closed-loop), simulate, and report measured lock time. Save as PLL_IntN_DualMod_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses Dual Modulus Prescaler architecture",
+          "expected": "Model uses 'Integer N PLL with Dual Modulus Prescaler' from msbPllArchitectures (NOT Single Modulus)"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Dual modulus constraints satisfied: P > S > 0 (P105)",
+          "expected": "ProgramCounter (P) > SwallowCounter (S) > 0, all positive integers, and P*N+S = 40. Valid examples: P=7,N=5,S=5 or P=9,N=4,S=4. Invalid: S=0, P<=S."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Parameter setting order avoids mask rejection (P57/P105)",
+          "expected": "Agent sets Nmin='1' first, then prescaler values in safe order (S while P is still large from defaults, then P > S), then Nmin to final. Does NOT attempt S=0 or get mask callback errors."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Bode plots generated (with fallback if pllOpenLoopPlot crashes, P106)",
+          "expected": "Agent generates open-loop and closed-loop Bode plots. If pllOpenLoopPlot throws ylim error, uses manual frequency sweep with Z(s) computation — does NOT reach for Control System Toolbox tf()."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Stability verified: PM > 45 degrees",
+          "expected": "Phase margin reported and exceeds 45 degrees (target is 50). Crossover frequency close to 1.2 MHz."
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model simulates and lock time meets target (< 10 us)"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Two-Pass Simulation with Phase Noise Targets (3.5 GHz Frac-N)",
+      "description": "Build a Fractional-N PLL requiring both lock time and phase noise measurement. Tests the mandatory two-pass workflow: Pass 1 measures lock time, Pass 2 uses measured lock time as HoldOffTime for phase noise. Exercises P98 (acStopTime), P100 (-999 placeholder), P101 (measured holdoff), P102 (SpectralAverages=2).",
+      "prompt": "Design a 3.5 GHz Fractional-N PLL using Mixed-Signal Blockset:\n- Output frequency: 3.5 GHz\n- Reference frequency: 100 MHz (fPFD = 100 MHz)\n- Division ratio: N = 35\n- Lock time: < 5 us\n- Phase noise targets: < -100 dBc/Hz @ 100 kHz, < -130 dBc/Hz @ 1 MHz, < -150 dBc/Hz @ 10 MHz\n- VCO phase noise: [-95, -120, -145, -160] dBc/Hz at [10k, 100k, 1M, 10M] Hz offsets\n- Charge pump current: 5 mA\n- VCO gain: 50 MHz/V\n- Use 3rd-order DSM, Automatic filter design\n\nBuild the model, run a two-pass simulation (Pass 1: lock time only, Pass 2: phase noise with measured holdoff), and report both lock time and phase noise results. Save as PLL_TwoPass_eval.slx in the current directory.",
+      "context": {
+        "files": [],
+        "setup": "Mixed-Signal Blockset must be installed. Close all open Simulink models before running."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Two-pass strategy used (P86): Pass 1 lock time, Pass 2 phase noise",
+          "expected": "Agent runs sim() twice: first with PhaseNoiseOption='off' to measure lock time, then with PhaseNoiseOption='on' using the measured lock time for HoldOffTime. Does NOT attempt both measurements in a single pass."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Pass 2 HoldOffTime uses measured lock time from Pass 1 (P101)",
+          "expected": "After Pass 1 measures lock time (e.g., 1.2 us), Pass 2 sets HoldOffTime = 1.5 * measured_lock_time (e.g., 1.8 us). Does NOT use the initial estimate from 4/Fc or 12/Fc formula."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "PN StopTime computed via msblks.utilities.acStopTime (P98)",
+          "expected": "Agent calls msblks.utilities.acStopTime(averages, RBW, holdoff) to compute Pass 2 StopTime. Does NOT manually compute as holdoff + averages/RBW (which underestimates by 30-40%)."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "SpectralAverages explicitly set to 2 (P102)",
+          "expected": "Agent sets SpectralAverages='2' on the PLL Testbench. Does NOT rely on the mask default of 4."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "TargetPhaseNoiseVector uses -999 placeholder or actual targets (P100)",
+          "expected": "If targets are specified, TargetPhaseNoiseVector matches PhaseNoiseFreqOffset length with actual target values. If no targets at some offsets, uses -999 (NOT -inf which causes mask error)."
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model simulates both passes and reports lock time + phase noise"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "skill": "matlab-diagnose-parfor",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01-cell-brace-indexing",
+      "name": "Cell brace-indexing with broadcast/sliced conflict",
+      "description": "User reports a parfor error in code that writes to a cell array via brace-indexing with multiple subscript patterns (SpaceNeighbInfo{ii,1..4}) and also passes the loop's sliced source array as a whole to a function. Tests that the agent runs the code analyser, identifies the root cause precisely, and produces a working fix.",
+        "prompt": "The parfor loop has an error. Tell me what's wrong, and propose a fix into a new file named <original>_fixed.m. The file is evals/files/spaceNeighbInfo.m.",
+      "context": {
+        "files": ["evals/files/spaceNeighbInfo.m"],
+        "setup": "Parallel Computing Toolbox is available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent ran the code analyser (checkcode or codeIssues) before diagnosing",
+          "expected": "Response cites running mcp__matlab__check_matlab_code, checkcode, or codeIssues on the file, with the analyser's actual output quoted or summarised."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Diagnosis correctly identifies the cell brace-indexing subscript-pattern issue",
+          "expected": "Response explicitly identifies that SpaceNeighbInfo{ii,1}, {ii,2}, {ii,3}, {ii,4} use four different subscript patterns and cannot be classified as a single sliced variable. Acceptable equivalent: cites the analyser message about 'multiple sliced accesses ... do not all have the same list of subscripts'."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Fix uses a single parenthesis-indexed assignment with consistent subscripts",
+          "expected": "The corrected parfor body assigns to SpaceNeighbInfo using a single statement like SpaceNeighbInfo(ii,:) = {a, b, c, d} (parenthesis indexing into the cell), not four separate brace-indexed writes."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Verification step is performed after the fix",
+          "expected": "Response shows re-running the code analyser (mcp__matlab__check_matlab_code, checkcode, or codeIssues) on the fixed code and confirming no parfor classification errors remain."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Fixed file passes mcp__matlab__check_matlab_code with no parfor errors",
+          "expected": "Running mcp__matlab__check_matlab_code on spaceNeighbInfo_fixed.m produces no parfor-related warnings or errors."
+        },
+        {
+          "id": "fix-exists",
+          "type": "file_exists",
+          "description": "File containing fixed code has been produced",
+          "expected": "spaceNeighbInfo_fixed.m"
+        }
+      ]
+    },
+    {
+      "id": "eval-02-sliced-write-full-read",
+      "name": "Sliced write combined with full read",
+        "description": "User reports a parfor error in code where 'data' is written sliced (data(i) = ...) and also read whole inside the same iteration via rand(...,'like',data). Tests that the agent identifies the conflicting roles and either separates them or restructures.",
+      "prompt": "The parfor loop has an error. Tell me what's wrong, and propose a fix into a new file named <original>_fixed.m. The file is evals/files/dataFullRead.m.",
+      "context": {
+        "files": ["evals/files/dataFullRead.m"],
+        "setup": "Parallel Computing Toolbox is available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent ran the code analyser before diagnosing",
+          "expected": "Response cites running mcp__matlab__check_matlab_code, checkcode, or codeIssues on the file."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Diagnosis correctly identifies the sliced-write + full-read conflict",
+          "expected": "Response explains that 'data' is written using sliced indexing (data(i) = ...) AND read whole (used as 'like' parameter), which parfor cannot classify. The diagnosis must NOT incorrectly claim that broadcast + sliced read is the issue — the conflict is sliced-write + full-read."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Fix removes the role conflict and the result is meaningful",
+            "expected": "Corrected code either (a) introduces a separate variable for the whole-array read (e.g. dataSnapshot used inside rand(...,'like',...)) or (b) restructures to remove the in-loop full read entirely. The fix must leave 'data' with values that are not all from a zero-initialised snapshot."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Verification step is performed after the fix",
+          "expected": "Response shows re-running the code analyser (mcp__matlab__check_matlab_code, checkcode, or codeIssues) on the fixed code and confirming no parfor classification errors remain."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Fixed file passes mcp__matlab__check_matlab_code with no parfor errors",
+          "expected": "Running mcp__matlab__check_matlab_code on dataFullRead_fixed.m produces no parfor-related warnings or errors."
+        },
+        {
+          "id": "fix-exists",
+          "type": "file_exists",
+          "description": "File containing fixed code has been produced",
+          "expected": "dataFullRead_fixed.m"
+        }
+      ]
+    },
+    {
+      "id": "eval-03-indexed-reduction",
+      "name": "Indexed reduction not in standard form",
+      "description": "User has a histogram-style accumulator: counts(bin) = counts(bin) + 1 inside parfor. This looks like a reduction but uses indexing on both sides, which parfor's reduction rule doesn't accept. Tests that the agent identifies it as a reduction-shape problem and applies a per-iteration accumulator + whole-variable reduction fix.",
+      "prompt": "The parfor loop has an error. Tell me what's wrong, and propose a fix into a new file named <original>_fixed.m. The file is evals/files/binCounts.m.",
+      "context": {
+        "files": ["evals/files/binCounts.m"],
+        "setup": "Parallel Computing Toolbox is available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent ran the code analyser before diagnosing",
+          "expected": "Response cites running mcp__matlab__check_matlab_code, checkcode, or codeIssues on the file."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Diagnosis identifies that the access pattern doesn't fit any single classification",
+          "expected": "Response explains that counts(bin) = counts(bin) + 1 is an indexed reduction — the variable is indexed on both sides, so it cannot be classified as a (whole-variable) reduction, and 'bin' is not the loop index, so it cannot be classified as sliced. Acceptable simpler phrasing: counts is used in a way that doesn't match parfor's reduction or sliced rules."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Fix uses a per-iteration local accumulator combined via a whole-variable reduction",
+          "expected": "Corrected code assigns to a local per-iteration variable (e.g. localCounts) inside the loop, then does counts = counts + localCounts as a whole-variable reduction. Equivalent fixes are acceptable as long as 'counts' itself is updated only via a whole-variable reduction (no indexed read+write of counts on the same line)."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Fix preserves the parfor (does not silently downgrade to a serial for loop)",
+          "expected": "Corrected code still uses parfor for the main outer loop. Replacing parfor with for to make the analyser silent does NOT count as a fix."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Verification step is performed after the fix",
+          "expected": "Response shows re-running the code analyser (mcp__matlab__check_matlab_code, checkcode, or codeIssues) on the fixed code and confirming no parfor classification errors remain."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Fixed file passes mcp__matlab__check_matlab_code with no parfor errors",
+          "expected": "Running mcp__matlab__check_matlab_code on binCounts_fixed.m produces no parfor-related warnings or errors."
+        },
+        {
+          "id": "fix-exists",
+          "type": "file_exists",
+          "description": "File containing fixed code has been produced",
+          "expected": "binCounts_fixed.m"
+        }
+      ]
+    },
+    {
+      "id": "eval-04-nested-bad-subscripts",
+      "name": "Multiple invalid sliced subscript patterns",
+      "description": "User has three different bad sliced subscript patterns in one parfor body: out(i, abs(randi(...))) — column subscript depends on a random call; out2(i, 1:4, i) — loop variable used twice in different positions; out3(i,j) where j comes from a nested for whose range is not a row of constants. Tests that the agent diagnoses each invalid sliced pattern correctly and produces a fix that satisfies all three rules. Phase 0 marked this case 'Bad'.",
+      "prompt": "The parfor loop has an error. Tell me what's wrong, and propose a fix into a new file named <original>_fixed.m. The file is evals/files/badSubsc.m.",
+      "context": {
+        "files": ["evals/files/badSubsc.m"],
+        "setup": "Parallel Computing Toolbox is available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent ran the code analyser before diagnosing",
+          "expected": "Response cites running mcp__matlab__check_matlab_code, checkcode, or codeIssues on the file."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Diagnosis identifies all three distinct sliced-classification failures",
+          "expected": "Response separately addresses each variable: (1) 'out' has a column subscript that depends on a random expression (abs(randi(...))) — the subscript pattern must be fixed across iterations, not random; (2) 'out2' uses the parfor loop variable 'i' in two different positions (dim 1 and dim 3), but a sliced variable can be indexed by the loop variable in only one dimension; (3) 'out3' is indexed using a nested-for variable 'j' whose range is 1:(n-1), which is not a row vector of constants — sliced indexing with a nested for variable requires a constant range. Slightly different phrasings are acceptable as long as all three issues are addressed distinctly."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Fix preserves the parfor and satisfies all three sliced rules",
+          "expected": "Corrected code keeps the outer parfor (does not downgrade to a serial for loop) and restructures the three writes so each is a valid sliced variable: typically each sliced output is written exactly once per iteration with the parfor loop variable in a single fixed dimension and a fixed list of constant subscripts. For 'out' this usually means accumulating per-iteration into a local row and assigning out(i,:) once. For 'out2' it usually means dropping one occurrence of 'i' (e.g. assigning a 3D slice with constant indices in one dim). For 'out3' it usually means computing a per-iteration row vector inside the inner loop and assigning out3(i,:) once outside it, or pre-collecting into a temporary."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Verification step is performed after the fix",
+          "expected": "Response shows re-running the code analyser (mcp__matlab__check_matlab_code, checkcode, or codeIssues) on the fixed code and confirming no parfor classification errors remain."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Fixed file passes mcp__matlab__check_matlab_code with no parfor errors",
+          "expected": "Running mcp__matlab__check_matlab_code on badSubsc_fixed.m produces no parfor-related warnings or errors."
+        },
+        {
+          "id": "fix-exists",
+          "type": "file_exists",
+          "description": "File containing fixed code has been produced",
+          "expected": "badSubsc_fixed.m"
+        }
+      ]
+    },
+    {
+      "id": "eval-05-conditional-reduction",
+      "name": "Conditional update masquerading as reduction",
+      "description": "User has a search loop where two variables (X, bestscore) are updated only inside an if-branch: 'if newscore > bestscore; X = x; bestscore = newscore; end'. parfor cannot classify these as reductions because the assignments are not in standard reduction form. The fix is to compute candidates per iteration and then reduce them after the loop (or use a custom reduction that captures (score,sample) as a single value). Phase 0 redcase2 was marked 'Mixed (converts reduction to sliced)' — agents tend to mis-fix this.",
+      "prompt": "The parfor loop has an error. Tell me what's wrong, and propose a fix into a new file named <original>_fixed.m. The file is evals/files/maximinSearch.m.",
+      "context": {
+        "files": ["evals/files/maximinSearch.m"],
+        "setup": "Parallel Computing Toolbox and Statistics Toolbox (for pdist) are available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent ran the code analyser before diagnosing",
+          "expected": "Response cites running mcp__matlab__check_matlab_code, checkcode, or codeIssues on the file."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Diagnosis correctly identifies the broken-reduction cause",
+          "expected": "Response explains that 'bestscore' (and 'X') are conditionally updated inside an if-branch, so each iteration may or may not assign them. parfor classifies them as temporary (because each iteration sometimes assigns them before use), which means the post-loop value is undefined / unavailable. Acceptable equivalent phrasing: the conditional update means the analyser cannot treat bestscore/X as a reduction (no whole-variable update of the form X = X op expr) nor as anything that survives the loop."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Fix correctly preserves the search semantics in parallel",
+          "expected": "Corrected code computes per-iteration candidate (sample, score) values inside the parfor (e.g. using sliced output arrays of samples and scores), then selects the best one AFTER the parfor loop using max/find. Acceptable alternatives: pack (score, sample) into a single value and use a custom reduction (parallel.pool.DataQueue or a user-defined reduction) that takes the better of two. The key constraint: parfor body must NOT update bestscore/X conditionally; selection of the maximum happens via accumulation + post-loop reduction or a valid reduction primitive. Replacing parfor with for is NOT acceptable."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Fix preserves the parfor (does not silently downgrade to a serial for loop)",
+          "expected": "Corrected code still uses parfor for the main outer loop. Replacing parfor with for to make the analyser silent does NOT count as a fix."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Verification step is performed after the fix",
+          "expected": "Response shows re-running the code analyser (mcp__matlab__check_matlab_code, checkcode, or codeIssues) on the fixed code and confirming no parfor classification errors remain."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Fixed file passes mcp__matlab__check_matlab_code with no parfor errors",
+          "expected": "Running mcp__matlab__check_matlab_code on maximinSearch_fixed.m produces no parfor-related warnings or errors."
+        },
+        {
+          "id": "fix-exists",
+          "type": "file_exists",
+          "description": "File containing fixed code has been produced",
+          "expected": "maximinSearch_fixed.m"
+        }
+      ]
+    }
+  ]
+}

@@ -7,7 +7,7 @@ Reference MCP server configurations for manual setup. Each file is a starting po
 ## Usage
 
 1. Copy the template for your platform to the location your agent expects (see table below)
-2. Replace `/path/to/matlab-mcp-core-server` with the absolute path to your installed binary
+2. Replace `/path/to/matlab-mcp-server` with the absolute path to your installed binary
 3. If MATLAB is not on PATH, add `--matlab-root /path/to/MATLAB/R20XXx` to the args
 
 ## Templates

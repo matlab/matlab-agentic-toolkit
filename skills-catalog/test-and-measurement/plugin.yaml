@@ -1,5 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Data Acquisition Toolbox and Industrial Communication Toolbox.
+description: Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.
 keywords:
   - matlab
   - data-acquisition
@@ -12,3 +12,8 @@ keywords:
   - modbus
   - mqtt
   - aveva-pi
+  - can
+  - lin
+  - blf
+  - mdf
+  - arxml

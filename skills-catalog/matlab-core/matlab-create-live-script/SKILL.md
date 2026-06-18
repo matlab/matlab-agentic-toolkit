@@ -4,7 +4,7 @@ description: Create plain-text MATLAB Live Scripts (.m files) with rich text for
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "2.1"
 ---
 
 # Live Scripts
@@ -23,20 +23,32 @@ Plain-text `.m` files that render as rich documents in the MATLAB Live Editor. V
 - Function files
 - MATLAB older than R2025a
 
+## Converting from `.mlx`
+
+Binary `.mlx` files can be converted to plain-text `.m` by running the following at the MATLAB command window. The recipe is **not** part of the resulting `.m` file:
+
+```matlab
+editor = matlab.desktop.editor.openDocument(mlxPath, Visible=0);
+editor.saveAs(newMPath);  % use .m extension
+editor.closeNoPrompt;
+```
+
 ## Rules
 
 - Text lines use `%[text]` — NOT bare `%`
 - One paragraph = one `%[text]` line — do not hard-wrap; let the Live Editor handle line width
 - No empty `%[text]` lines — they render as unwanted blank space
 - Section headers: `%%` on its own line, then `%[text] ## Title` on next line
-- No blank lines anywhere in the file
+- No blank lines in the file, except a single blank line directly before `%[appendix]`
 - No `figure` command — implicit figure creation only
 - No more than one plot per section (unless using tiled layouts)
 - No `close all` or `clear`
-- Double all LaTeX backslashes: `\\sin`, `\\frac`, `\\sum`
-- Last bulleted list item ends with `\`
+- No `mfilename` — does not work as intended in Live Scripts. Hardcode filenames or use `pwd`.
+- Escape these characters when used as **literal text** (not as markdown syntax): `*`, `_`, `[`, `]`, `` ` ``, `\`, including within LaTeX equations. Also escape `.` after a digit and `#` at line start.
+- Double LaTeX command backslashes: `\\sin`, `\\frac`, `\\sum`
+- Last list item (bulleted or numbered) ends with `\`
 - Every file ends with the required appendix
-- Avoid `fprintf` — drop the semicolon or use `disp()` for output
+- Avoid `fprintf` — drop the semicolon or use `disp()` for output. There is no way to send output to the command window when running as a Live Script.
 - Outputs should serve the reader's understanding, not verify execution — run the script via MCP to confirm correctness
 
 ## Required Appendix
@@ -59,15 +71,25 @@ When reading a Live Script file, ignore everything below the `%[appendix]` marke
 
 | Syntax | Renders as |
 |--------|-----------|
+| `%%` | Section break |
 | `%[text] # Title` | H1 heading |
 | `%[text] ## Section` | H2 heading |
 | `%[text] **bold**` | **Bold** |
-| `%[text] _italic_` | _Italic_ |
-| `%[text] |code|` | `Monospace` |
-| `%[text] $ x^2 $` | Inline equation |
+| `%[text] *italic*` | *Italic* |
+| `` %[text] `code` `` | `Monospace` |
+| `%[text] <u>text</u>` | Underlined text |
+| `%[text] $ a = \\pi r^2 $` | Inline equation |
+| `%[text]{"align":"center"} ...` | Center-aligned line |
 | `%[text] - item` | Bullet |
 | `%[text] - last \` | Last bullet |
-| `%%` | Section break |
+| `%[text] 1. item` | Numbered list |
+| `%[text] 2. last \` | Last numbered item |
+| `%[text] [text](url)` | External hyperlink |
+| `%[text] [text](internal:id)` | Internal link to an anchor |
+| `%[text] %[text:anchor:id] ...` | Anchor (link target) |
+| `%[text:tableOfContents]{"heading":"..."}` | Table of Contents |
+
+**IDs (anchors, and any other id-bearing element):** letters, digits, and underscores only. No hyphens — `my-section` won't bind; use `my_section`. For anchors, place the marker immediately after `%[text]` at the start of the line.
 
 ### Tables
 
@@ -84,6 +106,7 @@ When reading a Live Script file, ignore everything below the `%[appendix]` marke
 ```matlab
 %[text] # Sinusoidal Signals
 %[text] Examples of sinusoidal signals in MATLAB.
+%[text:tableOfContents]{"heading":"Contents"}
 %[text] - sine waves
 %[text] - cosine waves \
 x = linspace(0,8*pi);
@@ -119,7 +142,7 @@ grid on
 ```matlab
 %[text] ## Theory
 %[text] The discrete Fourier transform is defined as:
-%[text] $ X(k) = \\sum_{n=0}^{N-1} x(n)e^{-j2\\pi kn/N} $
+%[text] $ X(k) = \\sum\_{n=0}^{N-1} x(n)e^{-j2\\pi kn/N} $
 ```
 
 ### Code with Inline Comments
@@ -160,16 +183,24 @@ title('Method 2')
 
 Before finishing a Live Script, verify:
 - [ ] File has .m extension
-- [ ] Sections use `%%` followed by `%[text] ##`
-- [ ] No blank lines or empty `%[text]` lines
+- [ ] Sections use `%%` alone on its own line, followed by `%[text] ##`
+- [ ] No blank lines or empty `%[text]` lines (except one blank line directly before `%[appendix]`)
 - [ ] Each paragraph is a single `%[text]` line (no hard-wrapping)
 - [ ] One plot per section (unless tiled layout)
-- [ ] Bulleted lists end with backslash on last item
-- [ ] LaTeX uses double backslashes
+- [ ] Bulleted and numbered lists end with backslash on last item
+- [ ] LaTeX command backslashes are doubled in the saved file: `\\sin`, `\\frac`, `\\pi`
 - [ ] No `figure` commands
 - [ ] No `close all` or `clear` at start
+- [ ] No `mfilename`
 - [ ] Appendix is present and correctly formatted
 - [ ] Outputs serve the reader, not the developer
+
+## Not Yet Supported
+
+Minor features planned for a future revision:
+
+- Interactive controls (sliders, dropdowns, numeric inputs)
+- Hide Code View (output view that hides the source code)
 
 ----
 

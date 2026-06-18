@@ -1,0 +1,17 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Diagnose and enhance image quality from cameras connected via Image Acquisition Toolbox.
+matlab-release: ">=R2022a"
+requires-tools:
+  - detect_matlab_toolboxes
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+requires-skills: []
+requires-products:
+  - Image Acquisition Toolbox
+  - Image Processing Toolbox
+toolkit: matlab-agentic-toolkit

@@ -1,0 +1,485 @@
+[
+  {
+    "id": "multi-channel-asc-import",
+    "name": "Multi-channel ASC file import with polymorphic handling",
+    "description": "Tests that the agent correctly handles polymorphic return types from canSignalImport on a multi-channel ASC file, guarding against cell/struct/timetable variants",
+    "prompt": "I have an ASC log file recorded from a vehicle with 4 CAN channels. Write MATLAB code that imports all decoded signals from the file using my DBC database, handling whatever return type comes back. The ASC file is at 'data/vehicle_log.asc' and the DBC is at 'data/powertrain.dbc'. Store all signals in a struct called allSignals with fields for each channel.",
+    "expected_output": "MATLAB code that loads canDatabase, calls canSignalImport with Vector vendor, guards return with iscell/istimetable/isstruct checks, iterates channels, builds allSignals struct",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted for file I/O)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use canDatabase to load DBC before importing",
+        "expected": "canDatabase"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must guard with iscell() or istimetable() check for polymorphic return",
+        "expected": "iscell|istimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must use canSignalImport with Vector vendor for ASC files",
+        "expected": "canSignalImport.*Vector"
+      }
+    ]
+  },
+  {
+    "id": "mdf-raw-can-detection-decode",
+    "name": "MDF file with mixed raw CAN and pre-decoded groups",
+    "description": "Tests that the agent correctly detects raw CAN groups using channel name patterns (not metadata), decodes them with error handling, and preserves pre-decoded groups as-is",
+    "prompt": "I have an MDF file with multiple channel groups. Some groups contain raw CAN data that needs decoding with my DBC, and others already have decoded signal columns. Write MATLAB code to read all groups, detect which ones have raw CAN, decode those, and save the rest as-is. File: 'data/vehicle.mf4', DBC: 'data/chassis.dbc'. Output should be a struct with one field per group.",
+    "expected_output": "MATLAB code that uses mdfChannelGroupInfo, skips empty groups, detects raw CAN via CAN_DataFrame channel name prefix, decodes with canMessageTimetable wrapped in try/catch, stores pre-decoded groups as-is",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use mdfChannelGroupInfo to inspect groups before reading",
+        "expected": "mdfChannelGroupInfo"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must detect raw CAN using channel name pattern (CAN_DataFrame prefix), not metadata",
+        "expected": "CAN_DataFrame"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must wrap canMessageTimetable in try/catch for DBC mismatch",
+        "expected": "try"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Must NOT use SourceBusType or metadata fields for CAN detection",
+        "expected": "SourceBusType"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Must skip empty timetables from mdfRead output (height == 0 or isempty check)",
+        "expected": "height.*==.*0|isempty"
+      }
+    ]
+  },
+  {
+    "id": "blf-channelid-return-type",
+    "name": "BLF import with and without ChannelID parameter",
+    "description": "Tests that the agent understands the critical difference in return type when using ChannelID parameter vs not: cell array vs direct timetable",
+    "prompt": "I need to read a BLF file two ways: first, get all channels at once, then get just channel 3 directly. Write MATLAB code showing both approaches and decode the messages to signals. File: 'data/can_log.blf', DBC: 'data/vehicle.dbc'.",
+    "expected_output": "MATLAB code showing blfread without ChannelID (cell array return, extract with {n}), blfread with ChannelID=3 (direct timetable), both followed by canSignalTimetable",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must show blfread without ChannelID returning a cell array",
+        "expected": "blfread.*Database"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must show blfread with ChannelID=3 returning a single timetable",
+        "expected": "ChannelID.*3|ChannelID=3"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must extract from cell when no ChannelID (e.g., result{1} or result{n})",
+        "expected": "\\{\\d\\}|\\{.*\\}"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Must call canSignalTimetable to decode messages to signals",
+        "expected": "canSignalTimetable"
+      }
+    ]
+  },
+  {
+    "id": "mdf-lin-decode",
+    "name": "MDF file with LIN data decoded using linMessageTimetable",
+    "description": "Tests that the agent correctly identifies LIN_Frame channel groups in MDF files, uses linDatabase with an LDF file, and decodes with linMessageTimetable. Also verifies the agent knows there is no linSignalTimetable and accesses signals via the Signals column.",
+    "prompt": "I have an MDF file that contains LIN bus data from a vehicle body controller. Write MATLAB code to find which channel groups contain LIN data, read those groups, and decode the LIN messages using my LDF file. I want to extract the signal values from a specific message called 'GWE_01'. File: 'data/body_controller.mf4', LDF: 'data/body_lin.ldf'.",
+    "expected_output": "MATLAB code that uses mdfChannelInfo or mdfChannelGroupInfo to find LIN groups, detects LIN_Frame prefix, loads linDatabase, calls linMessageTimetable, accesses Signals column for signal values",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use linDatabase to load the LDF file",
+        "expected": "linDatabase"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must use linMessageTimetable to decode raw LIN data",
+        "expected": "linMessageTimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must detect LIN groups using LIN_Frame channel name prefix",
+        "expected": "LIN_Frame"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Must NOT call linSignalTimetable (does not exist)",
+        "expected": "linSignalTimetable"
+      },
+      {
+        "id": "a6",
+        "type": "output_contains",
+        "description": "Must access decoded signals via Signals column (struct per row)",
+        "expected": "Signals"
+      }
+    ]
+  },
+  {
+    "id": "blf-inspect-before-read",
+    "name": "BLF file inspection with blfinfo before reading",
+    "description": "Tests that the agent uses blfinfo to inspect a BLF file before reading it, identifies which channels and protocols are present, and reads selectively based on the inspection results",
+    "prompt": "I have a BLF file that might contain both CAN and LIN data across multiple channels. Write MATLAB code to first inspect the file to see what's in it, then read and decode only the CAN channels. File: 'data/mixed_bus.blf', DBC: 'data/vehicle.dbc'.",
+    "expected_output": "MATLAB code that calls blfinfo, inspects ChannelList table for Protocol column, identifies CAN channels, then calls blfread with appropriate parameters for those channels only",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must call blfinfo to inspect the file first",
+        "expected": "blfinfo"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must reference ChannelList from blfinfo output",
+        "expected": "ChannelList"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must check Protocol column to identify CAN vs LIN channels",
+        "expected": "Protocol"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Must use blfread to read the data",
+        "expected": "blfread"
+      }
+    ]
+  },
+  {
+    "id": "arxml-database-mdf-decode",
+    "name": "MDF decode using arxmlDatabase instead of canDatabase",
+    "description": "Tests that the agent correctly uses arxmlDatabase (ARXML file) as an alternative to canDatabase (DBC file) for CAN/CAN FD decoding. The ARXML database should work identically in the decode pipeline.",
+    "prompt": "Our team uses AUTOSAR ARXML files instead of DBC for our CAN database. Write MATLAB code to read raw CAN data from an MDF file and decode it using our ARXML database. The MDF file is 'data/ecu_log.mf4' and the ARXML is 'data/vehicle_comms.arxml'. Read all groups, detect raw CAN, and decode.",
+    "expected_output": "MATLAB code that uses arxmlDatabase to load the ARXML file, uses mdfChannelGroupInfo and mdfRead, detects CAN_DataFrame, and passes the arxmlDatabase object to canMessageTimetable for decoding",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB (with mock data substituted)"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use arxmlDatabase to load the ARXML file",
+        "expected": "arxmlDatabase"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must detect raw CAN using CAN_DataFrame channel name prefix",
+        "expected": "CAN_DataFrame"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must use canMessageTimetable to convert raw data",
+        "expected": "canMessageTimetable"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Must NOT use canDatabase since the prompt specifies ARXML",
+        "expected": "canDatabase"
+      },
+      {
+        "id": "a6",
+        "type": "output_contains",
+        "description": "Must use canSignalTimetable to extract decoded signals",
+        "expected": "canSignalTimetable"
+      }
+    ]
+  },
+  {
+    "id": "canfd-blf-decode-with-dbc",
+    "name": "CAN FD BLF decode using canFDMessageTimetable",
+    "description": "Tests that the agent uses the CAN FD pipeline (canFDMessageTimetable + canSignalTimetable) for CAN FD data from a BLF file, and uses canDatabase (not arxmlDatabase) since ARXML does not support CAN FD",
+    "prompt": "I have a BLF file containing CAN FD messages from a high-speed vehicle bus. Write MATLAB code to read and decode all CAN FD signals using my DBC database. File: 'data/canfd_bus.blf', DBC: 'data/canfd_network.dbc'.",
+    "expected_output": "MATLAB code that loads canDatabase, calls blfread, uses canFDMessageTimetable to get FD message timetable, then canSignalTimetable to decode signals",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use canDatabase to load the DBC file",
+        "expected": "canDatabase"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use canFDMessageTimetable for CAN FD data",
+        "expected": "canFDMessageTimetable"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must use canSignalTimetable to decode FD signals (not canFDSignalTimetable)",
+        "expected": "canSignalTimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT use arxmlDatabase (ARXML does not support CAN FD)",
+        "expected": "arxmlDatabase"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Must NOT fabricate canFDSignalTimetable (does not exist)",
+        "expected": "canFDSignalTimetable"
+      }
+    ]
+  },
+  {
+    "id": "kvaser-txt-signal-import",
+    "name": "Kvaser TXT file signal import with polymorphic handling",
+    "description": "Tests that the agent uses the correct vendor argument (Kvaser) for TXT files and handles polymorphic return types from canSignalImport",
+    "prompt": "I have a Kvaser TXT log file from our test bench. Write MATLAB code to import all decoded CAN signals from the file using my DBC database. Handle the case where there might be multiple channels. File: 'data/test_bench.txt', DBC: 'data/bench_signals.dbc'.",
+    "expected_output": "MATLAB code that loads canDatabase, calls canSignalImport with Kvaser vendor, guards return type with iscell/istimetable checks",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use Kvaser vendor argument for TXT files",
+        "expected": "Kvaser"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use canSignalImport for decoded signal import",
+        "expected": "canSignalImport"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must guard polymorphic return type",
+        "expected": "iscell|istimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT use Vector vendor for TXT files",
+        "expected": "canSignalImport.*Vector|canMessageImport.*Vector"
+      }
+    ]
+  },
+  {
+    "id": "arxml-canfd-limitation",
+    "name": "ARXML CAN FD limitation awareness",
+    "description": "Tests that the agent knows arxmlDatabase does not support CAN FD and falls back to canDatabase when asked to decode CAN FD with ARXML",
+    "prompt": "I have a BLF file with CAN FD data and an ARXML database file. Write MATLAB code to decode the CAN FD signals. File: 'data/canfd_log.blf', ARXML: 'data/vehicle.arxml'. If the ARXML cannot be used for CAN FD, explain why and show what to use instead.",
+    "expected_output": "MATLAB code or explanation stating that arxmlDatabase does not support CAN FD, recommending canDatabase (DBC) instead, and showing the correct CAN FD decode pipeline",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must mention that ARXML does not support CAN FD",
+        "expected": "not.*support|does not|cannot|limitation"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must recommend canDatabase (DBC) as the alternative for CAN FD",
+        "expected": "canDatabase|DBC|\\.dbc"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must use canFDMessageTimetable in the correct pipeline",
+        "expected": "canFDMessageTimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT pass arxmlDatabase to canFDMessageTimetable",
+        "expected": "canFDMessageTimetable.*arxml"
+      }
+    ]
+  },
+  {
+    "id": "mdf-dat-file-import",
+    "name": "DAT file import as MDF format",
+    "description": "Tests that the agent knows .dat files are MDF format and uses the standard MDF pipeline (mdfRead, mdfChannelGroupInfo) to import them",
+    "prompt": "I have a .dat file from our CAN logger that I need to read and decode in MATLAB. The file is 'data/ecu_recording.dat' and my DBC is 'data/powertrain.dbc'. Read the file and decode any raw CAN data in it.",
+    "expected_output": "MATLAB code that treats .dat as MDF format, uses mdfRead/mdfChannelGroupInfo, detects CAN_DataFrame, and decodes with canMessageTimetable",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use mdfRead to read the .dat file (MDF format)",
+        "expected": "mdfRead"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must detect raw CAN using CAN_DataFrame channel name prefix",
+        "expected": "CAN_DataFrame"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must use canMessageTimetable to decode raw CAN",
+        "expected": "canMessageTimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT try to use blfread or canMessageImport on a .dat file",
+        "expected": "blfread|canMessageImport|canSignalImport"
+      }
+    ]
+  },
+  {
+    "id": "blf-lin-signal-decode",
+    "name": "BLF LIN signal decode with linMessageTimetable",
+    "description": "Tests that the agent correctly decodes LIN signals from a BLF file using linDatabase and linMessageTimetable, and knows there is no linSignalTimetable",
+    "prompt": "I have a BLF file with LIN bus data from a vehicle body controller. Write MATLAB code to read the LIN data, decode it using my LDF file, and extract the signal values from a message called 'BCM_Status'. File: 'data/body_lin.blf', LDF: 'data/body_network.ldf'.",
+    "expected_output": "MATLAB code that loads linDatabase, calls blfread with ProtocolMode=LIN, uses linMessageTimetable, and accesses signals from the Signals column of the decoded timetable",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use linDatabase to load the LDF file",
+        "expected": "linDatabase"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use blfread with ProtocolMode LIN",
+        "expected": "ProtocolMode"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must use linMessageTimetable to decode LIN data",
+        "expected": "linMessageTimetable"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT call linSignalTimetable (does not exist)",
+        "expected": "linSignalTimetable\\("
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Must access signal values from decoded timetable columns or Signals field",
+        "expected": "Signals|BCM_Status"
+      }
+    ]
+  },
+  {
+    "id": "mdf-no-object-function",
+    "name": "MDF import must not use deprecated mdf() object constructor",
+    "description": "Tests that the agent uses the functional MDF API (mdfRead, mdfChannelGroupInfo) and does not use the deprecated mdf() object constructor or its methods",
+    "prompt": "I need to read an MDF file in MATLAB to get the channel data. The file is 'data/engine_test.mf4'. Read all the channel groups and give me the data as timetables.",
+    "expected_output": "MATLAB code using mdfRead and mdfChannelGroupInfo. Must NOT use mdf() constructor, mdf.read(), or object-oriented MDF API",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use mdfRead to read the MDF file",
+        "expected": "mdfRead"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "Must NOT use deprecated mdf() object constructor",
+        "expected": "= mdf\\(|mdf\\(['\"]"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Must NOT call methods on an mdf object (e.g., .read, .get)",
+        "expected": "\\.read\\(|\\.get\\(|\\.ChannelGroup"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Must use mdfChannelGroupInfo or mdfInfo to inspect structure",
+        "expected": "mdfChannelGroupInfo|mdfInfo"
+      }
+    ]
+  },
+  {
+    "id": "toolbox-license-check",
+    "name": "License check using detect_matlab_toolboxes before calling VNT functions",
+    "description": "Tests that the agent calls detect_matlab_toolboxes MCP tool to verify Vehicle Network Toolbox availability before generating code that requires it, and provides a clear message if VNT is not installed",
+    "prompt": "I want to read a BLF file and decode the CAN messages. File: 'data/vehicle_can.blf', DBC: 'data/powertrain.dbc'. Make sure to verify that the required toolbox is available before running the import code.",
+    "expected_output": "Agent calls detect_matlab_toolboxes MCP tool to check for VNT, then proceeds with blfread and decode pipeline if available, or reports that VNT is required",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must call detect_matlab_toolboxes MCP tool to check for toolbox",
+        "expected": "detect_matlab_toolboxes"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use blfread for BLF file import",
+        "expected": "blfread"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Must include message about VNT requirement if toolbox not available",
+        "expected": "Vehicle Network Toolbox"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Must NOT use matlab.addons.installedAddons or ver() in generated code -- the MCP tool handles the check",
+        "expected": "installedAddons|ver\\("
+      }
+    ]
+  }
+]

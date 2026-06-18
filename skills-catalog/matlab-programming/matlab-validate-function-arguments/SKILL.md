@@ -18,7 +18,7 @@ description: >
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.3"
+  version: "1.1"
 ---
 
 # MATLAB Function Argument Validation
@@ -288,7 +288,8 @@ its absence) is the answer.
 #### Maximal example
 
 A single function with required + optional + ignored + repeating + ignored
-repeating + name-value + class-imported name-value (here `onCleanup`):
+repeating + name-value + class-imported name-value (here `SensorConfig` —
+the class defined in the `.?ClassName` section above):
 
 ```matlab
 function maximal(req, opt, ~, x, ~, options, classArg)
@@ -304,13 +305,21 @@ function maximal(req, opt, ~, x, ~, options, classArg)
     arguments
         options.Title (1,1) string = "default"
         options.Verbose (1,1) logical = false
-        classArg.?onCleanup
+        classArg.?SensorConfig
     end
     % function body
 end
 ```
 
-Call: `maximal(1, 2, 3, 4, 'a', 5, 'b', Title="t")` — parses and runs.
+Call: `maximal(1, 2, 3, 4, 'a', 5, 'b', Title="t", SampleRate=44100)` —
+parses and runs. `SampleRate` is one of the name-value args imported from
+`SensorConfig` by the `.?` line.
+
+**Don't pick a class with no public-settable properties** for `.?ClassName` —
+`onCleanup`, for example, has only `task` (private set), so `.?onCleanup`
+imports zero name-value args. The line is syntactically valid but a no-op,
+and any "name-value" the caller writes against it is treated as an unknown
+name — see "unknown `Name=Value` is silently swallowed" in Common Mistakes.
 
 For combining repeating args with name-value options, see the Maximal
 example above and [references/examples/repeating-args.md](references/examples/repeating-args.md).
@@ -442,6 +451,7 @@ For detailed migration examples, see [references/migration-guide.md](references/
 | Renaming `~` to `obj`/`this` in arguments block | `~` is a valid placeholder name in arguments blocks — renaming reintroduces the lint warning the original `~` suppressed | Keep `~`, no class/size spec, no `%#ok` pragma |
 | Declaring multiple names in `arguments (Output, Repeating)` | MATLAB errors with `MultipleRepeatingOutputs` — only one name is allowed | Declare a single output name; pack groups of values into that one cell array and have the caller request `N * groupSize` outputs |
 | Claiming optional positional args and `(Repeating)` are mutually exclusive | They aren't — required + optional + repeating + name-value all compose legally in order | See "Composition Rules". When unsure, write the function and let MATLAB's parse-time error identifier (e.g. `OptionalAfterRepeating`, `PositionalAfterNamed`) tell you what's actually wrong |
+| Assuming an unknown `Name=Value` errors loudly when the function has `arguments (Repeating)` | It doesn't. With a `(Repeating)` block present, an unrecognized `Name=Value` is silently absorbed as two **positional** repeating args (name token, then value). One bad pair also reclassifies preceding **valid** name-value args back to positional, so set options revert to their defaults. (Without `(Repeating)`, the same call errors with `MATLAB:TooManyInputs`.) | A common way to land here: `.?ClassName` against a class with no public-settable properties (e.g. `.?onCleanup`) — the import exposes nothing, so every NV the caller writes against it is unknown. Pick a class with public-set properties. When debugging "why is my NV default showing up?", check the call for **any** unrecognized `Name=` — one bad name poisons the whole NV section |
 
 ## Validators Quick Reference
 

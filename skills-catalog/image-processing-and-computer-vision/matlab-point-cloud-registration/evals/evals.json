@@ -1,0 +1,531 @@
+[
+  {
+    "id": "basic-icp-registration",
+    "name": "Register two point clouds with ICP plane-to-plane",
+    "description": "Tests that the skill guides toward pcregistericp with planeToPlane metric as the default starting point",
+    "prompt": "I have two point clouds saved as PCD files. Show me how to register them and visualize the result.",
+    "expected_output": "Code using pcregistericp with Metric='planeToPlane' and pcshowpair for visualization. It should not use rigid3d or default point-to-point metric.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcregistericp for registration",
+        "expected": "pcregistericp"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses planeToPlane metric as the recommended default",
+        "expected": "planeToPlane"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses pcshowpair for visualization",
+        "expected": "pcshowpair"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use legacy rigid3d for transformations",
+        "expected": "rigid3d("
+      }
+    ]
+  },
+  {
+    "id": "ndt-registration",
+    "name": "Register point clouds using NDT",
+    "description": "Tests that the skill guides toward pcregisterndt with a gridStep parameter tuned for the scale of the scene",
+    "prompt": "I want to register two point clouds using NDT. How do I do that?",
+    "expected_output": "Code using pcregisterndt with a gridStep parameter. Should use rigidtform3d for transformations, not rigid3d.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcregisterndt for registration",
+        "expected": "pcregisterndt"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Specifies a gridStep parameter",
+        "expected": "gridStep"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses pcshowpair for visualization",
+        "expected": "pcshowpair"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use legacy rigid3d",
+        "expected": "rigid3d("
+      }
+    ]
+  },
+  {
+    "id": "loam-registration-organized",
+    "name": "Register organized point clouds using LOAM",
+    "description": "Tests that the skill guides toward LOAM with feature detection for organized point clouds",
+    "prompt": "I have a sequence of point clouds from a Velodyne sensor. How do I register them using LOAM?",
+    "expected_output": "Code using detectLOAMFeatures for feature extraction, downsampleLessPlanar for feature downsampling, and pcregisterloam for registration.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses detectLOAMFeatures for feature extraction",
+        "expected": "detectLOAMFeatures"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses downsampleLessPlanar for feature downsampling",
+        "expected": "downsampleLessPlanar"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses pcregisterloam for registration",
+        "expected": "pcregisterloam"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use rigid3d for transformations",
+        "expected": "rigid3d("
+      }
+    ]
+  },
+  {
+    "id": "phase-correlation-ground-data",
+    "name": "Register ground data point clouds using phase correlation",
+    "description": "Tests that the skill guides toward pcregistercorr for ground data registration when no initial transformation is available",
+    "prompt": "I have aerial lidar scans of ground terrain with no initial alignment estimate. How do I register them?",
+    "expected_output": "Code using pcregistercorr for phase correlation-based registration. Should mention it is specifically designed for ground data.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcregistercorr for phase correlation registration",
+        "expected": "pcregistercorr"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Mentions that pcregistercorr is designed for ground data",
+        "expected": "Explanation that phase correlation is suited for ground data"
+      }
+    ]
+  },
+  {
+    "id": "global-to-local-refinement",
+    "name": "Register significantly misaligned point clouds using global-to-local refinement",
+    "description": "Tests that the skill guides toward FGR for global alignment followed by ICP for local refinement when point clouds have low overlap",
+    "prompt": "I have two point clouds that are far apart. How do I register them accurately?",
+    "expected_output": "Code using pcregisterfgr for global alignment, then pcregistericp with planeToPlane for local refinement. Should apply global transformation before local registration.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcregisterfgr for global registration",
+        "expected": "pcregisterfgr"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcregistericp for local refinement",
+        "expected": "pcregistericp"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses pctransform to apply the global transformation before local refinement",
+        "expected": "pctransform"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Applies global registration first, then local refinement as a two-step process",
+        "expected": "pcregisterfgr called before pcregistericp, with pctransform applied between them"
+      }
+    ]
+  },
+  {
+    "id": "cpd-nonrigid-registration",
+    "name": "Register deformable point clouds using CPD",
+    "description": "Tests that the skill guides toward pcregistercpd with Nonrigid transformation for deformable registration",
+    "prompt": "I have two point clouds of a deformable object. The object has changed shape between scans. How do I register the point clouds?",
+    "expected_output": "Code using pcregistercpd with Transform='Nonrigid'. Should mention that CPD is the only option for non-rigid registration.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcregistercpd for registration",
+        "expected": "pcregistercpd"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses Nonrigid transformation type",
+        "expected": "Nonrigid"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Mentions that CPD with Nonrigid is the only option for deformable registration",
+        "expected": "Explanation that pcregistercpd with Nonrigid is the only deformable/non-rigid registration approach"
+      }
+    ]
+  },
+  {
+    "id": "fpfh-feature-based-registration",
+    "name": "Register point clouds using FPFH feature matching",
+    "description": "Tests that the skill guides toward FPFH feature extraction, matching, and geometric transformation estimation for global registration",
+    "prompt": "I want to register two point clouds using feature matching with FPFH descriptors.",
+    "expected_output": "Code using extractFPFHFeatures, pcmatchfeatures, and estgeotform3d. Should downsample before feature extraction and use the rigid transformation type.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses extractFPFHFeatures for feature extraction",
+        "expected": "extractFPFHFeatures"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcmatchfeatures for feature matching",
+        "expected": "pcmatchfeatures"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses estgeotform3d for transformation estimation",
+        "expected": "estgeotform3d"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Downsamples point clouds before feature extraction",
+        "expected": "pcdownsample"
+      }
+    ]
+  },
+  {
+    "id": "compare-algorithm-accuracy",
+    "name": "Compare registration algorithm accuracy using RMSE",
+    "description": "Tests that the skill guides toward using the RMSE output of registration functions to compare algorithm accuracy, and notes that pcregisterfgr RMSE is not directly comparable",
+    "prompt": "Which registration algorithm is more accurate for my data?",
+    "expected_output": "Code that runs multiple registration functions, captures the rmse output from each, and compares them. Should note that pcregisterfgr RMSE is not comparable to other functions because it only measures inlier points.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Captures the rmse output from registration functions",
+        "expected": "rmse"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcregistericp as one of the algorithms to compare",
+        "expected": "pcregistericp"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Notes that pcregisterfgr rmse is not directly comparable to other registration functions",
+        "expected": "Comment or note that pcregisterfgr RMSE only measures inlier points and is not comparable"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Compares multiple algorithms by their RMSE values to determine best result",
+        "expected": "At least two registration functions called with RMSE output captured and compared"
+      }
+    ]
+  },
+  {
+    "id": "pcorganize-for-loam",
+    "name": "Organize unorganized point clouds for LOAM registration",
+    "description": "Tests that the skill guides toward using pcorganize when point clouds are unorganized but lidar parameters are available, enabling LOAM registration",
+    "prompt": "I have unorganized point clouds but I know the lidar sensor parameters. Can I still use LOAM for registration?",
+    "expected_output": "Code using pcorganize to convert unorganized point clouds to organized format, then code using detectLOAMFeatures and pcregisterloam.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcorganize to organize the point cloud",
+        "expected": "pcorganize"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses detectLOAMFeatures after organizing",
+        "expected": "detectLOAMFeatures"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses pcregisterloam for registration",
+        "expected": "pcregisterloam"
+      }
+    ]
+  },
+  {
+    "id": "preprocessing-for-registration",
+    "name": "Preprocess point clouds before registration",
+    "description": "Tests that the skill guides toward cylindrical filtering and grid-based downsampling as preprocessing steps",
+    "prompt": "Add preprocessing steps to improve registration",
+    "expected_output": "Code using findPointsInCylinder for cylindrical filtering and pcdownsample with gridNearest or gridAverage. Should not recommend ground removal as a first step.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses findPointsInCylinder for ego vehicle and distance filtering",
+        "expected": "findPointsInCylinder"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcdownsample for downsampling",
+        "expected": "pcdownsample"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses gridAverage or gridNearest method for downsampling, not random",
+        "expected": "gridAverage or gridNearest passed to pcdownsample"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Does not recommend ground removal as a default preprocessing step",
+        "expected": "No segmentGroundSMRF or pcfitplane as a default step; may mention it as optional"
+      }
+    ]
+  },
+  {
+    "id": "organized-point-cloud-select-outputsize",
+    "name": "Preserve organized structure when filtering with select",
+    "description": "Tests that the skill guides toward using OutputSize='full' when filtering organized point clouds with select",
+    "prompt": "I have an organized point cloud from a Velodyne sensor. I want to remove points within 3 meters of the sensor using findPointsInCylinder and then register with LOAM.",
+    "expected_output": "Code using select with OutputSize='full' to preserve the organized structure after filtering with findPointsInCylinder.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses select to filter the point cloud",
+        "expected": "select"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses findPointsInCylinder for ego vehicle filtering",
+        "expected": "findPointsInCylinder"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "OutputSize is set to 'full' not 'default'",
+        "expected": "OutputSize=\"full\" or OutputSize,'full'"
+      }
+    ]
+  },
+  {
+    "id": "combine-registered-point-clouds",
+    "name": "Combine a sequence of registered point clouds into a map",
+    "description": "Tests that the skill guides toward pcalign for combining multiple registered point clouds rather than pcmerge or pccat",
+    "prompt": "I registered a sequence of point clouds and I have the transformation for each point cloud. How do I combine them into a point cloud map?",
+    "expected_output": "Code using pcalign with the array of point clouds, transformations, and a grid step. Should not use pcmerge in a loop or pccat for this use case.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses pcalign for combining multiple point clouds",
+        "expected": "pcalign"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Passes a grid step parameter to pcalign for downsampling duplicates",
+        "expected": "gridStep or numeric third argument to pcalign"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use pcmerge in a loop for combining multiple point clouds",
+        "expected": "pcmerge("
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use pccat as a first choice",
+        "expected": "pccat("
+      }
+    ]
+  },
+  {
+    "id": "registration-analyzer-app",
+    "name": "Use the Point Cloud Registration Analyzer app for interactive comparison",
+    "description": "Tests that the skill guides toward the pointCloudRegistrationAnalyzer app when the user wants to interactively compare registration algorithms",
+    "prompt": "Is there an interactive tool for point cloud registration?",
+    "expected_output": "Recommends the Point Cloud Registration Analyzer app launched with pointCloudRegistrationAnalyzer. Should mention it supports ICP, NDT, LOAM, FGR, Phase Correlation, and CPD.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Mentions the pointCloudRegistrationAnalyzer app",
+        "expected": "pointCloudRegistrationAnalyzer"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Mentions multiple supported algorithms",
+        "expected": "Lists ICP, NDT, LOAM, FGR, Phase Correlation, and CPD as supported algorithms"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Mentions the app provides preprocessing, comparison, and export capabilities",
+        "expected": "Mentions preprocessing, side-by-side comparison, and export to workspace"
+      }
+    ]
+  },
+  {
+    "id": "incremental-map-building",
+    "name": "Build an incremental map from a sequence of lidar scans",
+    "description": "Tests that the skill guides toward correct pose accumulation using rigidtform3d with the premultiply convention and uses pcalign to combine the results",
+    "prompt": "I have a folder of PCD files from a lidar sensor. How do I build a 3-D map?",
+    "expected_output": "Code that loops through point clouds, registers each to the previous using pcregistericp, accumulates absolute poses using tforms(i-1).A * relTform.A, and combines them using pcalign. Should use InitialTransform for constant velocity assumption.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Accumulates poses correctly using premultiply convention: previous_absolute.A * relative.A",
+        "expected": "tforms(i-1).A * relTform.A or absTform.A * relTform.A (absolute before relative)"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcalign to combine the registered point clouds",
+        "expected": "pcalign"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Sets InitialTransform for registration using constant velocity assumption",
+        "expected": "InitialTransform"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not use legacy rigid3d",
+        "expected": "rigid3d("
+      }
+    ]
+  },
+  {
+    "id": "loam-map-building",
+    "name": "Build a map using LOAM with pcmaploam",
+    "description": "Tests that the skill guides toward pcmaploam for refining LOAM registration over a sequence of organized point clouds",
+    "prompt": "I have a sequence of organized point clouds and I want to build a map using LOAM.",
+    "expected_output": "Code using detectLOAMFeatures, downsampleLessPlanar, pcregisterloam for pairwise registration, pcmaploam, and findPose/addPoints for map refinement.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated code runs without error in MATLAB"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses detectLOAMFeatures for feature extraction",
+        "expected": "detectLOAMFeatures"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses pcmaploam for map management",
+        "expected": "pcmaploam"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses findPose for map-refined pose estimation",
+        "expected": "findPose"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Uses addPoints to add feature points to the map",
+        "expected": "addPoints"
+      }
+    ]
+  }
+]

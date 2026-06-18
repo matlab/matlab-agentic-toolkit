@@ -17,7 +17,7 @@ This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an ove
 
 ## Install and Configure the MCP Server
 
-To manually install and configure the MCP server rather than using the automated setup, see the instructions in the [MATLAB MCP Core Server](https://github.com/matlab/matlab-mcp-core-server) GitHub repository. After you install the MCP server, point your agent's MCP configuration at the installed binary. See this table for configuration file locations, or refer to your agent's documentation.
+To manually install and configure the MCP server rather than using the automated setup, see the instructions in the [MATLAB MCP Server](https://github.com/matlab/matlab-mcp-core-server) GitHub repository. After you install the MCP server, point your agent's MCP configuration at the installed binary. See this table for configuration file locations, or refer to your agent's documentation.
 
  Platform | MCP Configuration |  Platform-Specific Notes |
 |----------|------------------|-------------------|
@@ -179,7 +179,7 @@ Then edit `.vscode/mcp.json` to replace the placeholder paths with your actual M
 | MCP server download fails | Network/proxy/firewall | Download manually from [GitHub releases](https://github.com/matlab/matlab-mcp-core-server/releases), place in `~/.matlab/agentic-toolkits/bin/`, re-run setup |
 | macOS blocks the MCP server binary | Gatekeeper quarantine | Setup handles this automatically. If still blocked (MDM), go to System Settings > Privacy & Security > Allow Anyway |
 | Agent doesn't list MATLAB skills | Plugin not installed or skills not linked | Re-run setup; for Claude Code, try `claude plugin install matlab-core@matlab-agentic-toolkit` |
-| MCP tools fail to connect | MCP server binary missing or wrong path in configuration | Re-run setup to regenerate configuration. Verify binary exists: `~/.matlab/agentic-toolkits/bin/matlab-mcp-core-server --version` |
+| MCP tools fail to connect | MCP server binary missing or wrong path in configuration | Re-run setup to regenerate configuration. Verify binary exists: `~/.matlab/agentic-toolkits/bin/matlab-mcp-server --version` |
 | `evaluate_matlab_code` returns errors | Wrong `--matlab-root` path, license issue, or MATLAB startup failure | Verify MATLAB can start: `<matlab-root>/bin/matlab -nodesktop -r "disp('ok'),quit"`. Check license status. Re-run setup to correct the MATLAB root path |
 | Codex tool calls time out | Default tool timeout too short for MATLAB | Add `tool_timeout_sec = 600` (or higher) to `[mcp_servers.matlab]` in `~/.codex/config.toml` |
 | Simulink fails in Codex on Windows | Missing `WINDIR` environment variable | Add `env_vars = ['WINDIR']` to `[mcp_servers.matlab]` in `~/.codex/config.toml` |

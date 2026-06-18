@@ -1,0 +1,17 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Simulate statistical radar detections for surveillance and tracking radar scenarios.
+matlab-release: ">=R2024b"
+requires-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+  - check_matlab_code
+requires-skills: []
+requires-products:
+  - Radar Toolbox
+  - Phased Array System Toolbox
+  - Signal Processing Toolbox
+toolkit: matlab-agentic-toolkit

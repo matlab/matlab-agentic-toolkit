@@ -1,0 +1,382 @@
+[
+  {
+    "id": "dark-subject-diagnosis",
+    "name": "Backlit subject diagnosis and fix",
+    "description": "Tests ability to diagnose a backlit scene and apply appropriate hardware/software corrections",
+    "prompt": "I connected my webcam and took a snapshot but the person in the image is too dark. The background looks fine but the subject is underexposed. Can you help me fix this?",
+    "expected_output": "Agent discovers camera properties at runtime, diagnoses backlit scene, suggests BacklightCompensation and Exposure increase on camera, applies imlocalbrighten as post-processing, shows before/after metrics.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated MATLAB code for camera property discovery runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Discovers camera properties at runtime instead of hardcoding",
+        "expected": "Uses properties() or getselectedsource() to enumerate camera capabilities"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Correctly identifies backlight as the issue",
+        "expected": "Output mentions backlight, backlightRatio, or dark subject as the diagnosed problem"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Suggests BacklightCompensation hardware adjustment",
+        "expected": "BacklightCompensation"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Uses imlocalbrighten for software enhancement of backlit scenes",
+        "expected": "imlocalbrighten appears in the enhancement pipeline"
+      }
+    ]
+  },
+  {
+    "id": "blurry-image-fix",
+    "name": "Blurry image diagnosis and sharpening",
+    "description": "Tests diagnosis of soft/blurry images and correct sharpening approach",
+    "prompt": "My camera images look blurry and soft. How can I make them sharper?",
+    "expected_output": "Agent checks for Focus property, evaluates sharpness via Laplacian variance, suggests faster exposure if motion blur, applies imsharpen, does not sharpen before denoising.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Checks for Focus/FocusMode property on the camera",
+        "expected": "Queries Focus or FocusMode from camera properties"
+      },
+      {
+        "id": "a2",
+        "type": "code_executes",
+        "description": "Sharpness metric computation code runs without error"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Considers exposure time as potential cause of motion blur",
+        "expected": "Output mentions exposure time, shutter speed, or motion blur as a potential cause of blurriness"
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Applies imsharpen for software sharpening",
+        "expected": "imsharpen"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not sharpen before denoising if noise is present",
+        "expected": "imsharpen applied before imgaussfilt or imnlmfilt in the pipeline"
+      }
+    ]
+  },
+  {
+    "id": "camera-discovery",
+    "name": "USB webcam property discovery and classification",
+    "description": "Tests runtime property discovery and classification without hardcoding",
+    "prompt": "I have a USB webcam connected. What settings can I adjust to improve image quality?",
+    "expected_output": "Agent connects via webcam(), queries properties at runtime, reports all tunable settings with current values, classifies them by function (brightness, focus, color, contrast).",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Camera connection and property query code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Does not hardcode property names — discovers them at runtime",
+        "expected": "Uses properties() to discover available controls"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Classifies properties by function category",
+        "expected": "Output groups or labels properties by category such as brightness/exposure, focus, color, or contrast"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Reports current values and valid ranges",
+        "expected": "Output shows current property values along with their valid ranges (min/max or enumerated options)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Uses webcam() or videoinput() for USB webcam connection",
+        "expected": "webcam() or videoinput() to connect to the USB camera"
+      }
+    ]
+  },
+  {
+    "id": "videoinput-discovery",
+    "name": "USB webcam property discovery via videoinput",
+    "description": "Tests runtime property discovery using the videoinput API path with propinfo",
+    "prompt": "I have a USB webcam connected and I want to use videoinput to access it so I can use advanced settings. What image quality settings are available?",
+    "expected_output": "Agent connects via videoinput('winvideo', ...), uses getselectedsource and propinfo to report all properties with type, range, constraints, and read-only status, classified by function.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Camera connection via videoinput and property query code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses videoinput() with winvideo adaptor for USB webcam",
+        "expected": "videoinput('winvideo', ...) to connect to the USB camera"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses getselectedsource and propinfo to inspect property metadata",
+        "expected": "getselectedsource() to get source object, propinfo() to query property details"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Classifies properties by function category",
+        "expected": "Output groups or labels properties by category such as brightness/exposure, focus, color, or contrast"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Reports property constraints (type, range, read-only status)",
+        "expected": "Output shows property metadata including type, valid range, or read-only status for each discovered property"
+      }
+    ]
+  },
+  {
+    "id": "noisy-image-enhancement",
+    "name": "Noisy image diagnosis with correct Gain/Exposure tradeoff",
+    "description": "Tests noise diagnosis and the preference for Exposure over Gain",
+    "prompt": "The images from my camera look grainy especially in darker areas. What can I do?",
+    "expected_output": "Agent diagnoses high noise, suggests reducing Gain and increasing Exposure instead, applies noise reduction (imgaussfilt or imnlmfilt), shows before/after noise metrics.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Noise estimation code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Suggests reducing Gain and prefers Exposure over Gain",
+        "expected": "Recommends reducing Gain or increasing Exposure instead of Gain"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Applies appropriate denoising function",
+        "expected": "Output uses imgaussfilt, wiener2, or imnlmfilt for noise reduction"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not apply sharpening before denoising",
+        "expected": "imsharpen applied before denoising step"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Shows noise level comparison before and after",
+        "expected": "Output compares noise level or noise metric before and after the denoising step"
+      }
+    ]
+  },
+  {
+    "id": "full-pipeline",
+    "name": "Complete end-to-end image enhancement pipeline",
+    "description": "Tests the full protocol from capture through diagnosis, hardware adjustment, and post-processing",
+    "prompt": "Take a picture with my webcam and make it look as good as possible.",
+    "expected_output": "Agent runs complete pipeline: connect, discover, warm up, capture, diagnose all metrics, adjust hardware, apply post-processing in correct order, display before/after comparison.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Warms up the camera before capturing the baseline image",
+        "expected": "Discards initial frames or uses preview() before the actual capture"
+      },
+      {
+        "id": "a2",
+        "type": "code_executes",
+        "description": "Diagnostic code (diagnoseImageQuality or equivalent) runs without error"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Runs multi-metric image quality diagnosis covering brightness, contrast, and sharpness",
+        "expected": "Output mentions brightness, contrast, AND sharpness metrics (all three must be present)"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Applies post-processing in correct order (brighten before sharpen)",
+        "expected": "Enhancement pipeline order: brighten/contrast first, sharpen last"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Displays before/after comparison",
+        "expected": "Output shows a visual before/after comparison using montage or side-by-side display"
+      }
+    ]
+  },
+  {
+    "id": "extended-concern-vignetting",
+    "name": "Extended metric: vignetting detection and correction",
+    "description": "Tests handling of a concern not covered by standard 6 metrics",
+    "prompt": "I'm seeing dark corners in my camera images — the center is fine but the edges fall off. Can you measure how bad it is and fix it?",
+    "expected_output": "Agent recognizes vignetting as an extended concern, generates inline MATLAB code to measure corner-vs-center brightness ratio, reports quantitative metric, applies flat-field or radial correction, shows comparison.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Identifies vignetting as an extended concern not in standard metrics",
+        "expected": "Recognizes this is beyond the standard 6-metric diagnosis"
+      },
+      {
+        "id": "a2",
+        "type": "code_executes",
+        "description": "Inline MATLAB code measuring corner-vs-center brightness runs without error"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Reports a quantitative vignetting metric",
+        "expected": "Output reports a numeric vignetting measurement such as corner-to-center ratio or percentage falloff"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Applies software vignetting correction",
+        "expected": "Output applies a vignetting correction using flat-field normalization, radial compensation, or similar technique"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Shows before/after comparison of the correction",
+        "expected": "Output displays a before/after visual comparison of the vignetting correction"
+      }
+    ]
+  },
+  {
+    "id": "extended-concern-banding",
+    "name": "Extended metric: banding/striping detection via FFT",
+    "description": "Tests FFT-based periodic artifact analysis for banding issues",
+    "prompt": "There are horizontal stripes or bands visible in my camera image, especially in darker areas. What's causing this?",
+    "expected_output": "Agent identifies banding as an extended concern, performs FFT-based periodic artifact analysis on row-brightness profile, suggests hardware causes (rolling shutter + flickering light), recommends exposure time aligned to light source frequency.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Identifies banding as an extended metric requiring dynamic evaluation",
+        "expected": "Recognizes banding/striping is not one of the standard 6 metrics"
+      },
+      {
+        "id": "a2",
+        "type": "code_executes",
+        "description": "FFT-based banding detection code runs without error"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses FFT to detect periodic artifacts",
+        "expected": "Output uses FFT or frequency-domain analysis to detect periodic banding artifacts"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Suggests hardware causes of banding",
+        "expected": "Output mentions flicker, rolling shutter, readout timing, or light source frequency as potential causes of banding"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Recommends exposure alignment to light source frequency",
+        "expected": "Output recommends aligning exposure time to light source frequency (e.g., 1/50s for 50Hz, 1/60s for 60Hz, 10ms, or 20ms)"
+      }
+    ]
+  },
+  {
+    "id": "advanced-property-discovery",
+    "name": "Advanced USB webcam property classification via videoinput",
+    "description": "Tests classification of unfamiliar properties as quality-relevant vs functional using propinfo on a USB webcam accessed via videoinput",
+    "prompt": "I connected my USB webcam using videoinput and I see properties I don't recognize beyond the standard brightness/exposure/focus ones. Can you figure out which of the extra properties might help me improve image quality and which are just operational settings?",
+    "expected_output": "Agent classifies each property as quality-relevant or functional using naming heuristics and propinfo, explains what each does, follows safe investigation protocol (save baseline, small perturbation, measure, revert), does not modify functional properties without asking.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Groups properties into quality-relevant vs functional categories",
+        "expected": "Distinguishes image-quality properties from operational/transport properties"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Uses propinfo to discover type, range, and constraints for unknown properties",
+        "expected": "propinfo(src, propName) called to inspect property metadata"
+      },
+      {
+        "id": "a3",
+        "type": "code_executes",
+        "description": "Property inspection code runs without error on the connected webcam"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Follows safe investigation protocol or classifies by metadata when properties are well-known",
+        "expected": "Either applies save-modify-measure-revert protocol for unknown properties, OR classifies properties using propinfo metadata and naming heuristics when all properties are recognizable"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not modify operational properties without asking user first",
+        "expected": "Changes operational/transport properties without user confirmation"
+      }
+    ]
+  },
+  {
+    "id": "single-shot-pipeline-generation",
+    "name": "Generate reusable single-shot acquisition function",
+    "description": "Tests generation of a standalone .m function with tuned settings baked in",
+    "prompt": "I have a USB webcam connected. I'd like you to capture an image, diagnose any quality issues, apply fixes, and then generate a reusable function that bakes in whatever settings and enhancements actually helped. Write the function to my MATLAB working directory.",
+    "expected_output": "Agent connects to camera, captures baseline, runs diagnostics, applies enhancements, validates improvement with metrics, then generates a .m function file with only the validated steps baked in. Runs check_matlab_code before delivering. Writes to user directory, not skill scripts/.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated .m function file passes check_matlab_code"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Function uses videoinput or webcam with correct adaptor and format",
+        "expected": "videoinput() or webcam() with adaptor/device parameters from the session"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Handles color space correctly for the connection method used",
+        "expected": "If using videoinput with YUY2 format, sets ReturnedColorSpace = 'rgb'. If using webcam(), no color space setting is needed (webcam returns RGB by default)."
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Includes only enhancement steps that measurably improved metrics",
+        "expected": "Enhancement pipeline contains only steps validated during the session"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Does not write the generated function to the skill's scripts/ folder",
+        "expected": "File written to scripts/ directory of the skill"
+      }
+    ]
+  }
+]

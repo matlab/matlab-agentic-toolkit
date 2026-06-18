@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Play and record audio in MATLAB using audiostreamer.
+matlab-release: ">=R2025a"
+requires-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+requires-skills: []
+requires-products:
+  - Audio Toolbox
+  - DSP System Toolbox
+toolkit: matlab-agentic-toolkit

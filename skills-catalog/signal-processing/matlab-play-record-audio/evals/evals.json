@@ -1,0 +1,346 @@
+{
+  "skill": "matlab-play-record-audio",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Play audio file through specific device",
+      "description": "User wants to play a WAV file through a named output device with sequential before/after comparison",
+      "prompt": "I have two WAV files: 'before.wav' and 'after.wav' (both 48 kHz stereo). Write MATLAB code to play them back-to-back through my 'Speakers (RME UFX+ USB 3.0)' device so I can compare them. I want a 1-second gap between them.",
+      "context": {
+        "setup": "Audio Toolbox is available. Device 'Speakers (RME UFX+ USB 3.0)' is present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses audiostreamer, not sound/audioplayer",
+          "expected": "audiostreamer"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Specifies player mode or uses play method",
+          "expected": "play("
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not use sound() or soundsc() for sequential playback",
+          "expected": "soundsc("
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Calls release(as) or stop(as) for cleanup at end",
+          "expected": "Code includes explicit teardown with release() or stop() followed by release()"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Specifies the device by name via Player property",
+          "expected": "Player property is set to the RME device name, either at construction or via property assignment"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Waits for playback to complete before releasing",
+          "expected": "waitfor("
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Measure impulse response via ASIO loopback",
+      "description": "User wants to measure room/device impulse response using sweep excitation on ASIO hardware",
+      "prompt": "I need to measure the impulse response of my audio system. I have an RME MADIface USB with ASIO driver and a loopback cable on channels 1 (out) and 1 (in). Write MATLAB code to generate a swept-sine excitation, play it out channel 1, record from channel 1, and compute the impulse response. Use 48 kHz sample rate.",
+      "context": {
+        "setup": "Audio Toolbox and DSP System Toolbox available. ASIO MADIface USB device present with loopback on channel 1."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses full-duplex mode for simultaneous play/record",
+          "expected": "full-duplex"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses sweeptone for excitation signal",
+          "expected": "sweeptone"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses impzest to deconvolve the IR",
+          "expected": "impzest"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Specifies ASIO driver",
+          "expected": "ASIO"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses playrec for synchronized play+record with blocking output",
+          "expected": "Uses playrec(as, x, ...) with an output argument to get synchronized recording, OR uses playrec followed by waitfor and read"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Callback-driven continuous level meter",
+      "description": "User wants a real-time level meter using recorder callbacks",
+      "prompt": "Write MATLAB code for a continuous audio level meter. I want to record from my default input device at 44100 Hz and print the RMS level every 1024 samples using a callback. The meter should run until I press Ctrl+C. Make sure it handles cleanup properly.",
+      "context": {
+        "setup": "Audio Toolbox available. Default recording device present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses recorder mode",
+          "expected": "recorder"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Sets RecorderFcn callback",
+          "expected": "RecorderFcn"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Sets RecorderMinSamples to 1024",
+          "expected": "RecorderMinSamples"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Callback accepts exactly 2 arguments (obj, event or ~)",
+          "expected": "RecorderFcn callback signature has exactly 2 input arguments (e.g., @(obj, ~) or @(obj, event))"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses try-catch or onCleanup for robust teardown",
+          "expected": "Code handles Ctrl+C gracefully via try-catch around the blocking wait, or onCleanup, ensuring stop() and release() are called"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Starts recording with record(as) or start(as)",
+          "expected": "After setting RecorderFcn, calls record(as) or start(as) to begin the callback-driven recording"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Measure impulse response with tone sweep",
+      "description": "User wants to measure a system impulse response using their sound card and a tone sweep",
+      "prompt": "Measure the impulse response of a system using my sound card and a tone sweep.",
+      "context": {
+        "setup": "Audio Toolbox and DSP System Toolbox available. Default audio input and output devices present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses audiostreamer for I/O",
+          "expected": "audiostreamer"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses sweeptone to generate the excitation signal",
+          "expected": "sweeptone"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses impzest to estimate the impulse response",
+          "expected": "impzest"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Stream pink noise continuously with PlayerFcn",
+      "description": "User wants to stream audio continuously using a callback-driven player",
+      "prompt": "Stream pink noise continuously to my speakers using MATLAB. Use a callback so it never runs out of audio.",
+      "context": {
+        "setup": "Audio Toolbox and DSP System Toolbox available. Default output device present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses audiostreamer",
+          "expected": "audiostreamer"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Sets PlayerFcn callback",
+          "expected": "PlayerFcn"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Callback feeds audio via play() or write()",
+          "expected": "PlayerFcn callback body calls play(obj, ...) or write(obj, ...) to queue audio data"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Starts the callback loop with play(as) or start(as)",
+          "expected": "After setting PlayerFcn, calls play(as) with no data argument OR start(as) to begin the callback-driven streaming"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Modernize legacy audioDeviceReader/Writer loop",
+      "description": "User has a legacy frame-at-a-time loop using audioDeviceReader and audioDeviceWriter and wants to migrate to audiostreamer",
+      "prompt": "Modernize the following MATLAB code to use audiostreamer instead of the legacy APIs:\n\n```matlab\ndeviceReader = audioDeviceReader(SampleRate=48000, NumChannels=2);\ndeviceWriter = audioDeviceWriter(SampleRate=48000);\nsetup(deviceReader);\nsetup(deviceWriter);\nfor i = 1:1000\n    audio = deviceReader();\n    processed = myEffect(audio);\n    deviceWriter(processed);\nend\nrelease(deviceReader);\nrelease(deviceWriter);\n```",
+      "context": {
+        "setup": "Audio Toolbox and DSP System Toolbox available. Default audio input and output devices present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses audiostreamer with full-duplex mode",
+          "expected": "full-duplex"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Sets RecorderChannels to match legacy NumChannels=2",
+          "expected": "RecorderChannels is set to 1:2 or [1 2] (a vector of both channels) — scalar 2 means 'channel 2 only' which is wrong. Must NOT rely on default (which is 1 channel)."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Single audiostreamer object replaces two legacy objects",
+          "expected": "One audiostreamer object handles both input and output, not two separate objects"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Does not call setup() in the modernized code",
+          "expected": "The modernized MATLAB code does not contain a setup() call — audiostreamer does not require setup() to be called before use. The agent may mention removing setup() in its explanation, but the actual code must not contain setup(as) or setup(deviceReader) etc."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses blocking read with frame size for the processing loop",
+          "expected": "Loop body calls read(as, N) with a frame size argument for blocking frame-at-a-time input"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Uses write or play to output processed audio in the loop",
+          "expected": "Loop body calls write(as, processed) or play(as, processed) to send processed frames to output"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Fix buggy callback-driven recorder",
+      "description": "User provides broken recorder callback code with multiple API errors that require skill knowledge to fix",
+      "prompt": "Fix the following MATLAB code. It's supposed to record audio levels using a callback but it doesn't work:\n\n```matlab\nas = audiostreamer(SampleRate=44100);\nas.SamplesPerFrame = 1024;\nas.RecorderCallback = @(data) fprintf(\"Level: %.2f dBFS\\n\", 20*log10(rms(data)+eps));\nsetup(as, \"recorder\");\nstart(as);\npause(10);\nstop(as);\nrelease(as);\n```",
+      "context": {
+        "setup": "Audio Toolbox available. Default recording device present."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Sets Mode to recorder at construction",
+          "expected": "Mode=\"recorder\""
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses RecorderMinSamples instead of SamplesPerFrame",
+          "expected": "RecorderMinSamples"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses RecorderFcn instead of RecorderCallback",
+          "expected": "RecorderFcn"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Callback has 2-argument signature",
+          "expected": "Callback is defined with exactly 2 input arguments (e.g., @(obj, ~) or @(obj, event)), not 1 argument"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Callback reads data from object instead of receiving it as argument",
+          "expected": "Callback body calls read(obj) to get recorded audio data, rather than receiving data as a function argument"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Does not call setup() with mode string in the fixed code",
+          "expected": "The fixed MATLAB code does not contain setup(as, \"recorder\") — audiostreamer does not require setup() and does not accept a mode string argument to setup(). The agent may mention removing it in its explanation, but the actual corrected code must not call setup(as, \"recorder\")."
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Fix buggy full-duplex IR measurement",
+      "description": "User provides broken impulse response measurement code with multiple API errors that require skill knowledge to fix",
+      "prompt": "Fix the following MATLAB code. It's supposed to measure an impulse response via loopback but produces garbage results:\n\n```matlab\nfs = 48000;\nas = audiostreamer(SampleRate=fs, Driver=\"ASIO\", Device=\"MADIface USB\");\nas.PlayerChannelMapping = 1;\nas.RecorderChannelMapping = 1;\n\nsweep = chirp((0:2*fs-1)'/fs, 20, 2, 20000, 'logarithmic');\nstart(as);\nwrite(as, sweep);\npause(3);\nrecorded = read(as);\nstop(as);\n\nnfft = 2^nextpow2(length(sweep));\nir = real(ifft(fft(recorded, nfft) ./ fft(sweep, nfft)));\n\nrelease(as);\n```",
+      "context": {
+        "setup": "Audio Toolbox and DSP System Toolbox available. ASIO MADIface USB device present with loopback on channel 1."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Sets Mode to full-duplex at construction",
+          "expected": "full-duplex"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Uses PlayerChannels/RecorderChannels instead of ChannelMapping",
+          "expected": "Uses PlayerChannels and/or RecorderChannels (numeric scalar or vector) rather than PlayerChannelMapping or RecorderChannelMapping"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses sweeptone instead of chirp for IR measurement",
+          "expected": "sweeptone"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses impzest instead of manual FFT deconvolution",
+          "expected": "impzest"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses playrec for synchronized play+record",
+          "expected": "Uses playrec(as, x) or playrec(as, x, N) for synchronized simultaneous playback and recording, rather than separate write/read calls"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Uses Player property instead of Device for device naming",
+          "expected": "Sets the ASIO device via Player=\"MADIface USB\" (and/or Recorder=) rather than a non-existent Device property"
+        }
+      ]
+    }
+  ]
+}

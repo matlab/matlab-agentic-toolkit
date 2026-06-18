@@ -1,5 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Antenna Toolbox, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox.
+description: Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox.
 keywords:
   - matlab
   - rf

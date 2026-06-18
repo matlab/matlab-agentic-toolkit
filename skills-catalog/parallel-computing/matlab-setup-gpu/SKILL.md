@@ -11,7 +11,7 @@ license: MathWorks BSD-3-Clause
 compatibility: ">=R2024b"
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.0"
 ---
 
 # Set Up GPU for MATLAB

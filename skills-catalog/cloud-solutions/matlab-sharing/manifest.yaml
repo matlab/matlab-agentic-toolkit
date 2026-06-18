@@ -1,0 +1,11 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Share MATLAB content by uploading to GitHub, MATLAB Drive, or File Exchange and generating "Open in MATLAB Online" URLs.
+matlab-release: ">=R2021a"
+requires-tools: []
+requires-skills: []
+requires-products: []
+toolkit: matlab-agentic-toolkit

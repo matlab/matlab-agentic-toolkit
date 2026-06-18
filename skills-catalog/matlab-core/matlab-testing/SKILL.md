@@ -4,7 +4,7 @@ description: Generate and run MATLAB unit tests using matlab.unittest and matlab
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Testing

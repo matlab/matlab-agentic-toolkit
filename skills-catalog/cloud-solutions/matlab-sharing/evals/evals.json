@@ -1,0 +1,236 @@
+{
+  "skill": "matlab-sharing",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Share local file overview",
+      "description": "Tests that the skill presents all 3 upload paths with correct URL patterns when the user has a local file",
+      "prompt": "I have a local MATLAB file called `plot_weather.m`. How do I get this into MATLAB Online so I can run it there, or share it with a colleague?",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Mentions GitHub as an option",
+          "expected": "GitHub"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions MATLAB Drive as an option",
+          "expected": "MATLAB Drive"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Mentions File Exchange as an option",
+          "expected": "File Exchange"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Provides the correct GitHub URL base path",
+          "expected": "matlab.mathworks.com/open/github/v1"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Provides the correct MATLAB Drive URL base path",
+          "expected": "matlab.mathworks.com/open/matlabdrive/v1"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Provides the correct File Exchange URL base path",
+          "expected": "matlab.mathworks.com/open/fileexchange/v1"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "GitHub upload and URL generation",
+      "description": "Tests that the skill guides through gh CLI repo creation and produces the correct Open in MATLAB Online URL",
+      "prompt": "I have a local file called `demo.m` in my current directory. I want to create a new public GitHub repository called `demo-project`, push this file to it, and then get an 'Open in MATLAB Online' link. My GitHub username is `testuser`. Give me the exact commands and the final URL.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses gh repo create command",
+          "expected": "gh repo create"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Specifies --public flag",
+          "expected": "--public"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Constructs the correct Open in MATLAB Online URL with repo parameter",
+          "expected": "matlab.mathworks.com/open/github/v1?repo=testuser"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Includes file parameter in URL",
+          "expected": "file=demo.m"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does NOT include a branch parameter in the URL",
+          "expected": "branch=main"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "MATLAB Drive share link conversion",
+      "description": "Tests that the skill correctly extracts UUID and filename from a MATLAB Drive share link and constructs the Open in MATLAB Online URL",
+      "prompt": "I uploaded my file to MATLAB Drive and shared the folder. The share link I got is: `https://drive.matlab.com/sharing/aac42ad5-9e0b-487e-bd2c-30ed7bbb7cbf/fun_calculator.m`. Can you generate an Open in MATLAB Online link for this?",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses the correct matlabdrive path segment",
+          "expected": "open/matlabdrive/v1"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does NOT use the wrong /open/drive/ path",
+          "expected": "open/drive/v1"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Includes namespace=SHARED parameter",
+          "expected": "namespace=SHARED"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Correctly extracts and includes the UUID",
+          "expected": "id=aac42ad5-9e0b-487e-bd2c-30ed7bbb7cbf"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Correctly extracts and includes the filename",
+          "expected": "file=fun_calculator.m"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "File Exchange ID extraction and URL",
+      "description": "Tests that the skill extracts the numeric submission ID from a File Exchange URL and constructs the correct Open in MATLAB Online URL",
+      "prompt": "I published my MATLAB code to File Exchange. The submission page is at `https://www.mathworks.com/matlabcentral/fileexchange/98765-my-weather-tool`. Can you generate an Open in MATLAB Online link for it?",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses the correct fileexchange path",
+          "expected": "open/fileexchange/v1"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Correctly extracts the numeric ID",
+          "expected": "id=98765"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does NOT include the slug in the ID",
+          "expected": "id=98765-my-weather-tool"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "MATLAB Drive folder-level sharing",
+      "description": "Tests that the skill correctly explains MATLAB Drive sharing is folder-level only",
+      "prompt": "I want to share a single file `myScript.m` via MATLAB Drive so a colleague can open it in MATLAB Online. What do I need to do?",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Explains that MATLAB Drive sharing works at the folder level, not individual files",
+          "expected": "Response must mention that sharing in MATLAB Drive is at the folder level — individual files cannot be shared directly. The user needs to create a folder, put the file in it, and share the folder."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions drive.mathworks.com or drive.matlab.com for upload",
+          "expected": "drive.math"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Provides the correct URL pattern",
+          "expected": "open/matlabdrive/v1"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Link to MATLAB session for local file",
+      "description": "Tests that when a user asks for a link to a MATLAB session to run local code, the skill presents all 3 upload options",
+      "prompt": "Can you give me a link for a MATLAB session to run weather_plot.m?",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Presents GitHub as an option",
+          "expected": "GitHub"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Presents MATLAB Drive as an option",
+          "expected": "MATLAB Drive"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Presents File Exchange as an option",
+          "expected": "File Exchange"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Explains that the file needs to be uploaded to one of the 3 platforms before a link can be generated",
+          "expected": "Response must explain that the local file needs to be uploaded to GitHub, MATLAB Drive, or File Exchange first, and then an Open in MATLAB Online URL can be constructed from the resulting identifier."
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "GitHub path checks gh CLI availability",
+      "description": "Tests that when the user chooses GitHub, the skill proactively checks if gh CLI is installed and configured before running commands",
+      "prompt": "I'd like to go with the GitHub option to upload weather_plot.m and get an Open in MATLAB Online link. Walk me through it.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Proactively checks or mentions checking gh CLI availability before running commands",
+          "expected": "Response must either run a check for gh (e.g., 'gh --version', 'which gh', 'command -v gh') or mention that gh CLI needs to be installed as a prerequisite before proceeding with the upload commands."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Mentions gh authentication as a prerequisite",
+          "expected": "Response must mention that the user needs to be authenticated with GitHub (e.g., 'gh auth login' or 'gh auth status') before they can create repos and push."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Provides the correct Open in MATLAB Online URL pattern",
+          "expected": "matlab.mathworks.com/open/github/v1"
+        }
+      ]
+    }
+  ]
+}

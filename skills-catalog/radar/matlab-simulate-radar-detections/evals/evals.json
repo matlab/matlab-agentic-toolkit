@@ -1,0 +1,262 @@
+{
+  "skill": "matlab-simulate-radar-detections",
+  "version": "6.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Discovery: Vague Air Surveillance Simulation",
+      "description": "Vague domain prompt with no parameters — tests whether the agent follows the skill's structured workflow (Steps 1–9) and produces a working simulation without extended debugging.",
+      "prompt": "I need to simulate radar detection data for a ground-based air surveillance radar. Help me set this up.",
+      "context": {
+        "files": [],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Discovers and uses radarDataGenerator",
+          "expected": "Uses radarDataGenerator as the primary sensor object (not fusionRadarSensor, not a custom model built from scratch, not a Phased Array Toolbox-only approach). The agent must discover that radarDataGenerator is the correct statistical-level radar sensor model for this use case."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Follows the skill workflow structure (Steps 1–3)",
+          "expected": "Agent explicitly identifies the approach (statistical-level simulation with radarDataGenerator), confirms the use case (ground-based, scan type, coordinate frame), and states the parameter sourcing direction (top-down, bottom-up, or mixed). These correspond to Steps 1–3 of the interaction flow. The agent should name or describe these decisions before jumping to configuration code."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Produces a requirements table or parameter summary with source tags",
+          "expected": "Agent produces a structured table or list of parameters with their values AND how each was determined (e.g., 'user-provided', 'derived', 'domain assumption'). This corresponds to Steps 4–5 of the interaction flow. A plain code listing without a parameter breakdown does NOT satisfy this."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "UpdateRate set correctly to avoid scan aliasing",
+          "expected": "Scenario UpdateRate matches or equals sensor UpdateRate so that all dwell positions are sampled. Agent does NOT leave scenario UpdateRate at a different value than sensor UpdateRate, which causes scan aliasing (beam steps skipped between time samples)."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Final simulation executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Configuration: Requirements Table Produced",
+      "description": "Tests whether the agent produces a structured requirements table with parameter traceability as part of the configuration workflow",
+      "prompt": "I have a ground-based air surveillance radar operating at X-band (10 GHz) with a 1.5-degree pencil beam and 200 kW peak power. I need to detect 1 m-squared targets at 150 km with Pd=0.9. Configure a simulation for this radar — do not run the simulation, do not produce plots, do not ask clarifying questions. Just set up the sensor and print its properties.",
+      "context": {
+        "files": [],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Discovers and uses radarDataGenerator",
+          "expected": "Uses radarDataGenerator as the primary sensor object (not fusionRadarSensor, not a custom model built from scratch, not a Phased Array Toolbox-only approach). The agent must discover that radarDataGenerator is the correct statistical-level radar sensor model for this use case."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Produces a requirements table with parameter traceability",
+          "expected": "Output includes a structured table (markdown or formatted text) listing parameters with their values AND source tags (e.g., 'User-provided', 'Derived', 'Domain assumption'). Must have at minimum: frequency, beamwidth, power, reference range, and detection probability listed with traceable sources. A plain code listing without a parameter breakdown table does NOT satisfy this."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Configuration executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Configuration: Electronic Scan AESA",
+      "description": "Tests correct FoV vs AzimuthResolution separation for an AESA with different Tx and Rx beamwidths",
+      "prompt": "Configure a radarDataGenerator for a ground-based AESA radar. The transmit beamwidth is 4 degrees azimuth, the receive beamwidth is 2 degrees (digital beamforming on receive). Scan a 60-degree sector electronically. Do not run a simulation, do not produce plots, do not ask clarifying questions. Just create the radarDataGenerator object and print FieldOfView, AzimuthResolution, and ScanMode.",
+      "context": {
+        "files": [],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "FieldOfView set to transmit beamwidth, not receive",
+          "expected": "FieldOfView(1) = 4 degrees (the transmit beamwidth). FoV represents the angular extent illuminated per scan position, which is the Tx beamwidth. It should NOT be set to 2 (the Rx beamwidth)."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "AzimuthResolution reflects receive beamwidth",
+          "expected": "AzimuthResolution set to 2 degrees (the Rx beamwidth) or to effbeamwidth(4,2) which gives the two-way effective beamwidth. This drives measurement accuracy, not FoV."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Configuration executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Configuration: Hybrid Scan (Mechanical + Electronic)",
+      "description": "Tests combined mechanical rotation with electronic elevation scanning configuration",
+      "prompt": "Configure a radarDataGenerator for a multifunction radar that mechanically rotates 360 degrees at 15 rpm and uses electronic scanning in elevation from 0 to 30 degrees with a 4-degree elevation beam. Azimuth beamwidth is 2 degrees. Do not run a simulation, do not produce plots, do not ask clarifying questions. Just create the radarDataGenerator and print ScanMode, UpdateRate, MaxAzimuthScanRate, FieldOfView, and ElectronicElevationLimits.",
+      "context": {
+        "files": [],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses hybrid scan mode",
+          "expected": "ScanMode set to 'Mechanical and electronic' — combines mechanical azimuth rotation with electronic elevation steering."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Mechanical rotation rate and UpdateRate support 15 rpm",
+          "expected": "15 rpm = 90 deg/s. MaxAzimuthScanRate set to 90. UpdateRate set high enough that FieldOfView(1)*UpdateRate >= 90 (i.e., UpdateRate >= 45 for 2-deg beam)."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Electronic elevation limits and beam configured",
+          "expected": "ElectronicElevationLimits covering [0, 30] degrees (or equivalent). FieldOfView(2) or ElevationResolution reflects the 4-degree elevation beam."
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Configuration executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Debugging: Missed Detections Diagnosis",
+      "description": "Agent diagnoses a broken scenario where 3 of 5 targets are never detected. Tests whether it uses the omnidirectional isolation technique from the Troubleshooting section.",
+      "prompt": "I have a radar scenario where I expect to detect 5 targets but only 2 are showing up consistently. The attached script defines the scenario and runs it. Can you figure out why targets C, D, and E are never detected? Do not produce plots, do not ask clarifying questions. Diagnose the problem and show me how to confirm the root causes.",
+      "context": {
+        "files": ["evals/files/missed_detections_scenario.m"],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses omnidirectional isolation technique to rule out beam pointing",
+          "expected": "Agent uses release() on the radar, then widens FieldOfView to [360;180] or similar omnidirectional setting and sets ScanMode to 'No scanning' to test whether targets are detectable when beam pointing is removed. This is the standard isolation technique: if detections appear with wide FoV, the problem is scan config; if still missing, look elsewhere."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Identifies root causes for the missed targets",
+          "expected": "Correctly identifies at least 2 of these 3 root causes: (1) Target C at 150 km is beyond the default RangeLimits of 100 km — silently clipped, (2) Target D at azimuth 60 degrees is outside MechanicalAzimuthLimits [-45, 45] — never illuminated, (3) UpdateRate=1 with scenario UpdateRate=10 causes aliasing — beam steps too slowly relative to the scenario."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Diagnostic code executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Verification: Sensor-to-Scenario Coordinate Transform",
+      "description": "Agent transforms sensor rectangular detections to scenario NED frame using per-detection Orientation matrices. Fixture-based, no sim.",
+      "prompt": "I ran a radar scenario and saved the outputs. The setup script and detection data are attached. Do not produce plots — print numerical results only. Transform the detections into scenario NED coordinates and compare to the ground truth target positions. Report position errors broken out by down-range and cross-range components.",
+      "context": {
+        "files": ["evals/files/scene_outputs.mat", "evals/files/scene_verification_scenario.m"],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Transforms sensor-frame detections to scenario frame using Orientation matrix",
+          "expected": "Applies detOrientations (3x3 rotation per detection) and detOrigins translation to convert sensor rectangular detections to scenario NED frame before comparing to truth. Sensor rectangular measurements are in a beam-aligned frame that rotates with each scan position — the per-detection Orientation matrix encodes the current beam direction. Formula: posScenario = Orientation * meas + Origin (all column vectors, no transpose needed when IsParentToChild=0). Does NOT compare raw detMeas values directly against targetPositions — that would give errors of ~25 km."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Correctly indexes MeasurementParameters or uses the saved orientation data",
+          "expected": "Uses detOrientations(:,:,k) for the per-detection rotation matrix. If accessing MeasurementParameters from a detection struct, indexes with (1) — MeasurementParameters is an array and must be indexed to avoid comma-separated list error."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Computation executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Verification: Full Output Analysis Workflow",
+      "description": "Vague prompt tests whether the agent follows the complete output analysis workflow: detection statistics, coordinate transforms, and link budget verification.",
+      "prompt": "I ran a radar scenario and saved the outputs. The setup script and detection data are attached. Do not produce plots, do not ask clarifying questions — print numerical results only. Analyze these outputs and tell me if they look correct. Include detection position errors in scenario NED coordinates compared to truth.",
+      "context": {
+        "files": ["evals/files/scene_outputs.mat", "evals/files/scene_verification_scenario.m"],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Performs detection count analysis with per-target Pd prediction",
+          "expected": "Computes expected detection counts from analytical Pd for each target. Must differentiate Swerling0 vs Swerling1 targets and derive the number of beam illuminations from scan geometry."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Performs coordinate transform to compare detections to truth",
+          "expected": "Transforms sensor rectangular detections to scenario frame using per-detection Orientation matrices and Origin offsets. Sensor rectangular is a beam-rotating frame — each detection has its own Orientation encoding the beam direction at detection time. Formula: posScenario = Orientation * meas + Origin. Does not compare raw detMeas directly to targetPositions."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Performs SNR verification against link budget",
+          "expected": "Computes expected SNR from RadarLoopGain and range, and compares to reported detSNR. Does not add extra integration gain to RadarLoopGain."
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Analysis executes without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Verification: Spherical Detection NED Conventions",
+      "description": "Agent verifies sensor spherical detection measurements against expected geometry in a NED scenario. Tests correct handling of NED sign conventions.",
+      "prompt": "I ran a radar scenario and saved the detection outputs. The setup script is attached. The detections are in sensor spherical coordinates. Verify that the measurements are consistent with the target positions. Do not produce plots, do not ask clarifying questions — print numerical results only.",
+      "context": {
+        "files": ["evals/files/spherical_detections_scenario.m"],
+        "setup": "Requires Radar Toolbox"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Correctly handles sensor spherical elevation sign convention",
+          "expected": "In sensor spherical, elevation is the angle from the sensor x-y plane toward sensor +z. For a NED platform with default MountingAngles, sensor +z = Down. Therefore: airborne targets (above radar) produce NEGATIVE sensor elevation, and below-radar targets produce POSITIVE sensor elevation. The agent must either: (a) convert sensor spherical [az, el, range] to sensor Cartesian via x=R*cosd(el)*cosd(az), y=R*cosd(el)*sind(az), z=R*sind(el), then transform to scenario frame using MeasurementParameters and compare to truth, OR (b) compute expected sensor spherical from NED geometry with correct sign (expected_el = atand(dz_down / horizRange) where dz_down = target_z - radar_z in NED). Target C (z=+1500, below radar) should have POSITIVE measured elevation (~+8 deg). Targets A, B, D (negative z, above radar) should have NEGATIVE measured elevation. The agent must NOT claim measurements are wrong or inverted when the signs follow this convention."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Correctly computes expected azimuth for non-cardinal bearings",
+          "expected": "Agent computes azimuth from North as atan2d(East, North) = atan2d(y, x) in NED. Targets are at bearings 23, -52, 137, and -110 degrees — none on cardinal axes. Agent produces expected azimuths that match measured azimuths within noise. Swapping atan2d arguments (atan2d(North, East)) would give azimuth from East and produce errors of (90-bearing) degrees. A correct result shows all 4 measured azimuths within ~3 degrees of the geometric truth."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Verification code executes without error"
+        }
+      ]
+    }
+  ]
+}

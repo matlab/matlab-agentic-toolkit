@@ -1,38 +1,8 @@
 # .?ClassName Syntax — Worked Examples
 
-## Basic Constructor
-
-Import all public settable properties as name-value arguments:
-
-```matlab
-classdef SensorConfig
-    properties
-        SampleRate (1,1) double {mustBePositive} = 1000
-        Resolution (1,1) double {mustBePositive, mustBeInteger} = 16
-        FilterOrder (1,1) double {mustBePositive, mustBeInteger} = 4
-        Label (1,1) string = "unnamed"
-    end
-
-    methods
-        function obj = SensorConfig(nvArgs)
-            arguments
-                nvArgs.?SensorConfig
-            end
-            props = fieldnames(nvArgs);
-            for i = 1:numel(props)
-                obj.(props{i}) = nvArgs.(props{i});
-            end
-        end
-    end
-end
-```
-
-Call: `s = SensorConfig(SampleRate=44100, Label="microphone")`
-
-The `.?SensorConfig` line automatically:
-- Imports all public properties as valid name-value argument names
-- Inherits size, class, and validator constraints from property definitions
-- Uses property default values (no need to redeclare)
+For the basic `SensorConfig` constructor, see the ".?ClassName — Import
+Properties as Name-Value Args" section of `SKILL.md`. The patterns below
+extend that example.
 
 ## Overriding Specific Properties
 
@@ -51,41 +21,12 @@ end
 
 ## Static Factory with Forwarding
 
-Use `namedargs2cell` to forward validated args to the constructor:
-
-```matlab
-classdef SensorConfig
-    % ... properties as above ...
-
-    methods (Static)
-        function obj = fromPreset(presetName, nvArgs)
-            arguments
-                presetName (1,1) string {mustBeMember(presetName, ["audio","vibration"])}
-                nvArgs.?SensorConfig
-            end
-
-            switch presetName
-                case "audio"
-                    defaults = struct(SampleRate=44100, Resolution=24, Label="audio");
-                case "vibration"
-                    defaults = struct(SampleRate=10000, Resolution=16, Label="vibration");
-            end
-
-            % Apply caller overrides on top of preset defaults
-            overrides = fieldnames(nvArgs);
-            for i = 1:numel(overrides)
-                defaults.(overrides{i}) = nvArgs.(overrides{i});
-            end
-
-            % Forward to constructor
-            args = namedargs2cell(defaults);
-            obj = SensorConfig(args{:});
-        end
-    end
-end
-```
-
-Call: `s = SensorConfig.fromPreset("audio", FilterOrder=8)`
+For the body of `fromPreset` and the `namedargs2cell` forwarding pattern,
+see the "namedargs2cell — Forward Name-Value Args" section of `SKILL.md`.
+The same body works as a `methods (Static)` block on the class itself —
+just hoist it into a `methods (Static) ... end` block and call as
+`SensorConfig.fromPreset("audio", FilterOrder=8)`. The arguments block,
+preset switch, override loop, and `namedargs2cell` call are unchanged.
 
 ## Wrapper Function Pattern
 

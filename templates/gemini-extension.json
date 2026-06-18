@@ -4,7 +4,7 @@
   "description": "Core MATLAB skills and MCP tools for AI coding agents. Testing, debugging, code review, Live Scripts, App Builder, and code modernization.",
   "mcpServers": {
     "matlab": {
-      "command": "/path/to/matlab-mcp-core-server",
+      "command": "/path/to/matlab-mcp-server",
       "args": ["--matlab-root", "/path/to/MATLAB/R20XXx", "--matlab-display-mode", "desktop"]
     }
   }

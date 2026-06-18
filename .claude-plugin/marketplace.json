@@ -6,8 +6,24 @@
   },
   "plugins": [
     {
-      "name": "ai-and-statistics",
+      "name": "aerospace",
       "version": "0.1.0",
+      "description": "Aerospace Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "aerospace"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/aerospace/"
+    },
+    {
+      "name": "ai-and-statistics",
+      "version": "0.2.0",
       "description": "Deep Learning Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -50,6 +66,23 @@
       "skills": "./skills-catalog/automotive/"
     },
     {
+      "name": "cloud-solutions",
+      "version": "0.1.0",
+      "description": "MATLAB Drive.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "cloud",
+        "matlab-drive"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/cloud-solutions/"
+    },
+    {
       "name": "computational-biology",
       "version": "0.2.0",
       "description": "SimBiology.",
@@ -68,7 +101,7 @@
     },
     {
       "name": "image-processing-and-computer-vision",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Image Processing Toolbox and Computer Vision Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -86,7 +119,7 @@
     },
     {
       "name": "matlab-app-building",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -104,7 +137,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "description": "Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -123,7 +156,7 @@
     },
     {
       "name": "matlab-data-import-and-analysis",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
       "author": {
         "name": "MathWorks"
@@ -139,8 +172,28 @@
       "skills": "./skills-catalog/matlab-data-import-and-analysis/"
     },
     {
-      "name": "matlab-programming",
+      "name": "matlab-external-language-interfaces",
       "version": "0.1.0",
+      "description": "Call Python&trade; libraries from MATLAB and upgrade MEX files to the interleaved complex API.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "python",
+        "c/c++",
+        "mex",
+        "external-interfaces",
+        "interop"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/matlab-external-language-interfaces/"
+    },
+    {
+      "name": "matlab-programming",
+      "version": "0.1.1",
       "description": "Write robust MATLAB functions with validated inputs.",
       "author": {
         "name": "MathWorks"
@@ -157,7 +210,7 @@
     },
     {
       "name": "matlab-software-development",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans.",
       "author": {
         "name": "MathWorks"
@@ -178,7 +231,7 @@
     },
     {
       "name": "parallel-computing",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Parallel Computing Toolbox and MATLAB Parallel Server.",
       "author": {
         "name": "MathWorks"
@@ -196,7 +249,7 @@
     },
     {
       "name": "radar",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Phased Array System Toolbox, Sensor Fusion and Tracking Toolbox, and Mapping Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -230,8 +283,8 @@
     },
     {
       "name": "rf-and-mixed-signal",
-      "version": "0.3.0",
-      "description": "Antenna Toolbox, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox.",
+      "version": "0.4.0",
+      "description": "Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -265,8 +318,8 @@
     },
     {
       "name": "signal-processing",
-      "version": "0.2.0",
-      "description": "Signal Processing Toolbox, DSP System Toolbox, Wavelet Toolbox, and DSP HDL Toolbox.",
+      "version": "0.3.0",
+      "description": "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -284,8 +337,8 @@
     },
     {
       "name": "test-and-measurement",
-      "version": "0.2.0",
-      "description": "Data Acquisition Toolbox and Industrial Communication Toolbox.",
+      "version": "0.3.0",
+      "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -300,7 +353,12 @@
         "opcua",
         "modbus",
         "mqtt",
-        "aveva-pi"
+        "aveva-pi",
+        "can",
+        "lin",
+        "blf",
+        "mdf",
+        "arxml"
       ],
       "source": "./",
       "category": "development",
@@ -309,7 +367,7 @@
     },
     {
       "name": "toolkit",
-      "version": "0.2.6",
+      "version": "0.2.7",
       "description": "Detects MATLAB, installs the MCP server, registers with your AI coding agent, and verifies the environment.",
       "author": {
         "name": "MathWorks"
@@ -327,7 +385,7 @@
     },
     {
       "name": "wireless-communications",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, and Wireless Testbench.",
       "author": {
         "name": "MathWorks"

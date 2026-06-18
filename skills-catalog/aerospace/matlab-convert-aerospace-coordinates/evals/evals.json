@@ -1,0 +1,308 @@
+{
+  "skill": "matlab-convert-aerospace-coordinates",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "DCM from Euler Angles",
+      "description": "Tests whether agent uses angle2dcm instead of building rotation matrices from scratch",
+      "prompt": "Write MATLAB code to build a DCM to transform from NED to body frame given roll=10 degrees, pitch=5 degrees, yaw=30 degrees. Display the resulting 3x3 matrix.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses angle2dcm function",
+          "expected": "angle2dcm"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not manually construct rotation matrices with cos(",
+          "expected": "cos("
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Converts degrees to radians before calling angle2dcm",
+          "expected": "Uses deg2rad() or convang() to convert degrees to radians before passing to angle2dcm"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "ECI to ECEF Conversion",
+      "description": "Tests whether agent uses eci2ecef for time-dependent frame transform",
+      "prompt": "Write MATLAB code to convert ECI position [-2981784, 5207055, 3161595] meters and ECI velocity [-3384, -4887, 4843] m/s to ECEF at 12:00 UTC on January 4, 2019. Display both ECEF position and velocity.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses eci2ecef function",
+          "expected": "eci2ecef"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "ECEF position X component is approximately -5762655",
+          "expected": "ECEF position X component is negative and near -5762655 (within 1000m tolerance)"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not manually build rotation matrix from sidereal time",
+          "expected": "siderealTime"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Euler to Rodrigues Vector",
+      "description": "Tests whether agent uses angle2rod directly instead of multi-step conversion",
+      "prompt": "Write MATLAB code to determine the Euler-Rodrigues vector from rotation angles of yaw=0.7854 radians, pitch=0.1 radians, and roll=0 radians. Display the result.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses angle2rod function for direct conversion",
+          "expected": "angle2rod"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Specifies rotation sequence explicitly",
+          "expected": "Rotation sequence is specified (e.g., 'ZYX') in the function call"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not use indirect multi-step conversion via DCM",
+          "expected": "dcm2rod"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Aerospace Unit Conversions",
+      "description": "Tests whether agent uses convXXX functions for unit conversion",
+      "prompt": "Write MATLAB code to: (1) convert 250 knots to m/s, (2) convert 35000 feet to kilometers, (3) convert 1 slug to kilograms, (4) convert 212 degrees F to Celsius, (5) convert 2 G's of acceleration to meters per second squared, (6) convert 7 nautical miles to miles. Display all results.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses convvel for velocity conversion",
+          "expected": "convvel"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses convlength for length conversion",
+          "expected": "convlength"
+        },
+        {
+          "id": "a2b",
+          "type": "convention_followed",
+          "description": "Uses correct unit string 'naut mi' with space for nautical miles",
+          "expected": "The convlength call for nautical miles uses the unit string 'naut mi' (with a space) as documented in Aerospace Toolbox"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses convmass for mass conversion",
+          "expected": "convmass"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses convtemp for temperature conversion",
+          "expected": "convtemp"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses convacc for acceleration conversion",
+          "expected": "convacc"
+        },
+        {
+          "id": "a5b",
+          "type": "convention_followed",
+          "description": "Uses correct unit string for G's with escaped apostrophe",
+          "expected": "The convacc call uses the unit string 'G''s' (with escaped apostrophe) as documented in Aerospace Toolbox"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a7",
+          "type": "output_excludes",
+          "description": "Does not use manual conversion factor for knots",
+          "expected": "0.5144"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Time Conversions",
+      "description": "Tests whether agent uses tdbjuliandate and leapyear instead of manual computation",
+      "prompt": "Write MATLAB code to: (1) compute the TDB Julian Date for Terrestrial Time 2014/10/15 16:22:31, (2) determine whether years 2000, 2005, and 2020 are leap years. Display all results.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses tdbjuliandate for TDB conversion",
+          "expected": "tdbjuliandate"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses leapyear function",
+          "expected": "leapyear"
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not compute leap year with manual modulo logic",
+          "expected": "mod("
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Quaternion Rotation and Interpolation",
+      "description": "Tests whether agent uses the quaternion object with correct conventions for rotation and SLERP",
+      "prompt": "Write MATLAB code to: (1) Create a quaternion representing a 45-degree yaw rotation (ZYX sequence, frame rotation). (2) Rotate the vector [1 0 0] by this quaternion. (3) Create a second quaternion for 90-degree yaw, then smoothly interpolate 5 equally spaced orientations between them. Display the rotated point and the Euler angles (degrees) of all interpolated quaternions.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses rotateframe or quatrotate for vector rotation",
+          "expected": "Code uses rotateframe() or quatrotate() to rotate the vector. FAIL if rotation is done manually with matrix multiplication or custom formula."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses slerp for interpolation",
+          "expected": "slerp"
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not manually implement SLERP formula",
+          "expected": "sin(omega"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Geodetic to Geocentric Latitude",
+      "description": "Tests whether agent uses geod2geoc for geodetic-to-geocentric latitude conversion",
+      "prompt": "Write MATLAB code to convert geodetic latitude 45 degrees at 1000m altitude to geocentric latitude. Display the result in degrees.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses geod2geoc function",
+          "expected": "geod2geoc"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Converts degrees to radians before calling geod2geoc",
+          "expected": "Uses deg2rad() or convang() to convert 45 degrees to radians before passing to geod2geoc, since geod2geoc expects radians"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not manually compute geocentric latitude with atan/tan formula",
+          "expected": "atan"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Body-to-Wind DCM",
+      "description": "Tests whether agent uses dcmbody2wind for body-to-wind frame rotation matrix",
+      "prompt": "Write MATLAB code to compute the body-to-wind rotation matrix for a frame based rotation given 8 degrees angle of attack and 3 degrees sideslip. Display the resulting 3x3 matrix.",
+      "context": {
+        "setup": "Aerospace Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses dcmbody2wind function",
+          "expected": "dcmbody2wind"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Converts degrees to radians before calling dcmbody2wind",
+          "expected": "Uses deg2rad() or convang() to convert 8 and 3 degrees to radians before passing to dcmbody2wind, since dcmbody2wind expects radians"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not manually construct rotation matrix with cos/sin",
+          "expected": "cos("
+        }
+      ]
+    }
+  ]
+}

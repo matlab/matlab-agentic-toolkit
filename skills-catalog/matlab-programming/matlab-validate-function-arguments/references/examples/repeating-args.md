@@ -1,28 +1,7 @@
 # Repeating Arguments — Worked Examples
 
-## Basic: Paired Data Groups
-
-Accept repeating (x, y) pairs for plotting:
-
-```matlab
-function plotMultiSeries(x, y)
-    arguments (Repeating)
-        x (1,:) double {mustBeFinite}
-        y (1,:) double {mustBeFinite}
-    end
-
-    figure;
-    hold on;
-    for i = 1:numel(x)
-        plot(x{i}, y{i});
-    end
-    hold off;
-end
-```
-
-Call: `plotMultiSeries([1 2 3], [4 5 6], [1 2 3], [7 8 9])`
-
-In the function body, `x` and `y` are cell arrays. `numel(x)` gives the number of repetitions.
+For the basic paired-data pattern (`plotMultiSeries`), see the "Repeating
+Arguments" section of `SKILL.md`. The examples below extend that pattern.
 
 ## Three-Element Groups
 
@@ -107,31 +86,11 @@ Call: `stackedBarChart(["A","B","C"], [10,20,30], ["A","B","C"], [5,15,25], Titl
 6. **Only one repeating input block** per function
 7. **Do NOT use `varargin`** with argument validation — declare named variables instead
 
-## Repeating Outputs
+## Repeating Outputs — What Fails to Parse
 
-`arguments (Output, Repeating)` declares a function whose number of outputs
-scales with `nargout`. **Only one name is allowed in the block** — MATLAB
-rejects multi-name repeating output blocks at parse time with
-`MATLAB:functionValidation:MultipleRepeatingOutputs`.
-
-```matlab
-% GOOD — single name, pack triples into one cell array
-function out = productTriples()
-    arguments (Output, Repeating)
-        out (1,1) double
-    end
-    out = cell(1, nargout);
-    for k = 1:3:nargout
-        b = rand;
-        c = rand;
-        out{k}   = b * c;
-        out{k+1} = b;
-        out{k+2} = c;
-    end
-end
-```
-
-Caller: `[p1, a1, b1, p2, a2, b2] = productTriples();`
+For the working `productTriples` example and the one-name rule, see the
+"Output Argument Validation" section of `SKILL.md`. The counter-example below
+shows the parse-time failure mode:
 
 ```matlab
 % BAD — multi-name (Output, Repeating) — does not parse
@@ -142,16 +101,15 @@ function [p, a, b] = productTriples()
         b (1,1) double
     end
     % Error: Declaring multiple repeating output arguments is not supported.
+    % Identifier: MATLAB:functionValidation:MultipleRepeatingOutputs
 end
 ```
 
-Key rules:
-- One name only; pack groups via convention (e.g. every third output is the
-  product, the next two are factors)
-- Validators on the single declared name apply to **each cell element**
-- Body assigns a `1×nargout` cell; comma-list expansion at the call site
-  distributes elements across the requested LHS variables
-- Zero outputs is valid (`nargout == 0` ⇒ empty cell)
+To return groups of related values, declare a single output and pack groups
+into it via convention (e.g. every third output is the product, the next two
+are factors). Validators on the single declared name apply to each cell
+element; comma-list expansion at the call site distributes elements across
+the requested LHS variables.
 
 ## Anti-Pattern: varargin in Repeating Block
 

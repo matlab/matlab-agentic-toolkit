@@ -1,0 +1,168 @@
+{
+  "skill": "matlab-agentic-toolkit-setup",
+  "version": "2.7",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Normal Setup — Welcome and Discovery",
+      "description": "Agent prints welcome message, performs silent discovery, and presents a plan before taking action",
+      "prompt": "Set up the MATLAB Agentic Toolkit.\n\nNote: Only complete Phases 1 and 2 (Discovery and Plan). Stop after presenting the plan and asking for confirmation — do NOT execute Phase 3.",
+      "context": {
+        "files": [],
+        "setup": "Real system with MATLAB installed. Agent should discover it and present a plan."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent prints a welcome message before starting discovery",
+          "expected": "Agent outputs a welcome message covering the 3-step process (scan/discover, present plan, execute) before running any system checks"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent performs Phase 1 discovery without prompting the user",
+          "expected": "Agent runs system checks (platform detection, MATLAB search, MCP server check, agent detection) silently without asking questions during discovery"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent presents a structured plan in Phase 2",
+          "expected": "Plan shows: platform info, MATLAB installations found (with version and path), MCP server status (installed version vs latest), agent platform detected, and proposed actions"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Agent waits for user confirmation before executing",
+          "expected": "Agent asks the user to confirm or adjust the plan and does NOT proceed to download, configure, or write files"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Plan Format — MATLAB Found",
+      "description": "Verifies the plan format includes all required sections when MATLAB is detected",
+      "prompt": "Set up the MATLAB Agentic Toolkit.\n\nNote: Only complete Phases 1 and 2. Stop after presenting the plan — do NOT execute.",
+      "context": {
+        "files": [],
+        "setup": "Real system with MATLAB installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Plan shows MATLAB installation with version and path",
+          "expected": "Plan lists at least one MATLAB installation with its release version (e.g., R2025b) and filesystem path"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Plan shows MCP server status",
+          "expected": "Plan indicates whether the MCP server is already installed (with version) or needs to be downloaded, and shows the latest available version"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Plan shows detected agent platform",
+          "expected": "Plan identifies the agent platform (Claude Code) either by auto-detection or asking"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Plan does not offer MATLAB install option when MATLAB is found",
+          "expected": "Install MATLAB using the matlab-install-products"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Discovery Scanning Message",
+      "description": "Agent prints the scanning status message to set user expectations about permissions prompts",
+      "prompt": "Set up the MATLAB Agentic Toolkit.\n\nNote: Only complete Phases 1 and 2. Stop after presenting the plan — do NOT execute.",
+      "context": {
+        "files": [],
+        "setup": "Real system with MATLAB installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent prints a scanning status message before discovery commands",
+          "expected": "Agent outputs a message indicating it is scanning the system and that the user may be asked to approve read-only commands, before running discovery checks"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent detects the correct platform",
+          "expected": "Agent identifies the platform as Windows x86_64 (or win64) based on running uname or equivalent"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent checks for existing config before assuming fresh install",
+          "expected": "Agent checks ~/.matlab/agentic-toolkits/config.json (and/or legacy ~/.matlab-agentic-toolkit/config.json) to detect prior setup state"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "No-MATLAB Plan — Intent Verification",
+      "description": "When explicitly told no MATLAB is present, agent describes the two-option plan it would show (tests skill knowledge without real system interaction)",
+      "prompt": "I want to understand how the MATLAB Agentic Toolkit setup skill handles the case where no MATLAB is found.\n\nDo NOT run any commands or scan the system. Just tell me: according to the skill instructions, what plan would be shown to the user if no MATLAB installation was detected? What options would they see?",
+      "context": {
+        "files": [],
+        "setup": "Knowledge-check eval — tests that the agent correctly describes the no-MATLAB flow from the skill instructions."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent describes the two options shown when no MATLAB is found",
+          "expected": "Agent explains that the plan would show two options: [1] provide a path to an existing MATLAB installation, and [2] install MATLAB using the matlab-install-products skill"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Agent mentions the matlab-install-products skill as an option",
+          "expected": "matlab-install-products"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent explains that the plan would wait for user choice before proceeding",
+          "expected": "Agent states that the skill would wait for the user to choose an option before finalizing the rest of the setup plan"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Install Delegation — Intent Verification",
+      "description": "Tests that the agent correctly describes the delegation flow to matlab-install-products and the resume behavior",
+      "prompt": "I want to understand the MATLAB Agentic Toolkit setup skill's install flow.\n\nDo NOT run any commands. Just explain: if a user has no MATLAB and chooses option 2 (install), what happens next according to the skill instructions? Which skill handles the installation, and what does the setup skill do after installation completes?",
+      "context": {
+        "files": [],
+        "setup": "Knowledge-check eval — tests that the agent correctly describes the install delegation and resume flow."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent identifies matlab-install-products as the delegation target",
+          "expected": "Agent states that the setup skill hands off to the matlab-install-products skill to handle the MATLAB installation"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Agent describes the resume behavior after installation",
+          "expected": "Agent explains that after matlab-install-products completes and reports a verified MATLAB path, the setup skill resumes with MCP server download, agent configuration, and verification (Phases 3-5)"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Agent does not suggest installing MATLAB via bash directly",
+          "expected": "sudo apt.*install.*matlab|brew.*install.*matlab|choco.*install.*matlab"
+        }
+      ]
+    }
+  ]
+}

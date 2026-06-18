@@ -1,0 +1,18 @@
+# Copyright 2026 The MathWorks, Inc.
+
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Import and decode vehicle network data from log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types and CAN/CAN FD/LIN decode pipelines.
+matlab-release: ">=R2023a"
+requires-tools:
+  - evaluate_matlab_code
+  - detect_matlab_toolboxes
+  - check_matlab_code
+  - run_matlab_file
+  - run_matlab_test_file
+requires-skills: []
+requires-products:
+  - Vehicle Network Toolbox
+toolkit: matlab-agentic-toolkit

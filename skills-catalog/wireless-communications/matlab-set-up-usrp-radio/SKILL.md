@@ -13,7 +13,7 @@ license: MathWorks BSD-3-Clause
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.0"
 ---
 
 # Set Up USRP Radio with Wireless Testbench

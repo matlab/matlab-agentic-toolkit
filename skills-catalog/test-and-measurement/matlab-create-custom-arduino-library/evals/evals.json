@@ -1,0 +1,276 @@
+{
+  "skill": "matlab-create-custom-arduino-library",
+  "version": "1.1",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "DHT22 Temperature Sensor Addon",
+      "description": "Create a custom Arduino addon for the DHT22 temperature/humidity sensor. Tests the full workflow: download library, scaffold template, configure class properties, write C++ header with lazy init.",
+      "prompt": "I want to read temperature and humidity from a DHT22 sensor connected to my Arduino UNO from MATLAB. The sensor is on pin D2. Create a custom Arduino add-on library called MyDHT22 that wraps the DHT22 Arduino library. Put the addon files in C:/temp/MyDHT22Addon. Show me the complete MATLAB class file and C++ header file.",
+      "context": {
+        "files": [],
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino UNO connected."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses downloadLibrary to install the DHT22 third-party library",
+          "expected": "PASS if: Agent uses arduinoio.customLibrary.downloadLibrary() to install the DHT22 third-party Arduino library, either shown in code output or called via MCP tool. FAIL if: Agent tells user to manually download/copy the library, use Arduino IDE Library Manager, or skips third-party library installation entirely."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "LibraryHeaderFiles uses correct folder/header format (FolderName/HeaderFilename)",
+          "expected": "PASS if: LibraryHeaderFiles is set to a value with format 'FolderName/HeaderFilename.h' where FolderName matches the library folder in CLIRoot/user/libraries/ (e.g., 'DHT22/DHT22.h' or 'DHT/DHT.h'). FAIL if: LibraryHeaderFiles has just a bare filename without folder prefix (e.g., 'DHT.h'), or includes src/ in the path (e.g., 'DHT22/src/DHT22.h')."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "DependentLibraries is empty (DHT22 is GPIO-only, no I2C/SPI dependency)",
+          "expected": "PASS if: DependentLibraries is set to {} (empty cell array). FAIL if: DependentLibraries contains 'I2C', 'SPI', 'Wire', or any other dependency."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "C++ setup() method does not initialize hardware (lazy initialization pattern)",
+          "expected": "PASS if: setup() method body is empty or contains only simple variable assignments (e.g., cursorRow = 0). Hardware initialization happens in commandHandler via a dedicated INIT command. FAIL if: setup() contains .begin(), Wire.begin(), SPI.begin(), dht.begin(), or any hardware initialization call."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "sendResponseMsg always sends at least 1 byte (no nullptr/0 data pointer)",
+          "expected": "PASS if: All sendResponseMsg calls pass a valid byte array/pointer with size >= 1 (e.g., sendResponseMsg(cmdID, dataBytes, sizeof(dataBytes))). FAIL if: Any sendResponseMsg call uses 0 as the data size or passes nullptr/NULL/0 as the data pointer (e.g., sendResponseMsg(cmdID, 0, 0))."
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "I2C OLED Display with Bus Conflict",
+      "description": "Create a custom addon for an SSD1306 OLED display using U8g2 library over I2C. Tests critical bus-conflict knowledge: must use SW_I2C, must NOT include Wire.h.",
+      "prompt": "I want to display text on a 128x64 SSD1306 OLED display from MATLAB using the U8g2 Arduino library. The display is connected via I2C (SDA/SCL pins) to my Arduino UNO R4 Minima. Create a custom addon called MyOLED. Show me the complete MATLAB class and C++ header.",
+      "context": {
+        "files": [],
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino UNO R4 Minima connected. U8g2 library available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses SW_I2C constructor (software I2C) to avoid bus conflict",
+          "expected": "SW_I2C"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Does NOT include Wire.h in the generated addon C++ header code",
+          "expected": "PASS if: The generated C++ header code for the addon does NOT contain #include <Wire.h>. The agent may mention Wire.h in explanatory text (e.g., 'we avoid Wire.h because...') — that is fine. FAIL if: The actual generated C++ addon header code contains the line #include <Wire.h>."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "DependentLibraries is empty (using software I2C bypasses MATLAB bus)",
+          "expected": "PASS if: DependentLibraries is set to {} (empty cell array) because software I2C does not use MATLAB's I2C infrastructure. FAIL if: DependentLibraries contains 'I2C' or 'Wire' when using a SW_I2C constructor."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "LibraryHeaderFiles references U8g2 with correct folder/header format",
+          "expected": "U8g2/U8g2lib.h"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Member objects are ARM-safe (initializer list or pointer-based lazy construction)",
+          "expected": "PASS if: C++ member objects are either (a) initialized via constructor initializer list (e.g., ClassName() : displayObj(...) {}), OR (b) declared as pointers and constructed via new in commandHandler (lazy allocation avoids default-construction issues on ARM). FAIL if: Non-trivial member objects are default-constructed with no arguments and then re-initialized in setup() — this causes undefined behavior on ARM boards that zero-initialize static memory."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Tiered Resolution - NeoPixel",
+      "description": "Tests whether the agent follows tiered resolution: check native support first, then File Exchange, before creating from scratch.",
+      "prompt": "How do I control WS2812B NeoPixel LEDs from MATLAB using my Arduino Uno? I want to set individual pixel colors.",
+      "context": {
+        "files": [],
+        "setup": "MATLAB Support Package for Arduino Hardware installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Checks native support first before creating custom addon",
+          "expected": "PASS if: Agent checks whether NeoPixel/WS2812B is natively supported (via listArduinoLibraries call or by stating it is not in the built-in library list) BEFORE proceeding to create a custom addon. FAIL if: Agent jumps directly to creating a custom addon without any mention of checking native support first."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Searches File Exchange for existing addon before creating from scratch",
+          "expected": "PASS if: Agent mentions checking MATLAB File Exchange, MATLAB Central, or community-contributed addons for an existing NeoPixel/WS2812B addon before creating one from scratch. FAIL if: Agent proceeds directly from native support check to creating a new custom addon without mentioning File Exchange or community solutions."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "If creating custom addon, DependentLibraries is empty (NeoPixel is GPIO-only)",
+          "expected": "PASS if: DependentLibraries is set to {} (empty cell array) because NeoPixel uses GPIO bit-banging, not I2C or SPI. FAIL if: DependentLibraries contains 'I2C', 'SPI', or any other dependency for a NeoPixel addon."
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "LibraryHeaderFiles Format Correctness",
+      "description": "Tests whether the agent gets the LibraryHeaderFiles property format correct — the most common mistake in discovery.",
+      "prompt": "I'm creating a custom Arduino addon in MATLAB that wraps the Adafruit Motor Shield V2 library. The library is installed at arduinoio.CLIRoot/user/libraries/Adafruit_Motor_Shield_V2_Library/ and the main header is Adafruit_MotorShield.h (located in the src subfolder). What should I set for the LibraryHeaderFiles property in my MATLAB class?",
+      "context": {
+        "files": [],
+        "setup": "MATLAB Support Package for Arduino Hardware installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses correct format: FolderName/HeaderFilename without src/ in path",
+          "expected": "Adafruit_Motor_Shield_V2_Library/Adafruit_MotorShield.h"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Does NOT recommend including src/ in the LibraryHeaderFiles property value",
+          "expected": "PASS if: The recommended LibraryHeaderFiles value is 'Adafruit_Motor_Shield_V2_Library/Adafruit_MotorShield.h' without src/ in the path. The agent may mention src/ when explaining WHY it should be omitted. FAIL if: The agent recommends setting LibraryHeaderFiles to 'Adafruit_Motor_Shield_V2_Library/src/Adafruit_MotorShield.h' as the correct value to use."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Explains that Arduino build system searches src/ automatically",
+          "expected": "PASS if: Agent explains that the Arduino build system automatically searches the src/ subdirectory within library folders, so src/ should not be included in the path. FAIL if: Agent gives no explanation for why src/ is omitted, or incorrectly states that the header must be in the root of the library folder."
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Fix Broken SGP30 Addon",
+      "description": "Diagnose and fix a broken custom addon that has multiple common mistakes: Wire.h included, .begin() in setup(), sendResponseMsg with 0 bytes, wrong DependentLibraries, src/ in LibraryHeaderFiles path.",
+      "prompt": "I have a custom Arduino addon for the SGP30 air quality sensor but it's not working. When I try to deploy it I get compilation errors and the server initialization fails. Can you review my MATLAB class file and C++ header and tell me what's wrong? Fix all the issues you find.\n\nHere are my files:\n\nMATLAB class (BrokenSGP30.m):\n```matlab\nclassdef BrokenSGP30 < matlabshared.addon.LibraryBase\n    properties(Access = private, Constant = true)\n        LibraryName = 'SGP30'\n        DependentLibraries = {'Wire'}\n        LibraryHeaderFiles = {'SGP30/src/SGP30.h'}\n        CppHeaderFile = fullfile(arduinoio.FilePath(mfilename('fullpath')), 'src', 'SGP30Addon.h')\n        CppClassName = 'SGP30Addon'\n    end\n    methods\n        function obj = BrokenSGP30(parentObj, varargin)\n            obj.Parent = parentObj;\n        end\n        function [co2, tvoc] = readAirQuality(obj)\n            cmdID = obj.CMD_READ;\n            data = sendCommand(obj, obj.LibraryName, cmdID, []);\n            co2 = typecast(uint8(data(1:2)), 'uint16');\n            tvoc = typecast(uint8(data(3:4)), 'uint16');\n        end\n    end\nend\n```\n\nC++ header (BrokenSGP30.h):\n```cpp\n#include \"LibraryBase.h\"\n#include <Wire.h>\n#include <SGP30.h>\n\nSGP30 sgp;\n\nclass SGP30Addon : public LibraryBase {\npublic:\n    SGP30Addon(MWArduinoClass& a) {\n        libName = \"SGP30\";\n        a.registerLibrary(this);\n    }\n    void setup() {\n        Wire.begin();\n        sgp.begin();\n    }\n    void commandHandler(byte cmdID, byte* inputs, unsigned int payload_size) {\n        switch (cmdID) {\n            case 0x01: {\n                sgp.IAQmeasure();\n                uint16_t co2 = sgp.eCO2;\n                uint16_t tvoc = sgp.TVOC;\n                byte data[4];\n                data[0] = co2 & 0xFF;\n                data[1] = (co2 >> 8) & 0xFF;\n                data[2] = tvoc & 0xFF;\n                data[3] = (tvoc >> 8) & 0xFF;\n                sendResponseMsg(cmdID, data, 4);\n                break;\n            }\n            default:\n                sendResponseMsg(cmdID, 0, 0);\n        }\n    }\n};\n```",
+      "context": {
+        "files": ["fixtures/BrokenSGP30.m", "fixtures/BrokenSGP30.h"],
+        "setup": "MATLAB Support Package for Arduino Hardware installed. SGP30 Arduino library installed at arduinoio.CLIRoot/user/libraries/SGP30/."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Identifies that DependentLibraries should be {'I2C'} not {'Wire'}",
+          "expected": "PASS if: Agent identifies that 'Wire' is not a valid value for DependentLibraries and recommends changing to {'I2C'} (since SGP30 requires hardware I2C managed by MATLAB). FAIL if: Agent leaves DependentLibraries as {'Wire'} or changes it to {} (SGP30 requires hardware I2C, so {'I2C'} is correct)."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Identifies that setup() must not call .begin() — use lazy init",
+          "expected": "PASS if: Agent identifies Wire.begin() and sgp.begin() in setup() as bugs and moves hardware initialization to commandHandler via a dedicated INIT command. FAIL if: Agent leaves .begin() calls in setup() or only removes one of them."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Identifies sendResponseMsg(cmdID, 0, 0) as dangerous on ARM boards",
+          "expected": "PASS if: Agent identifies that sendResponseMsg(cmdID, 0, 0) in the default case will crash ARM boards (nullptr dereference) and fixes it to send at least 1 byte. FAIL if: Agent leaves sendResponseMsg(cmdID, 0, 0) unchanged or doesn't mention it as a problem."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Identifies that LibraryHeaderFiles should not include src/ in the path",
+          "expected": "PASS if: Agent identifies that 'SGP30/src/SGP30.h' is wrong and corrects it to 'SGP30/SGP30.h' (the Arduino build system searches src/ automatically). FAIL if: Agent leaves the src/ in the path or doesn't mention this as an issue."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Identifies that #include <Wire.h> should be removed when using DependentLibraries = {'I2C'}",
+          "expected": "PASS if: Agent identifies that #include <Wire.h> in the addon header conflicts with MATLAB's I2C management and should be removed (MATLAB handles Wire initialization when DependentLibraries = {'I2C'}). FAIL if: Agent leaves #include <Wire.h> in the header."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Identifies that LibraryName should match the addon package namespace",
+          "expected": "PASS if: Agent identifies that LibraryName = 'SGP30' may need updating to match the package folder structure (e.g., mentions it should include the folder prefix, or updates it to match +arduinoioaddons/+PackageName convention), OR if the agent fixes LibraryName to include a slash (FolderName/ClassName format). FAIL if: Agent explicitly states that LibraryName = 'SGP30' is correct as-is, or provides a fixed version that still uses the bare 'SGP30' without acknowledging the format issue."
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "createLibraryTemplate Naming Convention",
+      "description": "Tests whether the agent correctly understands the createLibraryTemplate naming convention and the resulting folder structure.",
+      "prompt": "I'm using MATLAB R2025a and I want to create a custom Arduino addon called 'MyMotor'. I plan to use arduinoio.customLibrary.createLibraryTemplate to scaffold it. After I call createLibraryTemplate(\"MyMotor\"), what will the resulting folder structure look like? What will the MATLAB class file be named and where? What should the LibraryName, CppHeaderFile, and CppClassName properties be set to?",
+      "context": {
+        "files": [],
+        "setup": "MATLAB R2025a with Support Package for Arduino Hardware installed."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Shows that createLibraryTemplate appends 'Folder' to the package name",
+          "expected": "+MyMotorFolder"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "LibraryName follows FolderName/ClassName format",
+          "expected": "PASS if: Agent states LibraryName should be 'MyMotorFolder/MyMotor' (matching the generated package name and class name). FAIL if: Agent states LibraryName is just 'MyMotor' without the folder prefix, or uses a wrong folder name."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "CppHeaderFile uses the standard fullfile pattern with mfilename",
+          "expected": "PASS if: Agent shows CppHeaderFile = fullfile(arduinoio.FilePath(mfilename('fullpath')), 'src', 'MyMotor.h') or equivalent pattern using mfilename('fullpath'). FAIL if: Agent hardcodes an absolute path or uses a different pattern."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Explains that generated files are in pwd and the folder structure",
+          "expected": "PASS if: Agent explains that createLibraryTemplate creates files in the current working directory (pwd) with structure +arduinoioaddons/+MyMotorFolder/MyMotor.m and +arduinoioaddons/+MyMotorFolder/src/MyMotor.h. FAIL if: Agent states files are created elsewhere or gets the folder structure wrong."
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "SPI Peripheral - NRF24L01 Radio",
+      "description": "Create a custom addon for an NRF24L01 radio module using SPI. Tests that SPI peripherals get DependentLibraries = {} and that #include <SPI.h> is safe.",
+      "prompt": "I want to use an NRF24L01 wireless radio module with my Arduino Mega from MATLAB. The module uses SPI communication. Create a custom addon called MyRadio that wraps the RF24 Arduino library. I need to be able to send and receive short messages. Show me the complete MATLAB class and C++ header.",
+      "context": {
+        "files": [],
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino Mega connected. RF24 library available."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "DependentLibraries is empty for SPI peripheral",
+          "expected": "PASS if: DependentLibraries is set to {} (empty cell array) because MATLAB does not own the SPI bus. FAIL if: DependentLibraries contains 'SPI' or any other dependency."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "#include <SPI.h> is present (safe for SPI peripherals)",
+          "expected": "PASS if: The C++ header includes <SPI.h> (this is safe because MATLAB does not manage the SPI bus, unlike I2C/Wire). FAIL if: Agent avoids including SPI.h citing bus conflict concerns (there is no SPI bus conflict with MATLAB)."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "LibraryHeaderFiles uses correct folder/header format for RF24",
+          "expected": "RF24/"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "C++ setup() does not initialize hardware",
+          "expected": "PASS if: setup() is empty or contains only variable assignments. Radio initialization (radio.begin(), radio.setPALevel(), etc.) happens in commandHandler via a dedicated INIT command. FAIL if: setup() calls radio.begin(), SPI.begin(), or any hardware initialization."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "sendResponseMsg always sends at least 1 byte",
+          "expected": "PASS if: All sendResponseMsg calls pass a valid byte array with size >= 1. FAIL if: Any sendResponseMsg call uses sendResponseMsg(cmdID, 0, 0) or passes nullptr/NULL with size 0."
+        }
+      ]
+    }
+  ]
+}

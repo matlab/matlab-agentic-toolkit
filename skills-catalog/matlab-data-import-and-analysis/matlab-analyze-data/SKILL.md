@@ -4,7 +4,7 @@ description: Analyze tabular data using MATLAB. Use when the task involves table
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # MATLAB Data Analysis
@@ -39,23 +39,25 @@ Most functions in this skill are available in R2023a or earlier. The following r
 | `allbetween` | R2025a | Validate all values are within a range |
 | `allunique` | R2025a | Validate all values are unique |
 
-For users on older releases: use logical clamping instead of `clip`, comparison operators instead of numeric `isbetween`, `numel(unique(...))` instead of `numunique`, and `all(x >= lb & x <= ub)` instead of `allbetween`.
-
 ## Getting Oriented with Data
 
-When data is already in a workspace variable, start by understanding its structure and contents. Prefer JSON output — table display is designed for human-readable grids, but as text it is easy to misinterpret which values belong to which variables:
+When data is already in a workspace variable, start by understanding its structure and contents. Use JSON output for reliable parsing — table display is designed for human-readable grids, but as text it is easy to misinterpret which values belong to which variables:
 
 ```matlab
-jsonencode(summary(T))      % stats as nested struct: types, ranges, missing counts
+jsonencode(summary(T))      % per-variable stats as nested struct
 jsonencode(head(T))         % first 8 rows as structured JSON
 ```
 
-When generating a script for the user (not executing yourself), use standard display instead:
+**When getting oriented with unknown data, `summary(T)` already contains per-variable type, size, NumMissing, and — for numeric/datetime/duration — Min, Max, Mean, Median, Std. For categoricals it includes category names and counts.** This is usually sufficient for an initial overview.
+
+If producing a standalone script, leave the semicolon off to invoke the `display` method — it shows dimensions, variable names, and a truncated preview. Avoid `disp` (omits headers and prints every row, flooding output on large tables) and `fprintf` in a loop (verbose, old-style):
 
 ```matlab
 summary(T)                  % types, ranges, missing counts per variable
-head(T)                     % first 8 rows
+T                           % dimensions + header + truncated preview
 ```
+
+> Systematic exploration checklist: [exploration.md](references/exploration.md)
 
 ---
 
@@ -108,6 +110,8 @@ T.Size = reordercats(T.Size,["Small" "Medium" "Large"]);
 
 Tables are the primary container for tabular data. Each table variable can be single-column or multi-column (e.g., a matrix); the only requirement is consistent row count. Use "variable" (not "column") to match MathWorks documentation. Prefer dot notation and named access over numeric indexing.
 
+**It is rarely better to use a `for` loop to iterate over table variables.** MATLAB's table functions operate on multiple variables at once via `DataVariables` and `vartype` — prefer these over column-by-column loops.
+
 ```matlab
 val = T.Value;                          % dot notation for a single variable
 subset = T(:,["A" "B" "C"]);           % parentheses for table subsets
@@ -127,6 +131,7 @@ T = convertvars(T,vartype("cellstr"),"string");
 TT = table2timetable(T,RowTimes="Timestamp");
 % Now you can:
 daily = retime(TT(:,vartype("numeric")),"daily","mean"); % resample (numeric vars only)
+TT = retime(TT, unique(TT.Time), "firstvalue");  % resolve duplicate timestamps
 TT2 = synchronize(TT_a,TT_b,"hourly");          % align two time series
 TT_range = timerange("2024-01-01","2024-06-01");
 subset = TT(TT_range,:);                        % filter by date range
@@ -145,8 +150,9 @@ If working with legacy `timeseries` objects, consider converting with `timeserie
 
 Never compare with `==` for missing values (`NaN == NaN` is `false`). Use `ismissing` or `isnan`. For a quick boolean check, use `anymissing` — more readable and performant than `any(ismissing(...))`:
 ```matlab
-anymissing(T.Value)         % true/false: any missing values?
-sum(ismissing(T))           % count per variable
+anymissing(T.Value)                    % true/false: any missing values?
+sum(ismissing(T))                      % missing count per variable (numeric vector)
+summary(T, Statistics="nummissing")    % missing counts with variable labels (R2024b+)
 ```
 
 **Standardize first, then fill.** Real data often uses sentinel values (`"N/A"`, `""`, `-999`, `0` where zero is meaningless) that MATLAB doesn't recognize as missing:
@@ -158,6 +164,7 @@ sum(ismissing(T))                                        % now these show up
 **Choose a fill method that matches your data.** Operate on the whole table with `DataVariables` to target specific columns rather than extracting individual columns:
 ```matlab
 T = fillmissing(T,"constant","Unknown", DataVariables="Status");     % categorical default
+T = fillmissing(T,"median", DataVariables=vartype("numeric"));       % column median
 T = fillmissing(T,"linear", DataVariables="Temperature");            % smooth numeric
 T = fillmissing(T,"previous", DataVariables="Setting");              % stepwise data
 T = fillmissing(T,"movmedian",hours(2), ...                          % noisy, time-based
@@ -170,9 +177,9 @@ T = fillmissing(T,"linear", DataVariables=vartype("numeric"));
 T = fillmissing(T,"previous", DataVariables=vartype("categorical"));
 ```
 
-Use `MaxGap` to avoid interpolating over long stretches of missing data:
+Use `MaxGap` to avoid interpolating over long stretches of missing data. MaxGap is measured in sample-point units — for timetables, use a `duration` or `calendarDuration`:
 ```matlab
-T.Value = fillmissing(T.Value,"linear", MaxGap=3);
+TT = fillmissing(TT,"linear", MaxGap=hours(24), DataVariables="Loss");
 ```
 
 **Be cautious with `rmmissing` on an entire table** — it drops any row that has a missing value in *any* column, which can discard valid data unnecessarily. Prefer handling missingness per-variable with `fillmissing` or targeted column selection. Use `rmmissing` when you genuinely need complete cases across all columns.
@@ -183,12 +190,12 @@ Consider the data's domain expectations when choosing a detection method. The de
 
 ```matlab
 isOut = isoutlier(T,"quartiles", DataVariables="Value");     % IQR method
-Tclean = rmoutliers(T,"quartiles", DataVariables="Value");   % remove outlier rows
-T = filloutliers(T,NaN,"quartiles", DataVariables="Value");  % mark as missing, handle later
-T = filloutliers(T,"linear","quartiles", DataVariables="Value"); % interpolate over outliers
+isOut = isoutlier(T,"mean", ThresholdFactor=2, DataVariables="Value"); % 2 std from mean
+Tclean = rmoutliers(T, DataVariables="Value");               % remove outlier rows (default: median)
+T = filloutliers(T,"linear","movmedian",5, DataVariables="Value"); % interpolate over local outliers
 ```
 
-Detection methods: `"median"` (default), `"mean"`, `"quartiles"`, `"percentiles"`, `"grubbs"`, `"gesd"`, `"movmedian"`, `"movmean"`.
+Detection methods: `"median"` (default), `"mean"`, `"quartiles"`, `"percentiles"`, `"grubbs"`, `"gesd"`, `"movmedian"`, `"movmean"`. **Use `ThresholdFactor` to control sensitivity** — it sets the number of scaled MADs (`"median"`), standard deviations (`"mean"`), or IQR multiplier (`"quartiles"`). Default is 3 for median/mean, 1.5 for quartiles.
 
 **Range operations:** check, validate, or clamp values to a range:
 ```matlab
@@ -220,10 +227,12 @@ mn = min(x,[],"omitmissing");         % correct
 
 ### Row filtering and sorting
 
+**Prefer `isbetween` over manual `>=` & `<=` for range checks.** It handles boundary semantics (open/closed intervals), works consistently across numeric, datetime, and duration types, and is less error-prone than compound expressions:
+
 ```matlab
-Thigh = T(T.Value > 100,:);        % logical indexing
-TBob = T(T.Name == "Bob",:);
-Trange = T(isbetween(T.Age,18,65),:);             % range filtering — prefer over manual >= & <=
+Thigh = T(T.Value > 100,:);                       % logical indexing (single bound)
+TBob = T(T.Name == "Bob",:);                      % equality
+Trange = T(isbetween(T.Age,18,65),:);             % range filtering (two bounds)
 T = sortrows(T,"Date");                           % ascending by Date
 T = sortrows(T,["Group" "Value"],["ascend" "descend"]);  % multi-key sort
 top5 = topkrows(T,5,"Sales");                     % top 5 by Sales (descending)
@@ -265,6 +274,8 @@ T = mergevars(T,["X" "Y"], NewVariableName="Coords");     % merge into multicolu
 ```
 
 ### Adding computed variables
+
+Prefer vectorized table arithmetic where possible. For iterative code where each row depends on the previous, extract variables into arrays, compute in a helper function, and assign back — do not index `T.Var(i)` inside a loop.
 
 ```matlab
 T.Total = T.A + T.B + T.C;                               % vectorized arithmetic
@@ -321,7 +332,7 @@ Notes:
 - Consider `IncludeMissingGroups=false` to exclude groups defined by a missing value (such as `NaN` for numeric types) that can dominate results.
 - Use `IncludeEmptyGroups=true` to include all categories of a categorical variable, even those with no rows.
 - Supports on-the-fly binning: `groupsummary(T,"Age",[0 18 35 50 Inf],"mean","Income")` - no need for `discretize` first. Works with `groupcounts`, `groupfilter`, and `grouptransform` too.
-- For grouping by time unit (e.g., hourly means, monthly totals), prefer binning rules in `groupsummary`/`pivot` rather than creating a separate datetime component variable.
+- **Time binning has two forms** — sequential (`"hour"`, `"month"`, `"year"`) creates one bin per calendar period in the data (e.g., Jan 2023, Feb 2023, ...). Cyclic (`"hourofday"`, `"dayofweek"`, `"monthofyear"`) collapses across the higher unit to reveal repeating patterns (e.g., all Mondays together). Choose based on whether you want a timeline or a cycle. No need to extract components with `hour()`/`month()` first — pass the binning rule directly to `groupsummary`.
 - **Multiple binning methods:** use a cell array when types are mixed (e.g., a named method and custom edges), or a string array when all are named methods:
   ```matlab
   G = groupsummary(TT,["Time" "Time"],["year" "month"],"mean","Value");   % all named — string array
@@ -339,10 +350,12 @@ T = groupfilter(T,"Category",@(x) numel(x) >= 10);
 T = groupfilter(T,"Category",@(x) ~isoutlier(x),"Value");
 ```
 
+**When the filter logic matches a built-in detection function (`isoutlier`, `ismissing`, `ischange`), use it inside the function handle rather than reimplementing the arithmetic.** Built-in functions handle edge cases (NaN, constant groups) and accept tuning parameters like `ThresholdFactor`.
+
 **`grouptransform`** transforms data within each group, returning a same-size result (normalize, fill, center, or custom):
 
 ```matlab
-T = grouptransform(T,"Category","zscore","Value");     % per-group z-score
+T = grouptransform(T,"Category","zscore","Value");     % overwrites Value with per-Category z-score
 ```
 
 **`pivot`** for cross-tabulation:
@@ -390,6 +403,7 @@ ydetrend = detrend(y,2);                              % remove quadratic trend
 isPeak = islocalmax(y,MinProminence=5);               % local peaks
 isValley = islocalmin(y);                             % local valleys
 changes = ischange(y,"mean");                         % mean shift points
+changes = ischange(y,"linear");                       % slope/trend direction changes
 changes = ischange(y,"variance");                     % variance change points
 ```
 

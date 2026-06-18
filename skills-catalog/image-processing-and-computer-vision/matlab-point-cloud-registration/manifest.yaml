@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Register and align 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms.
+matlab-release: ">=R2023b"
+requires-tools:
+  - evaluate_matlab_code
+requires-skills: []
+requires-products:
+  - Computer Vision Toolbox
+  - Lidar Toolbox
+toolkit: matlab-agentic-toolkit

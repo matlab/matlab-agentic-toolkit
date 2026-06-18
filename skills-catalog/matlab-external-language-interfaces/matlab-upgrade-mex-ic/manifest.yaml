@@ -1,0 +1,11 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Convert C, C++, and Fortran MEX files from the separate complex API to the interleaved complex API with MX_HAS_INTERLEAVED_COMPLEX guards for SC/IC builds and performance verification.
+matlab-release: ">=R2021a"
+requires-tools: []
+requires-skills: []
+requires-products: []
+toolkit: matlab-agentic-toolkit

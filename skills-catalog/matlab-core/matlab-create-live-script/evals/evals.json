@@ -1,0 +1,344 @@
+{
+  "skill": "matlab-create-live-script",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Basic Live Script Structure",
+      "description": "Tests that a simple tutorial Live Script has correct structure: sections, text lines, appendix, no banned patterns",
+      "prompt": "Create a Live Script called BasicSignals.m that introduces the reader to generating sine and cosine waves in MATLAB. Include a title, a brief intro paragraph, two sections (one per wave type) each with a plot, and a short summary section. Save the file to the current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "BasicSignals.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses %[text] for text lines",
+          "expected": "%[text]"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Section breaks include the %[text] ## heading follow-up",
+          "expected": "Every %% line on its own is followed within 1-2 lines by a %[text] ## heading line. PASS: %% appears alone on its line, then within 2 lines a %[text] ## Title line appears (intervening blank lines are not allowed by the skill, but code lines between are acceptable). FAIL: a %% break with no %[text] ## heading nearby, or %% with prose only and no markdown heading."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Has required appendix",
+          "expected": "%[appendix]{\"version\":\"1.0\"}"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "No figure command in the generated .m file",
+          "expected": "The generated .m file does not contain a standalone 'figure' or 'figure(' call as a MATLAB command. Ignore any mention of the word 'figure' in %[text] prose lines."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "No close all in the generated .m file",
+          "expected": "The generated .m file does not contain 'close all' as a MATLAB command on any code line (lines that don't start with %)."
+        },
+        {
+          "id": "a7",
+          "type": "convention_followed",
+          "description": "No clear command in the generated .m file",
+          "expected": "The generated .m file does not contain 'clear' as a standalone MATLAB command on any code line (lines that don't start with %). The word 'clear' appearing in %[text] prose is acceptable."
+        },
+        {
+          "id": "a8",
+          "type": "code_executes",
+          "description": "The generated Live Script runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Escaping Special Characters",
+      "description": "Tests that the skill correctly escapes underscores, dots after digits, and other special characters in text lines",
+      "prompt": "Create a Live Script called EscapingDemo.m that explains MATLAB variable naming rules. In the text, mention variable names like my_variable, sample_rate, and x_0. Also mention that MATLAB version 9.14 introduced new features. Include a table showing 3 variable naming conventions with examples. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "EscapingDemo.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Underscores are escaped in text lines",
+          "expected": "\\_"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Some attempt at escaping dots after digits in %[text] lines",
+          "expected": "Escaping the period after a digit is a defensive precaution, not strictly required for rendering. PASS: at least one occurrence of a digit-dot sequence in %[text] lines is escaped as \\. (e.g., 9\\.14), OR the prose simply does not include any digit-dot sequences. FAIL only if the file contains multiple unambiguous digit-dot sequences in %[text] prose AND none of them are escaped."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Has a table block",
+          "expected": "%[text:table]"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Some attempt at escaping inside table cells",
+          "expected": "Escaping inside %[text:table] cells is a defensive precaution. PASS: underscores or dots-after-digits inside the table show at least some escaping (\\_ or \\.) consistent with how they are escaped in surrounding %[text] lines, OR the table cells contain no characters that need escaping. FAIL only if the table is full of underscores/digit-dots that are clearly unescaped while the surrounding prose escapes them."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "LaTeX Equations",
+      "description": "Tests correct LaTeX rendering with proper escaping in equations",
+      "prompt": "Create a Live Script called FourierIntro.m that explains the Discrete Fourier Transform. Include the DFT formula as a display equation in the text, mention that the transform maps N samples to N frequency bins, and show a simple example computing the FFT of a 1024-point signal. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "FourierIntro.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Contains LaTeX equation delimiters",
+          "expected": "$"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "LaTeX uses double backslashes for commands",
+          "expected": "LaTeX commands like \\sum, \\pi, \\frac use double backslashes (e.g., \\\\sum, \\\\pi, \\\\frac)"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "LaTeX subscripts do not use the broken double-backslash form",
+          "expected": "Bare _ in LaTeX renders correctly on first save, and \\_ is the documented preferred form — both are acceptable. The only hard failure is \\\\_ (double backslash + underscore) which produces a literal backslash and breaks the equation. PASS: any subscripts use either bare _ or \\_. FAIL: any LaTeX subscript uses \\\\_."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "The generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Lists and Formatting",
+      "description": "Tests bullet lists, numbered lists, bold, italic, and the trailing backslash rule",
+      "prompt": "Create a Live Script called WorkflowGuide.m that describes a 5-step data analysis workflow. Use a numbered list for the steps, include bold text for step names, italic for optional notes, and a bulleted list of 3 tips at the end. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "WorkflowGuide.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses numbered list syntax",
+          "expected": "%[text] 1."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses bullet list syntax",
+          "expected": "%[text] -"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Last item of each list ends with backslash",
+          "expected": "The final item in every bulleted list and every numbered list ends with a trailing backslash (\\) before the next non-list line"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses bold formatting",
+          "expected": "**"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "No blank lines except optionally one before the appendix",
+          "expected": "The file contains no blank lines, except for at most a single blank line directly before the %[appendix]{\"version\":\"1.0\"} marker. No empty lines anywhere else in the file."
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "No Banned Patterns",
+      "description": "Tests that the skill avoids mfilename, fprintf, and bare % comments",
+      "prompt": "Create a Live Script called DataLoader.m that loads a CSV file, displays summary statistics, and plots the first column. The script should print the filename being loaded and show the number of rows. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "DataLoader.m"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "No mfilename usage in the generated .m file",
+          "expected": "The generated .m file does not use 'mfilename' as a MATLAB function call on any code line. The skill explicitly forbids it because it returns empty in Live Scripts."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "No fprintf; uses disp() or drop-semicolon for output",
+          "expected": "The generated .m file does not use 'fprintf' on any code line, AND uses one of the documented alternatives for reader-visible output: either at least one disp() call, or at least one expression statement that intentionally drops the trailing semicolon to display its value. PASS: fprintf absent AND (disp present OR a non-semicolon-terminated output expression present). FAIL: fprintf appears on any code line, OR fprintf is absent but the script uses neither disp() nor drop-semicolon for reader output."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "All text lines use %[text] not bare % comments",
+          "expected": "Every line of prose/explanatory text uses %[text] syntax, not bare % comment syntax. Code comments (% after code on the same line) are acceptable."
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Has the required appendix",
+          "expected": "%[appendix]{\"version\":\"1.0\"}"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Anchors and Internal Links",
+      "description": "Tests that the skill correctly uses anchors and internal hyperlinks to navigate within a Live Script",
+      "prompt": "Create a Live Script called NavDemo.m with three sections (Introduction, Method, Results). At the top, include a brief navigation paragraph with internal links that jump to the Method and Results sections. Add anchors on those section headings so the links work. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "NavDemo.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses anchor syntax on a heading",
+          "expected": "%[text:anchor:"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses internal link syntax",
+          "expected": "(internal:"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Anchor IDs use only letters, digits, and underscores (no hyphens)",
+          "expected": "Every %[text:anchor:ID] in the file uses an ID containing only alphanumeric characters and underscores. No hyphens appear in any anchor ID, because hyphens prevent the anchor from binding."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Internal link IDs match defined anchor IDs",
+          "expected": "Every (internal:ID) reference in the file targets an ID that is defined by a corresponding %[text:anchor:ID] elsewhere in the file."
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "No Hard-Wrapping in Prose Paragraphs",
+      "description": "Tests that multi-sentence prose paragraphs are written on a single %[text] line rather than split across multiple %[text] lines",
+      "prompt": "Create a Live Script called WrapDemo.m that introduces the Fourier transform. Start with a single multi-sentence introductory paragraph (about three sentences) that explains what the Fourier transform does and why it is useful. Then add one section showing a simple fft example on a small synthesized signal. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "WrapDemo.m"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "The multi-sentence intro paragraph is on a single %[text] line",
+          "expected": "The introductory paragraph (the one explaining the Fourier transform) appears on a SINGLE %[text] line containing all of its sentences. PASS: one continuous %[text] line with all ~3 sentences of the intro paragraph. FAIL: the intro paragraph is hard-wrapped across two or more consecutive %[text] lines. Note: a separate %[text] line for a different paragraph (e.g. a section blurb later in the file) is not a violation — only the intro paragraph is in scope."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "The generated Live Script runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-11",
+      "name": "Table of Contents and External Hyperlink",
+      "description": "Tests that the skill uses the documented Table of Contents marker and external hyperlink syntax",
+      "prompt": "Create a Live Script called RefDemo.m about MATLAB plotting basics. Include a Table of Contents at the top (under the title). Have at least two sections so the TOC has entries. In the intro paragraph, include a link to the MATLAB documentation at https://www.mathworks.com/help/matlab/. Save to current directory.",
+      "context": {
+        "files": [],
+        "setup": ""
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "file_exists",
+          "description": "Live Script file was created",
+          "expected": "RefDemo.m"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses Table of Contents marker",
+          "expected": "%[text:tableOfContents]"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "External hyperlink to the MATLAB docs is present",
+          "expected": "(https://www.mathworks.com/help/matlab/)"
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "The generated Live Script runs without error"
+        }
+      ]
+    }
+  ]
+}

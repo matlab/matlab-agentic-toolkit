@@ -1,0 +1,324 @@
+{
+  "skill": "matlab-upgrade-mex-ic",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Complex MEX Dual-Compatible Conversion",
+      "description": "Tests conversion of a complex MEX file to dual SC/IC compatible source using MX_HAS_INTERLEAVED_COMPLEX guards",
+      "prompt": "Convert the file complexAdd.c to use the Interleaved Complex API. I need dual-compatible mode so it works with both mex -R2017b and mex -R2018a.",
+      "context": {
+        "files": ["evals/files/complexAdd.c"],
+        "setup": "File uses mxGetPr, mxGetPi, mxSetPr, mxSetPi on complex arrays"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses MX_HAS_INTERLEAVED_COMPLEX preprocessor guard",
+          "expected": "#if MX_HAS_INTERLEAVED_COMPLEX"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxGetComplexDoubles in IC path",
+          "expected": "mxGetComplexDoubles"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Replaces mxGetPi complexity check with mxIsComplex",
+          "expected": "mxIsComplex"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "IC path does not use mxGetPi",
+          "expected": "mxGetPi should not appear in the #if MX_HAS_INTERLEAVED_COMPLEX branch"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Provides all three build/test commands: -R2017b, -R2018a, and default (no flag)",
+          "expected": "Output includes explicit instructions to test with mex -R2017b (SC mode), mex -R2018a (IC mode), AND mex without any API flag (default mode) — all three must be present as separate test steps"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Real-data path minimizes code duplication by guarding only the accessor",
+          "expected": "In the real addition branch, the for loop computing pr_out[i] = pr_a[i] + pr_b[i] appears only ONCE (not duplicated in both #if and #else). The #if/#else guard wraps only the pointer acquisition (mxGetDoubles vs mxGetPr), and the computation loop is shared after the guard."
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Real-Only MEX Classification",
+      "description": "Tests that the agent correctly identifies a real-only MEX file and explains why mxGetPr must be replaced with typed accessors",
+      "prompt": "Convert the file realNorm.c to use the Interleaved Complex API. I want dual-compatible mode.",
+      "context": {
+        "files": ["evals/files/realNorm.c"],
+        "setup": "File only uses mxGetPr on real data — no complex handling"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Explains why mxGetPr must be replaced — wrong results on complex arrays or untyped",
+          "expected": "Agent explains that mxGetPr is required to be replaced because it gives wrong results on complex arrays in IC mode (returns interleaved data) and/or is untyped. Must convey that this is a required change, not optional."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxGetDoubles as the replacement",
+          "expected": "mxGetDoubles"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Minimizes code duplication — guards only the accessor, shares the computation loop",
+          "expected": "The for loop computing the sum appears only ONCE, not duplicated in both #if and #else branches. The guard wraps only the pointer accessor (mxGetDoubles vs mxGetPr), and the computation is shared."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Does not overwrite original file",
+          "expected": "Agent creates a new file or explicitly states it will not overwrite the original"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Multi-Type mxGetData Conversion",
+      "description": "Tests conversion of mxGetData with void* casts to type-specific accessors",
+      "prompt": "Convert the file multiTypeSum.c to use the Interleaved Complex API. IC-only mode is fine.",
+      "context": {
+        "files": ["evals/files/multiTypeSum.c"],
+        "setup": "File uses mxGetData with void* and manual type casting"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses mxGetDoubles for double case",
+          "expected": "mxGetDoubles"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxGetSingles for single case",
+          "expected": "mxGetSingles"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses mxGetInt32s for int32 case",
+          "expected": "mxGetInt32s"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses mxGetUint8s for uint8 case",
+          "expected": "mxGetUint8s"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not use mxGetData in converted code",
+          "expected": "mxGetData should not appear in the converted IC source"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Explains why mxGetData must be replaced — wrong results on complex arrays or untyped void* cast",
+          "expected": "Agent explains that mxGetData is required to be replaced because it returns wrong data on complex arrays in IC mode and/or uses unsafe void* cast. Must convey that this is a required change."
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Complex MEX with mxCalloc/mxSetPr/mxSetPi Pattern",
+      "description": "Tests conversion of the separate-buffer allocation pattern (mxCalloc + mxSetPr/mxSetPi) which requires fundamentally different IC code",
+      "prompt": "Convert the file complexScale.c to use the Interleaved Complex API. I need dual-compatible mode so it works with both mex -R2017b and mex -R2018a.",
+      "context": {
+        "files": ["evals/files/complexScale.c"],
+        "setup": "File uses mxCalloc to allocate separate real/imag buffers and mxSetPr/mxSetPi to attach them — this pattern has no direct IC equivalent"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses MX_HAS_INTERLEAVED_COMPLEX guard",
+          "expected": "#if MX_HAS_INTERLEAVED_COMPLEX"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxGetComplexDoubles in IC path",
+          "expected": "mxGetComplexDoubles"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "IC path does not use mxSetPr or mxSetPi",
+          "expected": "mxSetPr and mxSetPi should not appear in the #if MX_HAS_INTERLEAVED_COMPLEX branch — these functions do not exist in IC mode"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "IC path writes directly to interleaved buffer instead of allocating separate buffers",
+          "expected": "In the IC branch, the code writes to the .real and .imag fields of mxComplexDouble (or equivalent interleaved access via mxGetComplexDoubles) — it does NOT use mxCalloc to allocate separate real/imag buffers"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "SC path preserves the original mxCalloc + mxSetPr/mxSetPi pattern",
+          "expected": "In the #else (SC) branch, the original pattern of mxCalloc + mxSetPr/mxSetPi is preserved unchanged"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Provides all three build/test commands",
+          "expected": "Output includes instructions to test with mex -R2017b, mex -R2018a, AND mex without API flags — all three modes present"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Fortran MEX Complex Dual-Compatible Conversion",
+      "description": "Tests conversion of a Fortran MEX file using mxGetPr/mxGetPi with mxCopyPtrToReal8 to IC API with mxCopyPtrToComplex16",
+      "prompt": "Convert the file complexDot.F to use the Interleaved Complex API. I need dual-compatible mode so it works with both mex -R2017b and mex -R2018a.",
+      "context": {
+        "files": ["evals/files/complexDot.F"],
+        "setup": "Fortran MEX file using mxGetPr, mxGetPi with mxCopyPtrToReal8 for separate real/imag access"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses MX_HAS_INTERLEAVED_COMPLEX preprocessor guard",
+          "expected": "#if MX_HAS_INTERLEAVED_COMPLEX"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxGetComplexDoubles in IC path",
+          "expected": "mxGetComplexDoubles"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses mxCopyPtrToComplex16 in IC path for interleaved data",
+          "expected": "mxCopyPtrToComplex16"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "IC path does not use mxGetPi",
+          "expected": "mxGetPi should not appear in the #if MX_HAS_INTERLEAVED_COMPLEX branch"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "File retains .F extension (uppercase) for preprocessor support",
+          "expected": "The converted file uses .F (uppercase) extension, not .f or .f90 — this is required for #if preprocessor guards to work"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Provides all three build/test commands with .F extension",
+          "expected": "Output includes mex -R2017b complexDot.F, mex -R2018a complexDot.F, AND mex complexDot.F (default) — all three modes present"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Performance-Motivated IC Conversion",
+      "description": "Tests that the agent explains performance benefits when converting a complex MEX file used with large arrays",
+      "prompt": "My MEX function complexConvolve.c is slow when I call it with 10-million-element FFT vectors. The profiler shows most time is in the MATLAB-to-MEX call overhead, not my loop. Convert this to use the Interleaved Complex API and explain why it will be faster. IC-only mode is fine.",
+      "context": {
+        "files": ["evals/files/complexConvolve.c"],
+        "setup": "File uses mxGetPr/mxGetPi on large complex arrays for frequency-domain multiplication"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses mxGetComplexDoubles in converted code",
+          "expected": "mxGetComplexDoubles"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses mxComplexDouble struct type",
+          "expected": "mxComplexDouble"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Explains the deinterleave/re-interleave copy overhead as the cause of call overhead",
+          "expected": "Agent explains that MATLAB internally stores complex data in interleaved format and must split/deinterleave it into separate real/imag arrays for SC MEX calls — this O(n) copy is the 'call overhead' the user sees. Must mention deinterleave, split, or copy at the boundary."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Mentions zero-copy or direct access as IC benefit",
+          "expected": "Agent states that IC API accesses MATLAB's native interleaved data directly without copying — uses phrase 'zero copy', 'zero-copy', 'no copy', 'direct access', or 'direct pointer'"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Mentions cache locality benefit for element-wise complex operations",
+          "expected": "Agent explains that IC layout places real and imaginary parts of the same element adjacent in memory, improving cache performance — mentions 'cache locality', 'cache line', 'spatial locality', or 'adjacent in memory'"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Provides benchmark or timing comparison approach",
+          "expected": "Agent provides MATLAB code or instructions to benchmark/time the SC vs IC version, or offers a template showing how to measure the speedup (tic/toc, timeit, or similar)"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Performance Diagnosis Without Mentioning IC",
+      "description": "Tests that the agent identifies SC-to-IC conversion as a performance fix when user only describes symptoms",
+      "prompt": "This MEX function complexScale.c is slow on large complex arrays. I'm calling it in a loop with 5-million-element vectors and the profiler shows the time is in call overhead, not my computation. How do I fix this performance problem?",
+      "context": {
+        "files": ["evals/files/complexScale.c"],
+        "setup": "User describes performance symptoms without mentioning IC or interleaved complex"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Identifies SC API as the root cause of the performance problem",
+          "expected": "Agent identifies that the Separate Complex API (mxGetPr/mxGetPi) causes MATLAB to deinterleave data on every call — this is the source of the overhead. Must connect the SC API usage to the performance symptom."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Recommends IC conversion as the primary fix",
+          "expected": "Agent recommends converting to the Interleaved Complex API (mxGetComplexDoubles, -R2018a) as the fix for the call overhead — not just loop optimizations or algorithmic changes"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Provides the IC compile flag",
+          "expected": "-R2018a"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Shows converted code with mxGetComplexDoubles",
+          "expected": "mxGetComplexDoubles"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Quantifies or contextualizes the overhead",
+          "expected": "Agent gives some sense of the magnitude — mentions memory traffic (MB), O(n) copy, or that for millions of elements the copy dominates. Not just 'it copies data' but gives scale."
+        }
+      ]
+    }
+  ]
+}

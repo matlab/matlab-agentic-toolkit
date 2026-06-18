@@ -3,7 +3,7 @@
 schema_version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "2.6"
+version: "2.7"
 human-description: Install and configure the MATLAB Agentic Toolkit — detect MATLAB, install the MCP server, register with your AI coding agent, and verify the environment.
 matlab-release: ">=R2021a"
 requires-tools: []

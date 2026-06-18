@@ -1,0 +1,344 @@
+[
+  {
+    "id": "read-ply-file",
+    "name": "Read PLY file",
+    "description": "Tests basic PLY reading with pcread",
+    "prompt": "Read the point cloud from 'teapot.ply' and display how many points it has.",
+    "expected_output": "Uses pcread to read the PLY file and accesses the Count property.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses pcread for PLY format", "expected": "pcread"},
+      {"id": "a3", "type": "output_contains", "description": "Accesses Count property", "expected": "Count"}
+    ]
+  },
+  {
+    "id": "read-pcd-file",
+    "name": "Read PCD file",
+    "description": "Tests PCD reading with pcread using toolbox sample data",
+    "prompt": "Read the highway scene point cloud from fullfile(toolboxdir('lidar'),'lidardata','highwayScene.pcd') and report its X range.",
+    "expected_output": "Uses pcread for PCD file and accesses XLimits property.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses pcread for PCD format", "expected": "pcread"},
+      {"id": "a3", "type": "output_contains", "description": "Accesses XLimits property", "expected": "XLimits"}
+    ]
+  },
+  {
+    "id": "read-las-with-attributes",
+    "name": "Read LAS file with attributes",
+    "description": "Tests LAS reading with two-output syntax to get classification",
+    "prompt": "Read the aerial lidar data from fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz') and extract the classification labels.",
+    "expected_output": "Uses lasFileReader + two-output readPointCloud to access Classification from lidarPointAttributes.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader for LAZ format", "expected": "lasFileReader"},
+      {"id": "a3", "type": "convention_followed", "description": "Uses two-output syntax to get point attributes", "expected": "Two left-hand variables from readPointCloud, e.g. [ptCloud, ptAttr] = readPointCloud(reader)"},
+      {"id": "a4", "type": "output_contains", "description": "Accesses Classification from attributes object", "expected": "Classification"}
+    ]
+  },
+  {
+    "id": "read-las-classification-filter",
+    "name": "Read LAS with classification filter",
+    "description": "Tests filtering by classification during LAS read",
+    "prompt": "Read only the ground points (classification 2) from fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz').",
+    "expected_output": "Uses lasFileReader + readPointCloud with Classification=2 name-value argument. Does not use pcread.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Specifies Classification filter", "expected": "Classification"},
+      {"id": "a4", "type": "convention_followed", "description": "Filters at read-time rather than post-read", "expected": "Passes Classification as a name-value argument to readPointCloud rather than reading all points and filtering afterwards"}
+    ]
+  },
+  {
+    "id": "read-las-gps-time-filter",
+    "name": "Read LAS with GPS time filter",
+    "description": "Tests filtering by GPS time span during LAS read",
+    "prompt": "Read the first 30 seconds of GPS-timestamped points from fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz').",
+    "expected_output": "Uses lasFileReader + readPointCloud with GpsTimeSpan name-value argument. Accesses reader.GPSTimeLimits for the start time.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Uses GpsTimeSpan name-value argument", "expected": "GpsTimeSpan"},
+      {"id": "a4", "type": "convention_followed", "description": "Constructs time range from GPSTimeLimits property", "expected": "Accesses reader.GPSTimeLimits to determine the start time and adds seconds(30) for the end"}
+    ]
+  },
+  {
+    "id": "read-las-roi-filter",
+    "name": "Read LAS with spatial ROI filter",
+    "description": "Tests filtering by spatial bounding box during LAS read",
+    "prompt": "Read only the points within a 50x50 meter area from the southwest corner of fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz'). Use the file's spatial extent to determine the corner.",
+    "expected_output": "Uses lasFileReader + readPointCloud with ROI name-value argument. Constructs ROI from reader.XLimits and reader.YLimits.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Uses ROI name-value argument", "expected": "ROI"},
+      {"id": "a4", "type": "convention_followed", "description": "Constructs ROI from file extent properties", "expected": "Accesses reader.XLimits and reader.YLimits to build the 6-element ROI vector [xmin xmax ymin ymax zmin zmax]"}
+    ]
+  },
+  {
+    "id": "read-velodyne-pcap",
+    "name": "Read Velodyne PCAP file",
+    "description": "Tests Velodyne PCAP reading with mandatory device model",
+    "prompt": "Read point cloud frames from 'lidarData_ConstructionRoad.pcap' which was recorded with an HDL-32E sensor.",
+    "expected_output": "Uses velodyneFileReader with 'HDL32E' device model and hasFrame/readFrame loop.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses velodyneFileReader", "expected": "velodyneFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Specifies HDL32E device model", "expected": "HDL32E"},
+      {"id": "a4", "type": "output_contains", "description": "Uses hasFrame/readFrame for iteration", "expected": "readFrame"}
+    ]
+  },
+  {
+    "id": "read-e57-multi-scan",
+    "name": "Read E57 multi-scan file",
+    "description": "Tests E57 reading with indexed access for multiple scans",
+    "prompt": "I have an E57 file called 'building.e57' that contains multiple scans. Read all scans from it.",
+    "expected_output": "Uses e57FileReader, checks NumPointClouds, loops with readPointCloud(reader, idx).",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses e57FileReader", "expected": "e57FileReader"},
+      {"id": "a2", "type": "output_contains", "description": "Accesses NumPointClouds to determine scan count", "expected": "NumPointClouds"},
+      {"id": "a3", "type": "output_contains", "description": "Uses readPointCloud with index", "expected": "readPointCloud"},
+      {"id": "a4", "type": "convention_followed", "description": "Loops over all scans rather than reading only the first", "expected": "Loop from 1 to reader.NumPointClouds with readPointCloud(reader, idx)"}
+    ]
+  },
+  {
+    "id": "write-ply-binary",
+    "name": "Write PLY binary",
+    "description": "Tests writing point cloud to PLY with binary encoding",
+    "prompt": "Read fullfile(toolboxdir('lidar'),'lidardata','highwayScene.pcd') and save it as a PLY file at fullfile(tempdir,'highway.ply') in binary format.",
+    "expected_output": "Uses pcread for PCD input, then pcwrite with Encoding='binary' for PLY output.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses pcread for PCD input", "expected": "pcread"},
+      {"id": "a3", "type": "output_contains", "description": "Uses pcwrite for PLY output", "expected": "pcwrite"},
+      {"id": "a4", "type": "output_contains", "description": "Uses binary encoding for PLY", "expected": "binary"}
+    ]
+  },
+  {
+    "id": "write-pcd-compressed",
+    "name": "Write PCD compressed",
+    "description": "Tests writing to PCD with compressed encoding",
+    "prompt": "Read 'teapot.ply' and save a compressed copy as fullfile(tempdir,'teapot.pcd').",
+    "expected_output": "Uses pcread for PLY input, pcwrite with Encoding='compressed' for PCD output.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses pcread for PLY input", "expected": "pcread"},
+      {"id": "a3", "type": "output_contains", "description": "Uses pcwrite for PCD output", "expected": "pcwrite"},
+      {"id": "a4", "type": "output_contains", "description": "Specifies compressed encoding", "expected": "compressed"}
+    ]
+  },
+  {
+    "id": "write-las-preserve-attributes",
+    "name": "Write LAS with attributes preserved",
+    "description": "Tests attribute preservation through read-write pipeline",
+    "prompt": "Read fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz') with all its attributes and save an exact copy to fullfile(tempdir,'aerial_copy.laz') without losing any point attributes.",
+    "expected_output": "Uses lasFileReader + two-output readPointCloud, then lasFileWriter + three-argument writePointCloud.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader for reading", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Uses lasFileWriter for writing", "expected": "lasFileWriter"},
+      {"id": "a4", "type": "convention_followed", "description": "Three-argument writePointCloud preserves attributes", "expected": "writePointCloud(writer, ptCloud, ptAttr) with three arguments including the attributes object"}
+    ]
+  },
+  {
+    "id": "write-las-version-14",
+    "name": "Write LAS with specific version",
+    "description": "Tests lasFileWriter with LasVersion name-value argument",
+    "prompt": "Create a random point cloud of 5000 points with classification labels and write it to fullfile(tempdir,'classified.las') using LAS version 1.4.",
+    "expected_output": "Constructs pointCloud and lidarPointAttributes, uses lasFileWriter with LasVersion='1.4', three-arg writePointCloud.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileWriter", "expected": "lasFileWriter"},
+      {"id": "a3", "type": "output_contains", "description": "Specifies LAS version 1.4", "expected": "1.4"},
+      {"id": "a4", "type": "output_contains", "description": "Uses lidarPointAttributes for classification", "expected": "lidarPointAttributes"}
+    ]
+  },
+  {
+    "id": "routing-las-input",
+    "name": "Format routing — LAS input routed correctly",
+    "description": "Tests that LAS file is NOT read with pcread",
+    "prompt": "I have a file called survey.las. How do I load it into MATLAB?",
+    "expected_output": "Uses lasFileReader + readPointCloud. Does not use pcread.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses lasFileReader for LAS format", "expected": "lasFileReader"},
+      {"id": "a2", "type": "output_contains", "description": "Calls readPointCloud", "expected": "readPointCloud"},
+      {"id": "a3", "type": "convention_followed", "description": "Routes LAS to lasFileReader, not pcread", "expected": "Uses lasFileReader (not pcread) for .las files — pcread only supports PLY and PCD formats"}
+    ]
+  },
+  {
+    "id": "routing-las-output",
+    "name": "Format routing — LAS output routed correctly",
+    "description": "Tests that LAS output is NOT written with pcwrite",
+    "prompt": "I have a pointCloud object. Save it as 'output.las'.",
+    "expected_output": "Uses lasFileWriter + writePointCloud. Does not use pcwrite.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses lasFileWriter for LAS output", "expected": "lasFileWriter"},
+      {"id": "a2", "type": "output_contains", "description": "Calls writePointCloud", "expected": "writePointCloud"},
+      {"id": "a3", "type": "convention_followed", "description": "Routes LAS to lasFileWriter, not pcwrite", "expected": "Uses lasFileWriter (not pcwrite) for .las output — pcwrite only supports PLY and PCD formats"}
+    ]
+  },
+  {
+    "id": "routing-ply-encoding",
+    "name": "Format routing — PLY encoding constraint",
+    "description": "Tests that compressed encoding is not used for PLY",
+    "prompt": "Save my point cloud to 'result.ply' with the most compact encoding possible.",
+    "expected_output": "Uses pcwrite with Encoding='binary' (not compressed, which is invalid for PLY).",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses pcwrite", "expected": "pcwrite"},
+      {"id": "a2", "type": "output_contains", "description": "Uses binary encoding (most compact valid for PLY)", "expected": "binary"},
+      {"id": "a3", "type": "convention_followed", "description": "Does not use compressed encoding for PLY", "expected": "Uses binary (not compressed) encoding for PLY — compressed is only valid for PCD format"}
+    ]
+  },
+  {
+    "id": "pcap-asks-device-model",
+    "name": "PCAP reader without device model — asks user",
+    "description": "Tests that agent asks for device model when not provided",
+    "prompt": "Read point clouds from my Velodyne PCAP file 'drive.pcap'.",
+    "expected_output": "Either asks which Velodyne model or uses velodyneFileReader with a device model argument. Must not omit the model.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses velodyneFileReader", "expected": "velodyneFileReader"},
+      {"id": "a2", "type": "convention_followed", "description": "Includes device model or asks which model the user has", "expected": "Either provides a DeviceModel string as second argument OR asks the user to specify which Velodyne model they have"},
+      {"id": "a3", "type": "output_contains", "description": "Shows readFrame usage pattern", "expected": "readFrame"}
+    ]
+  },
+  {
+    "id": "convert-las-to-pcd",
+    "name": "Convert LAS to PCD",
+    "description": "Tests cross-format conversion pipeline (LAS reader to pcwrite)",
+    "prompt": "Convert fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz') to PCD format and save as fullfile(tempdir,'aerial.pcd').",
+    "expected_output": "Reads with lasFileReader + readPointCloud, writes with pcwrite for PCD output.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader for LAZ input", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Uses pcwrite for PCD output", "expected": "pcwrite"},
+      {"id": "a4", "type": "convention_followed", "description": "Uses correct reader-writer pairing for cross-format conversion", "expected": "Reads with lasFileReader + readPointCloud, then writes with pcwrite — does not use lasFileWriter for PCD output"}
+    ]
+  },
+  {
+    "id": "convert-pcd-to-ply",
+    "name": "Convert PCD to PLY",
+    "description": "Tests simple format conversion between pcread/pcwrite formats",
+    "prompt": "Read fullfile(toolboxdir('lidar'),'lidardata','highwayScene.pcd') and save it as fullfile(tempdir,'highway.ply').",
+    "expected_output": "Uses pcread for PCD input and pcwrite for PLY output.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses pcread for PCD input", "expected": "pcread"},
+      {"id": "a3", "type": "output_contains", "description": "Uses pcwrite for PLY output", "expected": "pcwrite"}
+    ]
+  },
+  {
+    "id": "pcap-frames-to-ply-files",
+    "name": "PCAP frames to individual PLY files",
+    "description": "Tests reading PCAP frames and saving each to separate PLY files",
+    "prompt": "Read the first 3 frames from 'lidarData_ConstructionRoad.pcap' (sensor: HDL32E) and save each frame as fullfile(tempdir,'frame_001.ply'), fullfile(tempdir,'frame_002.ply'), fullfile(tempdir,'frame_003.ply').",
+    "expected_output": "Uses velodyneFileReader with HDL32E, readFrame in a loop limited to 3 iterations, pcwrite for each frame to PLY.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses velodyneFileReader", "expected": "velodyneFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Specifies HDL32E device model", "expected": "HDL32E"},
+      {"id": "a4", "type": "output_contains", "description": "Uses readFrame for frame extraction", "expected": "readFrame"},
+      {"id": "a5", "type": "output_contains", "description": "Uses pcwrite for PLY output", "expected": "pcwrite"}
+    ]
+  },
+  {
+    "id": "filter-write-classification-subset",
+    "name": "Filter and write — classification subset to LAZ",
+    "description": "Tests reading with filter and writing with attribute preservation",
+    "prompt": "Read only the building points (classification 6) from fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz') and write them to fullfile(tempdir,'buildings.laz') keeping all attributes intact.",
+    "expected_output": "Uses lasFileReader + readPointCloud(reader, Classification=6) with two-output, then lasFileWriter + three-arg writePointCloud.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "output_contains", "description": "Uses lasFileReader", "expected": "lasFileReader"},
+      {"id": "a3", "type": "output_contains", "description": "Uses lasFileWriter", "expected": "lasFileWriter"},
+      {"id": "a4", "type": "convention_followed", "description": "Classification filter during read + three-arg write preserves attributes", "expected": "readPointCloud with Classification=6 and two-output syntax, then writePointCloud with three arguments"}
+    ]
+  },
+  {
+    "id": "edge-intensity-vs-classification",
+    "name": "Edge case — Intensity on correct object",
+    "description": "Tests that Intensity is accessed from pointCloud, not lidarPointAttributes",
+    "prompt": "Read fullfile(toolboxdir('lidar'),'lidardata','las','aerialLidarData.laz') and get both the intensity values and classification labels.",
+    "expected_output": "Gets intensity from ptCloud.Intensity and classification from ptAttributes.Classification.",
+    "assertions": [
+      {"id": "a1", "type": "code_executes", "description": "Code runs without error in MATLAB"},
+      {"id": "a2", "type": "convention_followed", "description": "Intensity accessed from pointCloud object, not lidarPointAttributes", "expected": "ptCloud.Intensity or similar — Intensity is a property of pointCloud, accessed from the first output of readPointCloud"},
+      {"id": "a3", "type": "convention_followed", "description": "Classification accessed from lidarPointAttributes, not pointCloud", "expected": "ptAttributes.Classification or similar — Classification is on the second output (lidarPointAttributes)"}
+    ]
+  },
+  {
+    "id": "edge-organized-format-choice",
+    "name": "Edge case — organized point cloud and PLY limitation",
+    "description": "Tests awareness that PLY flattens organized point clouds",
+    "prompt": "I have an organized M-by-N-by-3 point cloud. I want to save it and reload it later preserving the organized structure. What format should I use?",
+    "expected_output": "Recommends PCD format (not PLY) because PLY flattens organized M-by-N-by-3 to unorganized M-by-3.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Recommends PCD format", "expected": "pcd"},
+      {"id": "a2", "type": "convention_followed", "description": "Explains PLY limitation with organized point clouds", "expected": "Mentions that PLY converts organized to unorganized or flattens the structure"},
+      {"id": "a3", "type": "output_contains", "description": "Mentions pcwrite for saving", "expected": "pcwrite"}
+    ]
+  },
+  {
+    "id": "ibeo-idc-routing",
+    "name": "Ibeo IDC file routing",
+    "description": "Tests that .idc files are routed to ibeoLidarReader, not pcread or other readers",
+    "prompt": "I have an Ibeo sensor recording saved as 'drive_log.idc'. How do I read the lidar data from it?",
+    "expected_output": "Uses ibeoLidarReader to create reader and readMessages to read point cloud data.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses ibeoLidarReader", "expected": "ibeoLidarReader"},
+      {"id": "a2", "type": "output_contains", "description": "Calls readMessages", "expected": "readMessages"},
+      {"id": "a3", "type": "convention_followed", "description": "Routes IDC to ibeoLidarReader, not other readers", "expected": "Uses ibeoLidarReader (not pcread or velodyneFileReader) for .idc files"}
+    ]
+  },
+  {
+    "id": "ibeo-idc-file-info-metadata",
+    "name": "Ibeo IDC — accessing file info and message metadata",
+    "description": "Tests correct usage of ibeoLidarReader properties and two-output readMessages",
+    "prompt": "How do I access file metadata and message data from an Ibeo IDC recording? I want to know the number of messages, available message types, and how to get both point clouds and message metadata (timestamps, labels).",
+    "expected_output": "Uses ibeoLidarReader, accesses NumMessages and MessageTypes, uses two-output readMessages to get both ptClouds and messageData.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses ibeoLidarReader", "expected": "ibeoLidarReader"},
+      {"id": "a2", "type": "output_contains", "description": "Accesses NumMessages property", "expected": "NumMessages"},
+      {"id": "a3", "type": "output_contains", "description": "Accesses MessageTypes property", "expected": "MessageTypes"},
+      {"id": "a4", "type": "convention_followed", "description": "Uses two-output readMessages for message metadata", "expected": "Two left-hand variables from readMessages, e.g. [ptClouds, messageData] = readMessages(reader)"}
+    ]
+  },
+  {
+    "id": "ibeo-idc-filter-scan-messages",
+    "name": "Ibeo IDC — read only scan messages",
+    "description": "Tests filtering readMessages by message type",
+    "prompt": "From my Ibeo IDC file 'highway.idc', read only the scan data messages (not point cloud plane messages). Return the point clouds.",
+    "expected_output": "Uses ibeoLidarReader + readMessages with Messages=\"Scan\" filter.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses ibeoLidarReader", "expected": "ibeoLidarReader"},
+      {"id": "a2", "type": "output_contains", "description": "Calls readMessages", "expected": "readMessages"},
+      {"id": "a3", "type": "output_contains", "description": "Filters by Scan message type", "expected": "Scan"},
+      {"id": "a4", "type": "convention_followed", "description": "Uses Messages name-value argument for filtering", "expected": "Messages= name-value argument passed to readMessages, e.g. readMessages(reader, Messages=\"Scan\")"}
+    ]
+  },
+  {
+    "id": "ibeo-idc-time-range-filter",
+    "name": "Ibeo IDC — read messages in time range",
+    "description": "Tests filtering readMessages by time range",
+    "prompt": "I have an Ibeo recording 'city_drive.idc'. Read only the messages from the first 5 seconds of the file.",
+    "expected_output": "Uses ibeoLidarReader, accesses FileInfo or timestamps to determine start time, then uses Time name-value argument with readMessages.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses ibeoLidarReader", "expected": "ibeoLidarReader"},
+      {"id": "a2", "type": "output_contains", "description": "Calls readMessages", "expected": "readMessages"},
+      {"id": "a3", "type": "output_contains", "description": "Uses Time filtering", "expected": "Time"},
+      {"id": "a4", "type": "convention_followed", "description": "Constructs a time range for filtering", "expected": "Uses Time= name-value argument with a datetime range or duration, e.g. Time=[tStart tStart+seconds(5)]"}
+    ]
+  },
+  {
+    "id": "ibeo-idc-pointcloudplane-labels",
+    "name": "Ibeo IDC — extract point cloud planes with labels",
+    "description": "Tests reading PointCloudPlane messages and accessing classification labels from messageData",
+    "prompt": "How would I read only the PointCloudPlane messages from an Ibeo IDC file and extract the classification label for each plane?",
+    "expected_output": "Uses ibeoLidarReader, reads with Messages=\"PointCloudPlane\", uses two-output readMessages, accesses Label field from messageData.",
+    "assertions": [
+      {"id": "a1", "type": "output_contains", "description": "Uses ibeoLidarReader", "expected": "ibeoLidarReader"},
+      {"id": "a2", "type": "output_contains", "description": "Filters PointCloudPlane messages", "expected": "PointCloudPlane"},
+      {"id": "a3", "type": "convention_followed", "description": "Uses two-output readMessages to get messageData", "expected": "Two left-hand variables from readMessages, e.g. [ptClouds, messageData] = readMessages(reader, ...)"},
+      {"id": "a4", "type": "output_contains", "description": "Accesses Label field from messageData", "expected": "Label"}
+    ]
+  }
+]

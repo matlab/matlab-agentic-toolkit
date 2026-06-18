@@ -1,12 +1,11 @@
 schema_version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Find and fix memory bottlenecks in MATLAB code using a structured measure-profile-optimize-verify workflow.
 matlab-release: ">=R2021a"
 requires-tools:
   - evaluate_matlab_code
-  - check_matlab_code
 requires-skills: []
 requires-products:
   - MATLAB

@@ -1,0 +1,13 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+matlab-release: ">=R2024a"
+requires-tools:
+  - evaluate_matlab_code
+requires-skills: []
+requires-products:
+  - MATLAB Support Package for Arduino Hardware
+human-description: Create custom Arduino add-on libraries to access unsupported sensors and peripherals from MATLAB.
+toolkit: matlab-agentic-toolkit

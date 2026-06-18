@@ -37,9 +37,32 @@ T.Result = rowfun(@(a,b,c) customCalc(a,b,c), T, ...
 
 % OutputFormat options: "auto" (default), "table", "timetable", "uniform", "cell"
 
-% Avoid: Loop over rows
+% Avoid: Loop over rows with per-element table indexing
 for i = 1:height(T)
-    T.Total(i) = T.A(i) + T.B(i) + T.C(i);
+    T.Total(i) = T.A(i) + T.B(i) + T.C(i);  % slow — indexing overhead each iteration
+end
+```
+
+## Hoist non-vectorizable code into functions
+
+When computation genuinely requires iteration (each row depends on the previous), extract the variables into arrays, perform the loop in a helper function, then assign the result back. This avoids repeated table indexing inside the loop:
+
+```matlab
+% Recommended: extract, compute, assign back
+temp = simulateCooling(T.InitialTemp, T.AmbientTemp, T.Duration, k);
+T.FinalTemp = temp;
+
+function temp = simulateCooling(T0, Tambient, dt, k)
+    temp = zeros(size(T0));
+    temp(1) = T0(1);
+    for i = 2:numel(T0)
+        temp(i) = temp(i-1) + dt(i) * k * (Tambient(i) - temp(i-1));
+    end
+end
+
+% Avoid: iterating with table dot-indexing in the loop body
+for i = 2:height(T)
+    T.FinalTemp(i) = T.FinalTemp(i-1) + T.Duration(i) * k * (T.AmbientTemp(i) - T.FinalTemp(i-1));
 end
 ```
 

@@ -1,0 +1,508 @@
+[
+  {
+    "id": "simple-function-with-arguments-block",
+    "name": "Help for function with arguments block",
+    "description": "Tests that the skill correctly reads an arguments block to determine required, optional, and name-value inputs, and produces properly structured syntax paragraphs",
+    "prompt": "Write help text for the function in evals/files/interpolateData.m\n\nThe function interpolates yData at queryPoints using the specified method. The method argument accepts exactly these values: \"linear\", \"nearest\", \"next\", \"previous\", \"spline\", \"pchip\". The Tolerance name-value is a numeric scalar (not an enumeration). The ExtrapolationMethod name-value accepts a string but the valid values are not known from the code — do NOT invent a list.",
+    "context": {
+      "files": ["evals/files/interpolateData.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line preserves camelCase and uses space-dash-space separator",
+        "expected": "%interpolateData - — name is not uppercased because it contains uppercase letters, and uses ' - ' (space-dash-space) after the name. FAILURE looks like: %INTERPOLATEDATA, or %interpolateData  (two spaces), or %interpolateData: (colon)"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "First syntax paragraph shows only required args",
+        "expected": "First syntax shows 'RESULT = interpolateData(xData, yData, queryPoints)' or 'RESULT = interpolateData(xData,yData,queryPoints)' with only the three required positional args. FAILURE looks like: including METHOD or Tolerance in the first syntax"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Optional arg METHOD gets its own syntax paragraph",
+        "expected": "METHOD appears in a separate syntax paragraph from the required args (e.g., 'interpolateData(...,METHOD)' or 'interpolateData(xData,yData,queryPoints,METHOD)'). FAILURE looks like: METHOD combined in the first syntax with required args, or METHOD not mentioned in any syntax"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Name-value args shown with Name=VALUE syntax preserving original casing",
+        "expected": "Name-value pair uses 'Tolerance=' with original PascalCase preserved. FAILURE looks like: TOLERANCE= (uppercased), or tolerance= (lowercased)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "No comment line exceeds 75 characters measured from the %",
+        "expected": "Every line from % to end-of-line is at most 75 characters. FAILURE looks like: a description line that extends beyond 75 chars from the %, even if it fits in 80 columns total"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "Help indentation matches body code indentation",
+        "expected": "Body code is indented 4 spaces, so help comments must also be indented 4 spaces (i.e., '    %interpolateData'). FAILURE looks like: '%interpolateData' at column 1 while body code starts at column 5"
+      },
+      {
+        "id": "a8",
+        "type": "convention_followed",
+        "description": "METHOD flag values listed with dash-alignment, default first with (default) at start",
+        "expected": "METHOD has enumerated values listed as double-quoted strings with ' - ' separator, dashes aligned, default value listed FIRST with (default) at the START of its description. FAILURE looks like: (default) at end of line, or default not listed first, or values not aligned"
+      },
+      {
+        "id": "a10",
+        "type": "output_excludes",
+        "description": "No block comments used",
+        "expected": "%{"
+      }
+    ]
+  },
+  {
+    "id": "classdef-with-properties-methods",
+    "name": "Help for a classdef file",
+    "description": "Tests that the skill generates class-level help with construction syntax, method listings, and property listings",
+    "prompt": "Write help text for the class in evals/files/SignalBuffer.m\n\nThe class stores audio signal data with metadata and provides trimming and duration queries.",
+    "context": {
+      "files": ["evals/files/SignalBuffer.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line uses the class name as-is with space-dash-space separator",
+        "expected": "%SignalBuffer - — name preserves MixedCase and uses ' - ' (space-dash-space). FAILURE looks like: %SIGNALBUFFER, or %SignalBuffer  (two spaces), or missing separator"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Construction syntax uses correct casing for class name and variables",
+        "expected": "Construction syntax shows 'OBJ = SignalBuffer(DATA)' — obj is all-lowercase so it becomes OBJ, SignalBuffer preserves MixedCase, data is all-lowercase so it becomes DATA. FAILURE looks like: obj = SignalBuffer(data) (not uppercased), or OBJ = SIGNALBUFFER(DATA) (class name uppercased)"
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Method listing uses 'functions:' not 'methods:'",
+        "expected": "SignalBuffer functions:"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Private method validateIndex must NOT appear in listings",
+        "expected": "The method listing (under 'SignalBuffer functions:') does NOT include validateIndex, because it is a private method. FAILURE looks like: 'validateIndex - ' appearing in the listing section."
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Property listing section present",
+        "expected": "SignalBuffer properties:"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Postfix comments proactively added to public properties without user asking",
+        "expected": "Each public property (SampleRate, Data, Label) has a postfix comment (e.g., 'SampleRate  % ...'). FAILURE looks like: bare property declarations with no comment, or only the class-level listing without inline property comments"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "Class help indented 4 spaces to match body (properties/methods blocks)",
+        "expected": "Class help comments start with '    %' (4-space indent) since the body content (properties, methods) is at 4-space indent. FAILURE looks like: '%SignalBuffer' at column 1 with no leading spaces"
+      },
+      {
+        "id": "a8",
+        "type": "output_excludes",
+        "description": "Method listing does NOT use the word 'methods:'",
+        "expected": "SignalBuffer methods:"
+      },
+      {
+        "id": "a9",
+        "type": "output_excludes",
+        "description": "No block comments used",
+        "expected": "%{"
+      }
+    ]
+  },
+  {
+    "id": "camelcase-h1-casing",
+    "name": "H1 casing rules for mixed-case names",
+    "description": "Tests that camelCase and MixedCase function names are NOT uppercased in the H1 line, while purely lowercase names ARE uppercased",
+    "prompt": "Write help text for the function in evals/files/readTreeNodes.m\n\nThe function reads tree node data from the file at filePath, optionally limiting traversal to the specified depth.",
+    "context": {
+      "files": ["evals/files/readTreeNodes.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line preserves original casing of readTreeNodes with space-dash-space separator",
+        "expected": "%readTreeNodes - — the name contains uppercase letters so it must NOT be uppercased, and uses ' - ' (space-dash-space). FAILURE looks like: %READTREENODES, or %ReadTreeNodes (capitalized), or wrong separator"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Syntax paragraph preserves function name casing",
+        "expected": "Syntax paragraphs use readTreeNodes (preserving original camelCase) because the name contains uppercase letters. FAILURE looks like: READTREENODES( (fully uppercased) or ReadTreeNodes( (re-capitalized)"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Input variable names use help casing in the syntax",
+        "expected": "filePath preserves camelCase (contains uppercase letters) and depth becomes DEPTH (all-lowercase name gets uppercased). FAILURE looks like: FILEPATH (uppercasing a camelCase name) or depth (not uppercasing an all-lowercase name)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "See Also line uses case-correct original spelling",
+        "expected": "If a See Also line is present, function names use their original case-correct spelling (e.g., readtable not READTABLE, readstruct not READSTRUCT, treeplot not TREEPLOT). FAILURE looks like: READTABLE, READSTRUCT, TREEPLOT (uppercased in See Also)"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Syntax paragraph description starts with lowercase verb",
+        "expected": "The first word after the syntax (e.g., after 'NODES = readTreeNodes(filePath)') must be lowercase — the syntax reads as the subject of the sentence. FAILURE looks like: 'NODES = readTreeNodes(filePath) Returns...' or 'Reads...' with capital letter"
+      }
+    ]
+  },
+  {
+    "id": "indented-method-75-char-limit",
+    "name": "75-char limit relative to % at deep indent",
+    "description": "Tests that the 75-character line width is measured from the % character, not from column 1. At 12-space indent, the % is at column 13, so lines can extend to column 87 but the comment content (from % onward) must not exceed 75 characters.",
+    "prompt": "Write help text for the method in evals/files/isCompatible.m\n\nThis is a public method in a classdef file. The method body is indented at 12 spaces (the function keyword is at column 9). It checks whether two buffers have matching sample rates and channel counts, returning true if they are compatible for concatenation. The help should be indented at 12 spaces to match the method body.",
+    "context": {
+      "files": ["evals/files/isCompatible.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Help comments are indented at 12 spaces (matching method body)",
+        "expected": "Each help line starts with 12 spaces followed by %. FAILURE looks like: help at 8 spaces, 4 spaces, or column 1"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "No line exceeds 75 characters measured from the % (max column 87)",
+        "expected": "Count characters from % to end-of-line — none exceed 75. Total line width (indent + comment) may reach 87 but not beyond. FAILURE looks like: a line at column 90+ because the description is too long"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Lines use the available width and are NOT prematurely wrapped at column 75 from line start",
+        "expected": "Description text fills toward the 75-char-from-% limit. At least one description line should exceed 50 characters from %. FAILURE looks like: lines wrapping at ~63 chars of content (75 minus 12 indent) — this indicates the limit is being measured from column 1 instead of from %"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "H1 line uses camelCase as-is with space-dash-space separator",
+        "expected": "%isCompatible - — not %ISCOMPATIBLE, uses ' - ' (space-dash-space). FAILURE looks like: %ISCOMPATIBLE, or %IsCompatible, or %isCompatible  (two spaces)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Syntax paragraph uses proper variable casing",
+        "expected": "TF = isCompatible(OBJ,otherBuffer) — tf and obj are all-lowercase so they become TF and OBJ, but otherBuffer is camelCase so it stays as-is. FAILURE looks like: tf (not uppercased), OTHERBUFFER (uppercasing camelCase), or obj (not uppercased)"
+      }
+    ]
+  },
+  {
+    "id": "function-without-arguments-block",
+    "name": "Help for function without arguments block",
+    "description": "Tests that the skill produces correct help text when no arguments block is present, inferring inputs and outputs from the function signature and body",
+    "prompt": "Write help text for the function in evals/files/findnearest.m\n\nThe function finds the k nearest points to a target location in an array of points. Each row of points is a coordinate. Returns the indices and distances of the nearest neighbors. k defaults to 1 if not provided.",
+    "context": {
+      "files": ["evals/files/findnearest.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line uppercases the name with space-dash-space separator",
+        "expected": "%FINDNEAREST - — name is purely lowercase so it gets uppercased, uses ' - ' (space-dash-space). FAILURE looks like: %findnearest (not uppercased), or %FINDNEAREST  (two spaces), or %Findnearest (only first letter capitalized)"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "First syntax shows primary output with required inputs only",
+        "expected": "First syntax paragraph uses 'IDX = FINDNEAREST(POINTS,TARGET)' — only the primary output IDX (not [IDX,DIST]), and only required inputs (no K). FAILURE looks like: [IDX,DIST] = FINDNEAREST(POINTS,TARGET,K) showing all outputs and optional args in the first syntax"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Optional input K gets its own syntax paragraph",
+        "expected": "K appears in a separate syntax paragraph from the required-only syntax (e.g., 'FINDNEAREST(POINTS,TARGET,K)' or 'FINDNEAREST(...,K)'). FAILURE looks like: K included in the first syntax with POINTS and TARGET, or K not mentioned in any syntax"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Additional outputs get a separate syntax paragraph",
+        "expected": "[IDX,DIST] = FINDNEAREST(...) appears as a separate syntax paragraph to introduce the DIST output. FAILURE looks like: all outputs listed in the first syntax, or DIST never introduced in any syntax"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "No comment line exceeds 75 characters measured from the %",
+        "expected": "Every line from % to end-of-line is at most 75 characters. FAILURE looks like: a wrapped description that exceeds 75 chars from %"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "See Also line uses case-correct original spelling",
+        "expected": "Function names in See Also use their original case-correct spelling (e.g., knnsearch not KNNSEARCH, pdist2 not PDIST2, vecnorm not VECNORM). FAILURE looks like: KNNSEARCH, PDIST2, VECNORM (uppercased in See Also)"
+      },
+      {
+        "id": "a8",
+        "type": "output_excludes",
+        "description": "No non-standard Inputs:/Outputs: sections",
+        "expected": "Inputs:"
+      },
+      {
+        "id": "a9",
+        "type": "output_excludes",
+        "description": "No non-standard Outputs: section",
+        "expected": "Outputs:"
+      },
+      {
+        "id": "a10",
+        "type": "convention_followed",
+        "description": "See Also line does NOT end with a period",
+        "expected": "The See Also line must not be terminated with a period. FAILURE looks like: 'See also knnsearch, pdist2.' with a period at the end"
+      }
+    ]
+  },
+  {
+    "id": "lowercase-name-uppercased-in-h1",
+    "name": "All-lowercase name gets uppercased in H1",
+    "description": "Tests that a function with a purely lowercase name (no uppercase, digits, or underscores) is uppercased in the H1 line and syntax paragraphs",
+    "prompt": "Write help text for the function in evals/files/blocksize.m\n\nThe function computes the number of rows to process per block so that each block fits within maxMemory bytes. Useful for chunked processing of large arrays. maxMemory defaults to 1 GB.",
+    "context": {
+      "files": ["evals/files/blocksize.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line uses BLOCKSIZE (all caps) because the function name is purely lowercase",
+        "expected": "H1 line uses BLOCKSIZE (all caps) because the function name is purely lowercase. FAILURE looks like: %blocksize - (not uppercased), or %Blocksize - (only first letter capitalized)"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Function name in syntax paragraphs is also UPPERCASE",
+        "expected": "Syntax paragraphs use BLOCKSIZE (all caps) consistently, and all-lowercase arg data becomes DATA. FAILURE looks like: blocksize(data) or Blocksize(Data) — the name and all-lowercase args must be fully uppercased"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Optional arg maxMemory preserves camelCase in syntax",
+        "expected": "The optional argument maxMemory preserves its camelCase spelling because it contains uppercase letters. FAILURE looks like: MAXMEMORY (uppercased) or MaxMemory (re-capitalized)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "No comment line exceeds 75 characters measured from the %",
+        "expected": "Every line from % to end-of-line is at most 75 characters. FAILURE looks like: a description line that goes past 75 chars from %"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "See Also line uses case-correct original spelling",
+        "expected": "Function names in See Also use their original case-correct spelling (e.g., size not SIZE, floor not FLOOR). FAILURE looks like: SIZE, FLOOR, MIN (uppercased — See Also must use original casing, not help casing)"
+      },
+      {
+        "id": "a8",
+        "type": "convention_followed",
+        "description": "See Also line does NOT end with a period",
+        "expected": "The See Also line must not be terminated with a period. FAILURE looks like: 'See also size, floor.' with trailing period"
+      }
+    ]
+  },
+  {
+    "id": "file-based-function-resolution",
+    "name": "Help for function referenced by file path",
+    "description": "Tests that the skill can read a fixture .m file and produce correct help text, exercising the file-resolution workflow",
+    "prompt": "Write help text for the function in evals/files/computeGradient.m\n\nThe function computes the numerical gradient of a 2-D scalar field. It returns both the gradient components (as a 3-D array with gx and gy stacked along dim 3) and the gradient magnitude. The method argument accepts exactly: \"central\" (default) and \"forward\".",
+    "context": {
+      "files": ["evals/files/computeGradient.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "H1 line preserves camelCase name with space-dash-space",
+        "expected": "%computeGradient - — name contains uppercase letters so must not be uppercased. FAILURE looks like: %COMPUTEGRADIENT or %ComputeGradient"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "First syntax shows required arg only with correct casing",
+        "expected": "First syntax uses computeGradient(FIELD) — function name preserves camelCase, and field is all-lowercase so it becomes FIELD. FAILURE looks like: COMPUTEGRADIENT(FIELD) (function name uppercased), or computeGradient(field) (arg not uppercased)"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Optional args get their own syntax paragraphs",
+        "expected": "SPACING gets its own syntax paragraph, and METHOD gets its own syntax paragraph (each optional has a separate paragraph). FAILURE looks like: all arguments shown in a single syntax, or SPACING and METHOD combined in one paragraph"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "METHOD flag values listed with correct format",
+        "expected": "METHOD values listed as double-quoted strings with ' - ' separator: \"central\" (default) listed first, then \"forward\". FAILURE looks like: no value list, or default not first, or single-quoted values"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "No block comments",
+        "expected": "%{"
+      },
+      {
+        "id": "a6",
+        "type": "output_excludes",
+        "description": "No Inputs:/Outputs: sections",
+        "expected": "Inputs:"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "Help indentation matches body code (4 spaces)",
+        "expected": "Help comments start with '    %' (4-space indent) to match the function body indentation. FAILURE looks like: '%computeGradient' at column 1 with no indent"
+      }
+    ]
+  },
+  {
+    "id": "improve-existing-bad-help",
+    "name": "Improve non-conforming existing help",
+    "description": "Tests that the skill can identify and fix non-conforming help text: Inputs:/Outputs: sections, trailing period on See Also, missing syntax paragraphs, wrong H1 format",
+    "prompt": "Improve the help text for the function in evals/files/badHelpExample.m to conform to MathWorks standards. The existing help has several problems that need fixing.",
+    "context": {
+      "files": ["evals/files/badHelpExample.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_excludes",
+        "description": "No Inputs: section in improved help",
+        "expected": "Inputs:"
+      },
+      {
+        "id": "a2",
+        "type": "output_excludes",
+        "description": "No Outputs: section in improved help",
+        "expected": "Outputs:"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "H1 uses space-dash-space, not two spaces",
+        "expected": "%findClosest - — uses ' - ' (space-dash-space) separator. FAILURE looks like: '%FINDCLOSEST  Find' (two spaces, the old format that was in the bad help)"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "See Also line does NOT end with a period",
+        "expected": "The See Also line must not end with a period. FAILURE looks like: 'See also knnsearch, pdist2, dsearchn.' (the original bad help had a trailing period)"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Syntax paragraphs replace the Inputs/Outputs lists",
+        "expected": "Help uses syntax paragraphs (e.g., 'IDX = findClosest(queryPts,refPts)') to describe inputs and outputs rather than Inputs:/Outputs: lists. FAILURE looks like: retaining any form of parameter list instead of syntax-based documentation"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "First syntax shows required args only",
+        "expected": "First syntax shows only queryPts and refPts (the required args). K is optional and gets its own paragraph. FAILURE looks like: findClosest(queryPts,refPts,K,...) with all args in the first syntax"
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "See Also uses case-correct original spelling",
+        "expected": "See Also names use original casing: knnsearch, pdist2, dsearchn — not KNNSEARCH, PDIST2, DSEARCHN. FAILURE looks like: uppercased function names in the See Also line"
+      }
+    ]
+  },
+  {
+    "id": "copyright-line-handling",
+    "name": "Copyright line moved outside help block",
+    "description": "Tests that a copyright line embedded inside the help block is moved to the correct position (after the help, separated by a blank line) without modifying its content",
+    "prompt": "Improve the help text for the function in evals/files/mergeTimeTables.m\n\nThe copyright line is currently embedded inside the help block. Fix the help so the copyright is correctly positioned after the help block, separated by a blank line (no %). Do not modify the copyright text itself.",
+    "context": {
+      "files": ["evals/files/mergeTimeTables.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Copyright line appears after the help block, not inside it",
+        "expected": "The copyright line ('Copyright 2024 The MathWorks, Inc.') appears AFTER all help comment lines, separated from the last help line by a blank line (a newline with no % — this terminates the help block). FAILURE looks like: the copyright appearing between help comment lines, or immediately adjacent to help lines with no blank-line separator"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Copyright content is not modified",
+        "expected": "The copyright text reads exactly 'Copyright 2024 The MathWorks, Inc.' — year, holder, and punctuation are unchanged. FAILURE looks like: year changed to 2025 or 2026, holder changed, 'Inc.' missing the period, or copyright removed entirely"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Copyright indentation matches help comments",
+        "expected": "The copyright line is indented with 4 spaces + % + 3 spaces (matching '    %   ' of the help lines above it). FAILURE looks like: '% Copyright' at column 1, or '%   Copyright' without the 4-space indent, or misaligned with surrounding help"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Help block is complete and well-formed without copyright interrupting it",
+        "expected": "The help text flows continuously: H1 line, then syntax paragraphs, then See Also — with no copyright line breaking the flow. The See Also is the last help line before the blank-line separator. FAILURE looks like: copyright between syntax paragraphs, or copyright before See Also"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "The blank separator is a true blank line (no % character)",
+        "expected": "Between the last help comment and the copyright comment, there is exactly one blank line containing no characters (or only whitespace) — NOT a '%' on its own. This blank line is what terminates the help block for MATLAB's help command. FAILURE looks like: a '%' line between help and copyright (which would make copyright part of the help block)"
+      }
+    ]
+  },
+  {
+    "id": "multi-output-decomposition",
+    "name": "Outputs layered across syntax paragraphs",
+    "description": "Tests that multiple outputs are introduced incrementally — primary output first, then additional outputs in later syntax paragraphs — rather than showing all outputs in the first syntax",
+    "prompt": "Write help text for the function in evals/files/segmentSignal.m\n\nThe function segments a 1-D signal into contiguous regions wherever consecutive differences exceed a threshold. It returns the segments as a cell array, the boundary indices, and string labels for each segment. The MinLength name-value sets the minimum gap between boundaries (default 10). The LabelPrefix name-value sets the prefix for generated labels (default \"seg\").",
+    "context": {
+      "files": ["evals/files/segmentSignal.m"]
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "First syntax shows only the primary output SEGMENTS",
+        "expected": "The first syntax paragraph uses 'SEGMENTS = segmentSignal(DATA,THRESHOLD)' with only the primary output. FAILURE looks like: [SEGMENTS,BOUNDARIES] = segmentSignal(...) or [SEGMENTS,BOUNDARIES,LABELS] = segmentSignal(...) in the first syntax — all outputs shown upfront"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Additional outputs introduced in later syntax paragraphs",
+        "expected": "BOUNDARIES and LABELS are introduced in one or more later syntax paragraphs using multi-output syntax (e.g., '[SEGMENTS,BOUNDARIES] = segmentSignal(...)' and/or '[SEGMENTS,BOUNDARIES,LABELS] = segmentSignal(...)'). FAILURE looks like: BOUNDARIES or LABELS never appearing in any syntax line, or only described in prose without a syntax"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Output layering is incremental, not all-at-once",
+        "expected": "Outputs build up progressively: first SEGMENTS alone, then either [SEGMENTS,BOUNDARIES] or [SEGMENTS,BOUNDARIES,LABELS] in later paragraphs. If three outputs are shown, they should not all appear for the first time in the same syntax paragraph. FAILURE looks like: jumping from 'SEGMENTS = ...' directly to '[SEGMENTS,BOUNDARIES,LABELS] = ...' with no intermediate step showing just [SEGMENTS,BOUNDARIES]"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Name-value inputs get their own syntax paragraphs separate from output layering",
+        "expected": "MinLength and LabelPrefix name-value pairs appear in syntax paragraphs that are separate from the output-introduction paragraphs. FAILURE looks like: Name=VALUE syntax combined in the same paragraph that introduces a new output"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "H1 line preserves camelCase with space-dash-space",
+        "expected": "%segmentSignal - — name contains uppercase letters so it is not uppercased. FAILURE looks like: %SEGMENTSIGNAL or %SegmentSignal"
+      }
+    ]
+  }
+]

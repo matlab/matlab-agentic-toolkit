@@ -1,0 +1,1533 @@
+{
+  "evals": [
+    {
+      "id": "analyze-rf-amplifier/stability-analysis-workflow",
+      "prompt": "Load 'default.s2p' (an active amplifier). Evaluate its stability using both the Rollett K-factor (stabilityk) and the Edwards-Sinsky mu factor (stabilitymu). Plot mu vs frequency in GHz with a horizontal stability boundary line at mu=1. Report how many frequencies are unconditionally stable (mu > 1) and conditionally stable (mu <= 1).",
+      "expected_output": "Code using stabilityk and stabilitymu, plotting mu with yline(1) boundary, computing counts of stable vs conditionally stable frequencies.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses stabilityk (expected: stabilityk)",
+        "[output_contains] Uses stabilitymu (expected: stabilitymu)",
+        "[output_contains] Plots boundary line (expected: yline)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gain-analysis-workflow",
+      "prompt": "I have an amplifier measured in 'default.s2p'. I need to know the maximum gain I can extract at each frequency. Plot Gmag and Gmsg in dB on the same figure. Handle any undefined values at conditionally stable frequencies gracefully.",
+      "expected_output": "Code using powergain(s,'Gmag') and powergain(s,'Gmsg'), converting with 10*log10 (not 20*log10), plotting both together.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses powergain (expected: powergain)",
+        "[output_contains] Computes Gmag (expected: Gmag)",
+        "[output_contains] Converts to dB correctly (expected: 10*log10)",
+        "[output_excludes] Does not use 20*log10 for power gain (expected: = 20*log10)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-ispassive-active-device",
+      "prompt": "Load 'default.s2p' (an active amplifier) and check if it is passive using ispassive. Active devices should return false. Print the result and explain why.",
+      "expected_output": "Code using ispassive(s) returning false, explaining active devices have |S21| > 1.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses ispassive (expected: ispassive)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-stabilityk-outputs",
+      "prompt": "Load 'default.s2p' and compute the Rollett stability factor using stabilityk. Capture all four output arguments: K, b1, b2, and delta. Print the size of each output.",
+      "expected_output": "Code using [k, b1, b2, delta] = stabilityk(s), showing all four outputs have the same dimension as Frequencies.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses stabilityk (expected: stabilityk)",
+        "[output_contains] Captures delta output (expected: delta)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-powergain-linear-not-db",
+      "prompt": "I have an amplifier in 'default.s2p' and need to know the transducer power gain in dB when driven from 50 Ohm source into a 50 Ohm load. Compute it and plot vs frequency.",
+      "expected_output": "Code using powergain(s, 50, 50, 'Gt') with 'Gt' as last arg, converting with 10*log10.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses powergain (expected: powergain)",
+        "[output_contains] Converts to dB correctly (expected: 10*log10)",
+        "[output_excludes] Does not put gain type before impedances (expected: powergain(s, 'Gt',)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-gmag-nan-conditionally-stable",
+      "prompt": "Load 'default.s2p' and compute Gmag using powergain. Show that Gmag returns NaN at frequencies where the device is conditionally stable (K < 1). Count how many NaN values exist.",
+      "expected_output": "Code using powergain(s,'Gmag'), checking for NaN with isnan or sum(isnan(...)), explaining NaN occurs at conditionally stable frequencies.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Computes Gmag (expected: Gmag)",
+        "[output_contains] Checks for NaN (expected: isnan)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-gammain-gammaout-valid",
+      "prompt": "Load 'default.s2p' and compute the input and output reflection coefficients (gammain and gammaout) for a 50 Ohm termination. Verify both return finite values for all frequencies.",
+      "expected_output": "Code using gammain(s, 50) and gammaout(s, 50), verifying all values are finite with isfinite.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses gammain (expected: gammain)",
+        "[output_contains] Uses gammaout (expected: gammaout)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-stabilitymu-single-condition",
+      "prompt": "Load 'default.s2p' and compute the Edwards-Sinsky stability factor mu using stabilitymu. Unlike the Rollett K-factor which needs two conditions (K > 1 AND |delta| < 1), mu > 1 alone is sufficient for unconditional stability. Print the mu range.",
+      "expected_output": "Code using stabilitymu(s), checking mu > 1 for unconditional stability.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses stabilitymu (expected: stabilitymu)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/matching-design-from-stability-workflow",
+      "prompt": "I have a BJT in 'samplebjt2.s2p' and want to design for maximum gain at 2 GHz. What source and load impedances should I present? Check stability first, then compute the optimal match.",
+      "expected_output": "Code checking stability with stabilityk or stabilitymu before computing gammams and gammaml, then converting reflection coefficients to impedances.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Computes source match (expected: gammams)",
+        "[output_contains] Computes load match (expected: gammaml)",
+        "[output_contains] Checks stability (expected: Rollett)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/stability-circles-on-smith-chart",
+      "prompt": "Load 'default.s2p' and plot the source and load stability circles on the Smith chart at 2 GHz. Use the stability circle formulas (center and radius from S-parameters) and overlay them on an empty Smith chart grid. Show which region is stable.",
+      "expected_output": "Code computing stability circle center/radius from S-params, creating empty smithplot() grid, using hold on + plot to overlay circles with real/imag coordinates.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses smithplot (expected: smithplot)",
+        "[output_contains] Computes circle center (expected: center)",
+        "[output_contains] Uses hold on for overlay (expected: hold)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/noise-circles-workflow",
+      "prompt": "I have a transistor with noise parameters: Fmin=0.8 dB, Gamma_opt=0.5*exp(1j*pi/3), Rn=10 ohms (at 2 GHz, Z0=50). Create a noiseParameters object and compute the noise circle for NF = Fmin + 0.5 dB. Plot it on a Smith chart showing the optimum noise match point and the constant-NF circle.",
+      "expected_output": "Code creating noiseParameters with the correct constructor form, computing noise circle center/radius from noise parameters, and plotting on Smith chart.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses noiseParameters (expected: noiseParameters)",
+        "[output_contains] Uses smithplot (expected: smithplot)"
+      ]
+    },
+    {
+      "id": "analyze-rf-amplifier/gotcha-powergain-arg-order",
+      "prompt": "Compute the transducer power gain (Gt) for a loaded amplifier from 'default.s2p' with source impedance 50 ohm and load impedance 75 ohm across all frequencies. Convert to dB using 10*log10 (NOT 20*log10 since powergain returns a power ratio). Plot vs frequency.",
+      "expected_output": "Code using powergain(s, 50, 75, 'Gt') with impedances BEFORE gain type string. Converts with 10*log10, not 20*log10.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses powergain (expected: powergain)",
+        "[output_contains] Uses 10*log10 for power gain (expected: 10*log10)",
+        "[output_excludes] Does not put gain type before impedances (expected: powergain(s, 'Gt', 50, 75))",
+        "[output_excludes] Does not use 20*log10 for power gain (expected: = 20*log10)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/basic-budget-workflow",
+      "prompt": "Create an RF receiver chain with: LNA (Gain=15dB, NF=2dB, OIP3=35dBm), bandpass filter (Gain=-3dB, NF=3dB), downconverting mixer (Gain=-6dB, NF=10dB, OIP3=20dBm, LO=2.1GHz), and IF amplifier (Gain=20dB, NF=4dB, OIP3=30dBm). Build an rfbudget at 2.4GHz input, -30dBm power, 10MHz bandwidth. Print the system gain, noise figure, OIP3, and SNR.",
+      "expected_output": "Code creating 4 elements with correct parameters, building rfbudget with all 4 positional args, and reading cumulative results from the last element of TransducerGain, NF, OIP3, SNR.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Reads transducer gain (expected: TransducerGain)",
+        "[output_contains] Reads noise figure (expected: NF)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/budget-visualization-export-workflow",
+      "prompt": "Create an RF budget with an LNA (Gain=12dB, NF=1.5dB, OIP3=30dBm), filter (Gain=-2dB, NF=2dB), and mixer (Gain=-8dB, NF=8dB, OIP3=15dBm, LO=1.5GHz, ConverterType=Down) at 1.9GHz, -25dBm, 5MHz bandwidth. Plot the output power and noise figure per stage using rfplot. Show me how I would export the budget to a standalone MATLAB script (but don't actually call exportScript since it opens the editor).",
+      "expected_output": "Code building rfbudget, using rfplot with 'Pout' and 'NF' parameter strings, and showing exportScript usage in a comment or explanation.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfplot (expected: rfplot)",
+        "[output_contains] Plots output power (expected: Pout)",
+        "[output_contains] Mentions exportScript (expected: exportScript)",
+        "[output_excludes] Does not call rfplot with no parameter argument (expected: rfplot(b))"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-rfbudget-positional-args",
+      "prompt": "Create an rfbudget for a simple two-stage chain: amplifier (Gain=10dB, NF=3dB) and attenuator (Gain=-6dB, NF=6dB). Use 1GHz input frequency, -20dBm available input power, and 1MHz signal bandwidth. Show the constructor call clearly.",
+      "expected_output": "Code using rfbudget(elements, freq, power, bw) with all four positional arguments in the correct order.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-cumulative-per-stage",
+      "prompt": "Build an rfbudget with two amplifiers: Amp1 (Gain=10dB, NF=3dB, OIP3=25dBm) and Amp2 (Gain=15dB, NF=5dB, OIP3=30dBm) at 2GHz, -30dBm, 5MHz. Print the TransducerGain at each stage and confirm the values are cumulative (not per-element deltas). The system gain should be the last element.",
+      "expected_output": "Code accessing TransducerGain showing cumulative values, with system result from TransducerGain(end).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Reads transducer gain (expected: TransducerGain)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-nf-first-stage-dominance",
+      "prompt": "I'm debating whether to put the mixer or the LNA first in my receiver chain. The LNA has 1 dB NF and 20 dB gain; the mixer has 10 dB NF and -6 dB gain. Show me the system noise figure impact of both orderings at 2 GHz, -30 dBm, 10 MHz bandwidth.",
+      "expected_output": "Code creating two rfbudget objects with reversed element order, showing Chain A has much lower system NF than Chain B.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Reads noise figure (expected: NF)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-clone-element-reuse",
+      "prompt": "Create an amplifier element (Gain=10dB, NF=3dB, OIP3=25dBm). Try to use the same element object twice in an rfbudget chain by using clone() to create an independent copy. Build the budget with the original amplifier, a filter, and the cloned amplifier.",
+      "expected_output": "Code using clone(element) to create a copy, not reusing the same object directly in the element array.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses clone for element reuse (expected: clone)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_excludes] Does not reuse element without clone (expected: [lna filt lna])"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-output-frequency-after-modulator",
+      "prompt": "Build an rfbudget with an LNA (Gain=15dB, NF=2dB) followed by a downconverting mixer (LO=2.1GHz, Gain=-6dB, NF=10dB, ConverterType=Down) and an IF amplifier (Gain=20dB, NF=4dB) at 2.4GHz input, -30dBm, 10MHz. Print the OutputFrequency at each stage and show that it changes after the mixer.",
+      "expected_output": "Code accessing OutputFrequency showing the frequency changes from 2.4GHz to 0.3GHz (2.4-2.1) after the mixer.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Reads output frequency (expected: OutputFrequency)",
+        "[output_contains] Uses modulator element (expected: modulator)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-name-no-spaces",
+      "prompt": "Create RF elements for an rfbudget chain. Name them using valid MATLAB identifiers -- no spaces or special characters. For example, use 'IFAmp' not 'IF Amp'. Build a budget with at least 3 named elements and print the element names.",
+      "expected_output": "Code with element Name properties that are valid identifiers (no spaces), such as 'LNA', 'BPF', 'IFAmp'.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets element names (expected: Name)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_excludes] Does not use spaces in element names (expected: 'IF Amp')"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/compare-friis-vs-hb-workflow",
+      "prompt": "I want to compare linear vs nonlinear analysis of my receiver: LNA (15 dB gain, 2 dB NF, 35 dBm OIP3), mixer (-6 dB gain, 10 dB NF, 20 dBm OIP3, LO 2.1 GHz down), IF amp (20 dB gain, 4 dB NF, 30 dBm OIP3). Run both Friis and Harmonic Balance at 2.4 GHz, -30 dBm, 10 MHz and compare.",
+      "expected_output": "Code creating two rfbudget objects with different Solver settings, comparing TransducerGain, NF, and OIP3 from both.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Uses HarmonicBalance solver (expected: HarmonicBalance)",
+        "[output_contains] Uses Friis solver (expected: Friis)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/system-p1db-via-ampm-table",
+      "prompt": "I have a receiver chain: LNA (15 dB gain, 2 dB NF, 35 dBm OIP3, 25 dBm OP1dB) and PA (20 dB gain, 5 dB NF, 30 dBm OIP3, 20 dBm OP1dB). I need to find the system-level P1dB. Use the Harmonic Balance solver with computeAMPMTable to get the AM/PM compression curve and extract the 1-dB compression point. Set up at 2.4 GHz, -30 dBm, 10 MHz.",
+      "expected_output": "Code using rfbudget with Solver='HarmonicBalance', calling computeAMPMTable to get gain vs power, then finding the input power where gain drops 1 dB from small-signal.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses computeAMPMTable (expected: computeAMPMTable)",
+        "[output_contains] Uses HarmonicBalance solver (expected: HarmonicBalance)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/gotcha-snr-per-stage-vector",
+      "prompt": "Build an rfbudget chain: LNA (15dB gain, 2dB NF, 35dBm OIP3), filter (-3dB gain, 3dB NF), IF amp (20dB gain, 4dB NF, 30dBm OIP3) at 2.4GHz, -30dBm, 10MHz. Print the SNR at every stage. Show that b.SNR is a per-stage vector (not just the final value) and identify which stage degrades SNR most.",
+      "expected_output": "Code accessing b.SNR as a vector with one value per element, using diff() or comparison to identify the largest SNR degradation stage.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Accesses SNR vector (expected: SNR)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "analyze-rf-budget/wideband-rfplot-frequency-response",
+      "prompt": "I want to see how my rfbudget gain varies across 2.3 to 2.5 GHz (not just at a single frequency). Build a chain with LNA (15dB gain, 2dB NF), an rffilter (Butterworth order 5, passband 2.35-2.45 GHz), and IF amp (20dB gain, 4dB NF) at -30dBm, 10MHz. Plot the cascaded transducer gain vs frequency using rfplot.",
+      "expected_output": "Code using rfbudget with a frequency vector or range, and rfplot(b, 'TransducerGain') to show gain flatness across the band.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfplot (expected: rfplot)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Plots transducer gain (expected: TransducerGain)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/spur-chart-and-imt-workflow",
+      "prompt": "I have a downconverting mixer (LO 2.1 GHz, 10 dB NF, 10 dB conversion gain) and need to model its spur behavior. The desired product is at 0 dBc, RF feedthrough -20 dBc, LO feedthrough -15 dBc, 2RF-LO at -30 dBc, RF-2LO at -25 dBc. Set this up and show me the spur chart at 2.4 GHz RF.",
+      "expected_output": "Code creating mixerIMT with ConverterType=Down, building custom 5x5 IMT table with correct row/col indexing, and calling rfplot(m, 2.4e9).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Plots spur chart (expected: rfplot)",
+        "[output_excludes] Does not use Gain property on mixerIMT (expected: 'Gain', -)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/rfbudget-with-mixerimt-workflow",
+      "prompt": "Build an rfbudget receiver chain: LNA (Gain=15dB, NF=2dB, OIP3=35dBm), downconverting mixerIMT (LO=2.1GHz, ReferenceInputPower=-10dBm, NominalOutputPower=-16dBm, NF=10dB), and IF amplifier (Gain=20dB, NF=4dB, OIP3=30dBm). Analyze at 2.4GHz input, -30dBm, 10MHz bandwidth. Print the system gain, noise figure, and output frequency after the mixer.",
+      "expected_output": "Code using mixerIMT with ConverterType=Down in rfbudget, printing TransducerGain, NF, OutputFrequency showing IF=0.3GHz.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Reads output frequency (expected: OutputFrequency)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-mixerimt-imt-lo-power",
+      "prompt": "Create a mixerIMT with a custom 4x4 IMT table, LO=1.5GHz, ReferenceInputPower=-20dBm, NominalOutputPower=-10dBm, ConverterType='Down', NF=8dB. Print the IMT table, LO frequency, and both power levels to confirm they are set correctly.",
+      "expected_output": "Code creating mixerIMT with all specified properties and printing them.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Sets IMT table (expected: IMT)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-conversion-gain-formula",
+      "prompt": "Create a mixerIMT with ReferenceInputPower=-15dBm and NominalOutputPower=-5dBm. Show that the conversion gain used by rfbudget is NominalOutputPower - ReferenceInputPower = 10 dB. Build a simple rfbudget with just the mixer at 2.4GHz, -30dBm, 10MHz and print the transducer gain.",
+      "expected_output": "Code demonstrating that rfbudget gain = NominalOutputPower - ReferenceInputPower, not from Gain property.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses NominalOutputPower (expected: NominalOutputPower)",
+        "[output_contains] Uses ReferenceInputPower (expected: ReferenceInputPower)",
+        "[output_excludes] Does not use Gain property for conversion gain (expected: 'Gain', -6)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-gain-rejected-in-constructor",
+      "prompt": "I'm trying to model a mixer with 10 dB conversion gain in my RF budget. How do I configure the gain on a mixerIMT? I tried setting 'Gain' but it didn't work.",
+      "expected_output": "Code demonstrating Gain is not a valid constructor argument, with try-catch showing the error, and correct approach using ReferenceInputPower/NominalOutputPower.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Uses correct power properties (expected: ReferenceInputPower)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-negative-imt-rejected",
+      "prompt": "Show that mixerIMT rejects negative values in the IMT table. Create a mixerIMT, then try setting an IMT entry to a negative value like -10 and demonstrate the error. Explain that IMT values are non-negative dBc below the reference.",
+      "expected_output": "Code with try-catch demonstrating that negative IMT values error with 'Value must be nonnegative'.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Sets IMT values (expected: IMT)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-imt-value-range-0-to-99",
+      "prompt": "Show the valid range of values for the mixerIMT IMT table. Demonstrate that: (1) inf is rejected ('Value must be finite'), (2) values > 99 are rejected ('values <= 99'), and (3) negative values are rejected ('Value must be nonnegative'). Use try-catch for each case and show the correct way to represent a fully suppressed spur (use 99, not inf).",
+      "expected_output": "Code with three try-catch blocks demonstrating inf, >99, and negative all fail, and using 99 for suppressed spurs.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mixerIMT (expected: mixerIMT)",
+        "[output_contains] Uses 99 for max suppression (expected: 99)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-rfbudget-mixerimt-down-if",
+      "prompt": "Create a mixerIMT with ConverterType='Down' and LO=2.1GHz. Place it in an rfbudget at 2.4GHz input, -30dBm, 10MHz. Print the OutputFrequency to verify the IF = RF - LO = 0.3 GHz.",
+      "expected_output": "Code using mixerIMT with ConverterType='Down' in rfbudget, printing OutputFrequency showing 0.3 GHz.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets converter type (expected: ConverterType)",
+        "[output_contains] Reads output frequency (expected: OutputFrequency)"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/openif-spur-free-zone-workflow",
+      "prompt": "I'm designing a multiband receiver with two bands: one at 2.4 GHz (200 MHz BW) and one at 5.8 GHz (500 MHz BW). Both downconvert to the same IF. Use OpenIF to find spur-free IF zones with 20 MHz IF bandwidth. Set up the mixerIMT objects, add both mixers to the OpenIF object, and display the results with show().",
+      "expected_output": "Code using OpenIF(20e6), creating mixerIMT objects, calling addMixer(hif, imt, rfCenterFreq, rfBW, 'low', ifBW) for each band, and show(hif).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses OpenIF (expected: OpenIF)",
+        "[output_contains] Uses addMixer (expected: addMixer)",
+        "[output_contains] Uses show (expected: show)",
+        "[output_excludes] Does not use wrong addMixer syntax with name string (expected: addMixer(hif, 'Mixer')"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-addmixer-syntax-positional",
+      "prompt": "Show me the correct syntax for addMixer on an OpenIF object. I have a mixer with a custom IMT table for a 2.4 GHz band (200 MHz RF bandwidth) that downconverts to a low-side IF with 20 MHz IF bandwidth. The OpenIF object was created with OpenIF(20e6). Add the mixer and show the spur-free zones.",
+      "expected_output": "Code showing addMixer(hif, imt, 2.4e9, 200e6, 'low', 20e6) with correct positional arguments.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses OpenIF (expected: OpenIF)",
+        "[output_contains] Uses addMixer with correct positional args (expected: addMixer)",
+        "[output_excludes] Does not use name-value or wrong positional order (expected: addMixer(hif, imt, 2.4e9, 200e6, 'Down')"
+      ]
+    },
+    {
+      "id": "analyze-rf-mixer/gotcha-image-rejection-not-in-imt",
+      "prompt": "I want to model a mixer that has 30 dBc image rejection at 2.4 GHz RF with LO at 2.1 GHz. Can I put the image rejection into the IMT table?",
+      "expected_output": "Explanation that IMT does NOT model image rejection because the image is at a different RF frequency (fImage = 2*fLO - fRF). IMT only models spurs from a single RF input mixing with LO harmonics. Recommend using a preselector/image-reject filter before the mixer instead.",
+      "assertions": [
+        "[output_contains] Explains image rejection limitation (expected: preselector)",
+        "[output_contains] Explains why IMT cannot model image (expected: different)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/pi-filter-circuit-workflow",
+      "prompt": "Build a pi-section lowpass filter circuit using the RF Toolbox circuit object. Use two shunt capacitors (1 pF each) and one series inductor (10 nH). Wire them with add() using node mapping: C1 from node 1 to ground, L1 from node 1 to node 2, C2 from node 2 to ground. Set ports with setports for a 2-port network and extract S-parameters from 1 GHz to 10 GHz (200 points). Plot S21 and S11.",
+      "expected_output": "Code using circuit, add with node mapping, setports, sparameters extraction, and plotting.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses circuit object (expected: circuit)",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_excludes] Does not use nonexistent rfcircuit (expected: rfcircuit)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/subcircuit-hierarchy-workflow",
+      "prompt": "Create a reusable L-match subcircuit (series inductor 10nH, shunt capacitor 5pF) using setterminals with 3 terminals: in, out, gnd mapped to nodes [1 2 0]. Then build a parent circuit that cascades two stages of this L-match (using clone for the second stage). Extract S-parameters from 1 to 6 GHz and plot S21.",
+      "expected_output": "Code using setterminals on subcircuit, clone for reuse, add to parent circuit, setports on parent, sparameters extraction.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses setterminals (expected: setterminals)",
+        "[output_contains] Uses clone for reuse (expected: clone)",
+        "[output_contains] Sets ports (expected: setports)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-resistor-positional-pipeline",
+      "prompt": "Create a simple voltage divider circuit using two resistors: R1=100 Ohm from node 1 to node 2, R2=100 Ohm from node 2 to ground (node 0). Use positional constructor syntax for the resistors: resistor(value, name). Set ports and extract S-parameters at 100 frequencies from 1 MHz to 1 GHz. Print the number of ports and frequencies.",
+      "expected_output": "Code using resistor(100, 'R1') positional syntax, circuit, add, setports, sparameters.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses resistor (expected: resistor)",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_excludes] Does not use name-value syntax for resistor (expected: resistor('Resistance', 100))"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-setports-called-once",
+      "prompt": "Build a circuit with a resistor from node 1 to node 2 and a capacitor from node 2 to ground. Call setports to define a 2-port network. Show that calling setports a second time on the same circuit will error. Use try-catch to demonstrate this limitation and print the error message.",
+      "expected_output": "Code calling setports once, then catching the error from a second setports call, demonstrating the one-call limitation.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_contains] Uses try-catch (expected: try)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-clone-independent-copy",
+      "prompt": "Create a circuit with a resistor and capacitor. Use clone() to make an independent copy. Modify the original circuit's resistor value and show that the cloned circuit is unaffected. Print resistor values from both to prove independence.",
+      "expected_output": "Code using clone() to create independent copy, modifying original, verifying clone is unchanged.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses clone (expected: clone)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-mutualinductor-nv-pairs",
+      "prompt": "I want to model a transformer-coupled pair of inductors (both 10 nH, coupling coefficient 0.95) in my RF circuit. How do I create this in RF Toolbox?",
+      "expected_output": "Code using mutualInductor('Name', ..., 'Inductance1', ..., 'CouplingCoefficient', ...) with name-value pairs, not positional args.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mutualInductor (expected: mutualInductor)",
+        "[output_contains] Sets coupling (expected: CouplingCoefficient)",
+        "[output_excludes] Does not use positional args for mutualInductor (expected: = mutualInductor(10e-9, 10e-9)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-element-name-no-space",
+      "prompt": "Create several circuit elements (resistor, capacitor, inductor) with valid MATLAB identifier names -- no spaces or special characters. For example use 'R1' not 'R 1', and 'DCBlock' not 'DC Block'. Build a circuit with these elements and print the element names.",
+      "expected_output": "Code with element names that are valid identifiers (no spaces), building and displaying a circuit.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses circuit (expected: circuit)",
+        "[output_excludes] Does not use spaces in element names (expected: 'DC Block')"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-setterminals-node-vector",
+      "prompt": "Create a subcircuit with a series inductor and shunt capacitor. Define terminals using setterminals with a single node vector: setterminals(ckt, [1 2 0], {'in', 'out', 'gnd'}). Then embed this subcircuit in a parent circuit. Print the terminal names.",
+      "expected_output": "Code using setterminals(ckt, [nodes], {names}) with a single vector argument, not separate scalar arguments.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses setterminals (expected: setterminals)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-amplifier-4node-mapping",
+      "prompt": "I need to embed my LNA (15 dB gain, 2 dB NF, 35 dBm OIP3) into a circuit with a DC-blocking cap at the input, then extract the overall S-parameters. The amplifier is a 2-port active device.",
+      "expected_output": "Code using add(ckt, [in out 0 0], amp) with 4-node mapping for the amplifier, not 2 nodes.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses amplifier (expected: amplifier)",
+        "[output_contains] Uses add (expected: add)",
+        "[output_excludes] Does not use 2-node mapping for active device (expected: add(ckt, [1 2], amp)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-mutualinductor-rejects-positional",
+      "prompt": "Show that mutualInductor rejects positional constructor arguments. Try calling mutualInductor(10e-9, 10e-9, 0.8) and catch the error. Then show the correct way using name-value pairs: mutualInductor('Inductance1', 10e-9, 'Inductance2', 10e-9, 'CouplingCoefficient', 0.8).",
+      "expected_output": "Code with try-catch showing positional args fail, then correct name-value syntax succeeding.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses mutualInductor (expected: mutualInductor)",
+        "[output_contains] Uses try-catch (expected: try)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/lumped-to-distributed-richards-workflow",
+      "prompt": "Design a simple lumped lowpass filter with two series inductors (10 nH, 15 nH) and a shunt capacitor (5 pF) between them. Convert it to a distributed stub implementation using Richards transformation at 2.4 GHz. Extract S-parameters for both the lumped and distributed versions and plot their S21 responses on the same axes for comparison.",
+      "expected_output": "Code building a lumped LC filter in a circuit, applying richards() for conversion to distributed stubs, extracting sparameters from both, and overlaid S21 plots with legend.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses richards (expected: richards)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_contains] Uses legend (expected: legend)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/three-port-setports-extraction",
+      "prompt": "Build a 3-port directional coupler using two quarter-wave transmission lines (txlineDelayLossless) and a resistor. The circuit has an input, through, and coupled port. Extract 3-port S-parameters by calling setports with three separate [signal ref] pairs. Print the 3x3 S-matrix size.",
+      "expected_output": "Code using circuit with txlineDelayLossless elements, calling setports(ckt, [n1 n2], [n3 n4], [n5 n6]) with three port pairs (each pair is [signal ref]). sparameters extraction produces 3x3xN.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses setports with 3 ports (expected: setports)",
+        "[output_contains] Uses txlineDelayLossless (expected: txlineDelayLossless)",
+        "[output_contains] Extracts sparameters (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/gotcha-txline-4node-all-types",
+      "prompt": "Show that ALL transmission line types in RF Toolbox (txlineDelayLossless, txlineMicrostrip, txlineCoaxial, etc.) require 4-node mapping in add(). Build a simple circuit with a txlineDelayLossless (delay 100ps, Z0=50) and demonstrate the correct add(ckt, [in out inRef outRef], tl) call with 4 nodes.",
+      "expected_output": "Code using add(ckt, [1 2 0 0], tl) or similar 4-node form. Lists txline types as 4-terminal. NOT 2-node [1 2].",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineDelayLossless (expected: txlineDelayLossless)",
+        "[output_contains] Uses 4-node mapping (expected: add(ckt",
+        "[output_excludes] Does not use 2-node mapping for txline (expected: add(ckt, [1 2], tl)"
+      ]
+    },
+    {
+      "id": "compose-rf-circuit/nport-8node-4port-embedding",
+      "prompt": "I have a 4-port coupler measured as a .s4p file. I want to embed it in my circuit. Show the correct 8-node add() call for a 4-port nport where positive terminals go to signal nodes and negative terminals are grounded (node 0).",
+      "expected_output": "Code using nport('connector.s4p') and add(ckt, [n1+ n2+ n3+ n4+ n1- n2- n3- n4-], np) with 8 nodes. For grounded negatives: [1 2 3 4 0 0 0 0].",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses nport (expected: nport)",
+        "[output_contains] Uses 8-node form for 4-port (expected: add(ckt"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/convert-s-to-z-y-workflow",
+      "prompt": "Load 'default.s2p' and convert the S-parameters to both Z-parameters and Y-parameters using the object-based approach. Print the impedance at 2 GHz for Z11 and the admittance for Y11. Verify round-trip accuracy by converting Z back to S and computing the maximum error.",
+      "expected_output": "Code using zparameters(s) and yparameters(s) for object-based conversion, rfparam to extract Z11 and Y11, and sparameters(z) for round-trip with error check.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses zparameters (expected: zparameters)",
+        "[output_contains] Uses yparameters (expected: yparameters)",
+        "[output_contains] Round-trips back to S (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/mixed-mode-differential-workflow",
+      "prompt": "Load 'default.s4p' and compute the differential-mode S-parameters (Sdd) and the cross-mode S-parameters (Sdc). Print the size of each result. Use default port ordering (option 1).",
+      "expected_output": "Code using s2sdd and s2sdc on the 4-port Parameters array to produce 2x2xK differential and cross-mode results.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Computes differential mode (expected: s2sdd)",
+        "[output_contains] Computes cross mode (expected: s2sdc)",
+        "[output_excludes] Does not use incorrect snp2smp arg order (expected: snp2smp(s, 50, [1 3]))"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/gotcha-roundtrip-s-z-s",
+      "prompt": "Load 'default.s2p', convert S to Z parameters, then convert Z back to S. Compute the maximum absolute error between the original and round-tripped S-parameters. Assert the error is below 1e-10.",
+      "expected_output": "Code that performs S->Z->S round-trip using object constructors and verifies error < 1e-10.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses zparameters (expected: zparameters)",
+        "[output_contains] Round-trips back to S (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/gotcha-snp2smp-arg-order",
+      "prompt": "I have a 4-port connector measured in 'default.s4p'. I only care about the path between ports 1 and 3 \u00e2\u20ac\u201d the other ports should be terminated in 50 Ohm. Extract the 2-port sub-network.",
+      "expected_output": "Code using snp2smp(s4, [1 3], 50) with port list BEFORE impedance. Must NOT use snp2smp(s4, 50, [1 3]).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses snp2smp (expected: snp2smp)",
+        "[output_contains] Specifies ports 1 and 3 (expected: [1 3])",
+        "[output_excludes] Does not put impedance before port list (expected: snp2smp(s, 50, [)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/gotcha-h-g-two-port-only",
+      "prompt": "Load 'default.s2p' and convert to both H-parameters and G-parameters. Print the number of ports for each. These conversions only work for 2-port networks.",
+      "expected_output": "Code using hparameters(s) and gparameters(s) on a 2-port network, confirming NumPorts is 2.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses hparameters (expected: hparameters)",
+        "[output_contains] Uses gparameters (expected: gparameters)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/convert-to-impedance-and-plot",
+      "prompt": "I have a 2-port device measured in 'default.s2p'. I want to see the input impedance as a function of frequency \u00e2\u20ac\u201d plot resistance and reactance separately with proper units.",
+      "expected_output": "Code using zparameters(s) for conversion, rfparam(z,1,1) for extraction, real() and imag() for components, tiledlayout with nexttile for two panels, labeled with Ohm and GHz.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses zparameters (expected: zparameters)",
+        "[output_contains] Uses rfparam (expected: rfparam)",
+        "[output_contains] Uses tiledlayout (expected: tiledlayout)",
+        "[output_contains] Extracts real part (expected: real)",
+        "[output_excludes] Does not use differential Z0 for single-ended (expected: sparameters(sdd, f, 100))"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/abcd-propagation-constant-workflow",
+      "prompt": "I have a 50mm transmission line measured in 'default.s2p'. Extract the propagation constant (alpha + j*beta) from its ABCD parameters using the formula gamma = acosh(A)/L where L is the physical length. Plot attenuation (alpha in dB/m) and phase constant (beta, unwrapped) vs frequency.",
+      "expected_output": "Code using abcdparameters(s), rfparam(abcd,1,1) to get A, computing gamma=acosh(A)/L, extracting alpha=real(gamma) and beta=unwrap(imag(gamma)).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses abcdparameters (expected: abcdparameters)",
+        "[output_contains] Uses acosh for propagation constant (expected: acosh)",
+        "[output_contains] Uses rfparam (expected: rfparam)",
+        "[output_contains] Unwraps phase (expected: unwrap)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/four-port-modal-composition",
+      "prompt": "Load 'connector.s4p' (a 4-port single-ended measurement). Convert to all four mixed-mode quadrants: Sdd, Sdc, Scd, and Scc. Verify that the single-ended S11 can be reconstructed from the modal S-parameters using the formula S11 = (Sdd11 + Scc11)/2. Print the maximum reconstruction error.",
+      "expected_output": "Code using s2sdd, s2sdc, s2scd, s2scc on the 4-port Parameters, then verifying S11=(Sdd(1,1,:)+Scc(1,1,:))/2 against original S(1,1,:).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses s2sdd (expected: s2sdd)",
+        "[output_contains] Uses s2scc (expected: s2scc)",
+        "[output_contains] Verifies modal composition (expected: Sdd)"
+      ]
+    },
+    {
+      "id": "convert-network-parameters/gotcha-differential-z0-doubling",
+      "prompt": "I converted my 4-port single-ended S-parameters (50 ohm) to 2-port differential using s2sdd. Now I want to create a sparameters object from the differential data for further analysis. What reference impedance should I use?",
+      "expected_output": "Code showing that differential mode doubles the reference impedance: sparameters(sdd, freq, 100) for data originally at 50 ohm single-ended. NOT sparameters(sdd, freq, 50).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses 100 ohm for differential (expected: 100)",
+        "[output_excludes] Does not use 50 ohm for differential S-params (expected: sparameters(sdd, f, 50))"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/receiver-chain-elements-workflow",
+      "prompt": "Create a complete receiver chain element set for an rfbudget: LNA (Gain=15dB, NF=2dB, OIP3=35dBm), bandpass filter using rffilter (Butterworth, order 5, passband 2.3-2.5 GHz), downconverting mixer using modulator (Gain=-6dB, NF=10dB, OIP3=20dBm, LO=2.1GHz, ConverterType=Down), IF amplifier (Gain=20dB, NF=4dB, OIP3=30dBm), and a 6dB attenuator. Build an rfbudget at 2.4GHz, -30dBm, 10MHz and print the system gain and NF.",
+      "expected_output": "Code creating amplifier, rffilter, modulator, amplifier, attenuator elements with correct parameters, building rfbudget.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses amplifier (expected: amplifier)",
+        "[output_contains] Uses modulator (expected: modulator)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_excludes] Does not use Loss property on attenuator (expected: 'Loss')"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/link-budget-with-antenna-workflow",
+      "prompt": "Set up a receiver link budget using rfantenna. Create a receive antenna (Type='Receiver', Gain=3dB, TxEIRP=30dBm, PathLoss=60dB) followed by an LNA (Gain=15dB, NF=2dB, OIP3=35dBm). Build an rfbudget at 2.4GHz, -30dBm (note: AvailableInputPower is ignored for Receiver antenna), 10MHz. Print the output power and SNR.",
+      "expected_output": "Code using rfantenna with Type='Receiver' and correct TxEIRP/PathLoss, followed by amplifier in rfbudget.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfantenna (expected: rfantenna)",
+        "[output_contains] Sets receiver type (expected: Receiver)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/receiver-passive-chain-workflow",
+      "prompt": "Build an rfbudget receiver chain that includes passive elements: a DC blocking capacitor (seriesRLC with C=100pF), an LNA (Gain=15dB, NF=2dB, OIP3=35dBm), a shunt RF choke inductor (shuntRLC with L=100nH), and an LC ladder lowpass pi filter using lcladder('lowpasspi', [10e-9 10e-9], [1e-12 1e-12 1e-12], 'LPF'). Analyze at 2.4GHz, -30dBm, 10MHz and print the system gain.",
+      "expected_output": "Code using seriesRLC, shuntRLC, lcladder, amplifier in rfbudget with correct parameters.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses seriesRLC (expected: seriesRLC)",
+        "[output_contains] Uses shuntRLC (expected: shuntRLC)",
+        "[output_contains] Uses lcladder (expected: lcladder)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_excludes] Does not use nonexistent rlcgLine (expected: rlcgLine)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/txline-sparams-workflow",
+      "prompt": "Create a txlineRLCGLine transmission line with LineLength=0.05m, R=0.5 Ohm/m, L=250e-9 H/m, C=100e-12 F/m, G=0 S/m. Extract S-parameters from 1 to 10 GHz (500 points) and plot S21 insertion loss and S11 return loss using tiledlayout. Print the S21 magnitude in dB at 5 GHz.",
+      "expected_output": "Code using txlineRLCGLine with LineLength property, sparameters extraction, tiledlayout plotting.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineRLCGLine (expected: txlineRLCGLine)",
+        "[output_contains] Uses LineLength (expected: LineLength)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_excludes] Does not use Length property (expected: 'Length',)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-amplifier-gain-nf-oip3",
+      "prompt": "Create an amplifier with Gain=15dB, NF=2dB, OIP3=35dBm, and Name='LNA'. Print all three properties to confirm they are set correctly.",
+      "expected_output": "Code using amplifier('Gain', 15, 'NF', 2, 'OIP3', 35, 'Name', 'LNA') with correct name-value pairs.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses amplifier (expected: amplifier)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-attenuator-nf-auto",
+      "prompt": "Create an attenuator with 6 dB attenuation. Show that in an rfbudget, the noise figure automatically equals the attenuation value. Build a simple rfbudget with just the attenuator at 1GHz, 0dBm, 1MHz and print the NF.",
+      "expected_output": "Code using attenuator('Attenuation', 6), building rfbudget, showing NF equals Attenuation automatically.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses attenuator (expected: attenuator)",
+        "[output_contains] Reads noise figure (expected: NF)",
+        "[output_excludes] Does not use Loss property (expected: 'Loss')"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-phaseshift-s21-angle",
+      "prompt": "Create a phaseshift element with PhaseShift=45 degrees. Place it in a single-element rfbudget at 1GHz, 0dBm, 1MHz. Convert the budget to a circuit, extract S-parameters, and verify that the S21 phase angle is +45 degrees.",
+      "expected_output": "Code using phaseshift('PhaseShift', 45), rfbudget, circuit(b), sparameters, checking angle(S21).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses phaseshift (expected: phaseshift)",
+        "[output_contains] Converts to circuit (expected: circuit)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-rfantenna-receiver-gain",
+      "prompt": "Create an rfantenna of Type='Receiver' with Gain=3dB, TxEIRP=30dBm, PathLoss=60dB. Print the properties. Explain that the received power is TxEIRP - PathLoss + Gain = -27 dBm.",
+      "expected_output": "Code using rfantenna('Type', 'Receiver', 'Gain', 3, 'TxEIRP', 30, 'PathLoss', 60).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfantenna (expected: rfantenna)",
+        "[output_contains] Sets receiver type (expected: Receiver)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-modulator-down-if-frequency",
+      "prompt": "Create a downconverting modulator with LO=2.1GHz and ConverterType='Down'. Place it in an rfbudget at 2.4GHz input, -30dBm, 10MHz. Print the OutputFrequency to show the IF = RF - LO = 0.3 GHz.",
+      "expected_output": "Code using modulator with ConverterType='Down', rfbudget, printing OutputFrequency showing 0.3 GHz.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses modulator (expected: modulator)",
+        "[output_contains] Reads output frequency (expected: OutputFrequency)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-rffilter-lc-synthesis",
+      "prompt": "I need a 5th-order Butterworth bandpass filter for my 2.3-2.5 GHz band. Create it using rffilter, extract S-parameters from 1 to 4 GHz, and verify the insertion loss is below 1 dB at center frequency.",
+      "expected_output": "Code using rffilter with correct ResponseType (not FilterType='Bandpass'), extracting sparameters, checking passband loss.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rffilter (expected: rffilter)",
+        "[output_contains] Uses ResponseType (expected: ResponseType)",
+        "[output_excludes] Does not confuse ResponseType with FilterType for bandpass (expected: 'FilterType', 'Bandpass')"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-seriesrlc-dc-block-rfbudget",
+      "prompt": "I need a DC blocking capacitor (100 pF) at the input of my LNA (15 dB gain, 2 dB NF, 35 dBm OIP3) in an rfbudget at 2.4 GHz, -30 dBm, 10 MHz. Show me how to add it and verify it doesn't add significant RF loss.",
+      "expected_output": "Code using seriesRLC for DC block in rfbudget chain.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses seriesRLC (expected: seriesRLC)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-lcladder-lowpasspi-positional",
+      "prompt": "Create an LC ladder lowpass pi filter using positional arguments: lcladder('lowpasspi', [10e-9 10e-9], [1e-12 1e-12 1e-12], 'LPF'). Note that lcladder uses positional constructor syntax, not name-value pairs. Print the filter name to confirm creation.",
+      "expected_output": "Code using lcladder with positional args (topology, L, C, name), not NV pairs.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses lcladder (expected: lcladder)",
+        "[output_contains] Uses lowpasspi topology (expected: lowpasspi)",
+        "[output_excludes] Does not use name-value Topology arg (expected: 'Topology', 'LowpassPi')"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-linelength-not-length",
+      "prompt": "I need to model a 50mm transmission line section with specified RLCG values. Create the line element and set it to 50mm physical length. Print the length to confirm.",
+      "expected_output": "Code using txlineRLCGLine with LineLength=0.05, not Length.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses LineLength (expected: LineLength)",
+        "[output_contains] Uses txlineRLCGLine (expected: txlineRLCGLine)",
+        "[output_excludes] Does not use nonexistent Length property (expected: 'Length',)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-mixed-chain-rfbudget",
+      "prompt": "Build an rfbudget chain mixing passive and active elements: DC block (seriesRLC C=100pF), LNA (Gain=15dB, NF=2dB, OIP3=35dBm), and RF choke (shuntRLC L=100nH). Analyze at 2.4GHz, -30dBm, 10MHz. Print the gain at each stage to show the passive elements contribute near-zero insertion loss at RF.",
+      "expected_output": "Code with seriesRLC + amplifier + shuntRLC in rfbudget, printing per-stage TransducerGain.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses seriesRLC (expected: seriesRLC)",
+        "[output_contains] Uses shuntRLC (expected: shuntRLC)",
+        "[output_contains] Reads transducer gain (expected: TransducerGain)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/element-comparison-sparams-workflow",
+      "prompt": "Design three rffilter objects: a 5th-order Butterworth bandpass (2.3-2.5 GHz), a 5th-order Chebyshev bandpass (2.3-2.5 GHz), and a 3rd-order Butterworth lowpass (3 GHz cutoff). Extract S-parameters for all three from 1 to 5 GHz and plot their S21 responses on the same axes in dB for comparison. Use a legend to identify each filter.",
+      "expected_output": "Code creating three rffilter objects with different ResponseType/FilterType, extracting sparameters, plotting all S21 in dB on same axes with legend.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rffilter (expected: rffilter)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_contains] Uses legend (expected: legend)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/bias-tee-passive-network-workflow",
+      "prompt": "Build a bias tee network for an LNA: a DC blocking capacitor (seriesRLC, C=100pF) at the input, followed by a bias feed inductor (shuntRLC, L=100nH), then an LNA with 15 dB gain and 2 dB NF. Create an rfbudget at 2.4 GHz, -30 dBm, 10 MHz and print the cascaded gain and noise figure. Also extract S-parameters of just the bias tee passive elements (seriesRLC + shuntRLC) in a circuit object and plot S21.",
+      "expected_output": "Code using seriesRLC for DC block and shuntRLC for bias inductor in rfbudget, plus a separate circuit with those elements to extract and plot S21.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses seriesRLC (expected: seriesRLC)",
+        "[output_contains] Uses shuntRLC (expected: shuntRLC)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-nport-input-output-rfbudget",
+      "prompt": "I have a 4-port coupler measured as a .s4p file. I want to use it in my rfbudget chain as a 2-port element (input on port 1, output on port 2, with ports 3 and 4 terminated internally). How do I set the Input and Output port indices on an nport object for use in rfbudget?",
+      "expected_output": "Code creating nport from S-parameter data with Input and Output properties set to specify which physical ports are the rfbudget signal path. Example: np = nport(sData, 'Coupler'); np.Input = 1; np.Output = 2;",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses nport (expected: nport)",
+        "[output_contains] Sets Input port (expected: Input)",
+        "[output_contains] Sets Output port (expected: Output)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-phaseshift-txlinecoaxial-elements",
+      "prompt": "I'm designing a phased-array receiver chain and need to model a 45-degree phase shifter followed by a 1-meter coaxial cable run (50 ohm, loss 0.1 dB/m at 2.4 GHz). Create both elements and put them in an rfbudget at 2.4 GHz, -30 dBm, 10 MHz. Print the phase and insertion loss contributed by each element.",
+      "expected_output": "Code using phaseshift(45, 'PS') for the phase shifter and txlineCoaxial with LossPerLength and LineLength for the cable. Both in rfbudget.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses phaseshift (expected: phaseshift)",
+        "[output_contains] Uses txlineCoaxial (expected: txlineCoaxial)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "create-rfbudget-elements/gotcha-rffilter-responsetype-not-filtertype",
+      "prompt": "Create a bandpass filter for my receiver chain using rffilter. I need a 5th-order Chebyshev with passband from 2.3 to 2.5 GHz and 0.5 dB ripple. Add it to an rfbudget and print its insertion loss at 2.4 GHz center frequency.",
+      "expected_output": "Code using rffilter with ResponseType='Bandpass' and FilterType='Chebyshev' (ResponseType for band shape, FilterType for prototype). Must use PassbandFrequency for the band edges.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rffilter (expected: rffilter)",
+        "[output_contains] Sets ResponseType (expected: ResponseType)",
+        "[output_excludes] Does not use FilterType for bandpass shape (expected: FilterType='Bandpass')"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/cascade-three-stage-workflow",
+      "prompt": "Create three synthetic 2-port S-parameter networks representing a connector, a PCB trace, and another connector. Use 201 frequency points from 1 GHz to 10 GHz. The connectors should have S11=0.1, S21=0.9, S12=0.9, S22=0.1. The trace should have S11=0.05, S21=0.85, S12=0.85, S22=0.05. Cascade all three using cascadesparams and plot S21 in dB of the individual trace and the cascaded chain on the same figure.",
+      "expected_output": "Code creating 3 sparameters objects, cascading with cascadesparams(s1, s2, s3), plotting S21 comparison using rfparam.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses cascadesparams (expected: cascadesparams)",
+        "[output_contains] Uses rfparam (expected: rfparam)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/deembed-fixture-workflow",
+      "prompt": "I measured a DUT through two test fixtures (one on each side). I have S-parameters for the fixtures and for the full fixture-DUT-fixture chain. Show me how to remove both fixtures and recover the DUT. Use synthetic data: DUT has S21=0.7, fixtures have S21=0.95, all over 500 points from 100 MHz to 6 GHz. Verify the recovery is accurate.",
+      "expected_output": "Code using cascadesparams to build measured chain, deembedsparams(measured, fix1, fix2) to recover DUT, computing max error with rfparam.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses deembedsparams (expected: deembedsparams)",
+        "[output_contains] Uses cascadesparams (expected: cascadesparams)",
+        "[output_contains] Uses rfparam (expected: rfparam)",
+        "[output_excludes] Does not use 2-arg deembedsparams (expected: deembedsparams(sMeas, sFixture))"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/gotcha-cascadesparams-valid-2port",
+      "prompt": "Create two synthetic 2-port S-parameter networks on the same 100-point frequency grid from 1 GHz to 5 GHz. Cascade them using cascadesparams and verify the result is a valid 2-port sparameters object. Print the number of ports and frequencies.",
+      "expected_output": "Code using cascadesparams producing a 2-port result, verifying size of Parameters is 2x2xN.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses cascadesparams (expected: cascadesparams)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/gotcha-deembed-left-side-with-thru",
+      "prompt": "Create two 2-port networks A and B on the same frequency grid and cascade them into AB = cascadesparams(A, B). Then de-embed only the left side (A) by passing an ideal thru for the right fixture: deembedsparams(AB, A, thru). The ideal thru has S11=S22=0, S12=S21=1. Verify the recovered network matches B within 1e-10.",
+      "expected_output": "Code constructing an ideal thru sparameters object, calling deembedsparams(AB, A, thru), and checking max error < 1e-10.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses deembedsparams (expected: deembedsparams)",
+        "[output_contains] Uses thru (expected: thru)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/gotcha-deembed-right-side-with-thru",
+      "prompt": "Create two 2-port networks A and B on the same frequency grid and cascade them into AB = cascadesparams(A, B). Then de-embed only the right side (B) by passing an ideal thru for the left fixture: deembedsparams(AB, thru, B). The ideal thru has S11=S22=0, S12=S21=1. Verify the recovered network matches A within 1e-10.",
+      "expected_output": "Code constructing an ideal thru, calling deembedsparams(AB, thru, B), and checking max error < 1e-10.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses deembedsparams (expected: deembedsparams)",
+        "[output_contains] Uses thru (expected: thru)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/gotcha-frequency-mismatch-rejected",
+      "prompt": "I have two S-parameter blocks measured on different frequency grids (one is 1-5 GHz with 100 points, the other is 2-6 GHz with 200 points). I need to cascade them. How do I handle the frequency mismatch?",
+      "expected_output": "Code demonstrating the frequency mismatch error, then using rfinterp1 to align frequencies before successful cascadesparams call.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfinterp1 (expected: rfinterp1)",
+        "[output_contains] Uses cascadesparams (expected: cascadesparams)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/half-fixture-2x-through-workflow",
+      "prompt": "I have a 2x-through measurement (two identical fixtures back-to-back, no DUT in between). I need to extract a single fixture from this measurement using the sqrtm T-parameter technique, then de-embed both fixtures from my DUT measurement. Create synthetic data: fixture has 0.5 dB loss and 15 ps delay. Show the full workflow including s2t, sqrtm, t2s, and deembedsparams.",
+      "expected_output": "Code creating 2x-through as cascadesparams(fix, fix), converting to T-params with s2t, using sqrtm to extract single fixture, converting back with t2s, then deembedsparams(measured, fixture, fixture).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses s2t for T-parameter conversion (expected: s2t)",
+        "[output_contains] Uses sqrtm for half extraction (expected: sqrtm)",
+        "[output_contains] Uses t2s to convert back (expected: t2s)",
+        "[output_contains] Uses deembedsparams (expected: deembedsparams)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/gotcha-newref-before-cascade",
+      "prompt": "I have a connector measured at 50 ohms and a cable measured at 75 ohms. I need to cascade them. What happens if I cascade with mismatched reference impedances, and how do I fix it?",
+      "expected_output": "Code showing that reference impedances must match before cascading. Use newref(s75, 50) to re-reference the 75-ohm data to 50 ohms before calling cascadesparams.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses newref to align impedance (expected: newref)",
+        "[output_contains] Uses cascadesparams (expected: cascadesparams)"
+      ]
+    },
+    {
+      "id": "deembed-rf-cascade/four-port-deembed-workflow",
+      "prompt": "I have a 4-port DUT measurement that includes fixtures on both sides (also 4-port). De-embed the fixtures from the measurement. Use synthetic 4-port data: fixtures have S11=S22=S33=S44=0.05 and through connections S21=S12=S43=S34=0.9 with coupling S31=S42=0.01. Show that deembedsparams works with 4-port networks using the same 3-argument syntax.",
+      "expected_output": "Code creating 4-port sparameters objects (4x4xN), cascading fixtures+DUT, then using deembedsparams(measured4p, fixture4p, fixture4p) to recover the DUT.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses deembedsparams with 4-port (expected: deembedsparams)",
+        "[output_contains] Uses 4-port sparameters (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "design-matching-network/design-l-match-workflow",
+      "prompt": "I need to match 50 Ohm to a 75+20j Ohm load at 2.4 GHz with at least 200 MHz bandwidth. Design an L-section match, check what topologies are available, add a return loss requirement of -15 dB across the band, pick the best one, and show me the frequency response.",
+      "expected_output": "Code using matchingnetwork with Components=2, circuitDescriptions to inspect, addEvaluationParameter for gammain, exportCircuits, and rfplot.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses matchingnetwork (expected: matchingnetwork)",
+        "[output_contains] Inspects candidates (expected: circuitDescriptions)",
+        "[output_contains] Adds evaluation parameter (expected: addEvaluationParameter)",
+        "[output_excludes] Does not use Components=1 (expected: Components', 1)"
+      ]
+    },
+    {
+      "id": "design-matching-network/richards-stub-conversion-workflow",
+      "prompt": "Design a 3-component matching network (Components=3) for 50 Ohm to 100+50j Ohm at 1 GHz. Convert the best lumped design to transmission line stubs using the Richards transformation at 1 GHz. Extract S-parameters of the stub circuit and plot S11 in dB.",
+      "expected_output": "Code using matchingnetwork with Components=3, richards(mn, 1e9) for stub conversion, sparameters on the resulting circuit, and rfplot or manual dB plot.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses matchingnetwork (expected: matchingnetwork)",
+        "[output_contains] Uses richards (expected: richards)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-components2-topologies",
+      "prompt": "Create a matchingnetwork with Components=2 for 50 Ohm source to 75+20j Ohm load at 2.4 GHz. How many candidate topologies does it generate? Use circuitDescriptions to find out.",
+      "expected_output": "Code using matchingnetwork with Components=2 and circuitDescriptions, showing it produces 2 L-section topologies.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses matchingnetwork (expected: matchingnetwork)",
+        "[output_contains] Inspects candidates (expected: circuitDescriptions)"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-components3-more-topologies",
+      "prompt": "Create a matchingnetwork with Components=3 and show it generates more candidate topologies than Components=2. Use circuitDescriptions for both and compare the counts.",
+      "expected_output": "Code creating two matchingnetwork objects with Components=2 and Components=3, using circuitDescriptions on each, showing Components=3 produces 8 topologies vs 2.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets components (expected: Components)",
+        "[output_contains] Inspects candidates (expected: circuitDescriptions)"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-bandwidth-lowercase-w",
+      "prompt": "Create a matchingnetwork and access its bandwidth property. The property name is Bandwidth (with lowercase 'w'), not BandWidth. Print the bandwidth value.",
+      "expected_output": "Code accessing mn.Bandwidth (lowercase w), not mn.BandWidth.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses Bandwidth (expected: Bandwidth)"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-components1-rejected",
+      "prompt": "Try to create a matchingnetwork with Components=1. This should error because the valid range is 2-3. Wrap in try-catch and confirm the error.",
+      "expected_output": "Code using try-catch around matchingnetwork with Components=1, catching and displaying the error.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets components (expected: Components)",
+        "[output_contains] Uses try-catch (expected: try)"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-addevaluationparameter-gammain",
+      "prompt": "I want to rank my matching network candidates by how well they meet a -15 dB return loss target across 2.3-2.5 GHz with double weight on that spec. How do I add this criterion and view the evaluation results?",
+      "expected_output": "Code using addEvaluationParameter(mn, 'gammain', '<', -15, [2.3e9 2.5e9], 2) and getEvaluationParameters.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Adds evaluation parameter (expected: addEvaluationParameter)",
+        "[output_contains] Uses gammain (expected: gammain)",
+        "[output_excludes] Does not use S11 as parameter name (expected: addEvaluationParameter(mn, 'S11')"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-richards-stub-circuit",
+      "prompt": "Design a matching network with Components=2 at 2.4 GHz. Convert the lumped design to transmission line stubs using the Richards transformation. Verify the result is a circuit object.",
+      "expected_output": "Code using richards(mn, 2.4e9) to convert lumped to stubs.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses richards (expected: richards)"
+      ]
+    },
+    {
+      "id": "design-matching-network/matching-visualize-compare-workflow",
+      "prompt": "Design L-section and Pi-section matching networks to match 50 Ohm to 75+25j Ohm at 2 GHz. Show the frequency response (rfplot) for both designs and a Smith chart (smithplot) of the best candidate so I can visually compare the match quality.",
+      "expected_output": "Code creating matchingnetwork with Components=2 and Components=3 (or 'Pi'), using rfplot for frequency response and smithplot for impedance visualization.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses matchingnetwork (expected: matchingnetwork)",
+        "[output_contains] Uses rfplot (expected: rfplot)",
+        "[output_contains] Uses smithplot (expected: smithplot)",
+        "[output_excludes] Does not call smithplot on circuit directly (expected: smithplot(ckt))"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-4arg-sparameters-form",
+      "prompt": "I designed a matching network and want to evaluate its S-parameters when connected between a 50-ohm source and a complex load. How do I use the 4-argument sparameters call with matchingnetwork to specify the circuit index?",
+      "expected_output": "Code using sparameters(mn, freq, Z0, circuitIndex) \u00e2\u20ac\u201d the 4-argument form that selects which candidate topology to evaluate. NOT sparameters(mn, freq, [Zs Zl]).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses sparameters with 4 args (expected: sparameters(mn",
+        "[output_excludes] Does not use [Zs Zl] array form (expected: sparameters(mn, freq, [50 75]))"
+      ]
+    },
+    {
+      "id": "design-matching-network/gotcha-performancescore-column",
+      "prompt": "I have a matchingnetwork with 8 candidate topologies (Components=3) and evaluation parameters set. How do I rank them by overall quality? Which column in circuitDescriptions shows the score?",
+      "expected_output": "Code using circuitDescriptions(mn) and accessing the performanceScore column to rank topologies. performanceScore is a column in the output table, not a separate function.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses circuitDescriptions (expected: circuitDescriptions)",
+        "[output_contains] References performanceScore (expected: performanceScore)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/fit-and-verify-workflow",
+      "prompt": "Load 'default.s2p', fit the S-parameters to a rational model using the rational object, then verify the fit by plotting original vs fitted S21 magnitude in dB on the same axes. Print the number of poles and the fit error in dB.",
+      "expected_output": "Code using rational(s) to fit, freqresp to get fitted response, rfparam for original S21, and 20*log10(abs(...)) for dB. Plots both on same figure.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rational (expected: rational)",
+        "[output_contains] Uses freqresp (expected: freqresp)",
+        "[output_contains] Uses rfparam (expected: rfparam)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/tdr-from-s11-workflow",
+      "prompt": "I have a transmission line measurement in 'passive.s2p'. I want to compute a TDR plot to see impedance discontinuities along the line. Show me the workflow from S11 data to time-domain step response plotted in nanoseconds.",
+      "expected_output": "Code that extracts S11, computes (s11+1)/2, fits with rational, uses stepresp, and plots vs time in ns.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rational (expected: rational)",
+        "[output_contains] Uses stepresp (expected: stepresp)",
+        "[output_contains] Uses rfparam (expected: rfparam)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/gotcha-rational-numpoles",
+      "prompt": "Load 'default.s2p' and fit it with the rational object. Print the number of poles in the resulting model. The fit must produce a model with NumPoles > 0.",
+      "expected_output": "Code using rational(s) and accessing fit.NumPoles, confirming it is greater than zero.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rational (expected: rational)",
+        "[output_contains] Accesses NumPoles (expected: NumPoles)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/gotcha-causal-poles-lhp",
+      "prompt": "Fit 'default.s2p' with rational using Causal=true. Verify that all poles lie in the left half-plane (negative real part). Print whether the model is causal using iscausal.",
+      "expected_output": "Code using rational(s, Causal=true), checking real(fit.Poles) < 0 or iscausal(fit).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets causal constraint (expected: Causal)",
+        "[output_contains] Checks causality (expected: iscausal)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/gotcha-stepresp-cell-multiport",
+      "prompt": "I fit a rational model to my 2-port S-parameter data in 'default.s2p'. Now I need the S21 step response (TDT). How do I compute and access it? I'm getting confused indexing the output.",
+      "expected_output": "Code using stepresp(fit, Ts, N, tRise) and accessing result as yStep{2,1} since multi-port returns cell arrays.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses stepresp (expected: stepresp)",
+        "[output_contains] Checks for cell array (expected: iscell)",
+        "[output_excludes] Does not index stepresp result as matrix (expected: yStep(2,1))"
+      ]
+    },
+    {
+      "id": "fit-rational-model/gotcha-passivity-scalar-norm",
+      "prompt": "Fit 'default.s2p' with rational and check the passivity of the model. Use the passivity function with an output argument to get the scalar norm. Print the result.",
+      "expected_output": "Code using pNorm = passivity(fit) to get scalar maximum passivity norm, and checking ispassive(fit).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses passivity (expected: passivity)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/gotcha-tendstozero-tdr",
+      "prompt": "I'm doing TDR analysis \u00e2\u20ac\u201d fitting S11 reflection data to a rational model and computing the step response. The model should tend to a non-zero DC value (the final impedance). How do I configure the fit to allow this?",
+      "expected_output": "Code using rational or rationalfit with TendsToZero=false, since TDR reflection data does NOT tend to zero at DC (it settles to a finite value representing the final impedance mismatch).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Sets TendsToZero=false (expected: TendsToZero)",
+        "[output_contains] Uses stepresp (expected: stepresp)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/extrapolate-beyond-measured-range",
+      "prompt": "My measured data in 'default.s2p' only goes from 100 MHz to 6 GHz. I need S-parameters up to 12 GHz for my SerDes simulation. Use the rational fit to extrapolate beyond the measured range. Fit the data, then compute freqresp on a new grid from 100 MHz to 12 GHz. Plot both measured and extrapolated S21 on the same axes to show the extrapolation.",
+      "expected_output": "Code fitting with rational(s), then using freqresp(fit, newFreqs) to extrapolate, plotting original and extended S21.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rational (expected: rational)",
+        "[output_contains] Uses freqresp on extended grid (expected: freqresp)"
+      ]
+    },
+    {
+      "id": "fit-rational-model/four-port-rational-fit-workflow",
+      "prompt": "Load the 4-port S-parameter file 'connector.s4p'. Fit a rational model to the entire 4-port data. Compute the S21 impulse response from the fit using timeresp. Plot it in nanoseconds. Print the number of poles.",
+      "expected_output": "Code using rational(s4) on 4-port data, timeresp(fit) or freqresp for response, accessing the {2,1} element of the cell array output for multi-port.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rational (expected: rational)",
+        "[output_contains] Uses timeresp or freqresp (expected: resp)"
+      ]
+    },
+    {
+      "id": "manage-sparameters/load-inspect-visualize-workflow",
+      "prompt": "Load the sample Touchstone file 'default.s2p' that ships with RF Toolbox. Extract S21 in dB and plot S11 on a Smith chart. Use a 2-panel tiled layout with rfplot for S21 magnitude in the first tile and smithplot for S11 in the second tile. Save the figure with exportgraphics.",
+      "expected_output": "Code that loads sparameters from default.s2p, uses rfparam to extract S21, converts to dB with 20*log10(abs(...)), creates a tiledlayout(1,2) figure with rfplot and smithplot, and exports with exportgraphics.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses sparameters (expected: sparameters)",
+        "[output_contains] Uses rfparam (expected: rfparam)",
+        "[output_contains] Uses tiledlayout (expected: tiledlayout)",
+        "[output_contains] Uses smithplot (expected: smithplot)"
+      ]
+    },
+    {
+      "id": "manage-sparameters/interpolate-reref-export-workflow",
+      "prompt": "I have measured data in 'passive.s2p' but my simulation tool needs it on a uniform 200-point grid from 1 to 5 GHz, referenced to 75 Ohm, in real-imaginary Touchstone format. Process and export it, then verify the exported file matches.",
+      "expected_output": "Code that loads sparameters, interpolates with rfinterp1, re-references with newref(s,75), exports with rfwrite using 'RI' format, reloads, and computes max error.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfinterp1 (expected: rfinterp1)",
+        "[output_contains] Uses newref (expected: newref)",
+        "[output_contains] Uses rfwrite (expected: rfwrite)",
+        "[output_contains] Uses RI format (expected: 'RI')",
+        "[output_excludes] Does not pass Z0 to sparameters constructor (expected: sparameters('passive.s2p', 75))"
+      ]
+    },
+    {
+      "id": "manage-sparameters/gotcha-rfparam-returns-complex",
+      "prompt": "Load 'default.s2p' and extract the S21 parameter. Confirm that rfparam returns complex values (not dB). Print the class of the result and whether it is real or complex.",
+      "expected_output": "Code using rfparam(s,2,1) that shows the result is class double and complex (not real). Must use 20*log10(abs(...)) to convert to dB, not assume rfparam returns dB directly.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfparam (expected: rfparam)",
+        "[output_contains] Converts to dB (expected: 20*log10(abs()",
+        "[output_excludes] Does not treat rfparam output as dB directly (expected: rfparam(s,2,1))"
+      ]
+    },
+    {
+      "id": "manage-sparameters/gotcha-newref-not-constructor",
+      "prompt": "My measured data is in a 50 Ohm system but I need to re-reference it to 75 Ohm for my cable TV analysis. How do I change the reference impedance of a loaded Touchstone file?",
+      "expected_output": "Code that loads with sparameters('file.s2p') and then uses newref(s, 75) to change impedance. Must NOT use sparameters('file.s2p', 75).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses newref (expected: newref)",
+        "[output_excludes] Does not pass Z0 to sparameters file constructor (expected: sparameters('default.s2p', 75))"
+      ]
+    },
+    {
+      "id": "manage-sparameters/gotcha-groupdelay-units",
+      "prompt": "Load 'passive.s2p' and compute the S21 group delay. Plot it in nanoseconds vs frequency in GHz. Label axes properly.",
+      "expected_output": "Code that uses groupdelay(s,2,1) or groupdelay(s), multiplies by 1e9 for ns, divides frequencies by 1e9 for GHz, and labels axes with units.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses groupdelay (expected: groupdelay)",
+        "[output_contains] Scales units (expected: 1e9)"
+      ]
+    },
+    {
+      "id": "manage-sparameters/smithchart-and-group-delay-sidebyside",
+      "prompt": "Load 'lnadata.s2p' and create a figure with two panels: a Smith chart of S11 on the left, and a group delay plot for S21 on the right. Label everything clearly.",
+      "expected_output": "Code using smithplot for S11, groupdelay for S21, tiledlayout(1,2) with nexttile for side-by-side layout.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses smithplot (expected: smithplot)",
+        "[output_contains] Uses groupdelay (expected: groupdelay)",
+        "[output_contains] Uses tiledlayout (expected: tiledlayout)"
+      ]
+    },
+    {
+      "id": "manage-sparameters/snp2smp-subnetwork-extraction",
+      "prompt": "I have a 12-port S-parameter measurement of a connector (create synthetic 12-port data: identity-like with -30dB coupling, 201 frequencies from 1-20 GHz). I only need ports 1 through 4 as a 4-port sub-network. Extract them using the proper function that terminates unused ports in matched impedance.",
+      "expected_output": "Code creating 12-port sparameters, then using snp2smp(s12, [1 2 3 4], 50) to extract 4-port sub-network with unused ports properly terminated.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses snp2smp (expected: snp2smp)",
+        "[output_excludes] Does not use wrong argument order (expected: snp2smp(s, 50, [1 2 3 4]))"
+      ]
+    },
+    {
+      "id": "manage-sparameters/ieee370-quality-check-workflow",
+      "prompt": "I characterized a PCB fixture and want to validate the data quality using IEEE 370 frequency-domain checks. Load 'default.s2p', run the IEEE 370 quality check function, and report the quality metrics (reciprocity, passivity, causality scores).",
+      "expected_output": "Code using ieee370QualityCheckFrequencyDomain(s) to run the quality analysis. This function takes a sparameters object and returns quality metrics.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses IEEE 370 check function (expected: ieee370QualityCheckFrequencyDomain)"
+      ]
+    },
+    {
+      "id": "manage-sparameters/sparameters-from-data-constructor",
+      "prompt": "I have S-parameter data in a CSV file (not Touchstone) with columns: freq, S11_real, S11_imag, S21_real, S21_imag, S12_real, S12_imag, S22_real, S22_imag. The data covers 201 frequencies from 1 to 10 GHz at 50 ohms. Create synthetic data matching this format and construct a valid sparameters object from the raw complex matrix. Show the constructor call clearly.",
+      "expected_output": "Code constructing sparameters(data, freq, Z0) where data is 2x2xN complex array, freq is Nx1 vector in Hz, Z0 is 50. No minimum point count requirement.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Constructs sparameters from data (expected: sparameters(",
+        "[output_excludes] Does not hallucinate minimum point count (expected: 51)"
+      ]
+    },
+    {
+      "id": "model-si-channel/trace-via-channel-workflow",
+      "prompt": "Build a signal integrity channel model consisting of: a txlineWRLGC PCB trace (Lo=350e-9, Co=130e-12, Ro=2.0, Rs=5e-4, Gd=1e-11, LineLength=0.05) with a lumped via model (series inductor 0.5nH + shunt capacitor 0.1pF to ground) in the middle, and another txlineWRLGC trace segment (same parameters, LineLength=0.03) after the via. Use circuit objects with add() and setports(). Extract S-parameters from 100 MHz to 10 GHz (500 points) and plot S21 insertion loss and S11 return loss using tiledlayout.",
+      "expected_output": "Code using circuit, add, setports with txlineWRLGC and lumped via subcircuit, extracting sparameters and plotting S21/S11.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineWRLGC (expected: txlineWRLGC)",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_excludes] Does not use Length instead of LineLength (expected: 'Length',)"
+      ]
+    },
+    {
+      "id": "model-si-channel/multiport-termination-workflow",
+      "prompt": "Create a synthetic 4-port S-parameter network (use sparameters() with a 4x4xN array over 200 frequencies from 1-20 GHz). Embed it in a circuit using the 4-node shorthand form (negatives grounded). Terminate ports 2 and 4 with 50-ohm resistors and expose only ports 1 and 3 as external ports using setports. Extract 2-port S-parameters and plot S21.",
+      "expected_output": "Code creating 4-port sparameters, embedding nport in circuit with add(), adding resistor(50) terminations on unused ports, using setports to expose 2 ports.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses nport (expected: nport)",
+        "[output_contains] Uses resistor (expected: resistor)",
+        "[output_contains] Sets ports (expected: setports)"
+      ]
+    },
+    {
+      "id": "model-si-channel/gotcha-nport-circuit-pipeline",
+      "prompt": "I have a connector characterized in 'default.s2p' and need to include it in my channel circuit model. How do I embed this 2-port Touchstone file as an element in a circuit and extract the overall S-parameters from 1 to 10 GHz?",
+      "expected_output": "Code using nport('default.s2p'), add(ckt, [nodes], np) with 4 nodes, setports, and sparameters extraction.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses nport (expected: nport)",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_excludes] Does not use 2-node mapping for nport (expected: add(ckt, [1 2], np)"
+      ]
+    },
+    {
+      "id": "model-si-channel/gotcha-txlinewrlgc-properties",
+      "prompt": "Create a txlineWRLGC transmission line modeling a 50mm PCB trace with skin effect and dielectric loss. Set Lo=350e-9 H/m, Co=130e-12 F/m, Ro=2.0 Ohm/m, Rs=5e-4 Ohm/m/sqrt(Hz), Gd=1e-11 S/m/Hz, and LineLength=0.05 m. Print all the property values to confirm they are set correctly.",
+      "expected_output": "Code creating txlineWRLGC and setting Lo, Co, Ro, Rs, Gd, LineLength properties correctly (not using Length).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineWRLGC (expected: txlineWRLGC)",
+        "[output_contains] Uses LineLength (expected: LineLength)",
+        "[output_excludes] Does not use nonexistent Length property (expected: 'Length',)"
+      ]
+    },
+    {
+      "id": "model-si-channel/gotcha-mixed-topology-channel",
+      "prompt": "I need to model a PCB trace with a via transition in the middle. The trace is 50mm of stripline (Lo=350e-9, Co=130e-12, Ro=2, Rs=5e-4, Gd=1e-11) and the via is approximately a 0.5 nH series inductor with 0.1 pF shunt cap to ground. Build the channel model and extract S-parameters from 100 MHz to 10 GHz.",
+      "expected_output": "Code combining txlineWRLGC and lumped elements in a single circuit, using proper node wiring and 4-terminal mappings.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineWRLGC (expected: txlineWRLGC)",
+        "[output_contains] Uses circuit (expected: circuit)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)",
+        "[output_excludes] Does not use cascadesparams for circuit composition (expected: cascadesparams)"
+      ]
+    },
+    {
+      "id": "model-si-channel/gotcha-4port-nport-termination",
+      "prompt": "Create a synthetic 4-port sparameters object (identity-like with small coupling). Embed it as an nport in a circuit. Show that if you expose only 2 ports without terminating the other 2, the result differs from when you properly terminate unused ports with 50-ohm resistors. Print S21 magnitude at the first frequency for both cases to demonstrate the difference.",
+      "expected_output": "Code showing two circuit configurations: one without termination on unused ports and one with resistor(50) terminations, comparing the different S21 results.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses resistor (expected: resistor)",
+        "[output_contains] Uses nport (expected: nport)",
+        "[output_contains] Sets ports (expected: setports)"
+      ]
+    },
+    {
+      "id": "model-si-channel/crosstalk-analysis-workflow",
+      "prompt": "Build a simple RC interconnect model with crosstalk coupling: two signal paths sharing a coupling capacitor (2 pF). Each path has a 50 Ohm series resistor and 1 pF shunt capacitor to ground. Extract S-parameters for the main signal path and the crosstalk path separately using clone and different setports configurations, then plot both S21 responses on the same axes to compare through vs crosstalk levels.",
+      "expected_output": "Code using circuit with resistors and capacitors for two coupled paths, clone() to create separate analyses, setports() to select different port pairs, and overlaid S21 plots with legend.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses clone (expected: clone)",
+        "[output_contains] Sets ports (expected: setports)",
+        "[output_contains] Extracts S-parameters (expected: sparameters)"
+      ]
+    },
+    {
+      "id": "model-si-channel/differential-s2sdd-vs-setports",
+      "prompt": "I have a 4-port connector file 'connector.s4p'. I need to extract the differential insertion loss (SDD21). Should I use setports with differential node pairs, or should I extract S-parameters and then apply s2sdd? Show both approaches and explain when to use each.",
+      "expected_output": "Code showing: (1) load the .s4p, use s2sdd to convert single-ended 4-port to 2-port differential S-params (this is the correct approach for modal decomposition). (2) Explain that setports defines port topology but does NOT perform the mathematical modal transformation -- s2sdd does. Use s2sdd when you need true differential extraction from a 4-port measurement.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses s2sdd (expected: s2sdd)",
+        "[output_contains] Uses sparameters (expected: sparameters)",
+        "[output_excludes] Does not claim setports performs differential extraction (expected: setports(ckt, [1 3], [2 4])"
+      ]
+    },
+    {
+      "id": "model-si-channel/txlinew-table-workflow",
+      "prompt": "I have measured RLGC data from a field solver at 5 frequency points (1, 5, 10, 15, 20 GHz) for a 50mm PCB trace: R=[2.0 4.5 6.3 7.7 8.9] Ohm/m, L=[350 348 347 346 346]*1e-9 H/m, G=[0.01 0.05 0.1 0.15 0.2] S/m, C=[130 130 130 130 130]*1e-12 F/m. Create a txlineWtable model with these tabulated parameters, set the high-frequency asymptotes Lhf and Chf, embed it in a circuit, and extract S-parameters from 1 to 20 GHz.",
+      "expected_output": "Code using txlineWtable with separate Rfreq/Lfreq/Gfreq/Cfreq frequency vectors, Rdata/Ldata/Gdata/Cdata arrays, Lhf/Chf asymptote values, LineLength, embedded in circuit with add() and setports().",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses txlineWtable (expected: txlineWtable)",
+        "[output_contains] Sets Lhf asymptote (expected: Lhf)",
+        "[output_contains] Sets Chf asymptote (expected: Chf)",
+        "[output_excludes] Does not use single Freq property (expected: 'Freq',)"
+      ]
+    },
+    {
+      "id": "model-si-channel/gotcha-negative-terminal-grounding",
+      "prompt": "I'm getting -260 dB transmission through my 4-port nport block in a circuit. I'm using add(ckt, [1 2 3 4 5 6 7 8], np) with an 8-node mapping and setports to expose ports. What's causing the near-zero transmission and how do I fix it?",
+      "expected_output": "Explanation that floating negative terminals (nodes not connected to anything) cause -260 dB transmission. The fix: negative terminals must be either grounded (node 0), used as port references in setports, or connected to another element. Show the correct pattern with at least one negative terminal properly handled.",
+      "assertions": [
+        "[output_contains] Explains negative terminal issue (expected: ground)",
+        "[output_contains] Shows fix for floating terminals (expected: 0)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/nonlinear-amplifier-qam-workflow",
+      "prompt": "Create an rf.Amplifier with Gain=15dB and OIP3=35dBm. Generate a 1000-symbol 16-QAM signal using qammod with UnitAveragePower=true, scale it to -20 dBm input power into 50 ohms, pass it through the amplifier, and measure the output power in dBm and gain in dB. Release the amplifier when done.",
+      "expected_output": "Code using rf.Amplifier(Gain=15, OIP3=35), qammod, power scaling, step call, power measurement, and release.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Amplifier (expected: rf.Amplifier)",
+        "[output_contains] Releases object (expected: release)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/iq-demod-with-impairments-workflow",
+      "prompt": "Create an rf.Mixer configured as an IQ demodulator (Model='iqdemod') with Gain=-6dB, RF=2.4GHz, GainImbalance=0.3dB, and PhaseImbalance=1.5 degrees. Generate a 1000-sample complex RF signal (5 MHz tone at carrier), demodulate it, and print the number of output samples. Then release the mixer. Do NOT set the LO property since it is not relevant for iqdemod.",
+      "expected_output": "Code using rf.Mixer(Model='iqdemod') without LO, processing signal, releasing.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Mixer (expected: rf.Mixer)",
+        "[output_contains] Uses iqdemod model (expected: iqdemod)",
+        "[output_excludes] Does not use ConverterType for rf.Mixer (expected: ConverterType)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-amplifier-poly-vs-cubic-model",
+      "prompt": "Demonstrate the difference between rf.Amplifier Model='poly' and Model='cubic'. Create a poly amplifier with Gain=15dB, OIP3=35dBm, and OP1dB=25dBm (poly uses BOTH params to shape the polynomial -- do NOT set Nonlinearity). Create a cubic amplifier with Gain=15dB, Nonlinearity='OIP3', OIP3=35dBm (cubic uses only the param selected by Nonlinearity). Process a 1000-sample signal through each and call visualize() on the poly amp. Release both when done.",
+      "expected_output": "Code using rf.Amplifier with Model='poly' (multiple params, no Nonlinearity) and Model='cubic' (Nonlinearity selector), visualize() call.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Amplifier (expected: rf.Amplifier)",
+        "[output_contains] Uses visualize (expected: visualize)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-mixer-model-not-convertertype",
+      "prompt": "I want to downconvert my 2.4 GHz signal to 300 MHz IF using a mixer with -6 dB conversion gain and LO at 2.1 GHz. Process 1000 complex samples through it. How do I set this up with the rf.Mixer system object?",
+      "expected_output": "Code using rf.Mixer(Model='demod', ...) with correct property names, not ConverterType.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Mixer (expected: rf.Mixer)",
+        "[output_contains] Uses Model property (expected: Model)",
+        "[output_excludes] Does not use ConverterType on rf.Mixer (expected: 'ConverterType')"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-filter-passfreq-suffix",
+      "prompt": "I need to bandpass filter a 10 MHz channel centered at 2.4 GHz from a complex baseband signal sampled at 100 MHz. Set up the filter, process 1000 samples, and confirm the output length.",
+      "expected_output": "Code using rf.Filter with matching ResponseType and PassFreq_bp suffix.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Filter (expected: rf.Filter)",
+        "[output_contains] Uses matching suffix (expected: PassFreq_bp)",
+        "[output_excludes] Does not use baseband offset for filter frequency (expected: PassFreq_bp=[5e6)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-iqdemod-lo-not-relevant",
+      "prompt": "Show that rf.Mixer with Model='iqdemod' does not need the LO property. Create an rf.Mixer(Model='iqdemod', Gain=-6, RF=2.4e9) and process 1000 samples successfully. Then demonstrate that setting LO emits a 'not relevant' warning by creating a second mixer with LO=2.1e9 added. Release both when done.",
+      "expected_output": "Code showing iqdemod works without LO, and that setting LO produces a warning.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses iqdemod (expected: iqdemod)",
+        "[output_contains] Uses rf.Mixer (expected: rf.Mixer)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-filter-absolute-rf-frequency",
+      "prompt": "I need to filter a 10 MHz channel centered at 2.4 GHz from a complex baseband signal. The signal is sampled at 100 MHz with carrier at 2.4 GHz. Set up an rf.Filter for this, process 1000 samples, and confirm the output. Show me the correct frequency convention.",
+      "expected_output": "Code using rf.Filter with ResponseType='Bandpass', RF=2.4e9, and PassFreq_bp=[2.395e9 2.405e9] (absolute RF frequencies, NOT baseband offsets like [5e6] or [-5e6 5e6]).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Filter (expected: rf.Filter)",
+        "[output_contains] Uses absolute RF frequencies in GHz range (expected: 2.39)",
+        "[output_excludes] Does not use baseband offset frequencies in MHz range (expected: PassFreq_bp=[5e6)",
+        "[output_excludes] Does not set RF=0 (expected: RF=0)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/gotcha-amplifier-1ohm-power",
+      "prompt": "I want to measure the P1dB compression point of an rf.Amplifier with Gain=20dB and OP1dB=10dBm. Sweep input power from -40 to 0 dBm in 1 dB steps, process a CW signal through it at each level, and measure output power. What is the internal impedance convention for power measurement?",
+      "expected_output": "Code sweeping input power, computing input voltage as sqrt(10^(Pin_dBm/10)/1000) (1-ohm convention: P=|V|^2, NOT 50-ohm where P=|V|^2/(2*Z0)). Measure output power as 10*log10(mean(abs(out).^2)*1000) in dBm.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Amplifier (expected: rf.Amplifier)",
+        "[output_excludes] Does not use 50-ohm scaling for voltage (expected: sqrt(2*50*)"
+      ]
+    },
+    {
+      "id": "process-rf-baseband/rf-sparameter-system-object-workflow",
+      "prompt": "Create a 2-port S-parameter filter model for baseband processing: synthesize a 3rd-order Butterworth bandpass rffilter centered at 2.4 GHz with 20 MHz bandwidth, extract its sparameters on a 201-point grid from 2.3 to 2.5 GHz, then create an rf.Sparameter system object from that data. Process a 1000-sample complex signal through it and release when done.",
+      "expected_output": "Code creating rffilter, extracting sparameters, constructing rf.Sparameter from the S-parameter data (NetworkData property or constructor), processing signal, and releasing.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rf.Sparameter (expected: rf.Sparameter)",
+        "[output_contains] Uses rffilter (expected: rffilter)",
+        "[output_contains] Releases object (expected: release)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/receiver-time-domain-simulation-workflow",
+      "prompt": "I have a receiver budget (LNA 15dB/2dB NF/35dBm OIP3, mixer -6dB/10dB NF/20dBm OIP3 with LO at 2.1 GHz, IF amp 20dB/4dB NF/30dBm OIP3) and want to run a time-domain simulation. Stream 100 samples at -30 dBm through it and measure the output power.",
+      "expected_output": "Code building rfbudget, creating rfsystem, stepping 100 samples, measuring output power, releasing and closing with 0 flag.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfsystem (expected: rfsystem)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)",
+        "[output_contains] Closes system properly (expected: close_system)",
+        "[output_excludes] Does not use spaces in element names (expected: 'IF Amp')"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/zero-if-receiver-workflow",
+      "prompt": "Build a direct-conversion (zero-IF) receiver where fRF=fLO=2.4GHz: LNA (Gain=15dB, NF=2dB, OIP3=35dBm), modulator (Gain=-6dB, NF=10dB, OIP3=20dBm, LO=2.4GHz, ConverterType=Down), IF amp (Gain=20dB, NF=4dB, OIP3=30dBm). Create an rfsystem. Print RFOutputs to show it equals 2. Step with 100 samples and capture both I and Q outputs using [outI, outQ] = rfs(inSig). Release and close.",
+      "expected_output": "Code showing zero-IF gives RFOutputs=2 and step returns [outI, outQ] not single complex output.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfsystem (expected: rfsystem)",
+        "[output_contains] Checks RFOutputs (expected: RFOutputs)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-rfsystem-step-100-samples",
+      "prompt": "Create an rfsystem from a simple rfbudget with one amplifier (Gain=15dB, NF=2dB, OIP3=35dBm) at 2.4GHz, -30dBm, 10MHz. Step 100 samples through it and verify you get 100 output samples. Print the output size. Release and close with close_system(rfs, 0).",
+      "expected_output": "Code creating rfsystem from rfbudget, stepping exactly 100 samples, verifying output length.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfsystem (expected: rfsystem)",
+        "[output_contains] Uses rfbudget (expected: rfbudget)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-close-system-save-flag",
+      "prompt": "Demonstrate that close_system(rfs, 0) succeeds (discards unsaved changes) while close_system(rfs) without the save flag would error on an unsaved model. Create a simple rfsystem, step some data, release it, then close with the 0 flag. Explain why the second argument is required.",
+      "expected_output": "Code using close_system(rfs, 0) and explanation that omitting 0 errors on unsaved models.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Closes with save flag (expected: close_system)",
+        "[output_contains] Uses 0 flag (expected: 0)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-idealized-baseband-rejects-attenuator",
+      "prompt": "Show that rfsystem with Library='IdealizedBaseband' rejects an rfbudget containing an attenuator element. Build an rfbudget with an amplifier and an attenuator, then try creating rfsystem(b, Library='IdealizedBaseband') and catch the error. Explain which element types are supported by IdealizedBaseband.",
+      "expected_output": "Code with try-catch showing IdealizedBaseband rejects attenuator, listing supported types: amplifier, modulator, rffilter, nport.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses IdealizedBaseband (expected: IdealizedBaseband)",
+        "[output_contains] Uses attenuator (expected: attenuator)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-zero-if-rfoutputs-2",
+      "prompt": "Show that when fRF equals fLO in a downconverting rfbudget (zero-IF / direct conversion), the rfsystem RFOutputs property becomes 2 and the step method returns two outputs [outI, outQ] instead of a single complex output. Use fRF=fLO=2.4GHz. Print RFOutputs and the sizes of outI and outQ.",
+      "expected_output": "Code demonstrating RFOutputs=2 for zero-IF and [outI, outQ] = rfs(inSig) syntax.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Checks RFOutputs (expected: RFOutputs)",
+        "[output_contains] Uses rfsystem (expected: rfsystem)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/multi-frame-streaming-workflow",
+      "prompt": "I want to stream data through my receiver in multiple frames (5 frames of 256 samples), then reset and send one more frame. The receiver has an LNA (15 dB gain, 2 dB NF, 35 dBm OIP3) and downconverter (LO 2.1 GHz, -6 dB gain, 10 dB NF). Show the full streaming lifecycle including proper cleanup.",
+      "expected_output": "Code building rfbudget, creating rfsystem, looping over 5 frames with step, calling reset(rfs) and release(rfs) for lifecycle, and close_system(rfs, 0).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses rfsystem (expected: rfsystem)",
+        "[output_contains] Resets system (expected: reset)",
+        "[output_contains] Releases system (expected: release)",
+        "[output_contains] Closes system (expected: close_system)",
+        "[output_excludes] Does not reuse element without clone (expected: [lna mod lna])"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-input-signal-scaling",
+      "prompt": "I want to simulate my receiver at -20 dBm input power. How do I correctly scale the input voltage signal for rfsystem? The system reference impedance is 50 ohms. Generate a 1000-sample CW tone at the correct power level, step it through a simple 1-element rfsystem (LNA 15dB gain, 2dB NF), and verify the output power matches expected gain.",
+      "expected_output": "Code computing Vin = sqrt(2*Z0*Pin_W) where Pin_W = 10^(Pin_dBm/10)/1000 and Z0=50. The factor of 2 is critical (peak voltage for sinusoidal signal). Must NOT use sqrt(Pin_W) alone or sqrt(Pin_W/Z0).",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses correct power-to-voltage scaling (expected: sqrt(2*",
+        "[output_contains] Uses rfsystem (expected: rfsystem)",
+        "[output_excludes] Does not use incorrect 1-ohm scaling (expected: sqrt(10^()"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/gotcha-clone-before-rfsystem",
+      "prompt": "I have an amplifier element used in my rfbudget that I also want in a second rfbudget for comparison. Show that elements must be cloned before reuse in a different rfsystem. Create two rfbudget objects sharing one cloned element and build rfsystem from each.",
+      "expected_output": "Code using clone() on shared elements before placing them in separate rfbudget/rfsystem chains.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses clone (expected: clone)",
+        "[output_contains] Uses rfsystem (expected: rfsystem)"
+      ]
+    },
+    {
+      "id": "simulate-rf-system/circuit-envelope-vs-idealized-comparison",
+      "prompt": "Explain and demonstrate the difference between Library='CircuitEnvelope' and Library='IdealizedBaseband' modes in rfsystem. Build a simple rfbudget (LNA 15dB/2dB NF, filter rffilter Butterworth order 3 at 2.4GHz 10MHz BW). Create rfsystem with each library mode. Which mode supports impedance mismatch effects? Which is faster?",
+      "expected_output": "Code creating two rfsystem objects with different Library settings. CircuitEnvelope models impedance mismatch; IdealizedBaseband is faster but gain-only (no mismatch). Both stepped with same input.",
+      "assertions": [
+        "[code_executes] Code runs without errors",
+        "[output_contains] Uses CircuitEnvelope (expected: CircuitEnvelope)",
+        "[output_contains] Uses IdealizedBaseband (expected: IdealizedBaseband)",
+        "[output_contains] Uses rfsystem (expected: rfsystem)"
+      ]
+    }
+  ]
+}

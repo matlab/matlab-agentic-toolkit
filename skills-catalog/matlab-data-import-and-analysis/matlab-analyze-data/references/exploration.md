@@ -77,7 +77,7 @@ categories(T.Category)                      % list defined category names
 These are examples of common techniques, not an exhaustive list. Choose what is appropriate for the data and question — consider other approaches beyond these based on the dataset's characteristics:
 
 ```matlab
-% Correlation matrix for numeric variables
+% Correlation matrix for numeric variables (corrcoef is core MATLAB; corr requires Statistics Toolbox)
 % Use Rows="complete" to drop rows with any NaN (default propagates NaN)
 R = corrcoef(T{:,vartype("numeric")}, Rows="complete");
 

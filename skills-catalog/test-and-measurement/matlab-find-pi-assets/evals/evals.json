@@ -1,0 +1,702 @@
+{
+  "skill": "matlab-find-pi-assets",
+  "version": "1.0",
+  "copyright": "Copyright 2026 The MathWorks, Inc.",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Connect and List Generation Units",
+      "description": "Tests that the skill guides the agent to use afclient + findElementByTemplate instead of raw .NET interop",
+      "prompt": "Connect to the PI AF server BGL-SSAHA and list all generation unit elements in the OSIDemo_PG_HydroPlant database.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses afclient to connect (not raw .NET SDK)",
+          "expected": "afclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses findElementByTemplate to find generation units",
+          "expected": "findElementByTemplate"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does NOT use raw .NET AFSDK interop for data queries",
+          "expected": "piSystem.Connect"
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated code runs without error and returns element list"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Output includes GU1-GU4 generation units from the hydro plant",
+          "expected": "At least GU1 and GU2 appear in the output results"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Get Attribute by Name with Server Discovery",
+      "description": "Tests that the skill guides AF server discovery when server is not specified, and uses getAttributes with name filter",
+      "prompt": "Find the 'Active Power Generated' attribute for element GU1 in the PI Asset Framework. I'm not sure which AF server to use.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. At least one AF server must be discoverable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Agent discovers available AF servers and presents them to user before connecting",
+          "expected": "Code uses OSIsoft.AF.PISystems to enumerate servers OR asks user which server to use"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses afclient for connection",
+          "expected": "afclient"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses findElementByName for element lookup",
+          "expected": "findElementByName"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses getAttributes with name filter",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does NOT assume localhost as server name",
+          "expected": "localhost"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Multi-step Historical Read via AF",
+      "description": "Tests the full AF workflow: connect, find element, get attribute, read history with aggregation",
+      "prompt": "Read the average cooling water output temperature for GU3 Turbine from PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant, for January 2025 with hourly intervals.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses afclient (not piclient) for AF element query",
+          "expected": "afclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does NOT confuse piclient with afclient for AF navigation",
+          "expected": "piclient"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses readHistory for historical data from attribute",
+          "expected": "readHistory"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "readHistory call includes Interval and AggregateFcn parameters",
+          "expected": "readHistory call uses Interval=hours(1) and AggregateFcn=\"average\" or equivalent"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Direct PI Tag Lookup (piclient path)",
+      "description": "Tests that the skill correctly routes a tag-name query through piclient + tags, not afclient",
+      "prompt": "Look up PI tags matching 'GU1*' on PI Data Archive server BGL-SSAHA and read the last month of data for the Active Power tag.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI Data Archive server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses piclient for PI Data Archive connection",
+          "expected": "piclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses tags() function for tag search",
+          "expected": "tags("
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does NOT use afclient for direct tag lookup",
+          "expected": "afclient"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses read() function for data retrieval from PI Data Archive",
+          "expected": "read("
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Database Identification When User Is Unsure",
+      "description": "Tests that the skill guides the agent to list databases or search across databases when the user doesn't know which database contains their element",
+      "prompt": "Connect to PI AF server BGL-SSAHA and find the element 'GU1'. I'm not sure which database it's in.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable with multiple databases."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses listDatabases or searches across databases",
+          "expected": "listDatabases"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Either presents database list to user for selection, or searches across all databases to find the element",
+          "expected": "Code either shows available databases for user to pick, or iterates databases calling findElementByName to locate the element"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does NOT hardcode a database name without discovery",
+          "expected": "Database='OSIDemo_PG_HydroPlant'"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses selectDatabase or reconnects with Database param after identifying correct database",
+          "expected": "selectDatabase"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error and finds GU1"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Find Element by Path (String Literal Requirement)",
+      "description": "Tests that the skill guides the agent to use string (double-quoted) paths with findElementByPath, not char (single-quoted)",
+      "prompt": "Use findElementByPath to locate the element at path \\\\BGL-SSAHA\\OSIDemo_PG_HydroPlant\\Flynn River Hydro\\Flynn I\\GU1 on PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses findElementByPath function",
+          "expected": "findElementByPath"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Path argument MUST use string (double-quoted) syntax — char (single-quoted) is a mandatory failure",
+          "expected": "The path argument to findElementByPath MUST be enclosed in double quotes (string literal), e.g. findElementByPath(afObj, \"\\\\...\"). Using single quotes (char) such as findElementByPath(afObj, '\\\\...') is a FAIL — char input silently fails at runtime even when the path is correct."
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Generated code runs without error (would fail with char input)"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses afclient for connection",
+          "expected": "afclient"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "PI Tag Search and Read (Extract from Table)",
+      "description": "Tests that the skill guides extracting tag names from the tags() result table before passing to read()",
+      "prompt": "Search for PI tags matching 'GU1.Active Power*' on PI Data Archive server BGL-SSAHA, then read the first matching tag's data for January 2025 with hourly averages.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI Data Archive server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses tags() function to search",
+          "expected": "tags("
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Extracts tag name from table before passing to read() — uses tagList.Tags(N) or equivalent indexing",
+          "expected": "Code accesses the Tags column of the table returned by tags() (e.g. tagList.Tags(1)) rather than hardcoding a tag name string"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses read() for PI Data Archive data retrieval",
+          "expected": "read("
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Element Disambiguation (Parent vs Child)",
+      "description": "Tests that the skill guides the agent to wildcard search and present disambiguation options when parent and child elements share a name prefix",
+      "prompt": "Find the active power attribute for the GU1 generator in PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable. Database has GU1 (parent) and GU1 Generator (child) elements."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses wildcard in findElementByName search",
+          "expected": "GU1*"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Presents multiple matching elements to the user for selection rather than silently picking the first result",
+          "expected": "Code displays a list/table of matching elements (showing names like GU1, GU1 Generator, GU1 Turbine) and asks the user which one they mean"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Does NOT silently proceed with the first result when multiple elements match",
+          "expected": "Agent does not proceed to getAttributes or read data without first presenting the search results to the user and indicating which element it will use. Must NOT silently use results(1) without explanation — either asks the user to select, or displays the matches and explains why it chose a specific element."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses getAttributes to retrieve the attribute after disambiguation",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Read Current Value (No Time Range)",
+      "description": "Tests that the skill guides the agent to use read(attr) for current/snapshot value when no time range is specified",
+      "prompt": "Get the current active power value for GU1 Generator from PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses afclient for AF connection",
+          "expected": "afclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses getAttributes to get the attribute",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses read(attr) for current value, NOT readHistory",
+          "expected": "Code calls read(attr) or read(attribute) to get the snapshot/current value — does NOT use readHistory since no time range was requested"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does NOT use readHistory when no time range specified",
+          "expected": "readHistory"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error and returns a value"
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "Current PI Tag Value with Server Discovery",
+      "description": "Tests the PI Data Archive workflow (R2022a+): server discovery, tag search, and current value read without a time range",
+      "prompt": "Get the current value of the NYC ambient temperature tag from the PI server.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. At least one PI Data Archive server must be discoverable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated code runs without errors"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Discovers available PI Data Archive servers and presents them before connecting",
+          "expected": "Agent discovers available PI Data Archive servers (via OSIsoft.AF.PI.PIServers or equivalent) and presents the list to the user. Acceptable: asks user to select, or explains which server it chose when no user interaction is possible. Must NOT silently connect without mentioning available servers."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses piclient function to connect to the server",
+          "expected": "piclient"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses tags function to find the appropriate tag",
+          "expected": "tags("
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Presents matching tags to the user before reading",
+          "expected": "Agent shows matching tag results to the user before proceeding to read. Acceptable: displays tags and asks user to confirm, or displays tags and explains which one it selected. Must NOT skip tag display entirely."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Fetches the current value (no DateRange) and presents it to the user",
+          "expected": "Uses read(piObj, tagName) without DateRange parameter to get the snapshot/current value"
+        }
+      ]
+    },
+    {
+      "id": "eval-11",
+      "name": "Multiple AF Elements with Attribute Lookup",
+      "description": "Tests AF workflow with multiple element selection: server/database discovery, template or name-based search for multiple elements, attribute lookup across all selected elements",
+      "prompt": "Get the active power of the wind turbine generators 1,2,3 of Northeast region.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. At least one AF server must be discoverable with a wind farm database."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated code runs without errors"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Discovers available AF servers and presents them before connecting",
+          "expected": "Agent discovers available AF servers and presents the list to the user. Acceptable: asks user to select, or explains which server it chose when no user interaction is possible. Must NOT silently connect without mentioning available servers."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses afclient function to connect to the server",
+          "expected": "afclient"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Discovers available databases and presents them before selecting",
+          "expected": "Agent lists databases (via listDatabases) and presents the list to the user. Acceptable: asks user to select, or explains which database it chose when no user interaction is possible. Must NOT silently select a database without mentioning available options."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Searches elements using findElementByName or findElementByTemplate",
+          "expected": "Uses findElementByName with wildcard or findElementByTemplate to locate the wind turbine generators"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Presents matching elements to user before proceeding",
+          "expected": "Presents matching elements with Name, Template, and Path to the user. Acceptable: asks user to confirm which ones to proceed with, or explains which elements it selected. Must NOT skip element presentation entirely."
+        },
+        {
+          "id": "a7",
+          "type": "output_contains",
+          "description": "Uses getAttributes to search attribute on element objects",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a8",
+          "type": "convention_followed",
+          "description": "Validates the attribute and fetches data for each selected element",
+          "expected": "Reads the active power attribute value for each of the 3 selected generators and presents results to user"
+        }
+      ]
+    },
+    {
+      "id": "eval-12",
+      "name": "Monthly Aggregated Historical Data from AF",
+      "description": "Tests historical data read with monthly interval and multiple aggregate functions over a full year",
+      "prompt": "Get the average, maximum and minimum wind speeds of NYC for each month in 2025, from the PI AF server.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. At least one AF server must be discoverable with wind speed data."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated code runs without errors"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Discovers available AF servers and presents them before connecting",
+          "expected": "Agent discovers available AF servers and presents the list to the user. Acceptable: asks user to select, or explains which server it chose when no user interaction is possible. Must NOT silently connect without mentioning available servers."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses afclient function to connect to the server",
+          "expected": "afclient"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Discovers available databases and presents them before selecting",
+          "expected": "Agent lists databases (via listDatabases) and presents the list to the user. Acceptable: asks user to select, or explains which database it chose when no user interaction is possible. Must NOT silently select a database without mentioning available options."
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses findElementByName to search for the element",
+          "expected": "findElementByName"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Presents matching elements to user before proceeding",
+          "expected": "Presents matching elements with Name, Template, and Path to the user. Acceptable: asks user to confirm selection, or explains which element it selected. Must NOT skip element presentation entirely."
+        },
+        {
+          "id": "a7",
+          "type": "output_contains",
+          "description": "Uses getAttributes to find the wind speed attribute",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a8",
+          "type": "convention_followed",
+          "description": "Validates the attribute has time series data",
+          "expected": "Checks HasTimeSeriesData before calling readHistory"
+        },
+        {
+          "id": "a9",
+          "type": "convention_followed",
+          "description": "Reads historical data with monthly interval and appropriate aggregate functions for average, max, and min",
+          "expected": "Calls readHistory with Interval of ~1 month (calmonths(1) or equivalent) and uses AggregateFcn for average, maximum, and minimum — either as separate calls or combined"
+        }
+      ]
+    },
+    {
+      "id": "eval-13",
+      "name": "Compare PI Tag vs AF Attribute for Same Asset",
+      "description": "Tests that the agent correctly routes a two-part request: one via piclient (tag lookup) and one via afclient (AF attribute), comparing results from both paths",
+      "prompt": "I have a tag called 'GU1.ActivePower' in the PI Data Archive and I also want to check the 'Active Power Generated' attribute for element GU1 in the Asset Framework. Can you get both values and show me the comparison? Use server BGL-SSAHA for both.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI Data Archive and PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses piclient for PI Data Archive tag lookup",
+          "expected": "piclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses afclient for AF attribute lookup",
+          "expected": "afclient"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses tags() for tag search in PI Data Archive path",
+          "expected": "tags("
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses getAttributes for AF attribute retrieval",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses both read paths appropriately: read(piObj, tagName) for the tag and read(attr) for the AF attribute",
+          "expected": "Reads from both piclient and AF attribute, then presents both values for comparison"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-14",
+      "name": "Bulk Template Query with Data Quality Check",
+      "description": "Tests template-based bulk element lookup, attribute retrieval for all matching elements, and data quality verification",
+      "prompt": "Find all elements of template 'GenerationUnit' in PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant. For each one, read the average active power for the last 24 hours and flag any elements that return bad-quality data.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses findElementByTemplate for bulk element discovery",
+          "expected": "findElementByTemplate"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Iterates over all matching elements and reads attribute data for each",
+          "expected": "Code loops through all GenerationUnit elements, calling getAttributes and readHistory (or read with DateRange) for each"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses readHistory or read with DateRange for historical data",
+          "expected": "readHistory"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Checks data quality Status column and flags bad-quality results",
+          "expected": "Code inspects the Status column of returned data for 'Bad' values and reports which elements have quality issues"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-15",
+      "name": "Hierarchical Navigation with getChildren",
+      "description": "Tests navigating a deep AF hierarchy using getRootElements and getChildren to explore the tree before selecting a target element",
+      "prompt": "I want to explore the asset hierarchy in PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant. Show me the root elements, then drill into the first plant's children, and get the turbine efficiency attribute for one of the generation units.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getRootElements to show top-level elements",
+          "expected": "getRootElements"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses getChildren to navigate deeper into the hierarchy",
+          "expected": "getChildren"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Presents hierarchy results at each level before drilling deeper",
+          "expected": "Agent shows root elements and then shows children at each level as it navigates deeper. Acceptable: pauses for user selection at each level, or displays results at each level before proceeding. Must NOT skip displaying hierarchy results — the navigation path must be visible to the user."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses getAttributes to retrieve the target attribute",
+          "expected": "getAttributes"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses afclient for connection",
+          "expected": "afclient"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-16",
+      "name": "Time-Range Comparison Across Multiple Periods",
+      "description": "Tests a complex analytical query requiring multiple readHistory calls with different time ranges for trend comparison",
+      "prompt": "Compare the daily average cooling water output temperature for GU3 Turbine between January 2025 and January 2024. Use PI AF server BGL-SSAHA, database OSIDemo_PG_HydroPlant. Show me if there's been a year-over-year increase.",
+      "context": {
+        "setup": "Industrial Communication Toolbox must be available. PI AF server BGL-SSAHA must be reachable with data spanning 2024-2025."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses afclient for AF connection",
+          "expected": "afclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses findElementByName to locate GU3 Turbine",
+          "expected": "findElementByName"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Makes two readHistory calls with different date ranges (Jan 2024 and Jan 2025)",
+          "expected": "Code calls readHistory twice — once for January 2024 and once for January 2025 — with daily intervals and average aggregation"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Computes or presents a year-over-year comparison of the results",
+          "expected": "Code compares the two datasets (e.g., computes difference, plots overlay, or shows summary statistics) to answer whether temperature increased"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Checks data quality for both time ranges before comparing",
+          "expected": "Code checks Status column for bad data in both result sets"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,423 @@
+[
+  {
+    "id": "pattern-routing-cortex-m-pytorch",
+    "name": "Route PyTorch model to Pattern 1 for Cortex-M target",
+    "description": "Tests that the skill correctly routes a PyTorch model targeting Cortex-M4 to Pattern 1 (import + rebuild as dlnetwork) instead of Pattern 2, because Cortex-M requires MathWorks compression and tight sim-codegen agreement.",
+    "prompt": "I have a pre-trained PyTorch LSTM model (about 200KB) for vibration anomaly detection. I want to deploy it on an ARM Cortex-M4 microcontroller. How should I approach this?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Should recommend the import-and-rebuild-as-dlnetwork approach (Pattern 1) for Cortex-M",
+        "expected": "recommends importing the PyTorch model into MATLAB and rebuilding as a native dlnetwork for compression and code generation (the Pattern 1 workflow), not direct code generation"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Should NOT recommend Pattern 2 (direct code generation from .pt2 without rebuilding as dlnetwork) as the deployment workflow for Cortex-M",
+        "expected": "does not recommend Pattern 2 direct code generation as the deployment path for Cortex-M — may mention loadPyTorchExportedProgram only as an import step within Pattern 1, not as the final codegen path"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Should mention importing the model into MATLAB and rebuilding as a native dlnetwork",
+        "expected": "mentions importing/converting to dlnetwork for compression and code generation"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Should mention compression as part of the deployment pipeline for Cortex-M",
+        "expected": "mentions quantization, pruning, or compression for the resource-constrained target"
+      }
+    ]
+  },
+  {
+    "id": "train-native-lstm-cortex-m",
+    "name": "Train LSTM for Cortex-M with correct APIs and data format",
+    "description": "Tests that the skill produces code using trainnet (not trainNetwork), dlnetwork (not DAGNetwork), and correct T-by-C sequence data format for variable-length sequences.",
+    "prompt": "I need to train an LSTM network from scratch in MATLAB for predictive maintenance on sensor data (3 accelerometer channels, variable-length sequences). The model will run on a Cortex-M7 MCU. Write the training script.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "code_executes",
+        "description": "Generated MATLAB training code runs without error"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Must use trainnet, not trainNetwork or trainnetwork",
+        "expected": "trainnet"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Must NOT use banned function trainNetwork",
+        "expected": "trainNetwork("
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Sequence data should be in T-by-C format (time-steps by channels), not C-by-T",
+        "expected": "cell array with each cell containing a [T x numFeatures] or [T x C] matrix"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Must use GradientThreshold for LSTM/GRU to prevent exploding gradients",
+        "expected": "GradientThreshold"
+      }
+    ]
+  },
+  {
+    "id": "pattern2-pytorch-cortex-a",
+    "name": "Direct PyTorch code generation for Cortex-A target",
+    "description": "Tests that the skill correctly routes a large PyTorch model on Cortex-A to Pattern 2 and uses the correct APIs (loadPyTorchExportedProgram, net.invoke, DeepLearningConfig none).",
+    "prompt": "I have a PyTorch CNN model (about 5MB) for image classification. I want to generate C code for an ARM Cortex-A53 processor. I don't need to modify the weights or compress the model. What's the fastest path to deployment?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Should recommend Pattern 2 for large PyTorch model on Cortex-A",
+        "expected": "Pattern 2"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Should use loadPyTorchExportedProgram for Pattern 2",
+        "expected": "loadPyTorchExportedProgram"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Should mention that Pattern 2 generates C code directly without converting to dlnetwork",
+        "expected": "explains or mentions that the PyTorch model is loaded and code-generated directly without importing or converting to a MATLAB dlnetwork"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Should mention MATLAB Coder or the PyTorch support package as the code generation tool",
+        "expected": "mentions MATLAB Coder or the MATLAB Coder Support Package for PyTorch and LiteRT Models as the tool for generating C code"
+      }
+    ]
+  },
+  {
+    "id": "compression-decision-cortex-m-lstm",
+    "name": "Compression decision flow for LSTM on Cortex-M",
+    "description": "Tests that the skill walks through the compression decision flow and correctly identifies that INT8 quantization does NOT speed up LSTM on Cortex-M (no CMSIS-NN recurrent kernel), recommending float32 + CMSIS-DSP for latency-bound LSTM models.",
+    "prompt": "I have a trained LSTM dlnetwork (3 layers, 64 hidden units) for real-time vibration monitoring. It runs on an ARM Cortex-M7 with FPU. My primary goal is lowest possible inference latency. I have Simulink available. What compression and code generation path should I take?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Should ask or address the three decision-flow questions: hardware+Simulink, primary goal, retraining tolerance",
+        "expected": "addresses hardware target (Cortex-M with Simulink), deployment goal (latency), and retraining tolerance"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Should mention CMSIS-DSP as the recommended path for LSTM latency on Cortex-M",
+        "expected": "CMSIS-DSP"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Should warn that INT8 quantization does NOT help LSTM latency on Cortex-M because CMSIS-NN has no INT8 recurrent kernel",
+        "expected": "explains that quantizing LSTM for Cortex-M does not reduce latency due to missing INT8 recurrent kernels in CMSIS-NN"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Should recommend float32 path for LSTM inference on Cortex-M when latency is the goal",
+        "expected": "recommends float32 with CMSIS-DSP matrix-multiply replacement over quantized path for LSTM latency"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Should suggest structural compression (pruning) as also worth trying for latency since fewer MACs means lower latency",
+        "expected": "mentions pruning or structural compression as a latency reduction technique (fewer MACs)"
+      }
+    ]
+  },
+  {
+    "id": "simulink-integration-dlnetwork",
+    "name": "Export dlnetwork to Simulink for closed-loop simulation",
+    "description": "Tests that the skill correctly guides integration of a trained dlnetwork into Simulink using exportNetworkToSimulink, including the clean-environment pattern and appropriate block parameters.",
+    "prompt": "I've trained a dlnetwork in MATLAB for sensor fusion (4 inputs, 2 outputs, fully connected layers). I want to integrate it into my existing Simulink model for closed-loop simulation before generating code for Cortex-M. Show me how to export it to Simulink.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Must use exportNetworkToSimulink for dlnetwork integration",
+        "expected": "exportNetworkToSimulink"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Should clean stale Simulink artifacts before export (delete .slx/.slxc, close_system)",
+        "expected": "cleans stale files before export: deletes existing .slx or .slxc and/or closes the system"
+      },
+      {
+        "id": "a3",
+        "type": "code_executes",
+        "description": "Generated export code is syntactically valid MATLAB (runs or can be checked without error)"
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Should NOT use the legacy Deep Learning Toolbox Predict block approach",
+        "expected": "dlPredict("
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Should set appropriate export options (ModelName, Stateful, SampleTime, or InputDataType)",
+        "expected": "uses name-value arguments like ModelName, Stateful, SampleTime, or InputDataType in the export call"
+      }
+    ]
+  },
+  {
+    "id": "pattern2-litert-gpu-target",
+    "name": "Direct LiteRT code generation for GPU target",
+    "description": "Tests that the skill correctly routes a LiteRT (.tflite) model targeting GPU/x86 to Pattern 2, using the PyTorch and LiteRT support package for direct code generation without requiring dlnetwork conversion.",
+    "prompt": "I have a quantized TensorFlow Lite model (mobilenet_v2.tflite, about 3MB) optimized for edge inference. I want to generate C code targeting an NVIDIA Jetson (ARM + CUDA). I don't need further compression since it's already quantized. What workflow should I follow?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "output_contains",
+        "description": "Should recommend Pattern 2 for LiteRT model on GPU/high-performance target",
+        "expected": "Pattern 2"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Should mention the required support package for LiteRT code generation",
+        "expected": "mentions the support package needed for LiteRT code generation — any of: 'MATLAB Coder Support Package for PyTorch and LiteRT Models', 'PyTorch and LiteRT support package', or 'LiteRT support package'"
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Should NOT suggest importing as dlnetwork (Pattern 1) since user has a .tflite and no compression needed",
+        "expected": "importNetworkFromTensorFlow("
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Should explain that Pattern 2 keeps the model as-is (no dlnetwork conversion) and generates code directly from the .tflite",
+        "expected": "explains that the .tflite model is loaded and code-generated directly via Pattern 2 without importing or converting to a MATLAB dlnetwork"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Should mention MATLAB Coder or GPU Coder as the code generation tool for the Jetson target",
+        "expected": "mentions MATLAB Coder or GPU Coder as the tool that generates C/CUDA code for the Jetson target"
+      }
+    ]
+  },
+  {
+    "id": "regression-nn-ecu-deployment",
+    "name": "Regression neural network end-to-end deployment to low-power ECU",
+    "description": "Tests the full Pattern 1 workflow for a Stats/ML regression model: train fitrnet, integrate into Simulink via RegressionNeuralNetwork Predict block, configure simulation with Simulink.SimulationInput, run numerical equivalency tests with proposed test count, report tolerance, and generate fixed-point C code.",
+    "timeout_seconds": 600,
+    "prompt": "Build a regression neural network using fitrnet from vehicle vibration sensor data (6 IMU channels, 500 samples) to predict remaining useful life. Then integrate it into Simulink using the appropriate Predict block, validate numerical equivalency between the MATLAB model and Simulink simulation, and generate fixed-point C code for deployment on a low-power ARM Cortex-M4 ECU.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Uses the RegressionNeuralNetwork Predict block for Simulink integration of the fitrnet model",
+        "expected": "integrates the fitrnet/regression model into Simulink using the RegressionNeuralNetwork Predict block from Statistics and Machine Learning Toolbox"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Configures and runs the Simulink simulation programmatically (via Simulink.SimulationInput or set_param+sim)",
+        "expected": "configures the Simulink model programmatically (using Simulink.SimulationInput, or set_param with sim()) and runs the simulation to produce output for comparison"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Runs comparison tests to validate numerical equivalency between MATLAB model predictions and Simulink simulation output",
+        "expected": "compares MATLAB predict() output against Simulink simulation output to verify numerical agreement"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses a meaningful number of test vectors and states how many are used for numerical equivalency",
+        "expected": "uses at least 50 test vectors for equivalency testing and states the count (e.g., 'testing with N samples' or 'numTests = N')"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Reports test results with comparison against an expected tolerance (e.g., 5e-3 or similar)",
+        "expected": "reports MAE or max error and compares against a tolerance threshold to determine pass/fail"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Generates fixed-point C code from the Simulink model targeting ARM Cortex-M",
+        "expected": "generates embedded C code using Embedded Coder from the Simulink model with fixed-point or ERT target configuration"
+      }
+    ]
+  },
+  {
+    "id": "train-compress-deploy-1dcnn-cortex-a",
+    "name": "Compress and deploy 1-D CNN for time-series classification on Cortex-A",
+    "description": "Tests the Pattern 1 compression workflow: given an already-trained 1-D CNN dlnetwork, walk through compression decision flow, apply compression in correct order (pruning → projection → quantization), use official MathWorks compression functions, and report results after each step.",
+    "timeout_seconds": 600,
+    "prompt": "I have a trained 1-D CNN dlnetwork (using convolution1dLayer, about 200KB) for predictive maintenance time-series classification on vibration sensor data (3 channels, 1024 samples per window, 4 fault classes). The model needs to be compressed for deployment on an ARM Cortex-A processor. My primary goal is reducing flash footprint, and I'm okay with full retraining. Walk me through the compression and code generation.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Creates or loads a 1-D CNN dlnetwork suitable for the described classification task",
+        "expected": "creates or loads a dlnetwork with 1-D convolution layers (convolution1dLayer or conv1d) for the 3-channel, 1024-sample, 4-class classification task"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Asks questions to determine the right compression path (hardware, goal, retraining tolerance) before applying any compression",
+        "expected": "asks or addresses deployment goal, hardware target, and retraining tolerance before choosing compression techniques — follows the compression-decision.md question flow"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Uses at least one official MathWorks compression technique: quantization (dlquantizer), projection (compressNetworkUsingProjection), or pruning (compressNetworkUsingTaylorPruning)",
+        "expected": "uses one or more of: compressNetworkUsingTaylorPruning, compressNetworkUsingProjection, dlquantizer/calibrate/quantize"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Uses the correct official functions for the chosen compression techniques (not custom implementations)",
+        "expected": "uses official functions such as compressNetworkUsingTaylorPruning, compressNetworkUsingProjection, prepareNetwork, dlquantizer, calibrate, quantize, or validate — never custom compression code"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Follows the correct compression order: pruning first, projection second, quantization last when combining multiple techniques",
+        "expected": "when applying multiple compression techniques, applies them in order: pruning → projection → quantization (not a different order)"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Reports compression results (accuracy delta, size savings) after each compression step so the user can make go/no-go decisions",
+        "expected": "after each compression step, reports metrics such as accuracy change, flash/size savings, or MAE vs baseline before proceeding to the next step"
+      }
+    ]
+  },
+  {
+    "id": "import-pytorch-lstm-compress",
+    "name": "Import PyTorch LSTM and compress with hardware-aware decision flow",
+    "description": "Tests that the skill correctly guides importing a PyTorch LSTM via Pattern 1 for Cortex-M4, walks the user through the compression decision flow, recommends a concrete recipe the user can override, and states critical caveats about LSTM quantization on Cortex-M (no CMSIS-NN INT8 recurrent kernel).",
+    "timeout_seconds": 600,
+    "prompt": "I have a PyTorch LSTM model (2 layers, 128 hidden units, about 400KB) trained for audio keyword detection. I need to import it into MATLAB and compress it for deployment on an ARM Cortex-M4 microcontroller. Guide me through the process.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Routes to Pattern 1 import path for Cortex-M4 and describes importing/rebuilding as dlnetwork",
+        "expected": "identifies Pattern 1 as the correct path for Cortex-M4, describes importing the PyTorch model and rebuilding as a native dlnetwork"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Identifies the primary deployment goal and explains why that goal applies before choosing compression techniques",
+        "expected": "identifies the primary deployment goal (flash, SRAM, latency, or accuracy) and explains the reasoning before recommending compression techniques — shows awareness of the decision flow options"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Recommends one concrete compression recipe with clear rationale before applying it",
+        "expected": "proposes a specific compression path (e.g., projection + quantization, or float32 only) with clear rationale explaining why this recipe fits the hardware and goal, before proceeding to execution"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "States caveats about LSTM quantization on Cortex-M: no INT8 CMSIS-NN recurrent kernel, quantized LSTM generates plain fixed-point C",
+        "expected": "warns that CMSIS-NN does not provide INT8 kernels for LSTM/GRU and that quantizing recurrent layers for Cortex-M reduces flash but generates plain fixed-point C, not an accelerated kernel"
+      }
+    ]
+  },
+  {
+    "id": "deploy-pytorch-vit-jetson",
+    "name": "Deploy PyTorch Vision Transformer to NVIDIA Jetson via Pattern 2",
+    "description": "Tests Pattern 2 workflow setup for a PyTorch Vision Transformer on NVIDIA Jetson: correct .pt2 export guidance (model.eval, batch=1, dynamic control flow warning), entry-point using net.invoke(), test vector generation, and coder configuration intent.",
+    "timeout_seconds": 600,
+    "prompt": "I have a small (about 6MB) PyTorch Vision Transformer model for image classification. I want to deploy it to an NVIDIA Jetson device. Walk me through the full workflow from export to verified C code.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Exports from PyTorch correctly: calls model.eval(), uses torch.export.export with a fixed example input, saves as .pt2",
+        "expected": "export workflow includes model.eval(), torch.export.export() with an example input, and saves as .pt2"
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Example input shape during export has batch dimension = 1 matching inference shape",
+        "expected": "example input has batch size 1 and matches the model's expected input shape (e.g., torch.randn(1, 3, 224, 224))"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Entry-point function uses net.invoke() — does not call predict() or access .Layers",
+        "expected": "MATLAB entry-point function uses net.invoke() for inference; does not call predict() or access .Layers on the PyTorchExportedProgram object"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Plans or generates test vectors from PyTorch reference outputs for numerical verification",
+        "expected": "generates or plans to generate test inputs with their PyTorch reference outputs for numerical verification of the deployment pipeline"
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Describes or configures MATLAB Coder for NVIDIA Jetson target (GPU Coder or ARM Cortex-A)",
+        "expected": "describes or configures coder for Jetson target — mentions GPU Coder, hardware board setting, ARM Cortex-A target, or CUDA/TensorRT configuration for Jetson"
+      }
+    ]
+  },
+  {
+    "id": "validate-fitcnet-compress-generic-cpu",
+    "name": "Validate fitcnet classification model and compress for generic CPU",
+    "description": "Tests validation of a fitcnet model trained on tabular data (accuracy, confusion matrix), followed by compression for a generic x86 CPU with no hardware-specific acceleration library. Should use fitcnet APIs (predict, not minibatchpredict), generate MEX before target code, and avoid recommending hardware-specific libraries.",
+    "timeout_seconds": 600,
+    "prompt": "I trained a classification neural network using fitcnet on tabular sensor data (12 features, 5 fault classes, 10,000 samples). I need to validate it thoroughly and then compress it for deployment on a generic x86 embedded CPU with no GPU or acceleration library. Walk me through validation and compression.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Validates model accuracy on held-out test data using fitcnet's predict() and reports metrics (accuracy, confusion matrix, or per-class)",
+        "expected": "uses predict(mdl, XTest) for inference and reports classification metrics such as accuracy, confusion matrix, or per-class precision/recall"
+      },
+      {
+        "id": "a2",
+        "type": "output_contains",
+        "description": "Uses fitcnet's predict function for inference (not minibatchpredict which is for dlnetwork)",
+        "expected": "predict"
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Generates MEX for desktop validation before generating target C code",
+        "expected": "generates a MEX function to validate the deployment code on desktop before generating final C code for the target"
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Identifies the generic CPU / no acceleration library path in the compression decision flow",
+        "expected": "identifies generic CPU target with no code replacement library; uses MATLAB Coder generic C/C++ path"
+      },
+      {
+        "id": "a5",
+        "type": "output_excludes",
+        "description": "Should NOT recommend CMSIS-NN or ARM Compute Library for a generic x86 CPU",
+        "expected": "CMSIS-NN"
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Reports compression results (accuracy delta vs uncompressed baseline) before proceeding to code generation",
+        "expected": "reports accuracy change or size reduction after compression and compares against the uncompressed baseline before generating code"
+      }
+    ]
+  }
+]

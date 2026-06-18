@@ -464,8 +464,8 @@
     {
       "id": "eval-15",
       "name": "Maximal Argument-Block Composition",
-      "description": "Tests whether the agent knows that required + optional + ignored + repeating + ignored repeating + name-value + .?ClassName all compose legally in one function. Reproduces issue #13 (jakew, 2026-05-26): when asked for the full combination, the model fabricated the constraint `MATLAB does not allow optional positional inputs (args with defaults) in the same function as arguments (Repeating). They're mutually exclusive` — false. Empirically verified at /tmp/cycle3-issue13-verify/c16: required + optional + repeating + name-value + .?onCleanup parse and run together.",
-      "prompt": "use /matlab-validate-function-arguments to write a function which has both required positional inputs, optional positional inputs, ignored positional inputs, repeating inputs, ignored repeating inputs, name value inputs, and named class inputs (use onCleanup as the class name). I don't care what the function does. It can disp each argument received for all I care",
+      "description": "Tests whether the agent knows that required + optional + ignored + repeating + ignored repeating + name-value + .?ClassName all compose legally in one function. Reproduces issue #13 (jakew, 2026-05-26): when asked for the full combination, the model fabricated the constraint `MATLAB does not allow optional positional inputs (args with defaults) in the same function as arguments (Repeating). They're mutually exclusive` — false. The named-class slot uses `matlab.graphics.chart.primitive.Bar` (which has many public-settable properties) so the .?ClassName import has real settable name-value args to demonstrate; using a class with no public-settable properties (e.g. onCleanup) creates a silent-positional-fallback trap when callers pass name-value args against it.",
+      "prompt": "use /matlab-validate-function-arguments to write a function which has both required positional inputs, optional positional inputs, ignored positional inputs, repeating inputs, ignored repeating inputs, name value inputs, and named class inputs (use matlab.graphics.chart.primitive.Bar as the class name). I don't care what the function does. It can disp each argument received for all I care",
       "context": {
         "files": [],
         "setup": ""
@@ -475,19 +475,19 @@
           "id": "a1",
           "type": "code_runs",
           "description": "The generated function parses and is callable with arguments covering all categories",
-          "expected": "Calling the generated function with at least one required arg, one optional arg, one ignored positional, two repeating positional groups, name-value pairs, and an onCleanup property name-value pair must succeed with no parse-time errors (no MATLAB:functionValidation:* errors)."
+          "expected": "Calling the generated function with at least one required arg, one optional arg, one ignored positional, two repeating positional groups, name-value pairs, and a Bar property name-value pair (e.g. FaceColor=[1 0 0]) must succeed with no parse-time errors (no MATLAB:functionValidation:* errors)."
         },
         {
           "id": "a2",
-          "type": "output_excludes",
+          "type": "convention_followed",
           "description": "Does not falsely claim optional positional inputs and (Repeating) are mutually exclusive",
-          "expected": "mutually exclusive"
+          "expected": "The response does not falsely claim that optional positional inputs and `arguments (Repeating)` cannot coexist in the same function. Quoting the SKILL.md \"Common mistakes\" table cell that explicitly states they compose legally does NOT violate this — the check is on the agent's own claims about the language, not on quoted skill content. Likewise, the agent describing the order constraint (required → optional → repeating → name-value) is fine. The assertion fails only if the agent asserts on its own that these categories cannot appear in the same function or in the same arguments block."
         },
         {
           "id": "a3",
           "type": "convention_followed",
           "description": "Function body actually contains all requested categories",
-          "expected": "The function definition includes: at least one required arg (no default), at least one optional arg (with =default), at least one ~ placeholder in a plain block, an arguments (Repeating) block containing both a named arg and a ~ placeholder (or an equivalent ignored repeating), at least one name-value arg with explicit type, and a `.?onCleanup` (or `.?<struct>onCleanup`) name-value import. Skipping any category to dodge the question is wrong."
+          "expected": "The function definition includes: at least one required arg (no default), at least one optional arg (with =default), at least one ~ placeholder in a plain block, an arguments (Repeating) block containing both a named arg and a ~ placeholder (or an equivalent ignored repeating), at least one name-value arg with explicit type, and a `.?matlab.graphics.chart.primitive.Bar` (or `.?<struct>matlab.graphics.chart.primitive.Bar`) name-value import. Skipping any category to dodge the question is wrong."
         },
         {
           "id": "a4",

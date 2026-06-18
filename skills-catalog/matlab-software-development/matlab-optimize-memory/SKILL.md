@@ -4,7 +4,7 @@ description: "Guides the 7-step MATLAB memory optimization workflow: baseline, p
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # MATLAB Memory Optimization Workflow
@@ -38,7 +38,7 @@ deltaBytes = m1.MemUsedMATLAB - m0.MemUsedMATLAB;
 fprintf('Memory delta: %.2f MB\n', deltaBytes / 1e6);
 ```
 
-When `memory` is unavailable (Linux/macOS), use `whos` for variable sizes or Java runtime for heap:
+When `memory` errors (Linux/macOS), use `whos` for variable sizes or Java runtime for heap:
 ```matlab
 info = whos('result');
 fprintf('Variable size: %.2f MB\n', info.bytes / 1e6);
@@ -50,7 +50,6 @@ Find where memory is being allocated.
 
 ```matlab
 profile('-memory', 'on');
-profile on;
 for iter = 1:5
     targetFunction(inputs);
 end
@@ -63,6 +62,8 @@ for i = 1:min(15, numel(idx))
     fprintf('%-40s %10.2f MB\n', f.FunctionName, f.TotalMemAllocated/1e6);
 end
 ```
+
+If `TotalMemAllocated` fields are zero, fall back to `whos` snapshots before/after each function call.
 
 **Key things to look for:**
 - Functions with high "Allocated" but low "Freed" — memory is retained
@@ -98,7 +99,7 @@ m0 = memory;
 optimizedFunction(inputs);
 m1 = memory;
 deltaOpt = m1.MemUsedMATLAB - m0.MemUsedMATLAB;
-reduction = 1 - deltaOpt / deltaBaseline;
+reduction = 1 - deltaOpt / deltaBytes;
 fprintf('Optimized: %.2f MB (%.0f%% reduction)\n', deltaOpt/1e6, reduction*100);
 ```
 
@@ -120,7 +121,7 @@ Summarize the memory optimization with baseline, optimized, reduction percentage
 
 ## Key Rules
 
-1. **Always profile before optimizing** — don't guess where memory is allocated
+1. **Never propose optimizations based solely on reading source code** — always measure and profile first
 2. **Verify correctness** — memory optimizations must produce identical results
 3. **Clear variables early** — free memory as soon as data is no longer needed
 4. **Avoid growing arrays** — preallocate or use cell collection
@@ -130,7 +131,7 @@ Summarize the memory optimization with baseline, optimized, reduction percentage
 ## Platform Notes
 
 - **Windows:** `memory` command returns full statistics (`MemUsedMATLAB`, etc.)
-- **Linux/macOS:** `memory` returns an empty struct. Use `whos` for variable sizes, or Java `Runtime.getRuntime` for heap usage, or OS-level RSS via `system('ps ...')`
+- **Linux/macOS:** `memory` errors ("not supported on this platform"). Use `whos` for variable sizes, Java `Runtime.getRuntime` for heap usage, or OS-level RSS via `system('ps ...')`
 - **`profile -memory`:** Works on all platforms but is undocumented since R2016a. When unavailable, use `whos` snapshots before/after function calls.
 
 Copyright 2026 The MathWorks, Inc.

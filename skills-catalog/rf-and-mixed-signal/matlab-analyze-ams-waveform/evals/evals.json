@@ -1,0 +1,176 @@
+{
+  "skill": "matlab-analyze-ams-waveform",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-04",
+      "name": "Phase Noise to Jitter Conversion",
+      "description": "Tests whether agent uses phaseNoiseToJitter for PN profile integration",
+      "prompt": "I have a phase noise profile for a 1 GHz oscillator: frequency offsets [1e3, 10e3, 100e3, 1e6, 10e6, 100e6] Hz with phase noise values [-40, -70, -90, -110, -130, -150] dBc/Hz. Compute the integrated RMS jitter. Report in radians, degrees, and picoseconds.",
+      "context": {
+        "setup": "Mixed-Signal Blockset must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses phaseNoiseToJitter function",
+          "expected": "phaseNoiseToJitter"
+        },
+        {
+          "id": "a2",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Reports jitter in all three units",
+          "expected": "Output contains jitter values in radians, degrees, and picoseconds (or seconds)"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Lock Time Measurement (Standalone)",
+      "description": "Tests whether agent uses lockTimeMeasure for control voltage settling and notes TB-first preference",
+      "prompt": "I have PLL control voltage data after a frequency step (t_ctrl, v_ctrl in workspace). The PLL has no Testbench block. Determine the lock time using 1% tolerance. The final voltage is approximately 2.5V.",
+      "context": {
+        "setup": "Mixed-Signal Blockset must be installed. Variables t_ctrl and v_ctrl must be in workspace (30001 points, 30 us duration, underdamped step response settling to 2.5V)."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses lockTimeMeasure function",
+          "expected": "lockTimeMeasure"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions PLL Testbench as preferred alternative",
+          "expected": "Testbench"
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Timing Measurements (Rise, Fall, Duty Cycle)",
+      "description": "Tests whether agent uses MSB timing measurement functions",
+      "prompt": "Measure the rise time, fall time, and duty cycle of a 500 MHz digital clock signal. The data is in variables t_dig and v_dig (400001 points, 20 us, 1.8V amplitude). Use 10%-90% reference levels for rise/fall time.",
+      "context": {
+        "setup": "Mixed-Signal Blockset must be installed. Variables t_dig and v_dig must be in workspace."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses timeDomainSignal2RiseTime",
+          "expected": "timeDomainSignal2RiseTime"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses timeDomainSignal2FallTime",
+          "expected": "timeDomainSignal2FallTime"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses timeDomainSignal2DutyCycle",
+          "expected": "timeDomainSignal2DutyCycle"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Specifies 10-90% reference levels for rise/fall time",
+          "expected": "Code passes [10 90] or [10, 90] or [10,90] as the reference levels argument to timeDomainSignal2RiseTime and/or timeDomainSignal2FallTime. Negative anchor: using default levels or specifying different percentages like [20 80]."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Spectral Quality Metrics (SNR/THD/SFDR)",
+      "description": "Tests whether agent uses SPT spectral quality functions for ADC/DAC analysis",
+      "prompt": "Analyze the spectral quality of my ADC output signal. Data is in variables t_spec (10000 points) and v_spec, sampled at 1 GHz. The fundamental is near 123 MHz. Compute SNR, THD, SFDR, and SINAD. Identify all harmonics and spurs above the noise floor.",
+      "context": {
+        "setup": "Signal Processing Toolbox must be installed. Variables t_spec and v_spec must be in workspace."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses snr() function",
+          "expected": "snr("
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses thd() function",
+          "expected": "thd("
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses sfdr() function",
+          "expected": "sfdr("
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Full Waveform Analysis Report (End-to-End)",
+      "description": "Tests complete workflow: ingest, measure PN, convert to jitter, validate against spec, generate report",
+      "prompt": "Perform a complete analysis of my VCO output waveform. The data is in variables t_vco (199949 points, 2 ms duration) and v_vco (1 GHz carrier, variable-step). I need: waveform summary, phase noise at [10k, 100k, 1M, 10M] Hz offsets, RMS jitter from the PN profile, and a pass/fail check against these targets: -80 dBc/Hz @ 10 kHz, -100 @ 100 kHz, -120 @ 1 MHz. Generate an HTML report.",
+      "context": {
+        "setup": "Mixed-Signal Blockset must be installed. Variables t_vco and v_vco must be in workspace."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses phaseNoiseMeasure with Type='Time'",
+          "expected": "phaseNoiseMeasure"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses phaseNoiseToJitter for jitter conversion",
+          "expected": "phaseNoiseToJitter"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Checks simulation duration before measuring",
+          "expected": "Agent verifies that simulation duration is sufficient for the requested offset frequencies (>= 10/min(offset)) before attempting measurement. Negative anchor: agent proceeds directly to measurement without any duration check."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Validates results against spec targets with pass/fail",
+          "expected": "Agent compares measured PN values against the provided targets and reports pass/fail status for each offset. Negative anchor: agent only reports measured values without comparing to targets or stating pass/fail."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    }
+  ]
+}

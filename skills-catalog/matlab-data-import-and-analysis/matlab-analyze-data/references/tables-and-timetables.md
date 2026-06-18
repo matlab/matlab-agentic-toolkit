@@ -11,6 +11,19 @@ T = table(dates,values,categories, ...
 data = [datenum(dates) values double(categories)];
 ```
 
+## Table design: variables are homogeneous, rows are observations
+
+Each variable (column) should contain values of the same type, units, and meaning. Each row is one observation. If data arrives transposed (measurements as rows, subjects as columns), restructure with `rows2vars` or rebuild the table:
+
+```matlab
+% Recommended: observations as rows, measurements as variables
+T = table(["Bill";"Sue";"Jane"], [72;64;67], [180;130;135], ...
+    VariableNames=["Name" "Height" "Weight"]);
+
+% Not recommended: subjects as columns, measurements as rows
+% (mixes types within a variable, breaks grouping/filtering)
+```
+
 ## Set meaningful table variable names
 
 **Terminology:** Use "variable" (not "column") when referring to table data. A table variable can itself be multi-column (e.g., a matrix) or even a nested table — the only requirement is consistent row count. MathWorks documentation uses "variable" throughout; general internet usage often says "column" but this can be misleading for multi-column variables.
@@ -22,9 +35,10 @@ T.Properties.VariableNames = ["OrderDate" "CustomerID" "TotalAmount" "Region"];
 T.Properties.VariableNames = ["Var1" "Var2" "Var3" "Var4"];
 ```
 
-## Add metadata
+## Organize metadata in table properties
+
+Store per-variable metadata in `Properties` — not as extra data rows or separate lookup tables:
 ```matlab
-% Document units and descriptions in tables and timetables
 T.Properties.VariableNames = ["OrderDate" "CustomerID" "TotalAmount" "Region"];
 T.Properties.VariableUnits = ["" "" "USD" ""];
 T.Properties.VariableDescriptions = [...
@@ -32,6 +46,18 @@ T.Properties.VariableDescriptions = [...
     "Unique customer identifier" ...
     "Total order amount in US dollars" ...
     "Geographic sales region"];
+```
+
+Use `CustomProperties` for domain-specific per-variable metadata beyond units and descriptions:
+```matlab
+T = addprop(T,"Source",["variable"]);
+T.Properties.CustomProperties.Source = ["ERP" "CRM" "ERP" "CRM"];
+```
+
+Per-row metadata (operator name, equipment ID, batch number) belongs as additional table variables — not in Properties, which is per-variable only:
+```matlab
+T.Operator = ["Alice"; "Bob"; "Alice"; "Carol"];
+T.EquipmentID = ["EQ-01"; "EQ-02"; "EQ-01"; "EQ-03"];
 ```
 
 ## Use `vartype` for type-based selection
@@ -69,6 +95,36 @@ matrix = T{:,[2 4 5]};         % extract variables 2, 4, 5 as array
 value = T{:,3};
 T(:,5) = [];
 name = T.Properties.VariableNames(ind); T(:,name);  % unnecessary indirection
+```
+
+## Use dynamic dot indexing `T.(expr)` for runtime variable access
+
+```matlab
+% Iterating over variables by index
+for i = 1:width(T)
+    T.(i) = fillmissing(T.(i),"previous");
+end
+
+% Variable name stored in a string
+varName = "Salary";
+vals = T.(varName);
+
+% Computed or non-identifier names
+T.("Net Income") = T.("Revenue") - T.("Total Cost");
+colName = "Var_" + string(year(datetime("today")));
+T.(colName) = zeros(height(T),1);
+
+% Passing variable names to functions
+function result = processColumn(T, varName)
+    result = normalize(T.(varName));
+end
+```
+
+**Never use `eval` for dynamic variable access:**
+```matlab
+% Avoid: eval is slow, error-prone, and defeats static analysis
+val = eval("T." + varName);           % WRONG
+eval("T." + varName + " = x;");       % WRONG
 ```
 
 ## Use `convertvars` or `VariableTypes` to fix variable types after import
@@ -166,12 +222,25 @@ TTresampled = retime(TT,"monthly");
 % "event"/"unset" → filled with missing
 ```
 
-Time steps: `"yearly"`, `"quarterly"`, `"monthly"`, `"weekly"`, `"daily"`, `"hourly"`, `"minutely"`, `"secondly"`, or a custom datetime vector.
+Time steps: `"yearly"`, `"quarterly"`, `"monthly"`, `"weekly"`, `"daily"`, `"hourly"`, `"minutely"`, `"secondly"`, a custom datetime vector, or `"regular"` with a custom duration via `TimeStep`:
+```matlab
+TT_6h = retime(TT(:,vartype("numeric")), "regular", "mean", TimeStep=hours(6));
+```
 
 Methods by category:
 - **Interpolation:** `"linear"`, `"spline"`, `"pchip"`, `"makima"` - for upsampling to a finer grid
 - **Aggregation:** `"mean"`, `"median"`, `"sum"`, `"prod"`, `"min"`, `"max"`, `"mode"`, `"count"`, `"firstvalue"`, `"lastvalue"`, or a function handle (e.g., `@std`) - for downsampling to a coarser grid
 - **Fill:** `"previous"`, `"next"`, `"nearest"`, `"fillwithmissing"`, `"fillwithconstant"`
+
+**Interpolation and fill methods require sorted row times** (for both `retime` and `synchronize`). Use `sortrows(TT)` first if row times may be unsorted. Aggregation methods do not require sorted row times.
+
+### Use `retime` to resolve duplicate timestamps
+
+When a timetable has rows sharing the same timestamp (e.g., merged sensor logs), use `retime` with the unique row times to consolidate:
+```matlab
+TT = retime(TT, unique(TT.Time), "firstvalue");
+```
+This preserves the original time spacing — unlike resampling to a regular grid, which changes it. Consider the structure and meaning of the data when choosing an aggregation method (e.g., `"mean"` for numeric measurements, `"firstvalue"` for mixed-type tables), and ensure the method is valid for all variables in the timetable.
 
 ## Use `synchronize` to align multiple timetables
 ```matlab
@@ -256,6 +325,10 @@ TT = syncevents(TT,EventDataVariables="EventLabels");
 ```
 
 `stackedplot` automatically overlays attached events on time series plots.
+
+## Pass tables directly to math and chart functions when supported
+
+Many math operations (`sin`, `std`, `sum`) and chart functions (`plot`, `stackedplot`, `scatter`) accept tables directly — this preserves variable names as labels. Use `sin(T(:,vars))` not `sin(T{:,:})`. Only extract to array for functions that require it (e.g., `eig`, `svd`).
 
 ## Use `table2array` when you need a numeric array
 ```matlab

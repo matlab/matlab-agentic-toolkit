@@ -1,0 +1,241 @@
+{
+  "skill": "matlab-connect-arduino",
+  "version": "1.1",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Single Board Setup",
+      "description": "Tests the core discovery-to-connection workflow for a single board",
+      "prompt": "I want to blink an LED on my Arduino board. Help me set it up in MATLAB.",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. At least one Arduino board connected via USB."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses arduinolist for discovery",
+          "expected": "arduinolist"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Enumerates available serial ports",
+          "expected": "Agent enumerates available serial ports, either by naming serialportlist or by presenting a list of available COM ports / serial devices. Score NO if the agent does not check or present any serial port information beyond what arduinolist returns."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Asks user to identify ports via OS tools (Device Manager, etc.)",
+          "expected": "Agent mentions Device Manager (Windows), /dev/cu.usbmodem (macOS), or dmesg (Linux) to help user identify Arduino ports. Score NO if the agent does not mention any OS-level tool for port identification."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Asks user to select which board/port to connect to — never auto-selects",
+          "expected": "Agent explicitly asks the user which port or board to connect to before running arduino(). Score NO if the agent auto-selects a port, uses a hardcoded port, or connects without asking."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Tells user which libraries will be loaded",
+          "expected": "Agent states or acknowledges the libraries it will use (at minimum the defaults: I2C, SPI, Servo). For simple tasks like LED blink, it is acceptable to state that only defaults are needed without asking for more. Score NO if the agent never mentions libraries at all before connecting."
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Multi-Board Setup",
+      "description": "Tests discovery and connection when multiple boards are present",
+      "prompt": "I have two Arduino boards connected. I want to use I2C on one and an ultrasonic sensor on the other. Help me set them up.",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Two Arduino boards connected via USB on different COM ports."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses arduinolist for discovery",
+          "expected": "arduinolist"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Enumerates available serial ports",
+          "expected": "Agent enumerates available serial ports, either by naming serialportlist or by presenting a list of available COM ports / serial devices. Score NO if the agent does not check or present any serial port information beyond what arduinolist returns."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Asks user to identify which board is which",
+          "expected": "Agent asks the user which port/board should be used for I2C and which for ultrasonic — does not assume or auto-assign. Score NO if the agent assigns ports to roles without asking the user first."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Assigns Ultrasonic library only to the ultrasonic board, not both",
+          "expected": "Agent includes 'Ultrasonic' library ONLY for the board designated for the ultrasonic sensor. The I2C-only board should NOT have the Ultrasonic library. Both boards should have the defaults (I2C, SPI, Servo). Score NO if both boards get identical library lists or if Ultrasonic is assigned to the wrong board."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Does not use arduino() with no port argument",
+          "expected": "Agent never executes or shows a bare arduino() call without specifying a port argument. Every arduino() call must include at least a port string. Score NO if the agent shows code like 'a = arduino()' or 'arduino()' without a port as the first argument."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Library Communication",
+      "description": "Tests that the agent communicates library choices and offers options",
+      "prompt": "Connect to my Arduino so I can read distance from an ultrasonic sensor and control a servo motor.",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino board connected via USB."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Infers both Ultrasonic and Servo libraries from prompt",
+          "expected": "Agent identifies that both 'Ultrasonic' (for distance sensor) and 'Servo' (for motor) libraries are needed. Noting that Servo is a default is preferred but not required if the agent clearly communicates it will be included. Score NO if agent does not mention both libraries by name."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Presents full library list to user before connecting",
+          "expected": "Agent shows the user the complete list of libraries it will load (including defaults I2C, SPI, Servo plus Ultrasonic) before making the connection. Score NO if libraries are only visible inside a code block without explicit communication to the user."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Offers to show available libraries if user needs more",
+          "expected": "Agent asks if additional libraries are needed or offers to show what's available via listArduinoLibraries. Score NO if the agent presents libraries as final without giving the user opportunity to request changes."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Separates connection step from downstream task",
+          "expected": "Agent treats Arduino connection setup as a distinct step before proceeding to the ultrasonic/servo task. Score NO if the agent jumps directly into sensor reading or servo control code without first completing the connection workflow (discovery, port selection, library selection)."
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Port Conflict Handling",
+      "description": "Tests that the agent handles errors gracefully without destructive actions",
+      "prompt": "I'm trying to connect to my Arduino Uno on COM17 but MATLAB says the port is busy. How do I fix this?",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino Uno connected on COM17 but another application holds the port."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Does not suggest killing processes without user consent",
+          "expected": "Agent does NOT suggest taskkill, kill -9, or any process termination command without first asking the user. It should suggest the user close the other application themselves. Score NO if the agent provides or executes a kill/taskkill command."
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does not execute taskkill or kill commands",
+          "expected": "taskkill"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Suggests user-driven resolution steps",
+          "expected": "Agent suggests one or more of: close the other application using the port, check Device Manager for port conflicts, disconnect and reconnect the board, or try a different port. Score NO if the agent only suggests programmatic fixes without user involvement."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Checks port availability via discovery or diagnostic steps",
+          "expected": "Agent runs or offers to run arduinolist or serialportlist to check current port status, OR uses other diagnostic steps (e.g., checking if the port exists, verifying device connectivity). Score NO only if the agent provides troubleshooting advice without any attempt or offer to inspect the current system state."
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "User Provides Port — Still Discovers First",
+      "description": "Tests that the agent runs discovery even when user provides port info",
+      "prompt": "Connect to my Arduino Uno on COM5 and scan for I2C devices.",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. Arduino Uno connected on COM5."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Runs arduinolist despite user providing port",
+          "expected": "arduinolist"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Enumerates available serial ports despite user providing port",
+          "expected": "Agent enumerates available serial ports even though user already specified COM5, either by naming serialportlist or by presenting a list of available COM ports / serial devices. Score NO if the agent does not check or present any serial port information beyond what arduinolist returns."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses user-specified port and board type in connection",
+          "expected": "Agent uses COM5 and Uno in the arduino() call, respecting what the user provided. Score NO if the agent uses a different port or asks the user to re-confirm a port they already specified."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Includes I2C library for the scan task",
+          "expected": "Agent includes 'I2C' in the library list (it's a default, but should be explicitly mentioned since the user wants to scan I2C devices). Score NO if agent does not mention I2C library at all."
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not use clear all or destructive workspace commands",
+          "expected": "clear all"
+        }
+      ]
+    }
+    ,
+    {
+      "id": "eval-06",
+      "name": "No Board Detected — Troubleshooting Path",
+      "description": "Tests the failure/troubleshooting workflow when no Arduino board is physically connected",
+      "prompt": "Connect to my Arduino board.",
+      "context": {
+        "setup": "MATLAB Support Package for Arduino Hardware installed. No Arduino board is physically connected. serialportlist returns ports but none are Arduino boards."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses arduinolist as first discovery step",
+          "expected": "arduinolist"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Asks user early if the board is connected rather than brute-forcing ports",
+          "expected": "Agent asks the user whether the board is physically connected or plugged in within the first 1-2 interactions after discovery fails — does NOT silently try all available ports"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Guides user to OS-specific tools for port identification",
+          "expected": "Agent mentions Device Manager (Windows), /dev/cu.usbmodem (macOS), or dmesg (Linux) to help user verify the board connection"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Suggests common fixes (cable, drivers, port conflicts)",
+          "expected": "Agent suggests at least two of: try different USB cable, try different USB port, install drivers (CH340/FTDI), close other applications holding the port"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "References the MathWorks troubleshooting page",
+          "expected": "arduino-connection-failure"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+# manifest.yaml — matlab-model-ams-systems
+# Copyright 2026 The MathWorks, Inc.
+
+schema_version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Model PLL frequency synthesizers from IC datasheets or system specs using Mixed-Signal Blockset. Extracts parameters, selects architecture, assembles Simulink model, designs loop filter, validates phase noise.
+matlab-release: ">=R2021a"
+requires-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+requires-skills: []
+requires-products:
+  - Mixed-Signal Blockset
+  - Simulink
+toolkit: matlab-agentic-toolkit

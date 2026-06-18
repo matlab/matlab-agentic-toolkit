@@ -34,6 +34,15 @@ Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation,
 |-------|---------------------------|
 | `matlab-analyze-data` | Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations. |
 
+### MATLAB External Language Interfaces (`matlab-external-language-interfaces`)
+
+Call Python&trade; libraries from MATLAB and upgrade MEX files to the interleaved complex API
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-call-python` | Call Python libraries from MATLAB using the py. interface. |
+| `matlab-upgrade-mex-ic` | Convert C, C++, and Fortran MEX files from the separate complex API to the interleaved complex API with MX_HAS_INTERLEAVED_COMPLEX guards for SC/IC builds and performance verification. |
+
 ### MATLAB Programming (`matlab-programming`)
 
 Write robust MATLAB functions with validated inputs
@@ -60,7 +69,16 @@ Modernize legacy code, optimize performance and memory, document and create tool
 | `matlab-optimize-memory` | Find and fix memory bottlenecks in MATLAB code using a structured measure-profile-optimize-verify workflow. |
 | `matlab-optimize-performance` | Optimize performance of MATLAB code. |
 | `matlab-publish-toolbox` | Version-stamp and publish a MATLAB toolbox package. |
+| `matlab-write-help` | Generate or improve MATLAB help text following MathWorks documentation standards. |
 | `matlab-write-performance-tests` | Write MATLAB performance tests using the matlab.perftest.TestCase framework. |
+
+### Aerospace (`aerospace`)
+
+Aerospace Toolbox
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-convert-aerospace-coordinates` | Convert between aerospace coordinate frames, rotation representations, time systems, and unit systems using Aerospace Toolbox. |
 
 ### AI and Statistics (`ai-and-statistics`)
 
@@ -68,6 +86,7 @@ Deep Learning Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
 | `matlab-train-network` | Train, evaluate, and deploy neural networks using the recommended APIs. Migrate legacy neural network training code to modern replacements. |
 
 ### Automotive (`automotive`)
@@ -82,6 +101,14 @@ Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder
 | `roadrunner-convert-lanelet2-to-rrhd` | Convert Lanelet2 maps (.osm) to RoadRunner HD Map (.rrhd) format using MATLAB. |
 | `roadrunner-import-scene` | Connect to RoadRunner and import HD Map or OpenDRIVE files into a new scene using MATLAB. |
 | `roadrunner-rrhd-authoring` | Build RoadRunner HD Map entities in MATLAB — lanes, boundaries, markings, junctions, signs, signals, barriers, parking. |
+
+### Cloud Solutions (`cloud-solutions`)
+
+MATLAB Drive
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-sharing` | Share MATLAB content by uploading to GitHub, MATLAB Drive, or File Exchange and generating "Open in MATLAB Online" URLs. |
 
 ### Computational Biology (`computational-biology`)
 
@@ -102,6 +129,8 @@ Image Processing Toolbox and Computer Vision Toolbox
 | `matlab-display-image` | Display images and annotations for image processing, computer vision, and visual inspection. |
 | `matlab-display-volume` | Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. |
 | `matlab-ocr` | Build OCR pipelines in MATLAB using the ocr() function. |
+| `matlab-point-cloud-file-io` | Read and write 3-D point cloud data in PLY, PCD, LAS/LAZ, PCAP, E57, and IDC formats. |
+| `matlab-point-cloud-registration` | Register and align 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms. |
 | `matlab-process-large-images` | Process large images using blockedImage. |
 
 ### Parallel Computing (`parallel-computing`)
@@ -110,6 +139,7 @@ Parallel Computing Toolbox and MATLAB Parallel Server
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-diagnose-parfor` | Diagnose and fix parfor variable classification errors in MATLAB. |
 | `matlab-discover-clusters` | Discover parallel computing clusters and manage cluster profiles. |
 | `matlab-setup-gpu` | Detect and validate GPU availability for MATLAB GPU computing. |
 | `matlab-setup-worker-state` | Set up worker environment and per-worker state for parallel pools. |
@@ -123,6 +153,7 @@ Phased Array System Toolbox, Sensor Fusion and Tracking Toolbox, and Mapping Too
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Design and analyze radar and sonar waveforms using Phased Array System Toolbox. |
 | `matlab-import-tracking-data` | Import ground truth trajectory data for use with Sensor Fusion and Tracking Toolbox. |
+| `matlab-simulate-radar-detections` | Simulate statistical radar detections for surveillance and tracking radar scenarios. |
 
 ### Reporting and Database Access (`reporting-and-database-access`)
 
@@ -138,30 +169,23 @@ Database Toolbox
 
 ### RF and Mixed Signal (`rf-and-mixed-signal`)
 
-Antenna Toolbox, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox
+Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-analyze-ams-waveform` | Measure phase noise, jitter, and timing from AMS simulation waveforms using Mixed-Signal Blockset. |
 | `matlab-analyze-em` | Compute S-parameters, insertion loss, fields, and currents for RF PCB performance validation. |
 | `matlab-analyze-installed-antenna` | Analyze antennas installed on electrically large conducting platforms such as vehicles and aircraft. |
 | `matlab-analyze-pcb-pdn` | Analyze PDN DC voltage and current distribution, IR drop, and design rule checking on PCB layouts. |
 | `matlab-analyze-rcs` | Compute and visualize monostatic and bistatic radar cross section of antennas and platforms. |
-| `matlab-analyze-rf-amplifier` | Analyze RF amplifier stability, power gain, and matching using RF Toolbox. |
-| `matlab-analyze-rf-budget` | Perform RF system cascade budget analysis using rfbudget in RF Toolbox. |
-| `matlab-analyze-rf-mixer` | Analyze mixer spurious products and intermodulation using the mixerIMT object in RF Toolbox. |
 | `matlab-analyze-rf-propagation` | Analyze RF propagation and plan wireless sites using coverage maps, ray tracing, and path loss models. |
 | `matlab-assemble-pcb-layout` | Build custom PCB structures with pcbComponent, shapes, Boolean operations, feeds, and multi-layer stackups. |
-| `matlab-compose-rf-circuit` | Compose general-purpose RF circuits from R/L/C elements, amplifiers, modulators, mixers, nport S-parameter blocks, and other RF elements using RF Toolbox. |
-| `matlab-convert-network-parameters` | Convert between network parameter types (S, Z, Y, ABCD, T, H, G) and compute mixed-mode (differential/common) S-parameters using RF Toolbox. |
 | `matlab-create-ai-antenna` | Explore antenna design space and reconstruct 3D radiation patterns using AI surrogate models. |
 | `matlab-create-custom-antenna` | Build custom antennas from geometric primitives using Antenna Toolbox customAntenna. |
 | `matlab-create-measured-antenna` | Create measuredAntenna objects from simulated or measured data for site planning and satellite links. |
-| `matlab-create-rfbudget-elements` | Create and configure all rfbudget-compatible element objects -- active (amplifier, modulator, rfelement, nport, rffilter, rfantenna, attenuator, phaseshift) and passive (seriesRLC, shuntRLC, lcladder, txline*) -- for use in rfbudget cascade analysis and circuit composition. |
-| `matlab-deembed-rf-cascade` | Cascade and de-embed S-parameter networks using RF Toolbox. |
 | `matlab-design-antenna` | Design and analyze antennas at a target frequency using MATLAB Antenna Toolbox. |
 | `matlab-design-antenna-matching-network` | Design impedance matching networks for antennas using RF Toolbox matchingnetwork. |
 | `matlab-design-array` | Design and analyze finite and infinite antenna arrays with beam steering, tapering, and scan impedance. |
-| `matlab-design-matching-network` | Design impedance matching networks using the matchingnetwork object and Matching Network Designer app in RF Toolbox. |
 | `matlab-design-pcb-antenna` | Design multi-layer PCB antennas with custom metal patterns, feeds, and Gerber export using pcbStack. |
 | `matlab-design-pcb-coupler` | Design Wilkinson, branchline, ratrace, and directional couplers, corporate dividers, and Rotman lenses. |
 | `matlab-design-pcb-filter` | Design bandpass, lowpass, and bandstop RF filters using hairpin, coupled-line, combline, stub, and SIW topologies. |
@@ -171,18 +195,15 @@ Antenna Toolbox, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox
 | `matlab-design-reflector-antenna` | Design and analyze parabolic, Cassegrain, Gregorian, and corner reflector antennas. |
 | `matlab-estimate-sar` | Estimate Specific Absorption Rate from antennas near or inside biological tissue. |
 | `matlab-export-session-script` | Export conversation MATLAB code to a clean, runnable .m script. |
-| `matlab-fit-rational-model` | Fit S-parameters to rational function models and compute time-domain responses using RF Toolbox. |
 | `matlab-integrate-pcb-circuit` | Cascade PCB components, add lumped elements, and export Touchstone files for multi-component RF circuits. |
 | `matlab-manage-pcb-material` | Define dielectric substrates, metal conductors, multi-layer stackups, and loss models for RF PCB simulation. |
-| `matlab-manage-sparameters` | Load, inspect, visualize, and export S-parameters using RF Toolbox. |
+| `matlab-model-ams-systems` | Model PLL frequency synthesizers from IC datasheets or system specs using Mixed-Signal Blockset. Extracts parameters, selects architecture, assembles Simulink model, designs loop filter, validates phase noise. |
+| `matlab-model-rf` | Design, analyze, and simulate RF systems in MATLAB using RF Toolbox and RF Blockset -- from S-parameter I/O through full Circuit Envelope time-domain simulation. |
 | `matlab-model-serdes-systems` | Model, simulate, and optimize Serializer/Deserializer (SerDes) systems — serial and parallel links — using MATLAB SerDes Toolbox. |
-| `matlab-model-si-channel` | Model signal integrity channels from measured S-parameter blocks, lossy transmission lines, and lumped parasitics using RF Toolbox circuit composition. |
 | `matlab-model-via` | Model vias with pads, antipads, and ground return vias for high-speed PCB layer transitions. |
 | `matlab-optimize-antenna` | Optimize antenna and array designs using SADEA and TR-SADEA surrogate-assisted algorithms. |
 | `matlab-optimize-pcb-design` | Optimize RF PCB component dimensions for bandwidth, return loss, or area using patternsearch and surrogateopt. |
-| `matlab-process-rf-baseband` | Process complex baseband RF signals using rf.Amplifier, rf.Mixer, rf.Filter, and rf.Sparameter System Objects. |
 | `matlab-read-pcb-layout` | Import Gerber, ODB++, and Allegro .brd files and inspect nets, layers, shapes, and stackups. |
-| `matlab-simulate-rf-system` | Perform high-accuracy time-domain RF system simulation using the rfsystem System Object in RF Toolbox. |
 | `matlab-write-pcb-layout` | Export pcbComponent designs to Gerber files for PCB manufacturing. |
 
 ### Robotics and Autonomous Systems (`robotics-and-autonomous-systems`)
@@ -198,7 +219,7 @@ Navigation Toolbox and UAV Toolbox
 
 ### Signal Processing (`signal-processing`)
 
-Signal Processing Toolbox, DSP System Toolbox, Wavelet Toolbox, and DSP HDL Toolbox
+Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -207,17 +228,25 @@ Signal Processing Toolbox, DSP System Toolbox, Wavelet Toolbox, and DSP HDL Tool
 | `matlab-design-adaptive-filter` | Design and implement adaptive filters using System objects. |
 | `matlab-design-digital-filter` | Design and validate digital filters in MATLAB. |
 | `matlab-dsphdl-ddc-design` | Design HDL-optimized Digital Down Converters using dsphdl System objects. |
+| `matlab-play-record-audio` | Play and record audio in MATLAB using audiostreamer. |
 | `matlab-prepare-signal-data` | Build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off. |
+| `matlab-write-audio-plugin` | Author Audio Toolbox plugins that compile to VST/AU via validateAudioPlugin and generateAudioPlugin. |
 
 ### Test and Measurement (`test-and-measurement`)
 
-Data Acquisition Toolbox and Industrial Communication Toolbox
+Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-call-nidaqmx` | Translate NI-DAQmx C functions into correct calldaqlib MATLAB calls. |
+| `matlab-connect-arduino` | Discover, configure, and connect to Arduino boards from MATLAB via USB. |
 | `matlab-connect-opcua-client` | Create OPC UA client connections and inspect security certificates. |
+| `matlab-create-custom-arduino-library` | Create custom Arduino add-on libraries to access unsupported sensors and peripherals from MATLAB. |
 | `matlab-discover-opcua-servers` | Discover OPC UA servers using opcuaserverinfo and the OPC UA Local Discovery Service (LDS). |
+| `matlab-enhance-camera-image` | Diagnose and enhance image quality from cameras connected via Image Acquisition Toolbox. |
+| `matlab-find-pi-assets` | Find and query PI Data Archive tags and Asset Framework elements using piclient and afclient. |
+| `matlab-import-vehicle-data` | Import and decode vehicle network data from log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types and CAN/CAN FD/LIN decode pipelines. |
+| `matlab-use-cameras` | Connect to and acquire images from cameras using Image Acquisition Toolbox videoinput interface. |
 
 ### Wireless Communications (`wireless-communications`)
 
@@ -226,6 +255,7 @@ Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite C
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-add-awgn` | Add Additive White Gaussian Noise (AWGN) noise and convert between SNR, Eb/No, Es/No, and per-subcarrier SNR for communications simulations. |
+| `matlab-design-ofdm-system` | Design and simulate custom OFDM systems using ofdmmod/ofdmdemod, with fading channel configuration, equalization, synchronization (timing/CFO), LDPC coding, SNR handling, subcarrier allocation, and pilot-based channel estimation |
 | `matlab-generate-5g-waveform` | Generate 3GPP-compliant 5G NR downlink and uplink baseband waveforms. |
 | `matlab-generate-ble-waveform` | Generate and analyze Bluetooth Low Energy PHY waveforms. |
 | `matlab-generate-gnss-waveform` | Generate GNSS baseband waveforms (GPS, Galileo, NavIC) with physically realistic or user-specified channel impairments using the Satellite Communications Toolbox. |

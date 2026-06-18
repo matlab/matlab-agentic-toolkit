@@ -1,0 +1,353 @@
+{
+  "skill": "matlab-write-audio-plugin",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "real-variable-shadowing-codegen",
+    "name": "Fix plugin with variable shadowing and filter design in process",
+    "description": "Based on MATLAB Answers #824530. User shadows the plugin variable 'p' with butter() output poles, and designs filters inside process (expensive, stateless).",
+    "provenance": "https://www.mathworks.com/matlabcentral/answers/824530-can-zp2sos-be-used-in-an-audio-plugin",
+    "prompt": "This plugin is buggy, fix it.\n\n```matlab\nclassdef filterPlugin < audioPlugin\n%#codegen\n\n    properties\n        Cutoff = 1000\n        Level = 0\n    end\n\n    properties (Access = private)\n        pSR = 44100\n    end\n\n    properties (Constant)\n        PluginInterface = audioPluginInterface( ...\n            audioPluginParameter('Cutoff', ...\n                'DisplayName', 'Cutoff', ...\n                'Label', 'Hz', ...\n                'Mapping', {'log', 20, 20000}), ...\n            audioPluginParameter('Level', ...\n                'DisplayName', 'Level', ...\n                'Mapping', {'lin', 0, 1}), ...\n            'InputChannels', 2, ...\n            'OutputChannels', 2)\n    end\n\n    methods\n        function out = process(p, in)\n            Fc = p.Cutoff;\n            FcNormalized = Fc / (p.pSR/2);\n            [z, p, k] = butter(2, FcNormalized);\n            sos = zp2sos(z, p, k);\n            out = sosfilt(sos, in);\n            p.Level = max(abs(out(:)));\n        end\n\n        function reset(p)\n            p.pSR = getSampleRate(p);\n        end\n    end\nend\n```",
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Identifies variable shadowing and stateless filter design, fixes both",
+        "expected": "Explains that [z, p, k] = butter(...) shadows the plugin variable 'p' with the poles vector. Also moves filter design out of process into reset/set.Cutoff, and maintains filter state between frames via a persistent state property (not reinitialized each frame). Identifies that process writes to the Level parameter property (forbidden by the plugin framework -- process must not modify parameter properties). Removes Level from audioPluginParameter registration or makes it a private property."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: lowpass filter attenuates high frequencies",
+        "expected": "setSampleRate(plugin,44100); reset(plugin); plugin.Cutoff=200; x=randn(8192,2); y=process(plugin,x); Y=fft(y(:,1)); X=fft(x(:,1)); N=length(Y); f=(0:N-1)*44100/N; highIn=mean(abs(X(f>2000&f<20000)).^2); highOut=mean(abs(Y(f>2000&f<20000)).^2); attenDB=10*log10(highOut/highIn); assert(attenDB<-10,'High frequencies not attenuated')"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  },
+  {
+    "id": "real-nontunable-samplerate",
+    "name": "Fix plugin with nontunable property that depends on sample rate",
+    "description": "Based on MATLAB Answers #2087093. User stores IR matrix in a Nontunable property whose dimensions depend on sample rate, causing 'Failed to compute constant value for nontunable property' error.",
+    "provenance": "https://www.mathworks.com/matlabcentral/answers/2087093-how-to-store-a-matrix-of-impulse-responses-in-a-plugin-re-failed-to-compute-constant-value-for-no",
+    "prompt": "This plugin is buggy, fix it.\n\n```matlab\nclassdef (StrictDefaults) IRCycler < matlab.System & audioPlugin\n%#codegen\n\n    properties\n        CycleTime = 2    % seconds between IR switches\n    end\n\n    properties (Nontunable)\n        NumIRs = 4\n        IRLength = 2048\n    end\n\n    properties (Access = private, Nontunable)\n        pFIR\n        tdiMatrix\n        currentIndex = 1\n        sampleCounter = 0\n        switchSamples\n        pSR\n    end\n\n    properties (Constant)\n        PluginInterface = audioPluginInterface( ...\n            audioPluginParameter('CycleTime', ...\n                'DisplayName', 'Cycle Time', ...\n                'Label', 's', ...\n                'Mapping', {'lin', 0.5, 10}), ...\n            'InputChannels', 2, ...\n            'OutputChannels', 2)\n    end\n\n    methods (Access = protected)\n        function setupImpl(obj, ~)\n            obj.pSR = getSampleRate(obj);\n            obj.switchSamples = round(obj.CycleTime * obj.pSR);\n            obj.tdiMatrix = reshape(randn(obj.IRLength * obj.NumIRs, 1), obj.IRLength, obj.NumIRs);\n            obj.pFIR = dsp.FrequencyDomainFIRFilter('Numerator', obj.tdiMatrix(:,1).', ...\n                'PartitionForReducedLatency', true, 'PartitionLength', 512);\n        end\n\n        function y = stepImpl(obj, x)\n            obj.sampleCounter = obj.sampleCounter + size(x, 1);\n            if obj.sampleCounter >= obj.switchSamples\n                obj.sampleCounter = 0;\n                obj.currentIndex = mod(obj.currentIndex, obj.NumIRs) + 1;\n                obj.pFIR.Numerator = obj.tdiMatrix(:, obj.currentIndex).';\n            end\n            y(:,1) = obj.pFIR(x(:,1));\n            y(:,2) = obj.pFIR(x(:,2));\n            fprintf('Switched to IR %d\n', obj.currentIndex);\n        end\n\n        function resetImpl(obj)\n            obj.pSR = getSampleRate(obj);\n            obj.switchSamples = round(obj.CycleTime * obj.pSR);\n            obj.currentIndex = 1;\n            obj.sampleCounter = 0;\n        end\n\n        function flag = isInputSizeMutableImpl(~, ~)\n            flag = true;\n        end\n    end\nend\n```",
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Identifies Nontunable properties cannot depend on sample rate and fixes them",
+        "expected": "Explains that the audio plugin framework treats sample rate as tunable (it can change between calls). Properties marked Nontunable that depend on getSampleRate will fail codegen. Fixes by moving switchSamples, pSR, tdiMatrix, sampleCounter, currentIndex to regular private properties (not Nontunable). Uses isInputSizeMutableImpl(~, ~) with correct 2-argument signature. Identifies the unguarded fprintf in stepImpl (not codegen-compatible) and removes or guards it."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: plugin produces filtered output that differs from input",
+        "expected": "setSampleRate(plugin,44100); setup(plugin,randn(256,2)); y=step(plugin,randn(1024,2)); x=randn(1024,2); y2=step(plugin,x); assert(norm(y2-x)>1e-3,\"No filtering detected\"); impulse=[1;zeros(2047,1)]; reset(plugin); setup(plugin,zeros(256,2)); yIR=step(plugin,[impulse impulse]); assert(nnz(abs(yIR(:,1))>1e-6)>50,\"FIR impulse response too short -- filter not applying convolution\")"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  },
+  {
+    "id": "spectral-effects-processor",
+    "name": "Spectral effects processor with magnitude masking and sharpening",
+    "description": "Tests FFT/OLA pattern from scratch: dsp.AsyncBuffer for fixed-size frames, proper phase preservation through IFFT, magnitude-domain modifications, enum dropdown for shape selection, and a creative DSP algorithm (spectral sharpening). Exercises variable host frame sizes, overlap-add normalization, and codegen-compatible frequency-domain processing.",
+    "prompt": "I have an idea for a spectral effects plugin -- a creative sound design tool that modifies the magnitude spectrum while preserving phase for clean reconstruction.\n\nThe plugin should do FFT-based processing with overlap-add (50% overlap, Hann window). Use a fixed FFT size of 2048 and handle variable host frame sizes internally.\n\nTwo independent effects that are applied to the magnitude spectrum before IFFT:\n\n**1. Spectral Shape (dropdown):**\n- 'None' -- no masking, pass magnitudes through unchanged\n- 'Comb' -- zero out every other bin (creates a flanging/robotic effect)\n- 'RampUp' -- multiply each bin magnitude by its normalized index (0 at DC, 1 at Nyquist) -- boosts highs\n- 'RampDown' -- multiply each bin magnitude by (1 - normalized index) -- boosts lows\n\n**2. Sharpen (0 to 100, default 0):**\nControls how much energy is concentrated at spectral peaks.\n- At 0: no effect (magnitudes unchanged after shape masking)\n- At 100: find the spectral centroid of the frame, dump ALL magnitude energy into that single bin (and its symmetric partner), zero all others. Maximum tonal concentration.\n- In between: use a sliding window (width = round(FFTSize/2 * (1 - Sharpen/100)) + 1, minimum width 1). Within each window position, find the peak bin and redistribute all the window energy to that peak bin. As Sharpen increases, the window gets smaller so more peaks survive, but each peak absorbs its neighbors energy.\n\nParameters:\n- Shape (enum dropdown: 'None', 'Comb', 'RampUp', 'RampDown')\n- Sharpen (0-100, linear)\n- Mix (0-1, wet/dry blend)\n\nStereo in/out. Process each channel independently.",
+    "tuneConfigs": [
+      {
+        "Shape": "None",
+        "Sharpen": 0,
+        "Mix": 1.0
+      },
+      {
+        "Shape": "Comb",
+        "Sharpen": 0,
+        "Mix": 1.0,
+        "verify": "RMS of output is 30-70% of input RMS (zeroing every other bin removes roughly half the energy)"
+      },
+      {
+        "Shape": "RampUp",
+        "Sharpen": 0,
+        "Mix": 1.0,
+        "verify": "High-band energy ratio (5-20 kHz) relative to low-band (100-1000 Hz) increases by at least 1.5x compared to input"
+      },
+      {
+        "Shape": "RampDown",
+        "Sharpen": 0,
+        "Mix": 1.0,
+        "verify": "High-band energy ratio (5-20 kHz) relative to low-band (100-1000 Hz) decreases to at most 0.67x compared to input"
+      },
+      {
+        "Shape": "None",
+        "Sharpen": 100,
+        "Mix": 1.0,
+        "verify": "Spectral flatness of output drops to less than 0.5x the spectral flatness of input (energy concentrated at peaks)"
+      }
+    ],
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Correct FFT/OLA architecture with phase preservation and async buffering",
+        "expected": "All of the following must be satisfied: (1) Uses a fixed-size internal buffering strategy to decouple variable host frame sizes from the fixed 2048-sample FFT. (2) FFT size is fixed at 2048 (compile-time constant). Hann window stored as private property, computed once (not per-frame). (3) Phase preserved: fft -> separate mag/phase -> modify mag only -> reconstruct via mag.*exp(1j*phase) or equivalent -> ifft. Phase is NEVER modified. (4) Overlap-add with 50% overlap (hop = 1024). Output overlap buffer maintained across process calls as private state. (5) Shape uses Style='dropdown' (4 values with different char lengths: 'None'=4, 'Comb'=4, 'RampUp'=6, 'RampDown'=8). Either uses int32 enum class or char padding handles it. (6) Sharpen algorithm modifies only magnitudes within the positive-frequency half (bins 1:FFTSize/2+1), then mirrors to negative frequencies for real-valued IFFT output."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Spectral effects modify signal correctly and phase is preserved",
+        "expected": "setSampleRate(plugin,44100); reset(plugin); plugin.Mix=1; plugin.Sharpen=0; x=0.3*randn(8192,2); y=process(plugin,x); y2=process(plugin,x); assert(norm(y2)>0.01*norm(x(end-size(y2,1)+1:end,:)),'Shape=None Sharpen=0 should produce non-silent output'); reset(plugin); plugin.Sharpen=0; plugin.Mix=1; tone=0.5*sin(2*pi*1000*(0:8191)'/44100)*[1 1]; yt=process(plugin,tone); yt2=process(plugin,tone); assert(norm(yt2)>0.01,'Tone processed without error'); reset(plugin); plugin.Sharpen=100; plugin.Mix=1; broad=0.3*randn(8192,2); yb=process(plugin,broad); yb2=process(plugin,broad); Yb=fft(yb2(:,1)); N=length(Yb); psd=abs(Yb(1:N/2)).^2; sfOut=exp(mean(log(psd+eps)))/(mean(psd)+eps); Xb=fft(broad(end-size(yb2,1)+1:end,1)); psdIn=abs(Xb(1:length(psd))).^2; sfIn=exp(mean(log(psdIn+eps)))/(mean(psdIn)+eps); assert(sfOut<sfIn*0.5,'Sharpen=100 should concentrate energy (spectral flatness should drop)')"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page). NOTE: dsp.AsyncBuffer is the built-in for variable-to-fixed frame buffering. Hand-rolled circular buffers for this purpose count as a FAIL."
+      }
+    ]
+  },
+  {
+    "id": "plugin-with-grid-layout",
+    "name": "Create plugin with advanced grid layout, filmstrip, and spanning controls",
+    "description": "Tests advanced grid layout (filmstrip, spanning, ColumnWidth matching, BackgroundColor), correct widget selection (vtoggle for 2 values, dropdown for 4), and proper handling of enum parameters with different-length string values.",
+    "prompt": "Create a stereo 3-band equalizer plugin with a polished custom UI. The layout should look like a professional DAW channel strip:\n\n**Controls (top to bottom):**\n1. Row of 3 vertical sliders for band gains: Low (-20 to +20 dB), Mid (-20 to +20 dB), High (-20 to +20 dB). Each slider should span 3 rows tall with its label above it.\n2. Below the sliders, a row of 3 rotary knobs for band frequencies: LowFreq (20-500 Hz log), MidFreq (500-3000 Hz log), HighFreq (3-20 kHz log). Labels above.\n3. A master Volume knob (0 to 2, linear) in a separate column to the right, vertically centered.\n4. An Enable toggle in the bottom-right corner that uses a custom filmstrip image 'toggle_strip.png'. The filmstrip has 2 frames stacked vertically, each frame is 80x40 pixels (total image: 80x80). The toggle cell must be sized to exactly match the frame size.\n5. An EQ Preset dropdown in the top-right area (above Volume) with these options: 'Flat', 'Voice', 'Bass Boost', 'Loudness Compensated'. When a preset is selected, it should set the band gains to predefined values.\n\n**Layout requirements:**\n- Use audioPluginGridLayout with explicit RowHeight and ColumnWidth\n- BackgroundColor = [0.15 0.15 0.18] (dark theme)\n- Padding = [15 15 15 15]\n- The 3 EQ columns should each be 100px wide. The separator column should be 30px. The right column (Volume + toggle + preset) should be 80px wide.\n- FilmstripFrameSize must exactly match the cell dimensions where the toggle lives\n\nMake sure the EQ actually processes audio using multibandParametricEQ. Set it up correctly with sample rate propagation.",
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Advanced grid layout with filmstrip, spanning, and size consistency",
+        "expected": "All of the following must be satisfied: (1) All parameters have Layout=[row,col] or Layout=[r0,c0;r1,c1]. audioPluginGridLayout present. (2) Vertical sliders use multi-row spanning Layout (e.g. [2,1;4,1]) -- not single-cell. (3) DisplayNameLocation set on ALL parameters (not just some). Label rows allocated in RowHeight (~20px each). (4) Filmstrip and FilmstripFrameSize specified for the Enable toggle. FilmstripFrameSize=[80,40] matches the cell dimensions (ColumnWidth of that column = 80, RowHeight of that row = 40). (5) ColumnWidth has 5 entries: [100 100 100 30 80] -- three EQ columns, separator, right column. The right column is 80px to match the filmstrip frame width. (6) BackgroundColor=[0.15 0.15 0.18] specified in audioPluginInterface. (7) Padding=[15 15 15 15] in audioPluginGridLayout. (8) Enable uses vtoggle with exactly 2 enum values. Enum default is char (single quotes). (9) EQ Preset uses Style='dropdown' (4 values, so NOT vtoggle/vrocker). The 4 preset names have DIFFERENT character lengths ('Flat'=4, 'Voice'=5, 'Bass Boost'=10, 'Loudness Compensated'=20). Any valid approach for codegen is acceptable: char with audioPluginParameter enum mapping (framework handles padding), or a separate int32 enumeration classdef. (10) vrocker/vtoggle used only for exactly 2-value enums; dropdown for 3+."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: EQ shapes frequency response, Enable bypasses, Volume scales",
+        "expected": "setSampleRate(plugin,44100); reset(plugin); plugin.Enable='On'; plugin.GainLow=20; plugin.GainMid=0; plugin.GainHigh=-20; plugin.Volume=1; x=randn(4096,2); y=process(plugin,x); Y=fft(y(:,1)); X=fft(x(:,1)); N=length(Y); f=(0:N-1)*44100/N; lowBand=f>50&f<400; highBand=f>5000&f<20000; lowGain=10*log10(mean(abs(Y(lowBand)).^2)/mean(abs(X(lowBand)).^2)); highGain=10*log10(mean(abs(Y(highBand)).^2)/mean(abs(X(highBand)).^2)); assert(lowGain>5,'Low band not boosted'); assert(highGain<-3,'High band not cut'); plugin.Enable='Off'; yOff=process(plugin,x); assert(norm(yOff-x)<1e-6,'Enable=Off should bypass')"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  },
+  {
+    "id": "plugin-composition",
+    "name": "Compose a plugin from sub-plugins",
+    "description": "Tests whether the agent correctly composes three sub-objects (Echo plugin, compressor, limiter) with different SR-propagation APIs, implements a parallel wet/dry mix path, and forwards parameter changes via set methods.",
+    "prompt": "Build me a plugin that chains an echo (use audiopluginexample.Echo), a compressor, and a limiter in series. I want to tweak the echo's delay and feedback, the compressor's threshold and ratio, and the limiter threshold. Add a wet/dry mix knob too. Stereo.",
+    "tuneConfigs": [
+      {
+        "DelayTime": 0.1,
+        "Feedback": 0.3,
+        "CompThreshold": -20,
+        "CompRatio": 4,
+        "LimiterThreshold": -6,
+        "Mix": 1.0
+      },
+      {
+        "DelayTime": 0.8,
+        "Feedback": 0.9,
+        "CompThreshold": -6,
+        "CompRatio": 12,
+        "LimiterThreshold": -1,
+        "Mix": 1.0,
+        "verify": "Output remains bounded (max abs < 10) after processing 20 consecutive 4096-sample frames of 0.5*randn noise — high feedback (0.9) with long delay (0.8s) must not diverge"
+      },
+      {
+        "DelayTime": 0.8,
+        "Feedback": 0.3,
+        "CompThreshold": -20,
+        "CompRatio": 4,
+        "LimiterThreshold": -6,
+        "Mix": 1.0,
+        "verify": "No NaN or Inf in output — large delay (0.8s = ~35k samples at 44.1 kHz) must not overflow internal delay buffer"
+      },
+      {
+        "DelayTime": 0.2,
+        "Feedback": 0.5,
+        "CompThreshold": -20,
+        "CompRatio": 4,
+        "LimiterThreshold": -6,
+        "Mix": 0.0,
+        "verify": "Output equals input (norm difference < 1e-10) — Mix=0 must bypass the wet chain entirely"
+      }
+    ],
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Correctly composes sub-plugins with SR propagation, delegation, and sensible ranges",
+        "expected": "All of the following: (1) Sub-objects constructed in constructor only (audiopluginexample.Echo, compressor, limiter). (2) Reset propagates sample rate to ALL three sub-objects using the correct API for each: setSampleRate for the Echo sub-plugin, .SampleRate property for compressor and limiter. Then resets all three. (3) Parameter changes forwarded to sub-components via set methods. (4) Wet/dry mix implemented as parallel path: dry signal preserved, wet signal passes through the chain, output blended. (5) Parameter ranges are musically sensible: delay time allows at least 0.01-0.5s, feedback below 1.0 to prevent infinite buildup, thresholds in dB (negative range), ratio >= 1, mix 0-1."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: echo + compression modifies signal, mix knob works",
+        "expected": "Find the property names for delay, feedback, compressor threshold, compressor ratio, limiter threshold, and mix by inspecting the plugin class. Set them to reasonable values (delay ~0.2s, feedback ~0.5, comp threshold ~ -20, ratio ~8, limiter ~ -6, mix=1). Then: setSampleRate(plugin,44100); reset(plugin); x=0.5*randn(4096,2); y=process(plugin,x); assert(norm(y-x)>0.1,'Wet path has no effect'); Set mix=0; yDry=process(plugin,x); assert(norm(yDry-x)<1e-10,'Mix=0 should pass dry signal unchanged'); Set mix=0.5; yHalf=process(plugin,x); assert(norm(yHalf-x)>0.01,'Mix=0.5 should differ from dry')"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  },
+  {
+    "id": "source-plugin-vocoder-speech",
+    "name": "Create a vocoder-style speech source plugin",
+    "description": "Tests audioPluginSource with complex internal state: looping playback of a pre-recorded speech buffer, vocoder-style buzz/hiss separation via LPC, formant warping, and speed control. Exercises getSamplesPerFrame, coder.load, circular buffer indexing, fixed-order LPC in codegen, and all-pass frequency warping.",
+    "prompt": "Make me a source plugin that loops 'Counting-16-44p1-mono-15secs.wav' (ships with Audio Toolbox). I want it to separate the audio vocoder-style into buzz (voiced/harmonic) on the left channel and hiss (unvoiced/residual) on the right channel using LPC. Give me Speed, Separation, and FormantWarp controls.",
+    "context": {
+      "setup": "Ensure Audio Toolbox and Signal Processing Toolbox are available. 'Counting-16-44p1-mono-15secs.wav' is a 44.1 kHz mono recording (~15 seconds) that ships with Audio Toolbox."
+    },
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Correct audioPluginSource pattern with LPC vocoder architecture",
+        "expected": "All of the following: (1) Inherits from audioPluginSource. InputChannels omitted from interface. process(plugin) takes no audio input. Uses getSamplesPerFrame(plugin) for output frame size. (2) Loads Counting-16-44p1-mono-15secs.wav at construction via coder.load (bakes data into binary for codegen). (3) Implements looping playback with speed control (fractional indexing or resampling). (4) Uses LPC analysis to separate voiced and unvoiced components. Voiced (buzz) is produced by driving the all-pole filter with periodic excitation. Unvoiced (hiss) is the LPC residual or noise shaped by the spectral envelope. Separation parameter controls the mix between these components. (5) FormantWarp modifies LPC coefficients or vocal tract model to shift formant frequencies. (6) Parameter ranges are sensible: Speed allows at least 0.5-2x, Separation 0-1, FormantWarp symmetric around 0."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: stereo separation, spectral character, and speed control",
+        "expected": "Three checks at 44100 Hz with 1024-sample frames: (1) Separation test: Set Separation=1, FormantWarp=0, Speed=1. Process 500 frames. Assert both L (buzz) and R (hiss) are non-silent (RMS > 0.001). Assert L and R differ (correlation < 0.7). Then set Separation=0, reset, process 100 frames, assert L and R are similar (correlation > 0.9). (2) Spectral character: With Separation=1, compute power spectrum of L and R over the 500 frames. The hiss channel (R) should have a flatter/whiter spectrum than the buzz channel (L) -- verify by comparing spectral flatness (geometric mean / arithmetic mean of power spectrum): hiss flatness > buzz flatness. (3) Speed control: Set Speed=2.0, reset, process 500 frames. Compare total playback position advancement to Speed=1.0 -- the 2x speed plugin should advance through the buffer approximately twice as fast (within 10% tolerance)."
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "code_executes",
+        "description": "Universal code quality and correctness gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  },
+  {
+    "id": "deep-learning-pitch-plugin",
+    "name": "Dual-network pitch gate with VAD and smoothing",
+    "description": "Tests three deep learning networks with different input layer types (imageInputLayer vs featureInputLayer requiring SSCB vs CB dlarray formats), internal sample rate conversion from host rate to 16 kHz, audioPluginConfig as separate Constant property, enum with 3 modes, and SR-dependent smoothing.",
+    "prompt": "I have three pretrained networks:\n- `crepe_tiny.mat` -- CREPE-tiny pitch detection. Has an imageInputLayer([1024 1 1]). Takes 1024 audio samples at 16 kHz, outputs 360 pitch class probabilities. The 360 bins map linearly in cents from 0 to 7180 cents above C1 (32.70 Hz).\n- `vad_model.mat` -- Voice activity detector. Has a featureInputLayer(512). Takes 512 audio samples at 16 kHz, outputs a single probability (0=silence, 1=speech).\n- `noise_classifier.mat` -- Noise type classifier. Has an imageInputLayer([256 1 1]). Takes 256 samples at 16 kHz, outputs 4 class probabilities (stationary, transient, harmonic, silence).\n\nWrite a mono audio plugin called `PitchGate` that detects pitch using CREPE and gates the audio -- passes signal through only when detected pitch is within a specified range, otherwise outputs silence.\n\nThe plugin runs at the host sample rate (44100 or 48000 Hz), so you must internally resample to 16 kHz before feeding the networks, and the gate gain is applied at the original host rate.\n\nThe gate decision should be controlled by a GateMode parameter that toggles between three modes:\n- 'Confidence': gate opens when CREPE's max probability exceeds the Confidence threshold\n- 'VAD': gate opens when the VAD network output exceeds the Confidence threshold\n- 'NoiseReject': gate opens when the noise classifier's 'stationary' class probability is BELOW the Confidence threshold (rejects stationary noise, passes speech/transients)\n\nIn all modes, the pitch must also be within MinFreq--MaxFreq for the gate to open.\n\nAdd attack/release smoothing to the gate gain to avoid clicks (AttackTime and ReleaseTime parameters in seconds, range 0.001--0.5).\n\nInclude audioPluginConfig with DeepLearningConfig for codegen deployment.\n\nParameters: MinFreq (50-2000 Hz log), MaxFreq (50-2000 Hz log), Confidence (0-1), GateMode (enum: 'Confidence','VAD','NoiseReject'), AttackTime (0.001-0.5 s), ReleaseTime (0.001-0.5 s).",
+    "context": {
+      "files": [
+        "evals/files/crepe_tiny.mat",
+        "evals/files/vad_model.mat",
+        "evals/files/noise_classifier.mat"
+      ],
+      "setup": "Ensure Audio Toolbox and Deep Learning Toolbox are available. The three .mat files are fictional dummy networks for eval purposes only (minimal layers, meaningless weights). crepe_tiny.mat: dlnetwork with imageInputLayer([1024 1 1]), outputs 360 classes. vad_model.mat: dlnetwork with featureInputLayer(512), outputs 1 sigmoid. noise_classifier.mat: dlnetwork with imageInputLayer([256 1 1]), outputs 4 classes. All networks expect 16 kHz input."
+    },
+    "assertions": [
+      {
+        "id": "a_diagnosis",
+        "type": "convention_followed",
+        "description": "Both networks loaded via coder.loadDeepLearningNetwork in persistent variables",
+        "expected": "All THREE networks loaded once and cached so they are not reloaded every frame (persistent variable in a local/private function, OR property initialized once in the constructor). Any codegen-compatible loading method is acceptable (coder.loadDeepLearningNetwork or coder.load). CREPE input formatted for imageInputLayer([1024 1 1]) — dlarray with SSCB format or equivalent shaped single array. VAD input formatted for featureInputLayer(512) — dlarray with CB format or equivalent shaped single array. Noise classifier input formatted for imageInputLayer([256 1 1]) — dlarray with SSCB format or equivalent shaped single array. Has a separate Constant property PluginConfig = audioPluginConfig(DeepLearningConfig=...) that is NOT inside audioPluginInterface. Internal sample rate conversion from host rate to 16 kHz is present (specific method tested by g_builtin)."
+      },
+      {
+        "id": "a_functional",
+        "type": "code_executes",
+        "description": "Functional: all three gate modes process without error, output is bounded, gate starts closed after reset",
+        "expected": "setSampleRate(plugin,48000); reset(plugin); plugin.MinFreq=50; plugin.MaxFreq=2000; plugin.Confidence=0.01; plugin.AttackTime=0.001; plugin.ReleaseTime=0.001; plugin.GateMode=\"Confidence\"; t=(0:2047)'/48000; x=0.5*sin(2*pi*440*t); y=process(plugin,x); y2=process(plugin,x); disp(\"Confidence mode processes without error\"); plugin.GateMode=\"VAD\"; reset(plugin); plugin.Confidence=0.01; yv=process(plugin,x); yv2=process(plugin,x); disp(\"VAD mode processes without error\"); plugin.GateMode=\"NoiseReject\"; reset(plugin); plugin.Confidence=0.99; yn=process(plugin,x); yn2=process(plugin,x); disp(\"NoiseReject mode processes without error\"); assert(all(abs(y2)<=max(abs(x))+1e-6),\"Gate gain should produce output bounded by input amplitude\"); reset(plugin); plugin.GateMode=\"Confidence\"; plugin.AttackTime=0.05; plugin.ReleaseTime=0.05; plugin.Confidence=0.01; yFirst=process(plugin,x); assert(max(abs(yFirst))<0.01,\"After reset, gate should start closed (gain near zero) proving attack smoothing is active\")"
+      },
+      {
+        "id": "g_codegen",
+        "type": "code_executes",
+        "description": "validateAudioPlugin with full MEX codegen passes",
+        "expected": "validateAudioPlugin('ClassName') completes with no errors (full validation including MEX codegen)"
+      },
+      {
+        "id": "g_quality",
+        "type": "convention_followed",
+        "description": "Universal code quality gate",
+        "expected": "Run all checks on produced .m files. PASS only if every check passes. FAIL with the specific check that failed and why. **Structural correctness:** (1) Handle objects (System Objects, sub-plugins) constructed only in the constructor. (2) process does not modify parameter properties. (3) reset does not set parameter properties. (4) No unguarded fprintf/disp/warning in process or set methods. (5) No variable-size allocation in process (buffer sizes fixed at compile time). (6) Enum property defaults use char (single quotes) or enum class value, not string literals. **Runtime behavior:** (7) Reset clears state: create plugin, setSampleRate(44100), reset, process 10 frames of noise, reset again, process a deterministic test signal; compare to a fresh plugin processing the same signal -- outputs must be identical (norm < 1e-10). (8) SR-dependent derived values (coefficients, buffer sizes, smoothing constants) recomputed in reset after getSampleRate. (9) When sub-objects exist: reset propagates setSampleRate (or sets .SampleRate) and calls reset on every sub-object. **Style and efficiency:** (10) RTF <= 0.5: process 30s at 48kHz/1024-frame, wall_clock/30 must be <= 0.5. (11) McCabe complexity of process/stepImpl <= 15 (checkcode -cyc). (12) Zero unsuppressed checkcode warnings. (13) No unnecessary properties: every declared property actively read after construction, not redundant. (14) Accurate comments: no false claims about API behavior, codegen compatibility, or algorithms."
+      },
+      {
+        "id": "g_builtin",
+        "type": "convention_followed",
+        "description": "Uses built-in MATLAB/toolbox functions instead of hand-reimplementing standard DSP",
+        "expected": "Scan all produced .m files for hand-written reimplementations of operations that have built-in equivalents in base MATLAB, Signal Processing Toolbox, DSP System Toolbox, or Audio Toolbox. For EVERY candidate (manual biquad loops, hand-coded coefficient formulas, manual window generation, sample-by-sample delay lines, etc.), check MATLAB documentation to confirm whether a codegen-compatible built-in exists. PASS if all standard operations use built-ins. FAIL if any operation is hand-coded when a documented codegen-compatible built-in exists (cite the operation, the alternative, and the doc page)."
+      }
+    ]
+  }
+  ]
+}
