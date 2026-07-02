@@ -1,10 +1,10 @@
 ---
 name: matlab-use-duckdb
-description: "Generates MATLAB code for DuckDB database operations using Database Toolbox. Use when connecting to DuckDB (in-memory or file-based), querying CSV/Parquet/JSON/Excel files with SQL, creating development databases, preprocessing out-of-memory data, using duckdb(), installing DuckDB extensions, using DuckDB as an analytical engine in MATLAB, converting MATLAB analytics to SQL queries, optimizing data pipelines that use MATLAB file I/O before processing, or replacing file I/O bottlenecks with direct DuckDB reads."
+description: "Use DuckDB from MATLAB via Database Toolbox (R2026a+) as a non-math operations engine on large tabular files (CSV/Parquet/JSON) and as a zero-config embedded database. Use when connecting to DuckDB, querying CSV, Parquet, and JSON files directly with SQL, reducing or profiling large data before MATLAB analysis, creating portable development databases, or installing DuckDB extensions. Triggers on: DuckDB, duckdb(), large CSV/Parquet/JSON, file too large for readtable, filter/aggregate at source, deduplicate, reduce before analysis, profile large file, persistent file import, analytical engine, SQL on CSV, SQL on Parquet, SQL on JSON, query CSV with SQL, query Parquet with SQL, run SQL on files, SQL queries on files, query files directly, SQL without database, in-process SQL."
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # MATLAB Database Toolbox Interface to DuckDB
@@ -16,18 +16,19 @@ Use when working with DuckDB databases from MATLAB using Database Toolbox. DuckD
 - Connecting to a DuckDB database (in-memory or file-based)
 - Creating a new DuckDB database file for development workflows
 - Querying CSV, Parquet, or JSON files directly with SQL
-- Preprocessing large data that doesn't fit in memory before importing into MATLAB
-- Using DuckDB as an analytical engine for filtering, aggregation, joins, or sorting
+- Reducing or profiling large data before analysis
+- Using DuckDB as a non-math operations engine (filter, aggregate, deduplicate, string cleanup, type cast, sort, sample)
 - Installing and using DuckDB extensions
-- Converting existing MATLAB array/table operations into equivalent DuckDB SQL queries
-- Optimizing a data pipeline that reads files into MATLAB memory before processing
-- Replacing MATLAB file I/O bottlenecks (`readtable`, `readmatrix`, `parquetread`, `xlsread`, `csvread`) with direct DuckDB file reads
-- User mentions keywords: DuckDB, duckdb, analytical engine, embedded database, parquet, CSV analytics, in-memory database, portable database, development database, out-of-memory preprocessing, optimize data pipeline, convert to SQL, replace readtable, replace parquetread, file bottleneck
+- Persisting file data into a `.duckdb` file for repeated queries
+- User mentions keywords: DuckDB, duckdb(), analytical engine, embedded database, large CSV, large Parquet/JSON, file too large for readtable, filter/aggregate at source, deduplicate, reduce before analysis, profile large file, persistent file import, SQL on CSV, SQL on Parquet, SQL on JSON, query CSV with SQL, query Parquet with SQL, run SQL on files, SQL queries on files, query files directly, SQL without database, in-process SQL
 
 ## When NOT to Use
 
+- **Single file that fits in memory** — use native MATLAB I/O (`readtable`/`readmatrix`)
+- **Multi-file workflows** — use `datastore`/`tall` first; DuckDB glob is the fallback, not the default
+- **Data exceeds memory and no SQL reduction will make it fit** — use `datastore`/`tall` for streaming
+- **Math-heavy or numerically sensitive operations** (normalize, windowed stats, outlier detection) — hand off to MATLAB after reduction
 - Connecting to MySQL, PostgreSQL, SQLite, or other external databases — use their native interfaces or JDBC/ODBC
-- Data fits in memory and only needs standard MATLAB operations — use `readtable`/`readmatrix` directly
 - Object-relational mapping — use ORM (`ormread`/`ormwrite` with `Mappable` classes)
 - MongoDB, Cassandra, or Neo4j — use their dedicated Database Toolbox interfaces
 
@@ -49,6 +50,53 @@ When this skill is loaded into a session where code already exists:
 
 The highest-value patterns in this skill are architectural: file-analytics pushdown eliminates entire pipeline stages and can yield 10x+ speedups.
 
+## Pre-Flight Check
+
+Before committing to the DuckDB path, estimate the file-size-to-available-RAM ratio (accounting for in-memory expansion of the file format) and route accordingly:
+
+| Condition | Route | Rationale |
+|-----------|-------|-----------|
+| Single file, ratio < 0.5 | Native MATLAB I/O | Fits in memory; DuckDB adds unnecessary complexity |
+| Multi-file OR per-file processing | `datastore`/`tall` (fallback: DuckDB glob) | Streaming is the primary multi-file pattern |
+| Single file, ratio ≥ 0.5, SQL-expressible reduction | DuckDB: profile → operate → close | DuckDB is warranted |
+| Single file, ratio ≥ 0.5, no SQL reduction applies | `datastore`/`tall` | No reduction = no DuckDB advantage |
+
+
+## Operations Menu
+
+### DO in DuckDB SQL
+
+| Operation | Example SQL |
+|-----------|-------------|
+| Filter rows | `WHERE status = 'active'` |
+| Aggregate | `GROUP BY region`, `SUM(revenue)`, `COUNT(*)`, `AVG(price)` |
+| Deduplicate | `SELECT DISTINCT ...` or `ROW_NUMBER() OVER (PARTITION BY ...)` |
+| String cleanup | `TRIM()`, `LOWER()`, `REPLACE()`, `REGEXP_REPLACE()` |
+| Type casting | `TRY_CAST(col AS DATE)`, `CAST(col AS DOUBLE)` |
+| Sort | `ORDER BY timestamp` |
+| Sample | `USING SAMPLE 10000` or `TABLESAMPLE RESERVOIR(10%)` |
+| Profile | `COUNT(*)`, `MIN/MAX`, `APPROX_COUNT_DISTINCT` |
+| Limit | `LIMIT 50000` |
+
+### DO NOT in DuckDB SQL
+
+| Operation | Why Not |
+|-----------|---------|
+| Normalize / z-score | Requires population context |
+| Windowed statistics (moving avg, cumsum) | Fragile semantics, NULL handling differs |
+| Outlier detection | Statistical judgment call |
+| Interpolation / resampling | Domain-specific logic |
+| Signal processing | Not SQL's domain |
+| Machine learning features | Model-dependent |
+
+SQL operations do not always match MATLAB semantics (NULL handling, sort order, deduplication). See `reference/cards/reduce-large-data.md` for known mismatches.
+
+## Reduction Workflow
+
+If the pre-flight check routes to DuckDB, follow the profile → operate → close pattern in `reference/cards/reduce-large-data.md`.
+
+DuckDB selects, reshapes, cleans, and reduces data. Once data fits in memory and the connection is closed, DuckDB's role is complete.
+
 ## What Is DuckDB and Why Does Database Toolbox Ship It?
 
 DuckDB is an embedded, serverless analytical database engine. Unlike MySQL or PostgreSQL, it requires no server, no configuration, and runs in-process within MATLAB.
@@ -60,9 +108,12 @@ DuckDB is an embedded, serverless analytical database engine. Unlike MySQL or Po
 - **Portable development databases** — `.duckdb` or `.db` files work on any machine with Database Toolbox. No database setup needed.
 - **AI agent advantage** — An agent's SQL knowledge directly translates to powerful analytical queries.
 
-DuckDB does **NOT replace** MATLAB's file I/O (`readtable`, etc.). It is a performant alternative when data exceeds memory or SQL operations are more natural than MATLAB table operations.
+DuckDB does **NOT replace** MATLAB's file I/O (`readtable`, etc.) or `datastore`/`tall`. It is a performant alternative when data exceeds memory *and* the task reduces to a SQL-expressible operation. When no reduction applies, `datastore`/`tall` remains the correct path.
 
 ## Critical Rules
+
+### Pre-Flight Gate
+- **ALWAYS** run the pre-flight size-to-RAM check BEFORE writing any DuckDB code. If ratio < 0.5, STOP and use native MATLAB I/O instead. Do not proceed with DuckDB patterns.
 
 ### Connection
 - **ALWAYS** use `duckdb()` to connect — not `database()`, not JDBC, not ODBC.
@@ -73,13 +124,13 @@ DuckDB does **NOT replace** MATLAB's file I/O (`readtable`, etc.). It is a perfo
 - DuckDB does **NOT** support `databasePreparedStatement`. Use `execute` or `sqlwrite` instead.
 - Use `ExcludeDuplicates` via `databaseImportOptions` when reading from database tables (with `sqlread`). For direct file queries (`read_csv`/`read_parquet` via `fetch`), use `SELECT DISTINCT` in SQL.
 
-### File Queries
+### Named Tables vs. File Queries
+- **ALWAYS** use `sqlread` with `RowFilter` for simple row filtering on named database tables — not `fetch` with WHERE. Create a `rowfilter` object and pass it via the `RowFilter` name-value argument.
+- Use `fetch` with SQL for aggregation, joins, or complex queries on named tables.
 - **ALWAYS** use `fetch` (not `sqlread`) for file queries — they require SQL syntax like `SELECT * FROM read_csv('file.csv')`.
 - **ALWAYS** use single quotes for file paths inside SQL: `read_csv('data.csv')`.
 
-## Decision Framework
-
-> Which connection mode should I use?
+## Connection Modes
 
 | Goal | Connection | Why |
 |------|-----------|-----|
@@ -88,16 +139,6 @@ DuckDB does **NOT replace** MATLAB's file I/O (`readtable`, etc.). It is a perfo
 | Portable development database | `duckdb("mydata.duckdb")` | Creates a `.duckdb` or `.db` file; works on any machine |
 | Open existing database | `duckdb("existing.db")` | Read/write access to pre-existing `.db` or `.duckdb` file |
 | Read-only shared database | `duckdb("shared.duckdb", ReadOnly=true)` | Prevents accidental writes |
-
-> When should I use DuckDB vs. MATLAB file I/O?
-
-| Scenario | Recommendation |
-|----------|---------------|
-| Small data, simple operations | `readtable` / `readmatrix` |
-| Data exceeds memory, needs filtering/aggregation | DuckDB (preprocess in SQL, analyze in MATLAB) |
-| Query across multiple CSV/Parquet files | DuckDB with glob patterns |
-| Portable development database | DuckDB file-based connection |
-| MATLAB-specific analysis (signal processing, ML) | Preprocess in DuckDB, analyze in MATLAB |
 
 ## Common Patterns
 
@@ -123,7 +164,16 @@ close(conn);
 % summary fits in memory — continue with MATLAB analysis
 ```
 
-### Pattern 3: Development Database
+### Pattern 3: Read Named Table with RowFilter
+
+```matlab
+conn = duckdb("inventory.duckdb", ReadOnly=true);
+rf = rowfilter("quantity");
+data = sqlread(conn, "products", RowFilter=rf.quantity < 10);
+close(conn);
+```
+
+### Pattern 4: Development Database
 
 ```matlab
 conn = duckdb("dev.duckdb");
@@ -133,7 +183,9 @@ results = sqlread(conn, "experiments", RowFilter=rf.score > 0.8);
 close(conn);
 ```
 
-### Pattern 4: Multi-File Query with Glob
+### Pattern 5: Multi-File Query with Glob
+
+Use when `datastore`/`tall` is unsuitable (e.g., SQL aggregation across files). For sequential per-file processing, prefer `datastore`.
 
 ```matlab
 conn = duckdb();
@@ -142,7 +194,7 @@ data = fetch(conn, "SELECT * FROM read_parquet('data/year=2024/*.parquet') " + .
 close(conn);
 ```
 
-### Pattern 5: Extensions
+### Pattern 6: Extensions
 
 ```matlab
 conn = duckdb();
@@ -162,7 +214,7 @@ data = fetch(conn, "SELECT * FROM read_xlsx('report.xlsx')");
 close(conn);
 ```
 
-### Pattern 6: Persistent Import from File
+### Pattern 7: Persistent Import from File
 
 ```matlab
 conn = duckdb("analytics.duckdb");
@@ -265,4 +317,3 @@ Before finalizing DuckDB code, verify:
 Copyright 2026 The MathWorks, Inc.
 
 ----
-

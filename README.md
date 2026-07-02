@@ -113,16 +113,19 @@ After you install the MATLAB Agentic Toolkit, your agent can use skills. For bes
 | Skill Group | Supported Products |
 |-------------|--------------------|
 | [**Aerospace**](skills-catalog/README.md#aerospace-aerospace) | Aerospace Toolbox |
-| [**AI and Statistics**](skills-catalog/README.md#ai-and-statistics-ai-and-statistics) | Deep Learning Toolbox |
+| [**AI and Statistics**](skills-catalog/README.md#ai-and-statistics-ai-and-statistics) | Deep Learning Toolbox and Statistics and Machine Learning Toolbox |
 | [**Automotive**](skills-catalog/README.md#automotive-automotive) | Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder |
 | [**Cloud Solutions**](skills-catalog/README.md#cloud-solutions-cloud-solutions) | MATLAB Drive |
+| [**Code Generation**](skills-catalog/README.md#code-generation-code-generation) | Fixed-Point Designer |
 | [**Computational Biology**](skills-catalog/README.md#computational-biology-computational-biology) | SimBiology |
-| [**Image Processing and Computer Vision**](skills-catalog/README.md#image-processing-and-computer-vision-image-processing-and-computer-vision) | Image Processing Toolbox and Computer Vision Toolbox |
+| [**Computational Finance**](skills-catalog/README.md#computational-finance-computational-finance) | Datafeed Toolbox |
+| [**Image Processing and Computer Vision**](skills-catalog/README.md#image-processing-and-computer-vision-image-processing-and-computer-vision) | Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox |
+| [**Math and Optimization**](skills-catalog/README.md#math-and-optimization-math-and-optimization) | PDE Toolbox |
 | [**Parallel Computing**](skills-catalog/README.md#parallel-computing-parallel-computing) | Parallel Computing Toolbox and MATLAB Parallel Server |
 | [**Radar**](skills-catalog/README.md#radar-radar) | Phased Array System Toolbox, Sensor Fusion and Tracking Toolbox, and Mapping Toolbox |
 | [**Reporting and Database Access**](skills-catalog/README.md#reporting-and-database-access-reporting-and-database-access) | Database Toolbox |
 | [**RF and Mixed Signal**](skills-catalog/README.md#rf-and-mixed-signal-rf-and-mixed-signal) | Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox |
-| [**Robotics and Autonomous Systems**](skills-catalog/README.md#robotics-and-autonomous-systems-robotics-and-autonomous-systems) | Navigation Toolbox and UAV Toolbox |
+| [**Robotics and Autonomous Systems**](skills-catalog/README.md#robotics-and-autonomous-systems-robotics-and-autonomous-systems) | Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox |
 | [**Signal Processing**](skills-catalog/README.md#signal-processing-signal-processing) | Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox |
 | [**Test and Measurement**](skills-catalog/README.md#test-and-measurement-test-and-measurement) | Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox |
 | [**Wireless Communications**](skills-catalog/README.md#wireless-communications-wireless-communications) | Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, and Wireless Testbench |
@@ -148,7 +151,7 @@ When using the MATLAB Agentic Toolkit and MATLAB MCP Server, you should thorough
 ## Licensing and Usage
 The license is available in the [LICENSE.md](LICENSE.md) file in this GitHub repository.
 
-MCP servers are only permitted to be used with MATLAB in accordance with the MathWorks Software License Agreement, and must not be shared by multiple users. Contact MathWorks if you need to support shared or centralized server use.
+MCP servers are only permitted to be used with MATLAB in accordance with the MathWorks&reg; Software License Agreement, and must not be shared by multiple users. Contact MathWorks if you need to support shared or centralized server use.
 
 ---
 ## Support and Contributions

@@ -10,7 +10,7 @@ cfg.TargetLang = 'C';
 cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 
 inputType = coder.typeof(single(zeros(inputShape)), inputShape, false(size(inputShape)));
-codegen -config cfg predict_fn -args {inputType} -report
+codegen -config cfg predict_fn -args {inputType}
 ```
 
 ## Full Production Configuration
@@ -21,7 +21,6 @@ Expert-reviewed settings validated across 8+ models with measured 3x+ speedup.
 %% 1. Embedded Coder config (not plain coder.config('lib'))
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
-cfg.GenerateReport = true;
 cfg.GenCodeOnly = true;   % true unless cross-compiler is installed
 
 %% 2. Deep learning config -- 'none' for portable C without runtime deps
@@ -45,7 +44,7 @@ cfg.LargeConstantThreshold = 0;  % Weights in .bin files, not inline in .c
 % Result: 8K lines of logic vs 63K lines with embedded constants
 
 %% 7. Memory and optimization settings
-cfg.SupportNonFinite = false;           % Save code size (no NaN/Inf checks)
+% cfg.SupportNonFinite = false;         % Only set if model guaranteed no NaN/Inf
 cfg.PreserveVariableNames = 'None';     % Smaller generated code
 cfg.InlineBetweenUserFunctions = 'Always';
 cfg.InlineBetweenMathWorksFunctions = 'Always';
@@ -82,7 +81,7 @@ cfg.HardwareImplementation.ProdBitPerFloat = 32;
 cfg.HardwareImplementation.ProdBitPerDouble = 64;
 cfg.EnableOpenMP = false;       % Single-core -- OpenMP adds overhead
 cfg.StackUsageMax = 4096;       % 4 KB stack typical for MCU
-cfg.SupportNonFinite = false;
+% cfg.SupportNonFinite = false; % Only set if model guaranteed no NaN/Inf
 cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 ```
 
@@ -127,7 +126,6 @@ Generate a MEX function first to validate on the host machine before cross-compi
 ```matlab
 mexCfg = coder.config('mex');
 mexCfg.TargetLang = 'C';
-mexCfg.GenerateReport = true;
 mexCfg.SIMDAcceleration = 'full';   % Best MEX performance
 mexCfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 
@@ -192,17 +190,17 @@ cfg.EnableOpenMP = false;
 
 ```matlab
 % Generate static library (most common for embedded)
-codegen -config cfg predict_fn -args {inputType} -report
+codegen -config cfg predict_fn -args {inputType}
 
 % Generate MEX for host testing
 codegen -config mexCfg predict_fn -args {inputType}
 
 % Generate code only (no compile -- for cross-compilation)
 cfg.GenCodeOnly = true;
-codegen -config cfg predict_fn -args {inputType} -report
+codegen -config cfg predict_fn -args {inputType}
 
 % Specify output directory
-codegen -config cfg predict_fn -args {inputType} -d codegen_output -report
+codegen -config cfg predict_fn -args {inputType} -d codegen_output
 ```
 
 

@@ -4,7 +4,7 @@ description: "Deterministic workflow to download MATLAB Package Manager (mpm) an
 license: "MathWorks BSD-3-Clause"
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Installing MATLAB Products with MATLAB Package Manager (mpm) - Deterministic Protocol
@@ -116,6 +116,7 @@ Step 4 — Verify
   Verify products via: <DESTINATION>/appdata/prodcontents.json
   <if support packages requested> Verify support packages via: <SUPPORTPKGROOT>/appdata/prodcontents.json
   Delete working folder: <working folder>
+  <if MATLAB included> Show release notes: https://www.mathworks.com/help/matlab/release-notes.html?startrelease=<RELEASE>&endrelease=<RELEASE>
 ```
 
 Resolve all environment variables and shell-specific paths to absolute paths before displaying. Generate the timestamp for the working folder name at plan display time so it is fixed for the entire session.

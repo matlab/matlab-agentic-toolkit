@@ -1,6 +1,6 @@
 {
   "skill": "matlab-build-simbiology-model",
-  "version": "1.0",
+  "version": "1.2",
   "evals": [
     {
       "id": "build-two-compartment-pk",
@@ -29,13 +29,13 @@
           "id": "a4",
           "type": "output_excludes",
           "description": "Agent does not use deprecated InitialAmount property (Rule 6)",
-          "expected": "InitialAmount"
+          "expected": ".InitialAmount"
         },
         {
           "id": "a5",
           "type": "output_excludes",
           "description": "Agent does not use deprecated ConstantAmount property (Rule 6)",
-          "expected": "ConstantAmount"
+          "expected": ".ConstantAmount"
         }
       ]
     },

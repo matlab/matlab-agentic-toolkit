@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<!-- Copyright 2026 The MathWorks, Inc. -->
+<robot name="robot_3r">
+
+  <!-- Base link (world-fixed pedestal) -->
+  <link name="base_link">
+    <visual>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/base_mount.stl"/>
+      </geometry>
+      <material name="dark_grey"><color rgba="0.3 0.3 0.3 1"/></material>
+    </visual>
+    <inertial>
+      <mass value="5.0"/>
+      <origin xyz="0 0 0.025" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.02"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 1: base yaw (Z-axis) -->
+  <joint name="joint1" type="revolute">
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <origin xyz="0 0 0.05" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="50" velocity="2.0"/>
+  </joint>
+
+  <!-- Shoulder link (yaw housing) -->
+  <link name="shoulder_link">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/shoulder_housing.stl"/>
+      </geometry>
+      <material name="light_grey"><color rgba="0.7 0.7 0.7 1"/></material>
+    </visual>
+    <inertial>
+      <mass value="2.0"/>
+      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.003"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 2: shoulder pitch (Y-axis) -->
+  <joint name="joint2" type="revolute">
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.356" upper="2.356" effort="50" velocity="2.0"/>
+  </joint>
+
+  <!-- Upper arm link -->
+  <link name="upper_arm_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <mesh filename="meshes/shoulder_joint_housing.stl"/>
+      </geometry>
+      <material name="light_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/upper_arm.stl"/>
+      </geometry>
+      <material name="silver"><color rgba="0.8 0.8 0.8 1"/></material>
+    </visual>
+    <inertial>
+      <mass value="1.5"/>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <inertia ixx="0.008" ixy="0" ixz="0" iyy="0.008" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+
+  <!-- Joint 3: elbow pitch (Y-axis) -->
+  <joint name="joint3" type="revolute">
+    <parent link="upper_arm_link"/>
+    <child link="forearm_link"/>
+    <origin xyz="0 0 0.25" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-2.356" upper="2.356" effort="30" velocity="2.5"/>
+  </joint>
+
+  <!-- Forearm link -->
+  <link name="forearm_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <geometry>
+        <mesh filename="meshes/elbow_joint_housing.stl"/>
+      </geometry>
+      <material name="light_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/forearm.stl"/>
+      </geometry>
+      <material name="silver"/>
+    </visual>
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0.125" rpy="0 0 0"/>
+      <inertia ixx="0.005" ixy="0" ixz="0" iyy="0.005" iyz="0" izz="0.0005"/>
+    </inertial>
+  </link>
+
+  <!-- Fixed joint to end effector -->
+  <joint name="ee_fixed" type="fixed">
+    <parent link="forearm_link"/>
+    <child link="end_effector_link"/>
+    <origin xyz="0 0 0.25" rpy="0 0 0"/>
+  </joint>
+
+  <!-- End effector link -->
+  <link name="end_effector_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="meshes/end_effector.stl"/>
+      </geometry>
+      <material name="orange"><color rgba="0.9 0.5 0.1 1"/></material>
+    </visual>
+    <inertial>
+      <mass value="0.3"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+</robot>

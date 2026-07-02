@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 The MathWorks, Inc. -->
+<OpenSCENARIO>
+    <FileHeader revMajor="1" revMinor="1" date="2023-05-25T18:47:19" description="Created manually for test purposes" author="MathWorks"/>
+    <Catalog name="ManeuverCatalog">
+       <Maneuver name="Abs_Speed_Change_Maneuver">
+			<Event name="Event" priority="parallel">
+				<Action name="AmbulanceGroup_Change_Speed">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="4"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="10"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+			</Event>
+		</Maneuver>
+       <Maneuver name="Parameterized_Speed_Change">
+			<ParameterDeclarations>
+				<ParameterDeclaration name="targetSpeed" parameterType="double" value="5.0"/>
+				<ParameterDeclaration name="dynamicsRate" parameterType="double" value="2.0"/>
+			</ParameterDeclarations>
+			<Event name="SpeedChangeEvent" priority="parallel">
+				<Action name="SedanGroup_Change_Speed">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="$dynamicsRate"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$targetSpeed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+			</Event>
+		</Maneuver>
+       <Maneuver name="Parameterized_Speed_Change_Expr">
+			<ParameterDeclarations>
+				<ParameterDeclaration name="targetSpeed" parameterType="double" value="5.0"/>
+				<ParameterDeclaration name="dynamicsRate" parameterType="double" value="2.0"/>
+			</ParameterDeclarations>
+			<Event name="SpeedChangeExprEvent" priority="parallel">
+				<Action name="SedanGroup_Change_Speed_Expr">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="$dynamicsRate"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$targetSpeed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+			</Event>
+		</Maneuver>
+       <Maneuver name="Parameterized_Deceleration">
+			<ParameterDeclarations>
+				<ParameterDeclaration name="finalSpeed" parameterType="double" value="8.0"/>
+				<ParameterDeclaration name="decelerationRate" parameterType="double" value="1.5"/>
+				<ParameterDeclaration name="actionDelay" parameterType="double" value="0.0"/>
+			</ParameterDeclarations>
+			<Event name="DecelerationEvent" priority="parallel">
+				<Action name="Deceleration_Action">
+					<PrivateAction>
+						<LongitudinalAction>
+							<SpeedAction>
+								<SpeedActionDynamics dynamicsDimension="rate" dynamicsShape="linear" value="$decelerationRate"/>
+								<SpeedActionTarget>
+									<AbsoluteTargetSpeed value="$finalSpeed"/>
+								</SpeedActionTarget>
+							</SpeedAction>
+						</LongitudinalAction>
+					</PrivateAction>
+				</Action>
+			</Event>
+		</Maneuver>
+    </Catalog>
+</OpenSCENARIO>

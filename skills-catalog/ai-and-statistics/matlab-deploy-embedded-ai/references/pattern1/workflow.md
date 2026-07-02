@@ -6,19 +6,18 @@ MATLAB and Simulink.
 
 ## When to Use
 
-- User wants to build and deploy a small AI model (< 500 KB) to embedded hardware
-- User targets resource-constrained devices: Cortex-M, Cortex-A/R, DSPs, NPUs
-- User needs compression (quantization, pruning, projection) before deployment
-- User needs Simulink integration for system-level simulation
-- User needs weight inspection, modification, or fixed-point codegen
+- Model is trained in MATLAB (already a `dlnetwork`)
+- Model is imported from ONNX and user needs compression (quantization, pruning, projection)
+- User needs weight inspection or modification
+- User needs `exportNetworkToSimulink` integration for system-level simulation
 - User mentions: virtual sensors, anomaly detection, predictive maintenance,
   state estimation, time-series classification, signal-based AI
-- User imports a 3P model (PyTorch/ONNX/TF) and needs capabilities beyond raw C code
+- External model does not fit target memory and needs compression before deployment
 
 ## When NOT to Use
 
-- User has a large model (> 1 MB) and just needs C quickly from PyTorch → Pattern 2
-- User wants GPU/CUDA deployment → Pattern 2
+- User has a PyTorch (.pt2) or LiteRT (.tflite) model that already fits the target
+  and just needs C code quickly → Pattern 2
 - User wants NPU or FPGA deployment (not covered by this skill)
 - User wants to train purely in Python without MATLAB integration
 - User is working with generative AI, LLMs, or foundation models
@@ -31,7 +30,7 @@ MATLAB and Simulink.
 - **Create `.m` scripts** for each workflow step; execute via `run_matlab_file` -- never run ad-hoc MATLAB commands without first writing the script file
 - **Pause after each step** and ask user for permission to proceed; let them inspect scripts
 - Use `trainnet` for DL training (produces `dlnetwork`), `fitcnet`/`fitrnet` for MLPs
-- Use `rng("default")` before data splitting
+- Use consistent data partitioning for reproducibility
 - Format sequence data as cell arrays of [T x C] single matrices for trainnet
 - Use `networkDistributionDiscriminator` for OOD detection (not custom implementations)
 - Use `exportNetworkToSimulink` with the **compressed** model when compression is applied
@@ -83,7 +82,7 @@ Based on the Project Summary, determine applicable phases and present a tailored
 | Signal classification | 1D-CNN via `trainnet` | DLT |
 | Small image classification | CNN via `trainnet` | DLT |
 | Anomaly detection (tabular) | Autoencoder via `trainnet` | DLT |
-| 3P model import | Import + native rebuild | DLT + Converter |
+| External model import | Import + native rebuild | DLT + Converter |
 
 Present the plan and get confirmation before proceeding.
 
@@ -105,15 +104,17 @@ Load [`data-preparation.md`](data-preparation.md).
 
 #### Path A: MATLAB-Native Training
 
-Load [`training-native.md`](training-native.md).
+Defer to the `matlab-train-network` skill for training guidance.
 - Confirm approach from Phase 1 (Workflow Plan)
 - Create a training script (`.m` file) and execute via `run_matlab_file`
 - Train with `trainnet` (DL) or `fitcnet`/`fitrnet` (MLP)
+- For LSTM/GRU: set `GradientThreshold=1`; use `OutputNetwork="best-validation"`
 - Verify training call with tiny input before full run
 - Evaluate on test set; check accuracy requirements from Project Discovery
+- Check deployed size: `na = analyzeNetwork(net, Plots='none'); na.TotalLearnables`
 - **Load trained model in Deep Network Designer** (`deepNetworkDesigner(net)`) for user inspection
 
-#### Path B: 3P Model Import and Native Rebuild
+#### Path B: External Model Import and Native Rebuild
 
 Load [`import-weight-extraction.md`](import-weight-extraction.md).
 - Import PyTorch/ONNX/TensorFlow model
@@ -124,7 +125,7 @@ Then load [`native-rebuild-patterns.md`](native-rebuild-patterns.md).
 - Transfer weights from imported to native network
 - **Run numerical equivalency tests:**
   1. Propose test count and rationale to user; wait for agreement
-  2. Collect reference outputs from original 3P model
+  2. Collect reference outputs from original model
   3. Run same inputs through imported/rebuilt MATLAB model
   4. Compare and report: MAE, max error, cosine similarity
   5. Verify max error < 1e-5 for identical architectures
@@ -193,7 +194,7 @@ Load [`simulink-integration.md`](simulink-integration.md).
 Load [`codegen-embedded.md`](codegen-embedded.md).
 - Check for MATLAB Coder, Simulink Coder, Embedded Coder
 - Generate MEX first for desktop validation
-- **Run numerical equivalency tests** comparing MEX/generated code outputs to Simulink and MATLAB compressed model outputs. This validates the full pipeline: 3P model → MATLAB → compressed → Simulink → C code.
+- **Run numerical equivalency tests** comparing MEX/generated code outputs to Simulink and MATLAB compressed model outputs. This validates the full pipeline: original model → MATLAB → compressed → Simulink → C code.
 - Generate C code for target hardware
 - **Open the code generation report** (`web(reportPath)`) so the user can inspect generated code, warnings, and metrics
 - Present deployment summary and checklist

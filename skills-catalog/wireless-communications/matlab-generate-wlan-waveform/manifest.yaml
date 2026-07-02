@@ -1,14 +1,14 @@
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Generate standard-compliant IEEE 802.11 WLAN waveforms.
 matlab-release: ">=R2024b"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills:
+required-skills:
   - matlab-create-live-script
-requires-products:
+required-products:
   - WLAN Toolbox
 toolkit: matlab-agentic-toolkit
 

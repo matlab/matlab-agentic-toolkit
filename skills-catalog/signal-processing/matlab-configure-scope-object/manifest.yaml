@@ -1,13 +1,13 @@
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Configure properties of scope-related Simulink blocks or MATLAB objects
 matlab-release: ">=R2021a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Simulink
 toolkit: matlab-agentic-toolkit
 

@@ -1,6 +1,6 @@
 # PyTorch Model Export to .pt2
 
-The MATLAB Coder Support Package for PyTorch requires a `.pt2` file created with `torch.export`.
+The MATLAB Coder Support Package for PyTorch and LiteRT Models requires a `.pt2` file created with `torch.export`.
 
 ## Export Workflow
 

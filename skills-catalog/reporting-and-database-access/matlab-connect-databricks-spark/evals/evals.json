@@ -1,0 +1,234 @@
+{
+  "skill": "matlab-connect-databricks-spark",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Read table via Spark",
+      "description": "Tests whether agent uses getDatabricksSession instead of manual JDBC",
+      "prompt": "Write MATLAB code to read the first 1000 rows from a Databricks Unity Catalog table called `my_catalog.my_schema.sensor_readings` into a MATLAB table. The table has 50 million rows so be efficient about data transfer.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession to create a Spark session",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Reads the table using spark.read().table()",
+          "expected": "read"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not manually construct a JDBC URL",
+          "expected": "jdbc:databricks"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not use database() for manual JDBC",
+          "expected": "database("
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Filters server-side before collecting",
+          "expected": "Code applies .filter(), .limit(), or .select() before calling table(DF)"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "First-time setup guidance",
+      "description": "Tests whether agent guides setup with skill-specific knowledge (venv/pyenv, startup, DBC download)",
+      "prompt": "How do I connect MATLAB to my Databricks workspace for the first time? I want to use OAuth for authentication. I have Python 3.12 available.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Mentions running setup from the package directory",
+          "expected": "setup"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Mentions running startup to add paths",
+          "expected": "startup"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "References getDatabricksSession for verification",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Explains Databricks Connect library is installed into a virtual environment via pip",
+          "expected": "Response explains that the Databricks Connect library is downloaded via pip into a Python virtual environment (venv) during setup — not shipped with the package"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Warns about InProcess pyenv limitation requiring MATLAB restart",
+          "expected": "Response warns that if Python is already loaded InProcess, pyenv cannot be switched mid-session and requires a full MATLAB restart — terminate(pyenv) will fail"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Read CSV from Volumes",
+      "description": "Tests whether agent uses spark.read.format().load() for file-based reads from Volumes",
+      "prompt": "Write MATLAB code to read a CSV file located at /Volumes/my_catalog/my_schema/my_volume/sales_data.csv into MATLAB. The file has a header row. Only pull the first 500 rows.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession to create a Spark session",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses spark.read.format with csv",
+          "expected": "csv"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Sets header option to true",
+          "expected": "header"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses load with the Volumes path",
+          "expected": "/Volumes/"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Limits rows before collecting to MATLAB",
+          "expected": "Code applies .limit() or .filter() before calling table(DF) to restrict to 500 rows"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Add computed column with withColumn",
+      "description": "Tests whether agent uses Column objects correctly with withColumn instead of raw scalars",
+      "prompt": "Write MATLAB code that connects to Databricks, reads the table `analytics.prod.orders`, adds a new column called `total_with_tax` that multiplies the existing `total` column by 1.08, and collects the first 100 rows into a MATLAB table.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses withColumn to add the computed column",
+          "expected": "withColumn"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses col() or lit() to create Column objects for withColumn",
+          "expected": "Code uses matlab.pyspark.sql.functions.col and/or matlab.pyspark.sql.functions.lit (or imported versions) to create Column arguments for withColumn, not raw scalars"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not pass a raw numeric literal directly to withColumn",
+          "expected": "withColumn(\"total_with_tax\", 1.08"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Limits to 100 rows before collecting",
+          "expected": "Code applies .limit(100) or equivalent before calling table(DF)"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Write results to Unity Catalog table",
+      "description": "Tests whether agent uses saveAsTable with mode for writing to Unity Catalog",
+      "prompt": "Write MATLAB code that reads the first 10000 rows from `warehouse.sales.transactions` via Databricks Spark, converts to a MATLAB table, adds a column `processed = true`, converts back to a Spark DataFrame, and writes it to `warehouse.sales.transactions_processed` (overwriting if it exists).",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses table2dataset to convert MATLAB table back to DataFrame",
+          "expected": "table2dataset"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses saveAsTable for writing to a Unity Catalog table",
+          "expected": "saveAsTable"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Specifies write mode to handle existing table",
+          "expected": "Code uses .mode(\"overwrite\") or equivalent before saveAsTable"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Limits rows before collecting locally",
+          "expected": "Code applies .limit(10000) or equivalent before calling table(DF)"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Serverless session creation",
+      "description": "Tests whether agent knows how to create a serverless Spark session with getDatabricksSession",
+      "prompt": "Write MATLAB code to connect to Databricks using serverless compute (no cluster needed) and read the first 50 rows from `catalog.schema.events` into a MATLAB table.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession with serverless",
+          "expected": "serverless"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does not specify a cluster ID when using serverless",
+          "expected": "cluster="
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses getDatabricksSession",
+          "expected": "getDatabricksSession"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Limits rows before collecting",
+          "expected": "Code applies .limit(50) or equivalent before calling table(DF)"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses getDatabricksSession(serverless=true) exact syntax",
+          "expected": "Code calls getDatabricksSession with serverless=true Name-Value argument, not a generic serverless config or JDBC option"
+        }
+      ]
+    }
+  ]
+}

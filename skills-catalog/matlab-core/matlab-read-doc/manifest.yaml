@@ -1,0 +1,12 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Fetch and navigate MathWorks documentation specific for your MATLAB release to determine correct function syntax, complete workflows, and determine best practices for working in MATLAB and Simulink software.
+matlab-release: ">=R2022a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products: []
+toolkit: matlab-agentic-toolkit

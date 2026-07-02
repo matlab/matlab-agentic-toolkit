@@ -3,6 +3,16 @@
 Patterns for rebuilding imported networks as native `dlnetwork` objects, organized by
 architecture type. The imported network is used only as a weight source.
 
+**Caveat for complex architectures:** The patterns below cover common sequential and
+moderately branching architectures (MLP, LSTM, CNN, ViT). For architectures with
+extensive skip connections (ResNet, DenseNet), encoder-decoder structures (U-Net,
+Feature Pyramid Networks), or multi-scale branches, the rebuild requires careful
+graph construction using `dlnetwork` with named layers and explicit `connectLayers`
+calls. These architectures are significantly more effort to rebuild manually — weigh
+the rebuild cost against alternatives like using `NetworkLayer` containers directly
+(supported for `exportNetworkToSimulink` and code generation) or the Pattern 2
+direct codegen path.
+
 ## MLP (Feedforward Networks)
 
 The simplest rebuild. Construct FC + activation stacks and transfer weights directly.
@@ -37,25 +47,25 @@ for i = 1:height(netNative.Learnables)
     end
 end
 
-%% Entry-point for codegen (network passed as argument)
-% function out = predictDLNet(net, x)
-%     arguments
-%         net     dlnetwork
-%         x       (1,:) single
+%% Entry-point for codegen (loads network internally)
+% function out = predictDLNet(x)
+% %#codegen
+%     persistent net;
+%     if isempty(net)
+%         net = coder.loadDeepLearningNetwork('trainedNet.mat');
 %     end
-%     dlX = dlarray(x, "CB");
+%     dlX = dlarray(x, 'BC');  % x is [1 x numFeatures] (Batch x Channel)
 %     dlY = predict(net, dlX);
 %     out = extractdata(dlY);
 % end
 ```
 
-**dlarray format:** `'CB'` -- Channel (features) x Batch.
+**dlarray format:** `'BC'` -- Batch x Channel (conventional for featureInputLayer).
 
 **Input types for codegen:**
 ```matlab
-netType = coder.loadDeepLearningNetwork("trainedNet.mat");
 inputType = coder.typeof(single(0), [1 inputSize]);
-codegen -config cfg predictDLNet -args {netType, inputType} -report
+codegen -config cfg predictDLNet -args {netType, inputType}
 ```
 
 ### MLP Weight Transpose Note
@@ -131,29 +141,27 @@ end
 ### LSTM Entry-Point and Formats
 
 ```matlab
-function out = predictSeqDLNet(net, x)
-    %predictSeqDLNet Run stateful sequence inference with a dlnetwork
-    %
-    % Input x is one time step: (1, numFeatures) single.
-
-    arguments
-        net     dlnetwork
-        x       (1,:) single
+function out = predictSeqDLNet(x)
+%#codegen
+    persistent net;
+    if isempty(net)
+        net = coder.loadDeepLearningNetwork('lstm_net.mat');
     end
 
-    dlX = dlarray(x, "TC");  % Time x Channels for sequence models
-    dlY = predict(net, dlX);
+    dlX = dlarray(x, 'CB');  % x is [numFeatures x 1] (Channel x Batch)
+    [dlY, state] = predict(net, dlX);
+    net.State = state;
     out = extractdata(dlY);
 end
 ```
 
-**dlarray format:** `'TC'` -- Time x Channel (features).
+**dlarray format:** `'CB'` -- Channel x Batch. For single-step stateful
+inference, `x` is `[numFeatures x 1]` (C features, batch of 1).
 
 **Input types for codegen:**
 ```matlab
-netType = coder.loadDeepLearningNetwork("lstm_net.mat");
-inputType = coder.typeof(single(0), [1 numFeatures]);
-codegen -config cfg predictSeqDLNet -args {netType, inputType} -report
+inputType = coder.typeof(single(0), [numFeatures 1]);
+codegen -config cfg predictSeqDLNet -args {inputType}
 ```
 
 ---

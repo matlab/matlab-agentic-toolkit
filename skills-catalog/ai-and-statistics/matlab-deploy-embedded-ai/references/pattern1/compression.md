@@ -26,6 +26,13 @@ mandatory and is not always optimal — for example, on ARM Cortex-M with a late
 LSTM model, the float32 path with CMSIS-DSP matrix-multiply replacement outperforms a
 quantized path because CMSIS-NN provides no INT8 kernels for recurrent layers.
 
+## Compression Paths by Model Type
+
+| Model Type              | Compression Toolbox                            | Primary Techniques         |
+|--------------------------|------------------------------------------------|----------------------------|
+| `dlnetwork`             | Deep Learning Toolbox Model Compression Library | Quantization, Pruning, Projection |
+| `fitcnet` / `fitrnet`  | Fixed-Point Designer                           | Fixed-point conversion     |
+
 **CRITICAL:** Do NOT implement pruning, projection, or quantization in custom MATLAB
 code. Always use the official MathWorks functions listed below. These functions are
 part of the Deep Learning Toolbox Model Compression Library and are designed for
@@ -37,7 +44,7 @@ correctness, code generation compatibility, and integration with the deployment 
 |--------------|---------------------------------------------------------------------------|
 | Pruning      | `compressNetworkUsingTaylorPruning`                                       |
 | Projection   | `compressNetworkUsingProjection` (calls `neuronPCA` internally; precompute separately only for multi-goal sweeps), `ProjectedLayer`, `lstmProjectedLayer`, `gruProjectedLayer` |
-| Quantization | `prepareNetwork`, `dlquantizer`, `dlquantizationOptions`, `calibrate`, `quantize`, `validate`, `quantizationDetails`, `estimateNetworkMetrics`, `equalizeLayers` |
+| Quantization | `prepareNetwork`, `dlquantizer`, `dlquantizationOptions`, `calibrate`, `quantize`, `validate`, `quantizationDetails`, `estimateNetworkMetrics` |
 
 ## Compression Techniques Overview
 
@@ -54,9 +61,10 @@ held-out data before committing to a path.
 | **INT8 quantization** (non-structural) | `dlquantizer` (`prepareNetwork`, `calibrate`, `quantize`) | Up to ~4× from the FP32 → INT8 weight storage drop, before per-layer overhead | Activation buffers also drop to INT8 (up to ~4× depending on shapes) | Model-dependent; usually small for CNN/FC, depends on output dynamic range and calibration set | Not required (post-training) |
 | **Combined** (pruning and/or projection + quantization) | All of the above, in order | Multiplicative across techniques | Multiplicative (skip projection if SRAM is the goal) | Model-dependent; ~77% combined flash savings has been reported on representative CNN + FC examples | Required for the structural stages |
 
-A separate manual INT8 (per-matrix min-max scaling) fallback is documented later
-in this file for cases where `dlquantizer` is not viable; it is a fallback, not
-a peer technique.
+A separate manual INT8 (per-matrix min-max scaling) fallback is documented in
+[`compression-quantization.md`](compression-quantization.md) for cases where
+`dlquantizer` is not viable; it is a storage-only optimization that does not produce
+integer arithmetic in generated code.
 
 **No single recommended default.** Pick the technique based on the goal collected via
 [`compression-decision.md`](compression-decision.md):
@@ -80,13 +88,6 @@ a peer technique.
   drops below the threshold; quantization with proper calibration often preserves
   accuracy on overparameterized models.
 
-## Compression Paths by Model Type
-
-| Model Type              | Compression Toolbox                            | Primary Techniques         |
-|--------------------------|------------------------------------------------|----------------------------|
-| `dlnetwork`             | Deep Learning Toolbox Model Compression Library | Quantization, Pruning, Projection |
-| `fitcnet` / `fitrnet`  | Fixed-Point Designer                           | Fixed-point conversion     |
-
 ## Compression Order (Combined Pipeline)
 
 For maximum compression, apply techniques in this order:
@@ -102,18 +103,16 @@ For maximum compression, apply techniques in this order:
 `gruLayer`. Include projection when:
 
 - The user's goal is **flash reduction** (projection shrinks weight matrices), AND
-- The user can tolerate **retraining / fine-tuning** (projection always requires it), AND
+- The user can tolerate **retraining / fine-tuning** (highly recommended after projection), AND
 - The model contains at least one supported layer type, AND
 - No projectable layer shares learnable parameters via weight tying (unsupported).
 
 **Skip projection when:**
 
-- The user's goal is latency (projection doesn't help; for Cortex-M LSTM/GRU,
-  un-quantized float32 with CMSIS-DSP is the latency winner)
+- The user's goal is purely latency with no flash constraint
 - The user's goal is SRAM reduction only (projection does not shrink activation memory)
 - Retraining is not acceptable
 - The model has no supported layer types
-- The user is targeting maximum accuracy with no compression budget
 
 ### Reporting Compression Results
 
@@ -141,6 +140,17 @@ fprintf("Quantization MAE: %.3e (budget: %.1e) — %s\n", mae, budget, verdict);
 
 ---
 
+## Detailed Technique References
+
+Each technique has its own reference file with full code examples and guidance:
+
+- **[Pruning](compression-pruning.md)** — `compressNetworkUsingTaylorPruning` workflow
+- **[Projection](compression-projection.md)** — `compressNetworkUsingProjection`, sequence models, codegen preparation
+- **[Quantization](compression-quantization.md)** — `dlquantizer` pipeline, INT8 suitability check, manual fallback, combined pipeline
+- **[Classical ML (fitcnet/fitrnet)](compression-classical-ml.md)** — Fixed-Point Designer with `generateLearnerDataTypeFcn`
+
+---
+
 ## dlnetwork Compression: Deep Learning Toolbox Model Compression Library
 
 This library is a **support package**, not a toolbox. It is NOT detected by
@@ -159,579 +169,35 @@ MATLAB Add-On Explorer to download it, then wait for confirmation before proceed
 
 ---
 
-## Pruning (Structured Weight Removal)
-
-Pruning removes the least important convolutional filters to reduce model size and
-computation. Use `compressNetworkUsingTaylorPruning` — it handles the full iterative
-workflow (score calculation, filter removal, fine-tuning) in a single call.
-
-```matlab
-% Define fine-tuning options for the pruning loop
-options = trainingOptions("adam", ...
-    MaxEpochs=10, ...
-    MiniBatchSize=32, ...
-    InitialLearnRate=1e-4, ...
-    Verbose=false);
-
-% Prune: remove 30% of learnable parameters
-[prunedNet, info] = compressNetworkUsingTaylorPruning(net, XTrain, YTrain, ...
-    "crossentropy", options, ...
-    LearnablesReductionGoal=0.3, ...
-    LearnablesReductionIncrement=0.05, ...
-    Plots="pruning-progress");
-
-% Inspect results
-fprintf("Achieved reduction: %.1f%%\n", info.LearnablesReduction * 100);
-fprintf("Pruned layers: %s\n", strjoin(info.PrunedLayerNames, ", "));
-fprintf("Stop reason: %s\n", info.StopReason);
-```
-
-For the full list of name-value arguments, defaults, and behavior, consult the
-function's help (`help compressNetworkUsingTaylorPruning`) or the
-[reference page](https://www.mathworks.com/help/deeplearning/ref/compressnetworkusingtaylorpruning.html)
-rather than relying on a list in this file. Two name-value arguments that are
-worth flagging because they affect the recipe:
-
-- `LearnablesReductionGoal` — target proportion of parameters to remove. Drives
-  the trade-off between flash savings and accuracy.
-- `ValidationThreshold` — stops the iterative pruning loop as soon as the
-  validation metric drops below the threshold. Use this when accuracy is the
-  primary constraint (see the "Maximize accuracy" recipe in [`compression-decision.md`](compression-decision.md)).
-
-**Notes:**
-- Requires the Deep Learning Toolbox Model Compression Library (support package).
-  `compressNetworkUsingTaylorPruning` is the high-level R2026a API; older builds
-  of the support package shipped only the lower-level `taylorPrunableNetwork`
-  workflow (score → updateScore → updatePrunables → trainnet loop). If
-  `which compressNetworkUsingTaylorPruning` returns "not found" on a system
-  with the support package installed, the SPKG is on a stale build — ask the
-  user to update the support package via Add-On Explorer.
-- Operates on convolutional layers only; for FC/LSTM/GRU reduction (or for additional conv-layer reduction), use projection
-- Output is a standard `dlnetwork` — no conversion step needed
-- The function iteratively scores filters, removes lowest-scoring, and fine-tunes
-
----
-
-## Projection (Layer Dimension Reduction)
-
-Projection reduces the dimensionality of supported layers using principal component
-analysis of neuron activations. For the up-to-date list of supported layers and any
-release-specific limitations (such as restrictions on layers that share learnable
-parameters via weight tying), see the
-[`compressNetworkUsingProjection` reference page](https://www.mathworks.com/help/deeplearning/ref/compressnetworkusingprojection.html).
-
-To inspect a specific network's compressibility visually, open it in **Deep Network
-Designer** (`deepNetworkDesigner(net)`) and use the compression analysis pane — it
-flags which layers are eligible for projection, pruning, and quantization without
-requiring you to reason about the support list yourself.
-
-```matlab
-% Single-call projection: pass calibration data directly. Internally the
-% function runs the PCA step and applies projection in one call.
-% Always capture the second output (info struct) — it reports what
-% actually happened, which is essential for verifying that the requested
-% reduction was applied to the layers you expected.
-[projectedNet, info] = compressNetworkUsingProjection(net, XTrain);
-fprintf("Achieved learnables reduction: %.1f%%\n", info.LearnablesReduction * 100);
-fprintf("Mean explained variance: %.3f\n", mean(info.ExplainedVariance));
-fprintf("Projected layers: %s\n", strjoin(info.LayerNames, ", "));
-
-% When to call neuronPCA separately: only when you plan to reuse the PCA
-% across multiple projection goals (e.g., a trade-off sweep), since the
-% PCA step can be expensive. For a single goal, the one-call form above
-% is the recommended path.
-
-% With UnpackProjectedLayers=false (the default), every compressed layer in
-% the result is wrapped in a ProjectedLayer object — regardless of whether
-% the original was an FC, conv, LSTM, or GRU layer. The actual unpacked
-% structure (multiple FC/conv layers for FC/conv inputs, or
-% lstmProjectedLayer / gruProjectedLayer for recurrent inputs) only
-% appears after unpacking — see "Preparing Projected Networks for Code
-% Generation" below.
-
-% Fine-tune after projection
-options = trainingOptions("adam", ...
-    MaxEpochs=20, ...
-    MiniBatchSize=32, ...
-    InitialLearnRate=1e-4, ...
-    Verbose=false);
-
-projectedNet = trainnet(XTrain, YTrain, projectedNet, "crossentropy", options);
-```
-
-**Layer types in the output network:**
-
-| `UnpackProjectedLayers` | What `compressNetworkUsingProjection` returns |
-|---|---|
-| `false` (default) | Every compressed layer is a `ProjectedLayer`, regardless of the original layer type. The `ProjectedLayer` wraps the equivalent sub-network internally. |
-| `true` | Each `ProjectedLayer` is replaced by its unpacked equivalent: two or three `fullyConnectedLayer` objects (from an FC original), two or three `convolution1dLayer`/`convolution2dLayer` objects (from conv originals), a single `lstmProjectedLayer` (from an LSTM), or a single `gruProjectedLayer` (from a GRU). |
-
-The same unpacking can also be applied after the fact via
-`unpackProjectedLayers(projectedNet)`. Codegen support depends on the
-unpacked layer type:
-
-- `lstmProjectedLayer` and `gruProjectedLayer` are supported for generic
-  C/C++ code generation via `coder.loadDeepLearningNetwork` (no MKL-DNN /
-  ARM Compute Library acceleration; in R2026a, `HasStateInputs` /
-  `HasStateOutputs` modes are also supported on the generic path).
-- A `ProjectedLayer` wrapper is supported for codegen when its contents
-  are stateless — that is, conv/FC layers, or LSTM/GRU layers in
-  stateful-I/O mode. A wrapped LSTM/GRU with stored state is not
-  codegen-compatible until unpacked.
-
-`exportNetworkToSimulink` accepts projected networks directly in R2026a.
-For the direct MATLAB Coder path, when in doubt, calling
-`unpackProjectedLayers` before `coder.loadDeepLearningNetwork` removes
-the wrapper and produces the most codegen-friendly form (see "Preparing
-Projected Networks for Code Generation" below).
-
-### Projection for Sequence Models (LSTM/GRU)
-
-Since R2026a, `compressNetworkUsingProjection` accepts the same input data
-types as `trainnet` (including a **cell array of sequences**), and exposes
-the sequence-batching name-value arguments — `MiniBatchSize`,
-`SequenceLength`, `SequencePaddingDirection`, `SequencePaddingValue`,
-`InputDataFormats` — directly. The older `minibatchqueue` wrapper is no
-longer needed.
-
-```matlab
-% Calibration data: cell array of single sequences in [features × time] layout
-calibData = cell(numCalib, 1);
-for i = 1:numCalib
-    calibData{i} = single(randn(numFeatures, seqLen));
-end
-
-% Single-call projection. MiniBatchSize=1 avoids padding across sequences
-% (padding is documented to hurt PCA quality); use SequenceLength="shortest"
-% instead if larger mini-batches are required. Omit LearnablesReductionGoal
-% to let the function use its default (ExplainedVarianceGoal=0.95).
-[projNet, info] = compressNetworkUsingProjection(baseNet, calibData, ...
-    MiniBatchSize=1);
-
-fprintf('Actual reduction: %.1f%%\n', info.LearnablesReduction * 100);
-fprintf('Compressed layers: %s\n', strjoin(info.LayerNames, ', '));
-```
-
-If the function cannot infer the input format (for example, when the
-network's input is unformatted, with format `"UU"` / `"UUU"`), set
-`InputDataFormats` explicitly. For the full list of name-value arguments
-see the [`compressNetworkUsingProjection` reference page](https://www.mathworks.com/help/deeplearning/ref/compressnetworkusingprojection.html).
-
-### Projection Limitations
-
-- **Choose `LearnablesReductionGoal` empirically, not by rule of thumb.** The
-  achievable reduction without retraining is highly model- and
-  data-dependent. If the user has no specific target, prefer the default
-  behavior (driven by `ExplainedVarianceGoal=0.95`) or run a trade-off sweep
-  across several goals and pick the one that meets the accuracy budget.
-- **Data distribution matters.** The calibration set passed to
-  `compressNetworkUsingProjection` must reflect the true deployment
-  distribution; results inferred from unrepresentative data do not
-  transfer.
-- **No synthetic fine-tuning shortcuts.** If the real data distribution is narrow, generating
-  synthetic N(0,1) data for fine-tuning does not help -- it introduces out-of-distribution noise.
-- **Test on real data.** Projection accuracy must be validated on the actual expected input
-  distribution, not random data.
-
-### Preparing Projected Networks for Code Generation
-
-Codegen support for projected networks depends on the layer:
-
-- `lstmProjectedLayer` and `gruProjectedLayer` (the unpacked recurrent
-  forms) are supported for generic C/C++ codegen via
-  `coder.loadDeepLearningNetwork`. No third-party libraries (MKL-DNN, ARM
-  Compute Library) are used on this path. R2026a adds support for
-  `HasStateInputs` / `HasStateOutputs` modes.
-- A `ProjectedLayer` wrapper is supported for codegen only when its
-  contents are stateless — conv/FC, or LSTM/GRU configured with state
-  inputs/outputs (`HasStateInputs=true`, `HasStateOutputs=true`) instead
-  of stored state.
-- A `ProjectedLayer` wrapping a stateful LSTM/GRU is **not**
-  codegen-compatible. Unpack it first.
-
-When in doubt, unpack before saving for `coder.loadDeepLearningNetwork`:
-
-```matlab
-% Unpack projected layers — produces lstmProjectedLayer / gruProjectedLayer
-% directly (no ProjectedLayer wrapper) plus FC/conv expansions.
-unpackedNet = unpackProjectedLayers(projectedNet);
-save("deployableNet.mat", "unpackedNet");
-
-% Alternative: set UnpackProjectedLayers=true during projection
-[projectedNet, info] = compressNetworkUsingProjection(net, calibData, ...
-    UnpackProjectedLayers=true);
-```
-
----
-
-## Quantization (Float32 to Int8)
-
-### Why Quantize?
-
-Quantization reduces model size (4x for float32 → int8). On ARM Cortex-M targets with
-the Embedded Coder Support Package for ARM Cortex-M Processors, INT8 quantized models
-can use CMSIS-NN kernels for **`convolution2dLayer` and `fullyConnectedLayer` only**
-(~2.8–3x speedup). LSTM, GRU, and BiLSTM layers in R2026a have **no INT8 CMSIS-NN
-kernel** — they generate as plain fixed-point C when quantized, which can be slower
-than the float32 + CMSIS-DSP `mw_arm_mat_mult_f32` path for recurrent layers. Choose
-quantization based on the goal collected via [`compression-decision.md`](compression-decision.md).
-
-**Two consumers of quantization data (do not confuse):**
-
-| | Simulink path | MATLAB Coder CMSIS-NN path |
-|---|---|---|
-| Calls `quantize()`? | **Yes** — produces quantized dlnetwork for `exportNetworkToSimulink` | **No** — only `calibrate()`, calibration data passed to code generator |
-| Requires Simulink? | Yes | No |
-| Code gen mechanism | `slbuild` with CRL "ARM Cortex-M" | `codegen` with `coder.DeepLearningConfig('cmsis-nn')` |
-
-See `codegen-embedded.md` for full CMSIS-NN deployment details.
-
-### Checking dlquantizer Layer Support
-
-Do not maintain a layer-by-layer support list in code or in this skill — it goes
-stale across releases. Two ways to check whether a specific layer is supported by
-`dlquantizer` in the user's installed release:
-
-1. **Doc:** [Supported Layers for Quantization](https://www.mathworks.com/help/deeplearning/ug/supported-layers-for-quantization.html) — authoritative, release-versioned.
-2. **Visual tool:** open the network in **Deep Network Designer**
-   (`deepNetworkDesigner(net)`) and use the compression analysis pane. It flags
-   each layer's eligibility for quantization, projection, and pruning directly
-   on the architecture diagram, which is faster than cross-referencing a table.
-
-**LSTM/GRU implication for Cortex-M deployment:** Although `dlquantizer` quantizes
-LSTM/GRU layers in the MATLAB execution environment and `exportNetworkToSimulink`
-preserves them as fixed-point blocks, **the ARM Cortex-M code replacement library
-in R2026a does not provide INT8 CMSIS kernels for recurrent layers** (Conv2D and FC
-have CMSIS-NN INT8 wrappers; LSTM/GRU/BiLSTM only have float32 CMSIS-DSP
-matrix-multiply replacement). Quantizing an LSTM saves flash but does NOT speed up
-inference on Cortex-M. If latency is the priority, keep recurrent layers in float32
-and rely on CMSIS-DSP. See [`codegen-embedded.md`](codegen-embedded.md) for the
-CMSIS support tables.
-
-### INT8 Suitability Check
-
-Before quantizing, check whether the model's output range is suitable for INT8.
-INT8 quantization works well when the model's output range is narrow. It fails when
-the output range is too wide for 256 INT8 levels.
-
-| Output Range | INT8 Suitability | Example |
-|-------------|-----------------|---------|
-| 0 to 1 | Excellent | Probabilities, SOC estimation |
-| 0 to 5 | Good | Advisory scores, small classifications |
-| -10 to 10 | Acceptable | Bounded regression |
-| 100 to 500 | **Poor** (~50%+ error) | Wide-range regression |
-
-**Rule:** If `(max_output - min_output) / 256 > acceptable_error`, INT8 is inadequate.
-Use FP32 or FP16 instead.
-
-### Step 1: Prepare Calibration Data
-
-```matlab
-% Create calibration dataset of representative inputs
-numCalibSamples = 100;
-
-% For sequence models (LSTM/GRU): cell array of [features × time] sequences.
-% Pass this directly to calibrate() — see Step 2d. If you prefer a
-% datastore form, wrap with arrayDatastore.
-calibData = cell(numCalibSamples, 1);
-for i = 1:numCalibSamples
-    calibData{i} = single(randn(numFeatures, seqLen));
-end
-
-% For image models (CNN): 4D array [H x W x C x N]
-calibImages = single(randn(224, 224, 3, numCalibSamples));
-ds = arrayDatastore(calibImages, 'IterationDimension', 4);
-
-% For feature models (MLP): 2D array [features x N]
-calibFeatures = single(randn(numFeatures, numCalibSamples));
-ds = arrayDatastore(calibFeatures, 'IterationDimension', 2);
-```
-
-### Step 2: Quantize
-
-```matlab
-% Step 2a (optional): Equalize layer parameters for better quantization quality
-net = equalizeLayers(net);
-
-% Step 2b: Create the quantizer object
-qOpts = dlquantizationOptions(MetricFcn={@(x) myMetric(x)});  % Optional
-quantObj = dlquantizer(net, ExecutionEnvironment="MATLAB");
-
-% Step 2c: Prepare the quantizer's network for quantization
-% In R2026a, prepareNetwork takes the dlquantizer object (not a dlnetwork)
-% and mutates it in place. It accepts projected networks: any
-% ProjectedLayer / lstmProjectedLayer / gruProjectedLayer in the wrapped
-% network is unpacked into its underlying built-in layers (e.g., a
-% ProjectedLayer becomes two fullyConnectedLayer objects named
-% "<orig>_proj_in" and "<orig>_proj_out") before calibration.
-prepareNetwork(quantObj);
-
-% Step 2d: Calibrate with representative data
-% For tabular data:
-calData = arrayDatastore(XCal, IterationDimension=1);
-calibrate(quantObj, calData);
-% For sequence models, pad variable-length sequences with padsequences,
-% then wrap as a formatted dlarray. For [C × T] inputs padded along dim 2,
-% padsequences returns [C × T_pad × N] — format as "CBT" (channel × batch
-% × time). Do NOT use cat(3, X{:}); it requires equal-length sequences and
-% gives the wrong axis order.
-% XPad   = padsequences(XCal, 2);          % [C × T_pad × N]
-% dlXCal = dlarray(XPad, "CBT");
-% calibrate(quantObj, dlXCal);
-
-% Step 2e: Quantize the network
-quantizedNet = quantize(quantObj);
-save('quantized_net.mat', 'quantizedNet', '-v7.3');
-```
-
-**Code generation from quantized networks — two paths:**
-
-1. **Simulink path (SUPPORTED):** Pass the quantized network to
-   `exportNetworkToSimulink(qNet)`. This creates a Simulink model with
-   fixed-point data types (embedded.fi) pre-configured in block parameters.
-   Embedded Coder then generates integer C code (int8/int16/int32) via `slbuild`.
-   This is the recommended path for fixed-point embedded deployment.
-   See: https://www.mathworks.com/help/deeplearning/ug/export-quantized-network-to-simulink.html
-
-   For Cortex-M targets: configure the ARM Cortex-M CRL before `slbuild` to enable
-   CMSIS-NN INT8 block replacement for **Conv2D and FC layers only**. LSTM/GRU/BiLSTM
-   in the quantized model generate as plain fixed-point C — there is no CMSIS-NN
-   recurrent-layer kernel in R2026a. See [`codegen-embedded.md`](codegen-embedded.md).
-
-2. **Direct MATLAB Coder path (NOT SUPPORTED):** `coder.loadDeepLearningNetwork`
-   does NOT accept the output of `quantize()`. For the direct codegen path
-   (without Simulink), use the uncompressed, pruned, or unpacked projected
-   network instead.
-
-### Step 3: Validate
-
-```matlab
-% Validate using dlquantizer's built-in validation
-valData = arrayDatastore(XVal, IterationDimension=1);
-valResults = validate(quantObj, valData);
-disp(valResults);
-
-% Manual error comparison
-errors = zeros(numTests, 1);
-for i = 1:numTests
-    x = dlarray(single(testInputs{i}), formatString);
-    yBase = predict(baseNet, x);
-    yQuant = predict(quantizedNet, x);
-    errors(i) = max(abs(extractdata(yBase(:)) - extractdata(yQuant(:))));
-end
-
-mae = mean(errors);
-fprintf('INT8 quantization: MAE=%.4e, MaxErr=%.4e\n', mae, max(errors));
-assert(mae < 1e-3, 'Quantization error exceeds budget');
-```
-
-### Understanding Quantization Results
-
-After calibration and validation:
-- Compare accuracy/error before and after quantization
-- Check per-layer quantization parameters (scale, zero-point)
-- Identify layers with high quantization error
-
-```matlab
-% Get detailed quantization information from the quantized network (not quantObj)
-qDetails = quantizationDetails(quantizedNet);
-% qDetails struct fields:
-%   IsQuantized          - logical
-%   TargetLibrary        - string ("none" for MATLAB execution)
-%   QuantizedLayerNames  - string array of quantized layer names
-%   QuantizedLearnables  - table (Layer, Parameter, Value as embedded.fi)
-fprintf('Quantized: %d, Layers: %s\n', qDetails.IsQuantized, ...
-    strjoin(qDetails.QuantizedLayerNames, ', '));
-
-% Estimate inference metrics for the quantized network
-metrics = estimateNetworkMetrics(quantObj);
-disp(metrics);
-```
-
----
-
-## Manual INT8 Quantization (Fallback)
-
-When dlquantizer does not work (e.g., on networks with residual custom layers),
-use per-matrix min-max scaling:
-
-```matlab
-learnables = net.Learnables;
-for i = 1:height(learnables)
-    W = learnables.Value{i};
-    if isfloat(W) && numel(W) > 1
-        absMax = max(abs(W(:)));
-        scale = absMax / 127.0;
-        Wq = int8(round(W / scale));
-        % Dequantize back for inference (keeps the network runnable)
-        learnables.Value{i} = single(Wq) * single(scale);
-    end
-end
-net.Learnables = learnables;
-```
-
----
-
-## Combined Pipeline (Best Results: 77%+ Flash Savings)
-
-Use the combined pipeline only when the user's goal is flash reduction AND retraining
-is acceptable. Confirm via [`compression-decision.md`](compression-decision.md) before
-applying it. The pipeline applies projection first (modest parameter reduction), then
-INT8 quantization (aggressive bit-width reduction). Together they achieve 77%+ flash
-savings.
-
-### Full Combined Workflow: Prune -> Project -> Quantize
-
-This pseudo-code mirrors the structure of the
-[Compress Sequence Classification Network for Road Damage Detection](https://www.mathworks.com/help/deeplearning/ug/compress-sequence-classification-network-for-road-damage-detection.html)
-example. All steps reuse the same in-memory cell arrays
-(`XTrain`/`TTrain`, `XValidation`/`TValidation`, `XTest`/`TTest`) and the
-same trained network and training options — no minibatchqueue, no
-datastore wrappers.
-
-```matlab
-% Inputs assumed in workspace:
-%   netTrained                              — trained dlnetwork
-%   XTrain, TTrain, XValidation, TValidation, XTest, TTest  — cell arrays
-%   options  — trainingOptions used for the original training
-%   lossFcn  — loss function name or handle (e.g., "crossentropy")
-
-%% Step 1: Prune (optional; only effective when conv/FC layers are present)
-optionsFineTuning          = options;
-optionsFineTuning.MaxEpochs = 10;
-[netPruned, infoPruned] = compressNetworkUsingTaylorPruning(netTrained, ...
-    XTrain, TTrain, lossFcn, optionsFineTuning, ...
-    LearnablesReductionGoal = 0.3, ...
-    LearnablesReductionIncrement = 0.02);
-
-% Retrain pruned network on the same data
-netPruned = trainnet(XTrain, TTrain, netPruned, lossFcn, options);
-
-%% Step 2: Projection
-% Pass training data directly. No separate neuronPCA call is needed for a
-% single goal — compressNetworkUsingProjection runs PCA internally. Omit
-% LearnablesReductionGoal to use the default driven by ExplainedVarianceGoal.
-[netProjected, infoProjection] = compressNetworkUsingProjection(netPruned, ...
-    XTrain, LearnablesReductionGoal = 0.10);
-
-% Fine-tune the projected network
-netProjected = trainnet(XTrain, TTrain, netProjected, lossFcn, options);
-
-%% Step 3: INT8 quantization
-% prepareNetwork(quantObj) performs batch-normalization fusion, parameter
-% equalization, and unpacks projected layers as part of preparing the
-% network inside the dlquantizer object for calibration.
-quantObj = dlquantizer(netProjected, ExecutionEnvironment = "MATLAB");
-prepareNetwork(quantObj);
-calibrate(quantObj, XTrain);
-netQuantized = quantize(quantObj, ExponentScheme = "histogram");
-save("combined_compressed.mat", "netQuantized", "-v7.3");
-
-% Deployment via Simulink (R2026a):
-%   exportNetworkToSimulink(netQuantized, ...) → slbuild with ARM Cortex-M CRL
-% Deployment via direct MATLAB Coder:
-%   not supported — coder.loadDeepLearningNetwork does not accept quantize() output.
-%   For that path, use the unpacked projected float32 network instead.
-
-%% Verify combined accuracy on the held-out test set (same in-memory cell array)
-YTest        = minibatchpredict(netQuantized, XTest);
-YBaseline    = minibatchpredict(netTrained,   XTest);
-maeCombined  = mean(abs(YTest(:) - YBaseline(:)));
-fprintf("Combined: MAE vs baseline = %.4e\n", maeCombined);
-
-%% Calculate flash savings
-% Use estimateNetworkMetrics — the Learnables of a quantized dlnetwork are
-% NOT stored as int8, so summing numel(v)*sizeof(class(v)) over .Learnables
-% misreports the deployed flash footprint. estimateNetworkMetrics accepts
-% a quantized network and reports the int8 parameter memory in its
-% "ParameterMemory (MB)" column.
-[metricsFloat, metricsQuantized] = estimateNetworkMetrics(netTrained, netQuantized);
-flashFloatMB     = sum(metricsFloat.("ParameterMemory (MB)"));
-flashQuantizedMB = sum(metricsQuantized.("ParameterMemory (MB)"));
-fprintf("Flash: %.2f MB -> %.2f MB (%.1f%% savings)\n", ...
-    flashFloatMB, flashQuantizedMB, ...
-    (1 - flashQuantizedMB/flashFloatMB) * 100);
-```
-
----
-
-## fitcnet / fitrnet Compression: Fixed-Point Designer
-
-### Fixed-Point Conversion
-
-```matlab
-% Generate a predict function for the trained model
-function y = predictFromModel(mdl, x)
-    y = predict(mdl, x);
-end
-
-% Use the Fixed-Point Tool to convert
-% 1. Open the Fixed-Point Tool
-fixedPointDesigner
-
-% 2. Or use programmatic conversion with fxpopt
-% Define input types
-inputTypes = {coder.typeof(single(0), [1 numFeatures])};
-
-% Create fixed-point configuration
-fxpCfg = coder.config("fixpt");
-fxpCfg.TestBenchName = "testBench";  % Function that exercises the code
-fxpCfg.DefaultWordLength = 16;
-fxpCfg.DefaultFractionLength = 8;
-
-% Generate fixed-point code
-codegen -float2fixed fxpCfg predictFunction -args inputTypes
-```
-
-### Fixed-Point Considerations for Lean Hardware
-
-| Target Hardware         | Typical Word Length | Notes                           |
-|-------------------------|--------------------|---------------------------------|
-| Cortex-M0/M0+           | 8 or 16 bit        | Very constrained, aggressive quantization |
-| Cortex-M4/M4F           | 16 or 32 bit       | Has FPU, but fixed-point still faster |
-| Cortex-M7               | 16 or 32 bit       | Double-precision FPU available   |
-| DSP (e.g., C2000)       | 16 or 32 bit       | Native fixed-point support      |
-| Custom ASIC / NPU       | 8 bit              | Often int8-only inference       |
-
----
-
 ## Compression Validation
 
 After any compression step, always validate:
 
 ```matlab
-% Compare original vs. compressed model
-YOriginal   = minibatchpredict(net, XTest);
-YCompressed = minibatchpredict(compressedNet, XTest);
+% Compare original vs. compressed accuracy using testnet
+lossOrig = testnet(net, XTest, TTest, "loss");
+lossComp = testnet(compressedNet, XTest, TTest, "loss");
+fprintf("Original loss:   %.4f\n", lossOrig);
+fprintf("Compressed loss: %.4f\n", lossComp);
+fprintf("Loss increase:   %.4f\n", lossComp - lossOrig);
 
-% Classification accuracy comparison
-[~, origLabels] = max(YOriginal, [], 2);
-[~, compLabels] = max(YCompressed, [], 2);
-origAcc = mean(origLabels == YTest);
-compAcc = mean(compLabels == YTest);
-
-fprintf("Original accuracy:   %.2f%%\n", origAcc * 100);
-fprintf("Compressed accuracy: %.2f%%\n", compAcc * 100);
-fprintf("Accuracy drop:       %.2f%%\n", (origAcc - compAcc) * 100);
-
-% Model size comparison
-origInfo = whos("net");
-compInfo = whos("compressedNet");
-fprintf("Original size:   %.1f KB\n", origInfo.bytes / 1024);
-fprintf("Compressed size: %.1f KB\n", compInfo.bytes / 1024);
-fprintf("Compression ratio: %.1fx\n", origInfo.bytes / compInfo.bytes);
+% Model size comparison using analyzeNetwork (works for all compression types)
+naOrig = analyzeNetwork(net, Plots='none');
+naComp = analyzeNetwork(compressedNet, Plots='none');
+fprintf("Original learnables:   %d\n", naOrig.TotalLearnables);
+fprintf("Compressed learnables: %d\n", naComp.TotalLearnables);
+fprintf("Reduction: %.1f%%\n", (1 - naComp.TotalLearnables/naOrig.TotalLearnables) * 100);
 ```
 
 ---
 
 ## CRITICAL Rules Summary
 
-1. **prepareNetwork(quantObj) before calibrate()** -- In R2026a, `prepareNetwork`
-   takes the `dlquantizer` object (not a `dlnetwork`) and mutates it in place.
-   It handles unfused batch normalization, certain LSTM state configurations,
-   and unpacks projected layers (`ProjectedLayer`, `lstmProjectedLayer`,
-   `gruProjectedLayer`) into their underlying built-in layers. Without it,
-   calibration may fail with fi() type errors on networks that need fusion.
+1. **prepareNetwork(quantObj) before calibrate()** -- `prepareNetwork` takes the
+   `dlquantizer` object (not a `dlnetwork`) and mutates it in place. It handles
+   unfused batch normalization, certain LSTM state configurations, and unpacks
+   projected layers into their underlying built-in layers. Without it, calibration
+   may fail with fi() type errors on networks that need fusion.
 
 2. **Projected-layer codegen** -- `lstmProjectedLayer` and `gruProjectedLayer`
    are supported by `coder.loadDeepLearningNetwork` for generic C/C++ codegen
@@ -758,7 +224,7 @@ fprintf("Compression ratio: %.1fx\n", origInfo.bytes / compInfo.bytes);
 
 ## Workflow Pattern 1 Compression Targets
 
-For lean hardware deployment (Cortex-M, DSPs):
+For lean hardware deployment (Cortex-M):
 
 | Metric             | Target                  | Notes                              |
 |--------------------|-------------------------|------------------------------------|

@@ -1,7 +1,7 @@
 # Troubleshooting -- Pattern 2 (PyTorch/LiteRT Code Generation)
 
 Common errors when using `loadPyTorchExportedProgram` and the PyTorch/LiteRT code
-generation pipeline. Note: error messages may reference internal TOSA operations.
+generation pipeline.
 
 ## Codegen Failures
 
@@ -16,19 +16,19 @@ cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 
 This generates fully portable C with zero external dependencies.
 
-### Error: Unsupported TOSA operation
+### Error: Unsupported operation
 
-**Cause:** A PyTorch op lowered to a TOSA primitive that MATLAB's backend doesn't implement yet.
-This is rare but possible for uncommon ops.
+**Cause:** A PyTorch op maps to an intermediate operation that MATLAB Coder does not
+yet support for code generation. This is rare but possible for uncommon ops.
 
 **Diagnosis:**
 ```matlab
-% The codegen error message will name the specific TOSA op
-% e.g., "tosa.scatter is not supported for code generation"
+% The codegen error message will name the specific unsupported operation
+% e.g., "scatter is not supported for code generation"
 ```
 
 **Fix options:**
-1. Check if a newer MATLAB release supports the op (MathWorks adds TOSA coverage each release)
+1. Check if a newer MATLAB release supports the op (coverage expands each release)
 2. Restructure the PyTorch model to avoid the unsupported op before re-exporting
 3. If the op is at the output stage (e.g., argmax, topk), consider removing it from the
    PyTorch model and implementing it in the MATLAB entry-point function instead
@@ -165,9 +165,9 @@ cfg.LargeConstantThreshold = 0;  % Weights in .bin files
 
 ### Wrong output from generated C
 
-**Most common cause:** Input layout mismatch. The MLIR/TOSA path generates C code that expects
-**column-major** input arrays. If you're feeding row-major data (the default in C/Python), the
-results will be wrong.
+**Most common cause:** Input layout mismatch. The generated C code expects **column-major**
+input arrays. If you're feeding row-major data (the default in C/Python), the results will
+be wrong.
 
 **Fix:** Transpose in the test harness:
 ```c
@@ -234,11 +234,11 @@ pyenv
 
 % Verify .pt2 loads
 net = loadPyTorchExportedProgram('model.pt2');
-out = net.invoke(single(randn(inputShape)));
+out = invoke(net, single(randn(inputShape)));
 disp(size(out))
 
-% Generate codegen report (even if codegen fails, report has diagnostics)
-codegen -config cfg predict_fn -args {inputType} -report
+% Retry codegen after fixing the issue
+codegen -config cfg predict_fn -args {inputType}
 ```
 
 ## Quick Decision Matrix
@@ -248,7 +248,7 @@ codegen -config cfg predict_fn -args {inputType} -report
 | `loadPyTorchExportedProgram` not found | Support package not installed | Install via Add-On Explorer |
 | Python error during load | pyenv not configured | `pyenv('Version', '<path to python executable>')` |
 | Codegen fails with library error | DeepLearningConfig not set | Set to `'none'` |
-| Codegen fails on unsupported op | TOSA op gap | Restructure model or update MATLAB |
+| Codegen fails on unsupported op | Operation not yet supported | Restructure model or update MATLAB |
 | C output is wrong | Column-major vs row-major | Transpose input in C harness |
 | C compilation fails on headers | Missing MATLAB include path | Add `-I$(MATLAB_ROOT)/extern/include` |
 | C fails to load weights | No filesystem on MCU | Remove `LargeConstantThreshold = 0` |

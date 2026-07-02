@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Plan collision-free manipulator motion and generate time-parameterized trajectories.
+matlab-release: ">=R2024b"
+required-tools:
+  - evaluate_matlab_code
+required-skills:
+  - matlab-model-robot-kinematics
+required-products:
+  - Robotics System Toolbox
+toolkit: matlab-agentic-toolkit

@@ -5,7 +5,7 @@ Use the toolkit's setup skill when the user asks to install, configure, update, 
 - Primary setup skill: `skills-catalog/toolkit/matlab-agentic-toolkit-setup/SKILL.md`
 - Codex-specific setup details: `skills-catalog/toolkit/matlab-agentic-toolkit-setup/reference/codex-setup-guidance.md`
 
-For MATLAB implementation tasks, prefer the domain skills under `skills-catalog/`. Each plugin directory (e.g., `matlab-core/`) contains skills with a `SKILL.md` and `manifest.yaml`.
+For MATLAB&reg; implementation tasks, prefer the domain skills under `skills-catalog/`. Each plugin directory (e.g., `matlab-core/`) contains skills with a `SKILL.md` and `manifest.yaml`.
 
 When setting up Codex:
 

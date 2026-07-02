@@ -1,10 +1,10 @@
 ---
 name: matlab-create-live-script
-description: Create plain-text MATLAB Live Scripts (.m files) with rich text formatting, LaTeX equations, section breaks, and inline figures. Use when generating tutorials, analysis notebooks, reports, documentation, or educational content. Requires R2025a+.
+description: Create, edit, and run plain-text MATLAB live scripts (.m files) with rich text formatting, LaTeX equations, section breaks, and inline figures. Use when generating tutorials, analysis notebooks, reports, documentation, or educational content, when modifying existing live scripts, or when converting existing binary .mlx files to .m for version control. Requires R2025a+.
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "2.1"
+  version: "2.2"
 ---
 
 # Live Scripts
@@ -16,6 +16,7 @@ Plain-text `.m` files that render as rich documents in the MATLAB Live Editor. V
 - Tutorials, reports, analysis notebooks, or documentation
 - Interactive exploration with inline figures and equations
 - Version-controlled content (plain-text `.m`, not binary `.mlx`)
+- Converting an existing binary `.mlx` file to plain-text `.m`
 
 ## When NOT to Use
 
@@ -25,7 +26,7 @@ Plain-text `.m` files that render as rich documents in the MATLAB Live Editor. V
 
 ## Converting from `.mlx`
 
-Binary `.mlx` files can be converted to plain-text `.m` by running the following at the MATLAB command window. The recipe is **not** part of the resulting `.m` file:
+To convert a binary `.mlx` file to a plain-text `.m` live script, run the following at the MATLAB Command Window. The recipe is **not** part of the resulting `.m` file:
 
 ```matlab
 editor = matlab.desktop.editor.openDocument(mlxPath, Visible=0);
@@ -43,17 +44,18 @@ editor.closeNoPrompt;
 - No `figure` command — implicit figure creation only
 - No more than one plot per section (unless using tiled layouts)
 - No `close all` or `clear`
-- No `mfilename` — does not work as intended in Live Scripts. Hardcode filenames or use `pwd`.
-- Escape these characters when used as **literal text** (not as markdown syntax): `*`, `_`, `[`, `]`, `` ` ``, `\`, including within LaTeX equations. Also escape `.` after a digit and `#` at line start.
-- Double LaTeX command backslashes: `\\sin`, `\\frac`, `\\sum`
+- No `mfilename` — does not work as intended in live scripts. Hardcode filenames or use `pwd`.
+- Escape these characters when used as **literal text** (not as markdown syntax): `*`, `_`, `[`, `]`, `` ` ``, `\`. Also escape `.` after a digit and `#` at line start.
+- Equations use single-`$` inline form only: `$ a = \\pi r^2 $` (no `$$ ... $$`). For a centered/display equation, wrap the line: `%[text]{"align":"center"} $ X(k) = \\sum\_{n=0}^{N-1} x(n) e^{-j2\\pi kn/N} $`
+- Inside an equation, LaTeX commands take double backslashes (`\\sin`, `\\frac`, `\\pi`) and markdown characters take single (`\_`, `\*`). Use a tool that takes literal text (Edit, Write, fwrite) — **don't** use Bash heredocs; they collapse `\\` to `\` even when quoted, which corrupts LaTeX equations.
 - Last list item (bulleted or numbered) ends with `\`
 - Every file ends with the required appendix
-- Avoid `fprintf` — drop the semicolon or use `disp()` for output. There is no way to send output to the command window when running as a Live Script.
-- Outputs should serve the reader's understanding, not verify execution — run the script via MCP to confirm correctness
+- Avoid `fprintf` — drop the semicolon or use `disp()`. Output appears inline below the code that produced it, not in the Command Window.
+- Outputs should serve the reader's understanding, not verify execution
 
 ## Required Appendix
 
-Every Live Script must end with:
+Every live script must end with:
 
 ```matlab
 %[appendix]{"version":"1.0"}
@@ -63,9 +65,9 @@ Every Live Script must end with:
 %---
 ```
 
-## Reading Live Scripts (Token Optimization)
+## Reading live scripts (Token Optimization)
 
-When reading a Live Script file, ignore everything below the `%[appendix]` marker. The appendix contains embedded images and metadata that consume tokens without adding useful information. All code and text content appears before it.
+When reading a live script file, ignore everything below the `%[appendix]` marker. The appendix contains embedded images and metadata that consume tokens without adding useful information. All code and text content appears before it.
 
 ## Format Reference
 
@@ -79,7 +81,7 @@ When reading a Live Script file, ignore everything below the `%[appendix]` marke
 | `` %[text] `code` `` | `Monospace` |
 | `%[text] <u>text</u>` | Underlined text |
 | `%[text] $ a = \\pi r^2 $` | Inline equation |
-| `%[text]{"align":"center"} ...` | Center-aligned line |
+| `%[text]{"align":"center"} $ ... $` | Centered/display equation |
 | `%[text] - item` | Bullet |
 | `%[text] - last \` | Last bullet |
 | `%[text] 1. item` | Numbered list |
@@ -142,7 +144,8 @@ grid on
 ```matlab
 %[text] ## Theory
 %[text] The discrete Fourier transform is defined as:
-%[text] $ X(k) = \\sum\_{n=0}^{N-1} x(n)e^{-j2\\pi kn/N} $
+%[text]{"align":"center"} $ X(k) = \\sum\_{n=0}^{N-1} x(n) e^{-j2\\pi kn/N} $
+%[text] where $ x(n) $ are the time-domain samples and $ k $ indexes the frequency bins.
 ```
 
 ### Code with Inline Comments
@@ -176,12 +179,30 @@ title('Method 2')
 ## Workflow
 
 1. **Plan** — Title, setup, analysis sections, summary
-2. **Write** — `%[text]` for text, `%%` for sections, appendix at end
-3. **Verify** — Run via MCP to confirm code executes
+2. **Write** — `%[text]` for text, `%%` for sections, appendix at end. Use a tool that takes literal text (Edit, Write, fwrite). **Don't** use Bash heredocs (`cat > file <<EOF`); they collapse `\\` to `\` even when quoted, which corrupts LaTeX equations.
+3. **Validate** *(if MATLAB attached)* — Run the code through `evaluate_matlab_code` to confirm it executes cleanly. Note the wall-clock time — Embed Outputs takes about the same.
+4. **Embed Outputs** *(optional, if MATLAB attached)* — Run `executeLiveScript("<absolute-path>.m")` to save each section's outputs (plots, displayed values) inline next to the code that produced them.
+5. **Verify Rendering** *(optional, if MATLAB attached)* — Run `export("<absolute-path>.m", "<absolute-path>.html")` to produce an HTML approximation of the rendered document. Read it back to confirm equations are typeset, figures appear inline, `%[text]` directives don't leak as literal text, etc. Delete the `.html` when done — it's a verification artifact, not a deliverable.
+
+The Write step is the load-bearing one — Write alone produces a valid live script the user can open and run. Validate, Embed Outputs, and Verify Rendering are progressive enhancements that require an attached MATLAB session. Without one, stop after Write. After Embed Outputs, the file is rewritten to disk by MATLAB — re-read before any further edits.
+
+## `executeLiveScript`
+
+Bundled in the `scripts/` folder of this skill. Add to path before first use:
+
+```matlab
+addpath(fullfile(skillRoot, "scripts"));   % skillRoot = directory containing this SKILL.md
+```
+
+Calling `executeLiveScript(filePath)` returns nothing on success. Runtime errors inside the script do not raise exceptions — the script writes them into the appendix as `"dataType":"error"` blocks; grep the saved `.m` to find them.
+
+**Run Validate before Embed Outputs.** If a cell errors during Embed Outputs, that cell becomes an error block and outputs in cells *after* it are stripped from the file. Run through `evaluate_matlab_code` first.
+
+**If Embed Outputs errors with "Nested Live Editor execution" or hangs past the Validate time:** retry once with the MATLAB desktop visible. If that also fails, the on-disk file from Write is still valid — skip Embed Outputs and let the user run the script themselves.
 
 ## Checklist
 
-Before finishing a Live Script, verify:
+Before finishing a live script, verify:
 - [ ] File has .m extension
 - [ ] Sections use `%%` alone on its own line, followed by `%[text] ##`
 - [ ] No blank lines or empty `%[text]` lines (except one blank line directly before `%[appendix]`)

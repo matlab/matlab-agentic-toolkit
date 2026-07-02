@@ -1,14 +1,14 @@
 # Copyright 2026 The MathWorks, Inc.
 # manifest.yaml — Tooling metadata for matlab-write-database
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: product-specific
 version: "1.0"
 human-description: Write data to relational databases and perform database operations from MATLAB.
 matlab-release: ">=R2023a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Database Toolbox
 toolkit: matlab-agentic-toolkit

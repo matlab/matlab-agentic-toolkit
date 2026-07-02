@@ -7,11 +7,13 @@ verification.
 
 ## Integration Paths by Model Type
 
-| Model Type                          | Integration Method                           |
-|--------------------------------------|----------------------------------------------|
-| `dlnetwork` (Deep Learning Toolbox)  | `exportNetworkToSimulink`                    |
-| `fitcnet` (Stats/ML Toolbox)         | ClassificationNeuralNetwork Predict block    |
-| `fitrnet` (Stats/ML Toolbox)         | RegressionNeuralNetwork Predict block        |
+| Model Type                          | Integration Method                           | Notes |
+|--------------------------------------|----------------------------------------------|-------|
+| `dlnetwork` (Deep Learning Toolbox)  | `exportNetworkToSimulink` (recommended)      | Expands network into individual layer blocks; full visibility and per-layer inspection |
+| `dlnetwork` (Deep Learning Toolbox)  | Predict / Stateful Predict block             | Black-box inference; avoids placeholder issues; no layer-level visibility |
+| `dlnetwork` (Deep Learning Toolbox)  | Classify / Stateful Classify block           | Same as Predict but outputs class labels + scores |
+| `fitcnet` (Stats/ML Toolbox)         | ClassificationNeuralNetwork Predict block    | |
+| `fitrnet` (Stats/ML Toolbox)         | RegressionNeuralNetwork Predict block        | |
 
 ---
 
@@ -200,22 +202,34 @@ set_param("myModel/Predict", "SampleTime", "0.01");
 
 ### Handling Sequence/Time-Series Models (LSTM/GRU)
 
-For any sequence model, set both `Stateful=true` and `FrameBased=true`:
+For recurrent models (LSTM, GRU), set `Stateful=true` so the exported block
+maintains hidden state between simulation time steps:
 
 ```matlab
 mdlInfo = exportNetworkToSimulink(net, ...
     ModelName="mySeqModel", ...
     Stateful=true, ...
-    FrameBased=true, ...
     InputDataType="single", ...
     SampleTime="0.01");
 ```
 
 - `Stateful=true` makes the exported block maintain hidden state between time steps,
-  processing one time step per simulation step.
-- `FrameBased=true` configures the block to operate on frame-based signals, which is
-  the recommended setting for any sequence model exported with
-  `exportNetworkToSimulink`.
+  processing one time step per simulation step. Required for LSTM/GRU models.
+
+**When to use `FrameBased=true`:** Only for 1D-CNN temporal models (e.g.,
+`convolution1dLayer`-based networks) where the input is a multi-sample frame
+rather than a single time step. Do NOT use `FrameBased=true` for LSTM/GRU
+models — recurrent layers process one time step at a time via `Stateful=true`
+and do not use frame-based signal semantics.
+
+```matlab
+% 1D-CNN temporal model: use FrameBased=true
+mdlInfo = exportNetworkToSimulink(cnnTemporalNet, ...
+    ModelName="myCNN1DModel", ...
+    FrameBased=true, ...
+    InputDataType="single", ...
+    SampleTime="0.01");
+```
 
 ---
 
@@ -224,7 +238,7 @@ mdlInfo = exportNetworkToSimulink(net, ...
 ### fitcnet -- ClassificationNeuralNetwork Predict Block
 
 1. Open the Simulink Library Browser
-2. Navigate to: **Statistics and Machine Learning Toolbox** > **Predict**
+2. Navigate to: **Statistics and Machine Learning Toolbox** > **Classification**
 3. Drag the **ClassificationNeuralNetwork Predict** block into your model
 4. Double-click to configure:
    - Set the trained model workspace variable name (e.g., `mdl`)
@@ -241,7 +255,7 @@ load("trainedClassifier.mat", "mdl");
 ### fitrnet -- RegressionNeuralNetwork Predict Block
 
 1. Open the Simulink Library Browser
-2. Navigate to: **Statistics and Machine Learning Toolbox** > **Predict**
+2. Navigate to: **Statistics and Machine Learning Toolbox** > **Regression**
 3. Drag the **RegressionNeuralNetwork Predict** block into your model
 4. Configure with the trained model variable
 
@@ -474,8 +488,11 @@ title(sprintf("Prediction Error (RMSE: %.4f)", rmseVal));
 
 ## Expected Simulink vs MATLAB Tolerances
 
-Simulink introduces small additional numerical error due to block execution ordering
-and fixed-step solver discretization.
+Simulink may introduce small numerical differences due to floating-point arithmetic
+ordering (e.g., fused multiply-add vs. separate multiply then add, different
+accumulation order across block boundaries). These are inherent to IEEE 754
+floating-point and are NOT solver errors — the fixed-step discrete solver performs
+no numerical integration for inference-only models.
 
 | Network Type | Float32 MAE | INT8 MAE | Fixed-Point MAE |
 |-------------|------------|---------|----------------|
@@ -512,10 +529,10 @@ slbuild(modelName);
 Generated code location: `<modelName>_ert_rtw/`
 
 Key files:
-- `<modelName>.c` -- Model step function
+- `<modelName>.c` -- Model step function (includes weights for small models)
 - `<modelName>.h` -- Model interface
-- `<modelName>_data.c` -- Model parameters and weights
 - `<modelName>_types.h` -- Type definitions
+- `*.bin` -- Large constant data (weights/biases exceeding `LargeConstantThreshold`)
 - `rtwtypes.h` -- Common data types
 - `rt_OneStep()` -- Real-time entry point
 
@@ -583,7 +600,7 @@ save('net.mat', 'netNative');
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
 cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
-codegen -config cfg predict_fn -args {inputType} -report
+codegen -config cfg predict_fn -args {inputType}
 ```
 
 ### Path 2: Simulink Embedded Coder
@@ -631,7 +648,13 @@ for i = 1:numTests
     simIn = Simulink.SimulationInput(modelName);
     simIn = setVariable(simIn, 'inputData', timeseries(xTest, 0:size(xTest,1)-1));
     simOut = sim(simIn);
-    ySimulink = simOut.yout{1}.Values.Data(end, :);
+    ySimulink = squeeze(simOut.yout{1}.Values.Data);
+
+    % For stateful models, compare last time step only (final prediction).
+    % For feedforward models, ySimulink is the full output vector.
+    if isvector(ySimulink) && numel(ySimulink) > numel(yMatlab)
+        ySimulink = ySimulink(end);
+    end
 
     errors(i) = max(abs(yMatlab(:) - ySimulink(:)));
 end
@@ -641,7 +664,11 @@ fprintf('=========================================\n');
 fprintf('Tests run:  %d\n', numTests);
 fprintf('MAE:        %.4e\n', mean(errors));
 fprintf('Max Error:  %.4e\n', max(errors));
-fprintf('Pass/Fail:  %s\n', iif(max(errors) < 1e-4, 'PASS', 'INVESTIGATE'));
+if max(errors) < 1e-4
+    fprintf('Pass/Fail:  PASS\n');
+else
+    fprintf('Pass/Fail:  INVESTIGATE\n');
+end
 ```
 
 3. **Report results** with explicit pass/fail and comparison to expected tolerances

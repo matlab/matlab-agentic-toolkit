@@ -1,14 +1,14 @@
 # Copyright 2026 The MathWorks, Inc.
 
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: product-specific
 version: "1.0"
 human-description: Design and analyze radar and sonar waveforms using Phased Array System Toolbox.
 matlab-release: ">=R2024b"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Phased Array System Toolbox
 toolkit: matlab-agentic-toolkit

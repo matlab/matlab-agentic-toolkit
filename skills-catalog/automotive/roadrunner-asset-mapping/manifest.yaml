@@ -1,16 +1,16 @@
 # Copyright 2026 The MathWorks, Inc.
 
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Generate RoadRunner asset path lookup tables for map format conversions in MATLAB.
 matlab-release: ">=R2025a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - run_matlab_file
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - RoadRunner
   - RoadRunner Scene Builder
 toolkit: matlab-agentic-toolkit

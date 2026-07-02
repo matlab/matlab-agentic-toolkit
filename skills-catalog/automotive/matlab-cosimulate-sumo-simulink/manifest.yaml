@@ -1,0 +1,16 @@
+# Copyright 2026 The MathWorks, Inc.
+
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: product-specific
+version: "1.0"
+human-description: Build Simulink models that co-simulate with Eclipse SUMO traffic simulator.
+matlab-release: ">=R2026a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Simulink
+  - Automated Driving Toolbox
+  - Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator
+toolkit: matlab-agentic-toolkit

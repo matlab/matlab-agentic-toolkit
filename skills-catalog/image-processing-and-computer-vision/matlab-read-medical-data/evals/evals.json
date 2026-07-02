@@ -1,0 +1,211 @@
+{
+  "skill": "matlab-read-medical-data",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Read DICOM volume with medicalVolume",
+      "description": "Tests that the agent uses medicalVolume (not raw dicomreadVolume) when Medical Imaging Toolbox is available",
+      "prompt": "I have a folder of DICOM CT files at 'ctData/'. Read the volume data, get the voxel spacing in mm, check the orientation, and extract the 50th transverse slice. Use the best available MATLAB APIs.",
+      "context": {
+        "setup": "Ensure Medical Imaging Toolbox and Image Processing Toolbox are available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses medicalVolume to read the DICOM folder",
+          "expected": "medicalVolume"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Accesses VoxelSpacing property for spacing",
+          "expected": "VoxelSpacing"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses extractSlice for oriented slice extraction",
+          "expected": "extractSlice"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not fall back to raw dicomreadVolume when MIT is available",
+          "expected": "dicomreadVolume"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "extractSlice argument order is correct: (vol, sliceIndex, direction) with numeric before string",
+          "expected": "extractSlice is called with arguments in order: volume object, numeric slice index, direction string"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Spatial coordinate conversion with medicalref3d",
+      "description": "Tests that the agent correctly uses intrinsicToWorld with 3 separate outputs and worldToSubscript for indexing",
+      "prompt": "I have a medical volume loaded as 'vol = medicalVolume(\"brain.nii.gz\")'. Write MATLAB code to: (1) Get the world coordinates of voxel position [128, 128, 64], (2) Convert world coordinates [-50.0, -80.0, -200.0] back to the nearest voxel subscripts for indexing, (3) Check if that world point is inside the volume bounds. Use the spatial referencing API from Medical Imaging Toolbox.",
+      "context": {
+        "setup": "Ensure Medical Imaging Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses intrinsicToWorld for voxel-to-world conversion",
+          "expected": "intrinsicToWorld"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "intrinsicToWorld returns 3 separate outputs [x, y, z], not captured as single vector",
+          "expected": "intrinsicToWorld is called with 3 separate scalar arguments and captured into 3 separate output variables like [wx, wy, wz] or [x, y, z]"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses worldToSubscript for nearest-voxel indexing",
+          "expected": "worldToSubscript"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses VolumeGeometry to access the spatial referencing object",
+          "expected": "VolumeGeometry"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses contains method for bounds checking",
+          "expected": "contains"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "DICOM RT structure modify and write",
+      "description": "Tests the full dicomContours lifecycle: read, inspect, delete, convert, and write with CreateMode=Copy",
+      "prompt": "I have a DICOM RT Structure file at 'rtstruct.dcm'. Write MATLAB code to: (1) Read it and display the ROI names, (2) Delete ROIs numbered 1 and 3, (3) Write the modified structure to 'modified_rtstruct.dcm'. Make sure the output file is valid DICOM.",
+      "context": {
+        "setup": "Ensure Image Processing Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses dicomContours to parse the RT structure",
+          "expected": "dicomContours"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "dicomContours is passed a dicominfo struct, not a file path",
+          "expected": "dicomContours is called with the output of dicominfo (a struct variable), not directly with a filename string"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "deleteContour output is captured (immutable pattern) and both ROIs deleted in one call",
+          "expected": "deleteContour result is assigned back to a variable (e.g., contours = deleteContour(contours, ...)), and ROIs 1 and 3 are passed together as a vector [1 3] in a single call rather than sequential calls"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses convertToInfo to reconstruct DICOM metadata",
+          "expected": "convertToInfo"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "convertToInfo takes only the contours object (no second argument)",
+          "expected": "convertToInfo is called with a single argument (the dicomContours object) — no second argument like the original info struct"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Uses CreateMode=Copy for RT DICOM write",
+          "expected": "CreateMode"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Batch DICOM anonymization with shared UIDs",
+      "description": "Tests that the agent uses dicomanon with shared UIDs for series consistency",
+      "prompt": "I have a folder of DICOM files at 'patientData/' that form a single CT series. Write MATLAB code to anonymize all files into 'anonData/', replacing patient name with 'ANON_SUBJECT' and patient ID with 'S001'. Make sure all anonymized files remain grouped as one series in a DICOM viewer.",
+      "context": {
+        "setup": "Ensure Image Processing Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses dicomanon for anonymization",
+          "expected": "dicomanon"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses dicomuid to generate shared UIDs",
+          "expected": "dicomuid"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Generates StudyInstanceUID and SeriesInstanceUID ONCE before the loop and applies to all files via update",
+          "expected": "dicomuid is called to generate StudyInstanceUID and SeriesInstanceUID before the loop (not inside it), and these shared UIDs are passed to dicomanon via the update name-value argument for every file"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not generate unique UIDs per file inside the loop",
+          "expected": "dicomuid is NOT called inside the for/while loop body"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Read NIfTI and change orientation",
+      "description": "Tests that the agent uses updateOrientation (not permute) to reorient a volume",
+      "prompt": "I have a transverse NIfTI brain volume at 'brain.nii.gz'. Read it using Medical Imaging Toolbox, check its orientation, then reorient it to coronal view. Save the reoriented volume to 'brain_coronal.nii.gz'.",
+      "context": {
+        "setup": "Ensure Medical Imaging Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses medicalVolume to read the NIfTI file",
+          "expected": "medicalVolume"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses updateOrientation for reorientation",
+          "expected": "updateOrientation"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not use permute for orientation change",
+          "expected": "permute"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "updateOrientation result is captured in a new variable (returns new object)",
+          "expected": "updateOrientation result is assigned to a variable (e.g., volCoronal = updateOrientation(vol, \"coronal\")) rather than called without capturing the output"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses write method to save the reoriented volume",
+          "expected": "write("
+        }
+      ]
+    }
+  ]
+}

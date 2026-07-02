@@ -2,12 +2,12 @@
 name: matlab-deploy-embedded-ai
 description: >
   Deploy AI models to embedded hardware using MathWorks tools (MATLAB, Simulink,
-  Embedded Coder). Covers two workflow patterns: (1) MathWorks-native or 3P-imported
-  models rebuilt as dlnetwork for lean hardware (Cortex-M, DSP), (2) direct C/C++
-  code generation from PyTorch and LiteRT models for high-performance hardware
-  (Cortex-A, x86, GPU).
+  Embedded Coder). Covers two workflow patterns: (1) MathWorks-native or imported
+  models rebuilt as dlnetwork for lean hardware, (2) direct C/C++ code generation
+  from PyTorch and LiteRT models. Both patterns support all targets (Cortex-M/A/R,
+  x86, GPU).
   Trigger when: user wants to deploy AI to embedded targets; generate C/CUDA from
-  neural networks; compress AI models for MCU/DSP; integrate AI in Simulink for
+  neural networks; compress AI models for MCU; integrate AI in Simulink for
   system-level simulation; import PyTorch/ONNX/TensorFlow models for embedded
   deployment; optimize AI for resource-constrained hardware; or use
   loadPyTorchExportedProgram, importNetworkFromPyTorch, dlquantizer,
@@ -15,7 +15,7 @@ description: >
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "2.0"
 ---
 
 # Embedded AI for Engineered Systems
@@ -35,7 +35,7 @@ so the agent can drive a live MATLAB and Simulink session through MCP tools.
 ## When to Use
 
 - Deploying a trained neural network (MATLAB-native or imported) to embedded hardware
-- Generating C or CUDA code from a deep learning model for ARM Cortex-M/A/R, DSP, x86, or GPU targets
+- Generating C or CUDA code from a deep learning model for ARM Cortex-M/A/R, x86, or GPU targets
 - Importing PyTorch, ONNX, TensorFlow, or LiteRT models into MATLAB for embedded deployment
 - Compressing AI models (quantization, pruning, projection) to fit resource-constrained hardware
 - Integrating AI inference into a Simulink system model for closed-loop simulation before code generation
@@ -52,70 +52,81 @@ so the agent can drive a live MATLAB and Simulink session through MCP tools.
 
 ## Workflow Pattern Selection
 
-Determine the correct workflow pattern based on model origin and deployment target.
+This skill uses two deployment patterns:
+
+- **Pattern 1 — MATLAB Network Codegen:** Import or build a `dlnetwork`, optionally
+  compress it, then generate C/C++ via MATLAB Coder or export to Simulink.
+  See [`references/pattern1/workflow.md`](references/pattern1/workflow.md).
+- **Pattern 2 — PyTorch/LiteRT Direct Codegen:** Load a PyTorch (.pt2) or LiteRT
+  (.tflite) model directly and generate C/C++ without converting to a dlnetwork.
+  See [`references/pattern2/workflow.md`](references/pattern2/workflow.md).
 
 ### Decision Tree
 
-Primary discriminator for 3P models: **model size + hardware class**.
+Primary discriminator for external models: **deployment capabilities + hardware class**.
 
 ```
-Q1: What is the deployment target?
+Q1: Where does the AI model come from?
  |
- +-- Cortex-M (M33, M4, M7) ---------------------> Q2
- +-- Cortex-A/R processor or DSP (C2000, etc.) ----> Q2
- +-- x86 processor or GPU (Jetson, CUDA) ----------> Q2
+ +-- Trained in MATLAB, or requires training in MATLAB -------> Pattern 1
+ |
+ +-- External framework (PyTorch, TF, ONNX, Keras) --> Q2
       |
-      Q2: Where does the AI model come from?
+      Q2: Does the deployment need any of these?
+       |  - Quantization (INT8 via dlquantizer)
+       |  - Pruning or projection
+       |  - Weight inspection / modification
+       |  - exportNetworkToSimulink integration
        |
-       +-- Train from scratch in MATLAB ------------> Pattern 1  (references/pattern1/workflow.md)
-       +-- Pre-trained 3P model --------------------> Q3
+       +-- YES --> Pattern 1 (import as dlnetwork)
+       |
+       +-- NO ---> Q3
             |
-            Q3: Route by hardware class + model size
+            Q3: What is the deployment target?
              |
-             +-- Cortex-M: always Pattern 1 import
-             |     (MathWorks compression, tight sim-codegen agreement)
+             +-- Cortex-M: Pattern 1
+             |     (compression and Simulink verification typically needed)
              |
-             +-- x86 / GPU: Pattern 2 if PyTorch or LiteRT
-             |     Pattern 1 import if ONNX/TF (convert to Py/LiteRT recommended)
+             +-- x86 / GPU:
+             |     +-- PyTorch (.pt2) or LiteRT (.tflite) --> Pattern 2
+             |     +-- ONNX, TF, Keras --> Pattern 1 (convert to ONNX recommended)
              |
-             +-- Cortex-A/R or DSP:
-                   +-- Small model (< 500 KB) ---------> Pattern 1 with import path
-                   +-- Large model (> 1 MB):
-                        +-- PyTorch / LiteRT -----------> Pattern 2
-                        +-- ONNX / TensorFlow ----------> Pattern 1 import *
+             +-- Cortex-A/R:
+                   +-- Small model --> Pattern 1
+                   |     (import as dlnetwork, then codegen)
+                   +-- Large model:
+                        +-- PyTorch (.pt2) or LiteRT (.tflite) --> Pattern 2
+                        +-- ONNX, TF, Keras --> Pattern 1 (convert to ONNX recommended)
 ```
-
-\* Convert to PyTorch&reg; (.pt2) or LiteRT (.tflite) to use Pattern 2 instead.
 
 ### Pattern Summary
 
-| Pattern | Model Origin | Target Hardware | Primary Toolchain |
-|---------|-------------|-----------------|-------------------|
-| **1** | MATLAB-native or 3P imported as dlnetwork | ARM&reg; Cortex&reg;-M (M33, M4, M7), Cortex-A/R, DSP | Embedded Coder&trade; |
-| **2** | PyTorch (.pt2) or LiteRT (.tflite) direct code generation | Cortex-A/R, DSP, x86, GPU | MATLAB Coder&trade; + PyTorch & LiteRT SPKG |
+| Pattern | When to Use | Primary Toolchain |
+|---------|-------------|-------------------|
+| **1 — MATLAB Network Codegen** | Model trained in MATLAB, OR external model needing compression/quantization/Simulink export/weight inspection, OR Cortex-M targets | MATLAB Coder&trade; / Embedded Coder&trade; |
+| **2 — PyTorch/LiteRT Direct Codegen** | External PyTorch (.pt2) or LiteRT (.tflite) model on x86/GPU/Cortex-A targets; shorter path to C code without compression | MATLAB Coder&trade; + PyTorch & LiteRT SPKG |
+
+Pattern 2's generated C is portable to any target, but Cortex-M deployments typically require Pattern 1 capabilities (compression, Simulink verification).
 
 ### Pattern 1 vs Pattern 2 Capability Comparison
 
 | Capability | Pattern 1 (dlnetwork) | Pattern 2 (PyTorch/LiteRT direct) |
 |-----------|----------------------|----------------------|
 | C code generation | Yes | Yes |
+| Target: Cortex-M, Cortex-A/R, x86, GPU | Yes | Yes |
 | Weight inspection / modification | **Yes** | No |
 | dlquantizer (INT8) | **Yes** | No |
 | Projection (compressNetworkUsingProjection) | **Yes** | No |
 | Pruning | **Yes** | No |
 | Simulink integration | **Yes** (exportNetworkToSimulink) | **Yes** (PyTorch SPKG Simulink blocks) |
-| Fixed-point codegen | **Yes** | No |
-| Combined compression (77%+ flash savings) | **Yes** | No |
+| Combined compression | **Yes** | No |
 | Speed to first C code | Slower | **Faster** |
-| Requires native rebuild for 3P models | Yes | No |
 
-**Rule of thumb:** Choose Pattern 1 for small models (< 500 KB) on lean hardware
-(Cortex-M, DSP) where you need MathWorks compression and tight simulation-codegen
-agreement. Choose Pattern 2 for larger models (> 1 MB) on high-performance hardware
-(x86, GPU, Cortex-A) where simulation speed is a priority and compression is done
-externally in Python. For Cortex-A/R and DSP targets, model size is the primary
-discriminator. Pattern 2 supports PyTorch (.pt2) and LiteRT (.tflite) formats.
-Both patterns support Simulink integration.
+**Rule of thumb:** Choose Pattern 1 when you need to compress, quantize, inspect
+weights, or use `exportNetworkToSimulink` — or when the model is already a
+`dlnetwork`, or when targeting Cortex-M. Choose Pattern 2 when the model is already
+in PyTorch (.pt2) or LiteRT (.tflite) format and you want the shorter path to C code
+without compression.
 
 **Stats/ML models (fitrnet/fitcnet):** These follow Pattern 1 but have their own
 Simulink integration path. Use the **RegressionNeuralNetwork Predict** block (for
@@ -134,11 +145,11 @@ entering the pattern-specific phases (which start at Phase 1):
 
 Project Discovery determines the workflow pattern via the decision tree above.
 
-## Banned Legacy Functions
+## Do Not Use (Legacy Functions)
 
-| Legacy (BANNED) | Modern Replacement |
-|-----------------|-------------------|
-| `trainNetwork` / `trainnetwork` / `train` (for DL) | `trainnet` |
+| Legacy | Modern Replacement |
+|--------|-------------------|
+| `trainNetwork` / `train` (for DL) | `trainnet` |
 | `DAGNetwork` / `SeriesNetwork` / `network` | `dlnetwork` |
 | `importONNXNetwork` / `importONNXLayers` | `importNetworkFromONNX` |
 | `importTensorFlowNetwork` / `importKerasNetwork` | `importNetworkFromTensorFlow` |
@@ -165,21 +176,20 @@ Distinguish between two modes based on the user's intent:
 - Check **toolboxes** via `detect_matlab_toolboxes` and **support packages** via `matlabshared.supportpkg.getInstalled` before any workflow step
 - If a support package is missing, ask the user to download from Add-On Explorer -- **never** install on their behalf
 - Guide the user step-by-step -- one phase at a time
-- Use `rng("default")` before any data splitting
+- Use consistent data partitioning (e.g., fixed indices or a stored partition object) for reproducibility
 - Verify numerical equivalence at each transformation step
 - Generate MEX for desktop validation before generating C code for target
-- Use `arguments` blocks in all codegen-ready functions
 - Use `single` precision for all inference inputs
 - **Script-based execution:** For each workflow step done in MATLAB, create a `.m` script file and execute it with `run_matlab_file` or `evaluate_matlab_code`. Do NOT run ad-hoc MATLAB commands without first writing the script file. If a script needs changes, edit the script file and re-run it. This gives users full visibility into what code is being executed and enables reproducibility. **IMPORTANT:** `run_matlab_file` sets the working directory to the script's folder. Always use **absolute paths** (via `fullfile`) for model files, data, and saved outputs — never rely on `pwd` or relative paths.
 - **Pause after each workflow step:** After every workflow step completes, pause and explicitly ask the user for permission to proceed to the next step. The goal is to let the user read/inspect the MATLAB scripts you created, review results, and ask questions before moving on.
 - **Deep Network Designer:** When a model is trained in MATLAB, imported, or rebuilt as a native dlnetwork, load it in Deep Network Designer (`deepNetworkDesigner(net)`) so the user can visually inspect the architecture. Announce this action and wait for user acknowledgment before proceeding.
 - **Numerical equivalency tests (import workflows):** For any import from PyTorch or ONNX:
-  1. Run inference on the **original 3P model** (via bundled Python for PyTorch, or ONNX runtime) to collect ground-truth reference data. Do NOT use the imported MATLAB model as reference — its custom autogenerated layers may produce incorrect outputs.
+  1. Run inference on the **original model** (via bundled Python for PyTorch, or ONNX runtime) to collect ground-truth reference data. Do NOT use the imported MATLAB model as reference — its custom autogenerated layers may not yet support code generation.
   2. Run the same inputs through the **rebuilt native** MATLAB model and compare against ground truth
   3. After compression, report the accuracy delta vs. the uncompressed baseline (MAE, max error, % accuracy drop). Compute these from variables in the current run — never hardcode numeric values into `fprintf`/`disp` strings, because re-running the script with different inputs or a different model will then print stale numbers.
   4. Run tests to validate numerical equivalence between: compressed model in MATLAB, compressed model in Simulink, and final generated code
 - **Test count proposal:** Before running numerical equivalency tests, propose how many tests you plan to run and explain why (considering model complexity, output range, class count, etc.). Wait for user agreement or correction before proceeding.
-- **Code generation report:** After code generation is complete and the project is done, open the code generation report (`open(reportPath)` or `web(reportPath)`) so the user can inspect the generated code, warnings, and metrics.
+- **Code generation report:** Do NOT open the code generation report automatically — it opens a GUI that is not useful in an agentic workflow. Only open if the user explicitly requests it.
 - **Look up function signatures from MATLAB's help or the online reference page, not from this skill.** Argument lists, name-value pair (NVP) defaults, and supported-layer enumerations live in MATLAB's `help <function>` output and on the function's reference page. Use those as the source of truth instead of any inline parameter table in this skill — inline tables go stale across releases and burn context. This skill only flags name-value arguments that materially change the recipe (e.g., `ValidationThreshold` for accuracy-budgeted pruning). Lookup procedure:
   1. **First** try `help <function>` in the live MATLAB session. Fast and reflects the actually-installed release of the toolbox or support package.
   2. If `help` returns only a stub like "Run doc <function> for more information." — common for support-package functions whose help redirects to the browser doc — **fall back to the agent's web browsing of the online reference page** at `https://www.mathworks.com/help/<product>/ref/<funcname>.html` (lower-case function name). Extract every name-value argument with its default value, formatted as a markdown table, quoting defaults verbatim.
@@ -188,12 +198,12 @@ Distinguish between two modes based on the user's intent:
 
 ### ASK FIRST
 
-- Before each phase transition: "Is this step relevant to your project?"
-- Before data splitting: existing train/val/test splits?
-- Before model selection: problem type and constraints
-- Before Simulink: existing Simulink model?
-- Before quantization: hardware numeric capabilities (FP vs FXP)
-- Before code generation: target deployment hardware
+- Before each phase transition: "Is this step relevant to your project?" (some phases may not apply)
+- Before data splitting: "Do you have existing train/val/test splits, or should I partition?" (avoids overwriting user's partitioning)
+- Before model selection: "What problem type (classification/regression/sequence) and any size constraints?" (determines architecture)
+- Before Simulink: "Do you have an existing Simulink model to integrate into?" (determines export vs standalone)
+- Before quantization: "Does your target support floating-point, or is integer-only required?" (determines quantization path)
+- Before code generation: "What is the target hardware?" (determines Coder configuration and CRL)
 - Before compression and code generation (Pattern 1): walk the user through the decision flow in `references/pattern1/compression-decision.md` — hardware target + Simulink availability, primary goal, retraining tolerance. The answers determine the compression techniques and the code-replacement library to use. **Even if the hardware target is already stated**, you MUST still ask about the primary deployment goal (flash, SRAM, latency, accuracy) and present the user with the recommended recipe for confirmation before executing any compression step.
 
 ### NEVER
@@ -201,18 +211,35 @@ Distinguish between two modes based on the user's intent:
 - Present the entire workflow at once
 - Skip Environment Discovery or Project Discovery
 - Open, load, or inspect user data before Project Discovery is confirmed
-- Use banned legacy functions
+- Use legacy functions listed in "Do Not Use" section
 - Assume toolbox or support package availability without checking
 - Install support packages on the user's behalf
 - Promise hardware-agnostic performance or "deploy anywhere"
 - Generate `DAGNetwork`, `SeriesNetwork`, or `network` objects
 - Run MATLAB commands directly in the MCP server without creating a script file first
-- Skip numerical equivalency testing when importing 3P models
+- Skip numerical equivalency testing when importing external models
 - Proceed to the next workflow step without explicit user permission
 - Apply compression without first walking the user through the decision flow in `compression-decision.md`
-- Use the imported model (with custom autogenerated layers) as numerical ground truth — always validate against the original 3P model via bundled Python
+- Use the imported model (with custom autogenerated layers) as numerical ground truth — always validate against the original model via bundled Python
 - Pass a `[C × T]` array with format `"CBT"` to a sequence model — always reshape to `[C × 1 × T]` for single-sequence inference
 - Pass a `dlnetwork` to `prepareNetwork` — in R2026a the function takes a `dlquantizer` object (`prepareNetwork(quantObj)`) and mutates it in place. The legacy `net = prepareNetwork(net)` form is no longer defined
+
+---
+
+## Related Workflows (Out of Scope)
+
+This skill covers C/C++ code generation for CPU targets (Cortex-M, Cortex-A/R,
+x86) via MATLAB Coder and Embedded Coder, and GPU targets (CUDA/TensorRT) via
+Pattern 2's `DeepLearningConfig` options. The following deployment targets use
+different toolchains and are NOT covered:
+
+| Target | Toolchain | Notes |
+|--------|-----------|-------|
+| FPGA / SoC | HDL Coder + Deep Learning HDL Toolbox | Generates HDL (VHDL/Verilog) from dlnetwork |
+| PLC | Simulink PLC Coder | Generates Structured Text for PLCs from Simulink models |
+
+If the user's target falls into one of these categories, inform them that this skill
+does not cover that workflow and suggest the relevant toolchain.
 
 ---
 

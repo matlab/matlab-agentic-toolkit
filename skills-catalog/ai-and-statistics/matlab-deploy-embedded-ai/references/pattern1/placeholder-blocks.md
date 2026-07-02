@@ -9,8 +9,8 @@ with unspecified output dimensions. These placeholders:
 - Have no functional implementation (the Assertion block is a no-op)
 - Block code generation because output dimensions are unresolved
 
-You must build out each placeholder with a working implementation using either **Simulink
-primitive blocks** or a **MATLAB Function block**.
+You must build out each placeholder with a working implementation using one of three
+approaches: a **Predict block**, **Simulink primitive blocks**, or a **MATLAB Function block**.
 
 ## Step 1: Identify Placeholder Subsystems
 
@@ -31,12 +31,31 @@ end
 
 ## Step 2: Choose Replacement Strategy
 
-For each placeholder, decide between two approaches:
+For each placeholder, decide between three approaches:
 
-| Approach | When to Use | Example Ops |
-|----------|------------|-------------|
-| **Simulink primitives** | Simple math ops (add, multiply, constant) | Positional embedding (Sum + Constant) |
-| **MATLAB Function block** | Complex tensor operations (reshape, permute, indexing, multi-step math) | Patch flatten, attention, channel shuffle |
+| Approach | When to Use | Example |
+|----------|------------|---------|
+| **Predict block** (simplest) | Many placeholders, or the goal is system-level simulation rather than layer-by-layer visibility | Networks with `selfAttentionLayer`, custom reshape/permute |
+| **Simulink primitives** | 1-2 simple placeholders that map to standard Simulink blocks | Hard Sigmoid (Gain + Sum + MinMax) |
+| **MATLAB Function block** | Complex tensor ops that must remain as individual blocks | Patch flatten, channel shuffle |
+
+**Primary option: Use the Predict block.** If the network has many placeholder layers,
+replace the entire exported network subsystem with a single Deep Learning Toolbox
+**Predict** block. The Predict block runs `predict(net, ...)` internally — no
+placeholder reimplementation needed. This avoids the effort of manually implementing
+each unsupported layer in Simulink.
+
+```matlab
+% Instead of reimplementing each placeholder:
+% 1. Delete or bypass the exported subsystem with placeholders
+% 2. Add a Predict block from the Deep Learning Toolbox library
+% 3. Set the network variable to your dlnetwork workspace variable
+% 4. Connect input/output signals from the surrounding system
+```
+
+**Use Simulink primitives or MATLAB Function blocks** when the user needs
+layer-by-layer visibility (e.g., for per-layer inspection, mixed-precision
+analysis, or modifying individual layer behavior in Simulink).
 
 **Prefer Simulink primitives** when the operation is a simple combination of add/multiply/constant.
 **Use MATLAB Function blocks** when the operation involves reshape, permute, indexing, or

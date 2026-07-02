@@ -440,6 +440,140 @@
     ]
   },
   {
+    "id": "routing-small-file-no-duckdb",
+    "name": "Pre-Flight Routing - Small File Routes to Native I/O",
+    "description": "Tests that the pre-flight check correctly routes a small file away from DuckDB toward native MATLAB I/O",
+    "prompt": "I have a 15MB CSV file called 'daily_sales.csv' with 50,000 rows and 12 columns. My machine has 32GB of RAM. I want to filter rows where region is 'West' and compute the average sale amount. Should I use DuckDB or just readtable?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Recommends native MATLAB I/O (readtable/readmatrix) as the primary approach",
+        "expected": "Response recommends readtable or readmatrix as the primary approach for this small file. FAIL if it recommends DuckDB as the primary solution or presents DuckDB and readtable as equally appropriate."
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Explains that the file easily fits in memory so DuckDB is unnecessary",
+        "expected": "Response explains that the file easily fits in memory so DuckDB adds unnecessary complexity. FAIL if it does not address why DuckDB is overkill for this scenario."
+      },
+      {
+        "id": "a3",
+        "type": "output_excludes",
+        "description": "Does not create a DuckDB connection",
+        "expected": "= duckdb("
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Shows readtable or readmatrix as the solution",
+        "expected": "readtable("
+      }
+    ]
+  },
+  {
+    "id": "routing-dont-normalize-in-duckdb",
+    "name": "DON'T List - Normalize Should Route to MATLAB",
+    "description": "Tests that the skill prevents normalization/z-score computation in DuckDB SQL and recommends MATLAB instead",
+    "prompt": "I have a 4GB CSV file 'measurements.csv' with columns: sensor_id, timestamp, value, unit. I want to z-score normalize the 'value' column per sensor_id, then bring the normalized data into MATLAB for plotting.",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Does NOT perform z-score normalization inside DuckDB SQL",
+        "expected": "Response does NOT write a DuckDB SQL query that computes z-score normalization (e.g., (value - AVG(value)) / STDDEV(value)) as the final solution. It may use DuckDB for reduction (filtering, aggregation) but the normalization itself must be recommended for MATLAB. FAIL if the response provides a complete z-score calculation in DuckDB SQL as the recommended approach."
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Recommends DuckDB for reduction and MATLAB for normalization",
+        "expected": "Response recommends a two-step workflow: use DuckDB to reduce/aggregate/filter the data (or compute per-group stats like mean and stddev), then perform the normalization in MATLAB. FAIL if it attempts the entire normalization in DuckDB SQL without handing off to MATLAB."
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Explains why normalization belongs in MATLAB, not DuckDB",
+        "expected": "Response explains that normalization requires population context or is a math-heavy operation better suited to MATLAB. FAIL if it presents DuckDB normalization as straightforward with no caveats."
+      }
+    ]
+  },
+  {
+    "id": "routing-large-file-no-reduction-use-tall",
+    "name": "Pre-Flight Routing - Large File Without Reduction Routes to Datastore/Tall",
+    "description": "Tests that the pre-flight check routes a large file without SQL-reducible operations to datastore/tall instead of DuckDB",
+    "prompt": "I have an 8GB CSV file 'vibration_data.csv' with columns: timestamp, x_accel, y_accel, z_accel from a single sensor. I need to compute the STFT across the entire time series using overlapping 1024-sample windows. My machine has 16GB of RAM. What's the best way to handle this?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Recommends datastore or tall arrays as the primary approach",
+        "expected": "Response recommends datastore or tall arrays as the primary approach. FAIL if it recommends DuckDB as the primary solution."
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Explains that the task has no SQL-expressible reduction that would justify DuckDB",
+        "expected": "Response explains that FFT/windowed signal processing cannot be expressed as SQL reduction operations, so DuckDB offers no advantage here. FAIL if it suggests using DuckDB for this task or does not explain why DuckDB is inappropriate."
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses datastore or tall in the solution",
+        "expected": "datastore("
+      },
+      {
+        "id": "a4",
+        "type": "output_excludes",
+        "description": "Does not use DuckDB fetch for the STFT processing",
+        "expected": "fetch(conn"
+      }
+    ]
+  },
+  {
+    "id": "routing-large-file-with-reduction",
+    "name": "Pre-Flight Routing - Large File with SQL Reduction Routes to DuckDB",
+    "description": "Tests that the pre-flight check correctly routes a large file with a clear SQL-reducible task to DuckDB",
+    "prompt": "I have a 12GB Parquet file 'web_logs.parquet' with 200 million rows. I only need the count of requests per endpoint for the last 7 days, grouped by HTTP status code. My laptop has 16GB of RAM. What's the best approach?",
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Recommends DuckDB as the primary approach for this large-file reduction task",
+        "expected": "Response recommends DuckDB with read_parquet as the primary approach. FAIL if it recommends readtable, datastore/tall, or any non-DuckDB approach as the primary solution."
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Explains why DuckDB is appropriate: file is large and task reduces to a small result",
+        "expected": "Response explains that the file is too large to load into 16GB RAM AND the task (count + group by + date filter) reduces millions of rows to a small summary table. FAIL if it does not connect both conditions (large file + reducible task) to justify DuckDB."
+      },
+      {
+        "id": "a3",
+        "type": "output_contains",
+        "description": "Uses read_parquet for direct file query",
+        "expected": "read_parquet("
+      },
+      {
+        "id": "a4",
+        "type": "output_contains",
+        "description": "Uses GROUP BY for aggregation",
+        "expected": "GROUP BY"
+      },
+      {
+        "id": "a5",
+        "type": "output_contains",
+        "description": "Uses WHERE for date filtering",
+        "expected": "WHERE"
+      },
+      {
+        "id": "a6",
+        "type": "output_excludes",
+        "description": "Does not use datastore or tall arrays",
+        "expected": "= datastore("
+      }
+    ]
+  },
+  {
     "id": "multi-file-glob-pattern",
     "name": "Multi-File Glob Query - Wildcard Parquet Read",
     "description": "Tests glob pattern support in read_parquet for querying multiple files at once",

@@ -4,7 +4,7 @@ description: Use when importing vehicle data from log files (MDF/MF4/DAT, BLF, A
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 disable-model-invocation: false
 allowed-tools: mcp__matlab__detect_matlab_toolboxes, mcp__matlab__evaluate_matlab_code, mcp__matlab__check_matlab_code, mcp__matlab__run_matlab_file, mcp__matlab__run_matlab_test_file
 ---
@@ -30,7 +30,7 @@ Import and decode vehicle network log files in MATLAB using Vehicle Network Tool
 
 Before calling BLF/ASC/TXT import or CAN/CAN FD/LIN decode functions, call `detect_matlab_toolboxes` to confirm Vehicle Network Toolbox is installed. If unavailable, tell the user. Once confirmed in a session, do not re-check.
 
-MDF functions (`mdfRead`, `mdfChannelGroupInfo`, `mdfInfo`, `mdfChannelInfo`) are base MATLAB (R2023a+) and do not require VNT. Do not use the deprecated `mdf()` object constructor -- always use the functional API.
+MDF functions (`mdfRead`, `mdfChannelGroupInfo`, `mdfInfo`, `mdfChannelInfo`) are base MATLAB (R2023a+) and do not require VNT. Do not use the deprecated `mdf()` object constructor -- always use the functional API. For reading all groups blindly, `mdfRead` alone is acceptable. To selectively read or inspect structure first, use `mdfChannelGroupInfo` or `mdfInfo`.
 
 ## Decode Pipeline
 
@@ -53,9 +53,9 @@ Load once, pass to all decode calls. Multiple databases: `canMessageTimetable(tt
 
 ## Key Constraints
 
-- **Polymorphic returns:** All VNT read functions (`canSignalImport`, `blfread`, `mdfRead`, `canMessageImport`) return different types based on channel count and parameters. Always guard with `iscell()`/`istimetable()`/`isstruct()`.
-- **ARXML + CAN FD:** `arxmlDatabase` does not work with `canFDMessageTimetable` or CAN FD data. Use `canDatabase` (DBC) for CAN FD.
-- **No `canFDSignalTimetable`:** Use `canSignalTimetable` for both CAN and CAN FD signals.
+- **Polymorphic returns:** All VNT read functions (`canSignalImport`, `blfread`, `mdfRead`, `canMessageImport`) return different types based on channel count and parameters. Always guard with `iscell()`/`istimetable()`/`isstruct()`. When checking multi-channel results, use `iscell()` as the primary guard to branch between cell array (multi-channel) vs direct timetable (single channel), then iterate or extract with `{n}` or `{i}`.
+- **ARXML + CAN FD:** `arxmlDatabase` does not support CAN FD in MATLAB. It cannot be used with `canFDMessageTimetable`. When the user provides an ARXML file for CAN FD data, always explain that ARXML does not support CAN FD and they must use `canDatabase` with a DBC file instead. Do not silently switch to DBC without explaining why.
+- **No `canFDSignalTimetable`:** This function does not exist. Use `canSignalTimetable` for both CAN and CAN FD signals.
 - **BLF LIN requires `ProtocolMode="LIN"`:** Without it, `blfread` returns only CAN data.
 - **No signal-level LIN decode:** Only `linMessageTimetable` exists. Access signal values from timetable columns directly.
 - **MDF raw CAN detection:** Use channel name prefixes `CAN_DataFrame` / `LIN_Frame` (ASAM standard). Do not use `SourceBusType` metadata -- it is vendor-specific and unreliable.

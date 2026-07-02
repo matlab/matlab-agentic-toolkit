@@ -40,7 +40,7 @@ net = loadPyTorchExportedProgram('model.pt2');
 errors = zeros(size(test_inputs, 1), 1);
 for i = 1:size(test_inputs, 1)
     x = single(squeeze(test_inputs(i,:,:)));
-    y = net.invoke(x);
+    y = invoke(net, x);
     ydata = single(y);
     errors(i) = max(abs(ydata(:) - test_outputs_ref(i,:)'));
 end
@@ -191,9 +191,55 @@ Define before starting:
 | Regression (tight) | < 1e-3 | MAE in physical units |
 | Regression (loose) | < 1e-2 | MAE in physical units |
 
-## Benchmarking Protocol
+## SIL/PIL Testing (Primary On-Target Verification)
 
-For reliable performance measurements:
+Software-in-the-Loop (SIL) and Processor-in-the-Loop (PIL) testing provide
+automated verification of generated code without writing a custom C harness.
+
+- **SIL mode:** Compiles and runs generated code on the host machine, comparing
+  outputs against MATLAB execution automatically.
+- **PIL mode:** Cross-compiles and runs on the actual target hardware (requires
+  a connected board and Embedded Coder Support Package for the target).
+
+```matlab
+% SIL verification: compile generated code and run on host
+silCfg = coder.config('lib', 'ecoder', true);
+silCfg.VerificationMode = 'SIL';
+silCfg.DeepLearningConfig = coder.DeepLearningConfig('none');
+codegen -config silCfg predict_fn -args {inputType}
+
+% Run test vectors through SIL — automatically compares against MATLAB
+for i = 1:numTests
+    x = single(squeeze(test_inputs(i,:,:)));
+    y_sil = predict_fn_sil(x);
+end
+fprintf('All %d SIL tests passed.\n', numTests);
+```
+
+For PIL (on-target):
+```matlab
+% PIL verification: compile, download, and run on target hardware
+pilCfg = coder.config('lib', 'ecoder', true);
+pilCfg.VerificationMode = 'PIL';
+pilCfg.Hardware = coder.hardware('ARM Cortex-M');
+pilCfg.DeepLearningConfig = coder.DeepLearningConfig('none');
+codegen -config pilCfg predict_fn -args {inputType}
+
+% Run test vectors through PIL — executes on the connected board
+for i = 1:numTests
+    x = single(squeeze(test_inputs(i,:,:)));
+    y_pil = predict_fn_pil(x);
+end
+```
+
+**SIL/PIL vs custom C harness:** SIL/PIL is the recommended primary approach because
+it automates compilation, execution, and numerical comparison. Use the custom C
+harness (below) as a secondary option when SIL/PIL is not available (e.g., no
+Embedded Coder, or the target board is not supported by a PIL connectivity config).
+
+## Benchmarking Protocol (Custom C Harness)
+
+For reliable performance measurements, or when SIL/PIL is unavailable:
 
 ```c
 // Cross-platform C benchmark pattern

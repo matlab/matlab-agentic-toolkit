@@ -1,0 +1,14 @@
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Build manipulator models and validate kinematic solutions in MATLAB.
+matlab-release: ">=R2024b"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Robotics System Toolbox
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

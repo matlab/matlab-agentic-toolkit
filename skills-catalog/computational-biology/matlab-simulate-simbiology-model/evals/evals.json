@@ -1,6 +1,6 @@
 {
   "skill": "matlab-simulate-simbiology-model",
-  "version": "1.0",
+  "version": "1.2",
   "evals": [
     {
       "id": "basic-ode-simulation",

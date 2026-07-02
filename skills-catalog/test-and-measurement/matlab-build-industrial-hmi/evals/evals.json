@@ -1,0 +1,657 @@
+{
+  "skill": "matlab-build-industrial-hmi",
+  "version": "1.1",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Gray-field SCADA layout with alarm banner",
+      "description": "Tests whether the skill produces a proper ISA-101-aligned gray-field HMI with persistent alarm banner, gauges with ScaleColors, and correct color philosophy",
+      "prompt": "I have 3 OPC UA tags I'm monitoring: WeldRobot1_Temperature (range 0-150°C, warn at 90, alarm at 100), OvenTemperature (range 0-250°C, warn at 200/60, alarm at 230/40), and ConveyorSpeed (range 0-1.5 m/s, no alarm thresholds). Build me a SCADA dashboard in MATLAB App Designer that shows these as gauges with alarm bands, a persistent alarm banner at the top, and follows industrial HMI best practices. Generate the UI construction code only (no OPC UA connection needed) — create a uifigure with the layout, gauges with ScaleColors, banner, and a trend plot for the temperature. The app should be a script that creates the UI components, not a classdef.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses gray-field background color for the figure or main grid",
+          "expected": "0.78 0.78 0.78"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses ScaleColors on gauges for alarm-at-source",
+          "expected": "ScaleColors"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Has a persistent alarm banner (uilabel in top row)",
+          "expected": "No active alarms"
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated UI construction code runs without error in MATLAB"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Normal gauge band uses neutral gray, not green",
+          "expected": "The normal/OK band in ScaleColors uses gray ([0.5 0.5 0.5] or similar neutral), never green"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Uses Theme='light' on uifigure to prevent dark-theme inheritance",
+          "expected": "Theme"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Alarm popup anti-pattern prevention",
+      "description": "Tests whether the skill avoids the popup alarm anti-pattern and instead uses persistent banner + gauge ScaleColors",
+      "prompt": "I need a MATLAB App Designer UI that monitors a temperature sensor (range 0-150°C). When the temperature exceeds 100°C I need an alarm to show up. When it exceeds 90°C I want a warning. Generate a script (not classdef) that creates a uifigure with a gauge and proper alarm visualization. Include a function that I can call like updateAlarm(value) to simulate temperature changes and see the alarm behavior.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction with simulated data"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_excludes",
+          "description": "Does NOT use uialert for the alarm condition",
+          "expected": "uialert"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does NOT use msgbox for the alarm condition",
+          "expected": "msgbox"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses ScaleColors for alarm-at-source on gauge",
+          "expected": "ScaleColors"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Has a persistent alarm banner",
+          "expected": "banner"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Uses gray-field background, not dark theme or colored background",
+          "expected": "Figure or main grid background is gray [0.78 0.78 0.78] (ISA-101 gray-field), not a dark theme or colored background"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Write safeguards on setpoint control",
+      "description": "Tests whether the skill enforces confirm-before-write, bounded input, range label, and visual feedback on setpoint controls",
+      "prompt": "I need to add a setpoint control to my MATLAB App Designer HMI. The operator needs to write an OvenTemperature setpoint (range 0-250°C, currently at 180°C). Generate a script (not classdef) that creates a uifigure with a setpoint control panel: spinner, range label, Send button, and the callback function for sending the setpoint. The write should go through a simulated writeValue (just store to a variable). Make it safe for an industrial operator to use.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — simulated write"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uiconfirm for write confirmation",
+          "expected": "uiconfirm"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Shows range information to the operator",
+          "expected": "range"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses uispinner with Limits for bounded input",
+          "expected": "Limits"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Confirm dialog shows old value, new value, and units",
+          "expected": "The uiconfirm message includes the old value, new value, and units (°C or similar) so the operator can verify the change"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Default option in confirm dialog is Cancel, not Apply",
+          "expected": "DefaultOption is set to 'Cancel' (not 'Apply') in the uiconfirm call"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated setpoint UI code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Subscribe over timer for OPC UA live data",
+      "description": "Tests whether the skill recommends subscribe() for OPC UA tag updates instead of timer-based polling",
+      "prompt": "I have an OPC UA client connected to a server and I need to update my MATLAB App Designer HMI with live tag values at approximately 1 Hz. I have 4 temperature nodes. Show me how to wire the live data updates to my gauges and trend plots. I already have the uifigure and gauges constructed. Generate the data acquisition and update code pattern I should use.",
+      "context": {
+        "files": [],
+        "setup": "Industrial Communication Toolbox R2023b+ assumed available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses subscribe() for OPC UA data updates",
+          "expected": "subscribe"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Specifies PublishInterval parameter",
+          "expected": "PublishInterval"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Does not use timer for reading OPC UA tag values",
+          "expected": "Timer is NOT used as the primary mechanism for reading OPC UA tag values. subscribe() is preferred. Timer may appear only for non-tag UI work (clock, flashing, etc.)"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses drawnow limitrate in the data callback",
+          "expected": "drawnow limitrate"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Multi-tag dispatch pattern routes updates to per-tag handlers",
+          "expected": "The data-change callback dispatches based on the source node name (switch on src.Name, or dictionary/map lookup) to route each tag's update to the correct widget"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Widget selection for mixed tag types",
+      "description": "Tests whether the skill correctly maps different data types to appropriate widgets following the selection flowchart and quantity caps",
+      "prompt": "I have these OPC UA tags to display on a single MATLAB App Designer HMI screen: 3 binary valves (open/closed), 2 temperature sensors (0-300°C each with alarm at 250), 1 pressure sensor (0-10 bar, warn at 8, alarm at 9), a conveyor speed setpoint (writable, 0-2 m/s), and 10 analog flow sensors (all 0-100 L/min). Generate a script (not classdef) that creates a uifigure with proper widget selection for each tag type. Follow industrial HMI widget selection best practices.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uilamp for binary valve indicators",
+          "expected": "uilamp"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses uigauge for analog sensors with known range",
+          "expected": "uigauge"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses uitable for the 10 flow sensors (exceeds gauge cap of 6)",
+          "expected": "uitable"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses uispinner for the writable setpoint",
+          "expected": "uispinner"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated widget layout code runs without error in MATLAB"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Does not exceed quantity cap of 6 gauges on one screen",
+          "expected": "No more than 6 uigauge instances are created on a single screen; excess analog values use uitable or tabs"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Multi-area tabbed plant dashboard with drill-down",
+      "description": "Tests whether the skill produces a hierarchical layout with tabs or tree navigation, not a single flat screen with all nodes crammed together",
+      "prompt": "Create a tabbed dashboard for my factory: Body Shop (4 weld robot temperatures), Paint Shop (2 oven zones + humidity), and Assembly Line (3 torque sensors + conveyor speed). Each tab should show its own set of gauges and a trend plot. Include a plant overview tab that summarizes which areas have active alarms. Generate a script (not classdef) that creates the full uifigure.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uitabgroup or uitab for multi-area navigation",
+          "expected": "uitab"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Has a plant overview or summary tab",
+          "expected": "Overview"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses gray-field background",
+          "expected": "0.78 0.78 0.78"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Each area tab has its own trend axes, not a single shared trend",
+          "expected": "Each tab (Body Shop, Paint Shop, Assembly Line) contains its own uiaxes or animatedline for trends, not one global trend axis"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Overview tab shows alarm status per area, not raw gauge values",
+          "expected": "The Overview/summary tab shows area-level alarm or status indicators (lamps, labels, or tiles), not duplicates of every gauge from every area"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated tabbed layout code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Connection state handling and graceful degradation",
+      "description": "Tests whether the skill handles OPC UA disconnection gracefully — graying out controls, showing stale indicators, and using blue (not green) for connection lamp",
+      "prompt": "Create a MATLAB App Designer dashboard that monitors 3 pump pressures via OPC UA. Include a connection status indicator and make the dashboard degrade gracefully when the server disconnects: gray out writable controls, mark displayed values as stale, and show a reconnect button. Generate a script (not classdef) with the UI construction and a simulateDisconnect() function I can call to test the behavior.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — simulated connection state"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uilamp for connection status indicator",
+          "expected": "uilamp"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Connection lamp uses blue when connected, not green",
+          "expected": "The connected-state lamp color is blue ([0.4 0.6 1.0] or similar blue), NOT green. Green is reserved for process-health confirmation."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Disables controls on disconnect (sets Enable to off)",
+          "expected": "Enable"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Shows stale data indication when disconnected",
+          "expected": "stale"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Has a reconnect button",
+          "expected": "Reconnect"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated connection-state UI code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Dark theme rejection — gray-field enforcement",
+      "description": "Tests whether the skill enforces gray-field philosophy even when the user explicitly asks for dark mode, since ISA-101 gray-field is mandatory for operator screens",
+      "prompt": "I need a dashboard in dark mode for our control room — it's easier on the eyes at night. Show 4 temperature gauges with alarm thresholds and a trend. Use dark backgrounds like you'd see in a modern SCADA system. Generate a script (not classdef).",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses gray-field background despite dark mode request",
+          "expected": "The figure or main grid background uses ISA-101 gray-field ([0.78 0.78 0.78] or similar mid-gray), NOT a dark background ([0.1 0.1 0.1], [0.2 0.2 0.2], black, or similar). The skill should explain why gray-field is preferred for industrial operators or offer it as the default."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses ScaleColors for alarm thresholds on gauges",
+          "expected": "ScaleColors"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not use very dark background colors",
+          "expected": "0.1 0.1 0.1"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Normal gauge band is neutral gray, not green",
+          "expected": "The normal/OK band in ScaleColors uses neutral gray, never green"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated UI code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Large node count forces table selection",
+      "description": "Tests whether the skill correctly uses uitable instead of dozens of gauges when monitoring 50 homogeneous nodes",
+      "prompt": "Create a dashboard for 50 temperature nodes — all zone temperatures from different areas of my furnace. I need to see all values at a glance and quickly spot any that are outside 800-1100°C range. Generate a script (not classdef) that creates the UI.",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uitable for the large number of homogeneous nodes",
+          "expected": "uitable"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Does NOT create 50 individual gauges",
+          "expected": "The code does NOT create more than 6 uigauge instances. With 50 homogeneous temperature nodes, the primary display must be a uitable, not individual gauges."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Table highlights out-of-range values visually",
+          "expected": "The uitable uses BackgroundColor styling, conditional formatting, or a separate indicator to highlight values outside the 800-1100°C range"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses gray-field background",
+          "expected": "0.78 0.78 0.78"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated large-node-count UI code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "Vague operator prompt with no technical specifics",
+      "description": "Tests whether the skill applies industrial HMI conventions even when the user gives a vague, natural-language request without mentioning ISA-101, gray-field, or specific widget names",
+      "prompt": "Our operators need a screen they can use during night shift to watch the plant and call me if something goes wrong. We have 5 pumps (on/off), 3 tank levels, and 2 temperature sensors. Make it simple and clear. Generate a script (not classdef).",
+      "context": {
+        "files": [],
+        "setup": "No toolbox dependencies needed — pure UI construction"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses gray-field background even though user didn't ask for it",
+          "expected": "0.78 0.78 0.78"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses uilamp for binary pump status",
+          "expected": "uilamp"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Has a persistent alarm banner",
+          "expected": "alarm"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Does not use green for normal/connected state",
+          "expected": "Pump running/connected lamps do NOT use green as the 'normal operating' color. Uses blue for connection or gray-field-neutral colors. Green only for explicit operator-verified OK state."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Applies industrial conventions without being asked",
+          "expected": "The generated code follows at least 3 of: gray-field background, alarm banner, ScaleColors on gauges, proper widget mapping (uilamp for binary, uigauge for analog), fixed YLim on trends — even though the user only said 'simple and clear'"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-11",
+      "name": "Modbus HMI from Modbus Explorer–generated script (write argument order)",
+      "description": "Tests whether the skill correctly maps a Modbus Explorer–generated script (coils → lamps, holding registers → gauges) AND emits the correct write() argument order — serverId BEFORE 'precision'. The most common Modbus HMI bug is putting 'precision' in slot 5, which produces 'Expected input number 5, serverId, to be one of these types: double, single, ...'.",
+      "prompt": "Wrap this Modbus Explorer–generated script into an industrial HMI dashboard. Include a writable holding register with confirm-before-write safeguards. Generate a single classdef file extending matlab.apps.AppBase.\n\n```matlab\n% Auto-generated by Industrial Communication Toolbox's Modbus Explorer app\nm = modbus('tcpip', 'localhost', 508);\nm.Timeout = 3;\nserverId = 1;\n\n% Coils\nmodbusData.Reg_3 = read(m, 'coils', 1, 1, serverId);\n\n% Holding Registers\ndata = read(m, 'holdingregs', 1, [1, 1], serverId, {'uint16', 'uint32'});\nmodbusData.Reg_1 = data(1);\nmodbusData.Reg_2 = data(2);\n\n% Sample write (commented out by Explorer because no successful write was done):\n% write(m,'holdingregs', 2, [100 200 300 500], 'uint32');\n\nclear m serverId data\n```",
+      "context": {
+        "files": [],
+        "setup": "Industrial Communication Toolbox required (Modbus support since R2017a). Generated app does not need a live Modbus server to construct."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses uilamp for the Coil register (Reg_3 — binary)",
+          "expected": "uilamp"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses uigauge for the holding registers (Reg_1, Reg_2)",
+          "expected": "uigauge"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses a polling timer with BusyMode='drop' (Modbus has no subscription)",
+          "expected": "BusyMode"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "write() call uses correct argument order: serverId BEFORE 'precision'",
+          "expected": "Every write() call to the Modbus client follows the form write(m, target, address, values, serverId, 'precision') — serverId is the 5th argument and 'precision' is the 6th. Putting 'precision' in slot 5 (or omitting serverId when a non-default serverId is used) is incorrect and would produce a runtime error."
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses uiconfirm for write safeguard",
+          "expected": "uiconfirm"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Preserves Reg_1 / Reg_2 / Reg_3 names from the source script",
+          "expected": "Widget labels and code identifiers use the names from the source script (Reg_1, Reg_2, Reg_3) — the agent does not invent generic labels like 'Tank Level' or 'Pressure' that aren't in the script."
+        }
+      ]
+    },
+    {
+      "id": "eval-12",
+      "name": "MQTT HMI with live trend wired to subscription callback",
+      "description": "Tests whether the skill correctly wires a live MQTT trend chart — the most common bug is registering the callback as a positional argument (subscribe(c, topic, @cb)) instead of name-value (subscribe(c, topic, Callback=@cb)). Also tests publish, multi-topic subscribe/unsubscribe, and the gray-field layout.",
+      "prompt": "Build an HMI where I can connect to any MQTT broker and subscribe/unsubscribe from any topics. Publish data as well. The data read from subscribed topics should be displayed in a live chart. Use the industrial HMI conventions. Generate a single classdef file extending matlab.apps.AppBase.",
+      "context": {
+        "files": [],
+        "setup": "Industrial Communication Toolbox required (MQTT support since R2022a)."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses mqttclient to construct the MQTT client",
+          "expected": "mqttclient"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "subscribe() is called with Callback as a name-value pair, not positional",
+          "expected": "Every subscribe() call to the MQTT client uses 'Callback=' (or 'Callback',) as a name-value pair to register the message handler — e.g., subscribe(c, topic, Callback=@cb) or subscribe(c, topic, 'Callback', @cb). Calling subscribe(c, topic, @cb) with the callback as a positional argument is incorrect — the subscription succeeds but the callback never fires."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses animatedline (or similar rolling buffer) for the live chart",
+          "expected": "animatedline"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses addpoints to update the live chart in the message callback",
+          "expected": "addpoints"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses write(client, topic, message) for publishing",
+          "expected": "write"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Uses unsubscribe to allow removing a topic",
+          "expected": "unsubscribe"
+        },
+        {
+          "id": "a7",
+          "type": "output_contains",
+          "description": "Uses gray-field background",
+          "expected": "0.78 0.78 0.78"
+        }
+      ]
+    },
+    {
+      "id": "eval-13",
+      "name": "OPC UA HMI from OPC UA Explorer–generated script (preserve node names)",
+      "description": "Tests whether the skill preserves the actual node names from the source script (Sinusoid, Square, Constant) instead of inventing labels (Tank-level, Temperature, Pressure) that don't match the server. Also tests handling of the three-arg vectorized dataChangeCallback shape that the OPC UA Explorer generates.",
+      "prompt": "Build an HMI for this OPC UA script generated by the OPC UA Explorer app. Use the industrial HMI conventions. Generate a single classdef file extending matlab.apps.AppBase.\n\n```matlab\n% Auto-generated by the Industrial Communication Toolbox's OPC UA Explorer app\nuaClient = opcua(\"opc.tcp://server:53530/OPCUA/SimulationServer\", ...\n    MessageSecurityMode = \"None\", ...\n    ChannelSecurityPolicy = \"None\", ...\n    UseDiscoveryHostname = false);\nconnect(uaClient);\n\n% Subscribe to specified nodes in the server address space for data changes.\nnamespaceIndex = [3, 3, 3];\nidentifier     = [1001, 1006, 1005];\nfor i = 1:length(namespaceIndex)\n    node = findNodeById(uaClient.Namespace, namespaceIndex(i), identifier(i));\n    nodes(i) = node(1);\nend\nsubObj = subscribe(uaClient, nodes, @dataChangeCallback);\n\nfunction dataChangeCallback(subObj, notification, ~)\n    nodes = [notification(:).Node];\n    data  = [notification(:).Data];\n    changedNodes = string({nodes(:).Name})';\n    nodeValues   = [data(:).Value]';\n    timestamp    = [data(:).Timestamp]';\n    quality      = [data(:).Quality]';\n    disp(table(changedNodes, nodeValues, timestamp, string(quality.char)));\nend\n\n% Sample write (commented out by Explorer):\n% node = findNodeById(uaClient.Namespace,3,1001)\n% writeValue(uaClient,node,\"50\")\n```",
+      "context": {
+        "files": [],
+        "setup": "Industrial Communication Toolbox R2023b+ required."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses findNodeById to resolve nodes from the (namespaceIndex, identifier) pairs",
+          "expected": "findNodeById"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Reads node names from the resolved nodes (.Name) — does not invent labels",
+          "expected": "The HMI reads each node's actual name from the OPC UA server (via the resolved opc.ua.Node's .Name property, or via notification(i).Node.Name in the data callback). Widget keys and labels use those server-published names. The agent does NOT invent labels like 'Tank-level', 'Temperature', or 'Pressure' that don't appear in the source script's resolved node names."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Data-change callback handles the vectorized notification struct array",
+          "expected": "The dataChangeCallback handles notification as a vectorized struct array — either by iterating notification(i).Node / notification(i).Data, or by vectorizing as [notification(:).Node] / [notification(:).Data]. Treating notification as a scalar struct is incorrect for the Explorer-generated callback shape."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Callback signature matches the three-arg shape from the Explorer script",
+          "expected": "The data-change callback function the agent writes (or the wrapper it passes to subscribe) accepts the three-argument shape (subObj, notification, ~) or a compatible (~, notification, ~). A two-argument callback like @(src, evt) when wired to subscribe() with the Explorer's three-arg notification produces 'Too many input arguments' listener errors."
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses ScaleColors on at least one gauge for alarm-at-source",
+          "expected": "ScaleColors"
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Uses gray-field background",
+          "expected": "0.78 0.78 0.78"
+        }
+      ]
+    },
+    {
+      "id": "eval-14",
+      "name": "PI Data Archive HMI with polling timer (never NET.addAssembly)",
+      "description": "Tests whether the skill correctly wraps a PI Data Archive monitoring script into an HMI using piclient and a polling timer, never using raw .NET interop via NET.addAssembly",
+      "prompt": "Wrap this PI Data Archive script into an industrial HMI dashboard. Show each tag as a gauge with alarm bands, include a 5-minute trend, and add a persistent alarm banner. Generate a single classdef file extending matlab.apps.AppBase.\n\n```matlab\n% Connect to PI Data Archive and read current values\npiConn = piclient('myPIServer');\n\n% Find tags\ntempTag = tags(piConn, Name='Furnace.Zone1.Temperature');\npressTag = tags(piConn, Name='Furnace.Zone1.Pressure');\nflowTag = tags(piConn, Name='Furnace.Zone1.GasFlow');\n\n% Read current values\ntempData = read(piConn, tempTag);\npressData = read(piConn, pressTag);\nflowData = read(piConn, flowTag);\n\n% Read historical data (last hour)\nt0 = datetime('now') - hours(1);\nt1 = datetime('now');\ntempHistory = getInterpolatedValues(piConn, tempTag, t0, t1, hours(0.01));\n\ndisp(tempData);\ndisp(pressData);\ndisp(flowData);\n```",
+      "context": {
+        "files": [],
+        "setup": "Industrial Communication Toolbox required (PI support since R2022a). No live PI server needed — app construction only."
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses piclient to connect to PI Data Archive",
+          "expected": "piclient"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does NOT use NET.addAssembly for PI access",
+          "expected": "NET.addAssembly"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses a polling timer (PI has no subscribe)",
+          "expected": "BusyMode"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses gray-field background",
+          "expected": "0.78 0.78 0.78"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses ScaleColors for alarm-at-source on gauges",
+          "expected": "ScaleColors"
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Preserves tag names from the source script",
+          "expected": "Widget labels use the tag names from the source script (Furnace.Zone1.Temperature, Furnace.Zone1.Pressure, Furnace.Zone1.GasFlow or shortened versions like Zone1.Temperature). The agent does not invent generic labels that don't appear in the script."
+        }
+      ]
+    }
+  ]
+}

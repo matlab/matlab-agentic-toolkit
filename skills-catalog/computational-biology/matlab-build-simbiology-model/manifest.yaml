@@ -1,15 +1,15 @@
 # Copyright 2026 The MathWorks, Inc.
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: product-specific
-version: "1.1"
-human-description: Build SimBiology models from scratch, modify existing ones, and generate diagram layouts.
+version: "1.2"
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - check_matlab_code
   - run_matlab_file
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - SimBiology
+human-description: Build SimBiology models from scratch, modify existing ones, and generate diagram layouts.
 toolkit: matlab-agentic-toolkit

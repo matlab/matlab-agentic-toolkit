@@ -1,16 +1,16 @@
 # Copyright 2026 The MathWorks, Inc.
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Assess toolbox readiness for packaging. Validates help text, tests, coverage, code issues, dependencies, and function signatures.
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - check_matlab_code
   - run_matlab_test_file
-requires-skills:
+required-skills:
   - matlab-document-toolbox
   - matlab-exclude-files
-requires-products: []
+required-products: []
 toolkit: matlab-agentic-toolkit

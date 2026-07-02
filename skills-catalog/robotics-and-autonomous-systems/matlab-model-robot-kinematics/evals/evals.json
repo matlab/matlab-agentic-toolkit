@@ -1,0 +1,163 @@
+{
+  "skill": "matlab-model-robot-kinematics",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "IK with Mandatory Validation and Gripper",
+      "description": "Tests that the agent attaches a gripper with ReplaceBase=false, uses a contact frame for IK targeting, and validates the IK solution",
+      "prompt": "I need a UR5e to pick up a small bolt from a table at position [0.5, 0.0, 0.1]. It should approach from the top. Set up the robot model and solve the IK for the grasp pose.",
+      "context": {
+        "setup": "Ensure Robotics System Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Checks IK solver convergence via ExitFlag",
+          "expected": "ExitFlag"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Computes position error to verify IK solution accuracy",
+          "expected": "norm("
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses ReplaceBase=false when attaching gripper subtree",
+          "expected": "ReplaceBase"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Adds a contact frame for IK targeting instead of solving to tool0 directly",
+          "expected": "contact"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "IK solution is validated by checking ExitFlag AND computing position error using getTransform",
+          "expected": "Agent checks solnInfo.ExitFlag for convergence AND computes position error by comparing getTransform result against the target pose using norm"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "KUKA EE Frame Correction and Vacuum Gripper Selection",
+      "description": "Tests that the agent applies Ry(90) correction for KUKA iiwa and selects vacuum gripper for large objects",
+      "prompt": "I need a KUKA iiwa14 to pick up flat cardboard boxes (400mm x 300mm x 50mm) from a conveyor. Set up the robot model with an appropriate gripper and show it.",
+      "context": {
+        "setup": "Ensure Robotics System Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Adds corrective tool0 frame to KUKA iiwa before gripper attachment",
+          "expected": "tool0"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Selects a vacuum gripper (robotiqEPick variant) for the large object",
+          "expected": "robotiqEPick"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Correctly avoids robotiq2F85 because the object exceeds its 85mm jaw opening",
+          "expected": "Agent selects a vacuum gripper (not robotiq2F85) because the 400mm box dimension exceeds the 85mm maximum jaw opening of the parallel-jaw gripper"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses ReplaceBase=false regardless of gripper type",
+          "expected": "ReplaceBase"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Adds corrective tool0 frame to KUKA iiwa because iiwa_link_ee Z-axis is perpendicular to arm outward",
+          "expected": "Agent adds a fixed tool0 body with Ry(90deg) rotation correction attached to iiwa_link_ee before attaching the gripper, because the KUKA iiwa EE frame Z-axis does not point outward"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Parallel Robot Rejection",
+      "description": "Tests that the agent correctly identifies delta robots as closed-loop and redirects to Simscape",
+      "prompt": "I need to model a delta robot for high-speed bottle picking. Build the kinematic model and compute the workspace.",
+      "timeout_seconds": 120,
+      "context": {
+        "setup": "Ensure Robotics System Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Redirects to Simscape Multibody as the correct tool for parallel robots",
+          "expected": "Simscape"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Does not execute rigidBodyTree code to model the delta robot",
+          "expected": "Agent does NOT create a rigidBodyTree object or call importrobot/loadrobot to model the delta robot. It only mentions rigidBodyTree to explain why it cannot be used for closed-loop parallel mechanisms."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Identifies delta robot as closed-loop parallel mechanism incompatible with rigidBodyTree",
+          "expected": "Agent identifies that the delta robot is a closed-loop parallel mechanism that cannot be represented by rigidBodyTree (which only handles open-chain serial mechanisms) and recommends Simscape Multibody with KinematicsSolver as the correct approach"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "URDF Import Ready for Pick and Place",
+      "description": "Tests that the agent detects missing collision geometry after URDF import when preparing for a pick-and-place workflow",
+      "prompt": "I have a custom 3R robot exported from our CAD system as a URDF at 'evals/files/robot_3r.urdf'. The visual STL mesh files are in 'evals/files/meshes/'. I want to use this arm to move parts between stations on a workbench. Get the model set up for me.",
+      "context": {
+        "files": [
+          "evals/files/robot_3r.urdf",
+          "evals/files/meshes/base_mount.stl",
+          "evals/files/meshes/shoulder_housing.stl",
+          "evals/files/meshes/shoulder_joint_housing.stl",
+          "evals/files/meshes/upper_arm.stl",
+          "evals/files/meshes/elbow_joint_housing.stl",
+          "evals/files/meshes/forearm.stl",
+          "evals/files/meshes/end_effector.stl"
+        ],
+        "setup": "Ensure Robotics System Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Imports robot using importrobot with DataFormat=row",
+          "expected": "importrobot"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Sets SourceMesh to VisualGeometry since URDF has no collision tags",
+          "expected": "VisualGeometry"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses CollisionDecomposition option or vhacdOptions for VHACD-based decomposition",
+          "expected": "vhacdOptions"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Uses import-time CollisionDecomposition option or manual VHACD loop to add accurate collision geometry from visual meshes",
+          "expected": "Agent uses either (1) importrobot with CollisionDecomposition=vhacdOptions and SourceMesh=VisualGeometry, or (2) a manual loop calling collisionVHACD on each STL followed by addCollision per convex part. Agent does NOT use addCollision with primitive shapes (Cylinder, Box, Sphere) or collisionMesh (single convex hull) as the primary approach."
+        }
+      ]
+    }
+  ]
+}

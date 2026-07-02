@@ -1,15 +1,15 @@
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Design HDL-optimized Digital Down Converters using dsphdl System objects.
 matlab-release: ">=R2023b"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - run_matlab_file
   - check_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - DSP System Toolbox
   - DSP HDL Toolbox
   - Fixed-Point Designer

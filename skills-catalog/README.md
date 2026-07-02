@@ -7,14 +7,15 @@ The skills catalog organizes agent skills into groups. Each group is a directory
 <!-- BEGIN SKILLS -->
 ### MATLAB Core (`matlab-core`)
 
-Create, debug, test, review, and manage MATLAB code and installations
+Create, debug, test, review, and manage MATLAB&reg; code and installations
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-create-live-script` | Create plain-text MATLAB Live Scripts with rich text, LaTeX equations, and inline figures. |
 | `matlab-debugging` | Diagnose MATLAB errors and unexpected behavior. |
-| `matlab-install-products` | Install MathWorks products from the command line using MATLAB Package Manager (mpm). |
+| `matlab-install-products` | Install MathWorks&reg; products from the command line using MATLAB Package Manager (mpm). |
 | `matlab-list-products` | Show all installed MATLAB products and support packages for a given MATLAB installation folder. |
+| `matlab-read-doc` | Fetch and navigate MathWorks documentation specific for your MATLAB release to determine correct function syntax, complete workflows, and determine best practices for working in MATLAB and Simulink&reg; software. |
 | `matlab-review-code` | Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. |
 | `matlab-testing` | Generate and run MATLAB unit tests using the matlab.unittest framework. |
 
@@ -78,14 +79,16 @@ Aerospace Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-compute-aerospace-environment` | Compute aerospace environment properties (atmosphere, gravity, wind, magnetic field, geoid, space weather, ephemeris, Earth orientation) using Aerospace Toolbox functions. |
 | `matlab-convert-aerospace-coordinates` | Convert between aerospace coordinate frames, rotation representations, time systems, and unit systems using Aerospace Toolbox. |
 
 ### AI and Statistics (`ai-and-statistics`)
 
-Deep Learning Toolbox
+Deep Learning Toolbox and Statistics and Machine Learning Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
 | `matlab-train-network` | Train, evaluate, and deploy neural networks using the recommended APIs. Migrate legacy neural network training code to modern replacements. |
 
@@ -95,12 +98,18 @@ Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-cosimulate-sumo-simulink` | Build Simulink models that co-simulate with Eclipse SUMO traffic simulator. |
 | `matlab-driving-data-importer` | Import recorded driving sensor data (GPS, camera, lidar, actor tracks) into scenariobuilder.* objects and synchronize, crop, offset, and normalize timestamps before scenario building. |
+| `matlab-ncap-testing` | Generate Euro NCAP test scenarios and variants, translate between simulators, and compute scores. |
 | `matlab-scenario-builder` | Build driving scenes, scenarios, road surfaces, and 3D assets from recorded sensor data and export to RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG, or Unreal Engine. |
 | `roadrunner-asset-mapping` | Generate RoadRunner asset path lookup tables for map format conversions in MATLAB. |
+| `roadrunner-build-scenario-from-osc` | Interpret an OpenSCENARIO 1.x file and recreate the scenario programmatically in RoadRunner. |
 | `roadrunner-convert-lanelet2-to-rrhd` | Convert Lanelet2 maps (.osm) to RoadRunner HD Map (.rrhd) format using MATLAB. |
+| `roadrunner-core` | Connect to RoadRunner from MATLAB and manage project, scene, and scenario lifecycle. |
 | `roadrunner-import-scene` | Connect to RoadRunner and import HD Map or OpenDRIVE files into a new scene using MATLAB. |
 | `roadrunner-rrhd-authoring` | Build RoadRunner HD Map entities in MATLAB — lanes, boundaries, markings, junctions, signs, signals, barriers, parking. |
+| `roadrunner-scenario-authoring` | Programmatically create RoadRunner driving scenarios from MATLAB. |
+| `roadrunner-scenario-simulating` | Simulate RoadRunner scenarios programmatically via MATLAB and Simulink co-simulation. |
 
 ### Cloud Solutions (`cloud-solutions`)
 
@@ -109,6 +118,14 @@ MATLAB Drive
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-sharing` | Share MATLAB content by uploading to GitHub, MATLAB Drive, or File Exchange and generating "Open in MATLAB Online" URLs. |
+
+### Code Generation (`code-generation`)
+
+Fixed-Point Designer
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-review-fi-code` | Review MATLAB fixed-point (fi) code for performance, code generation efficiency, and correctness. |
 
 ### Computational Biology (`computational-biology`)
 
@@ -120,18 +137,36 @@ SimBiology
 | `matlab-fit-simbiology-model` | Fit SimBiology model parameters to data. |
 | `matlab-simulate-simbiology-model` | Run simulations, sweep parameters, explore what-if scenarios, and perform sensitivity analysis on SimBiology models. |
 
+### Computational Finance (`computational-finance`)
+
+Datafeed Toolbox
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-access-datafeed` | Connect to Bloomberg&reg;, FRED&reg;, and Haver Analytics&reg; to retrieve financial and economic data using the Datafeed Toolbox. |
+
 ### Image Processing and Computer Vision (`image-processing-and-computer-vision`)
 
-Image Processing Toolbox and Computer Vision Toolbox
+Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-display-image` | Display images and annotations for image processing, computer vision, and visual inspection. |
 | `matlab-display-volume` | Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. |
+| `matlab-model-optics` | Build, import, analyze, optimize, and tolerance optical systems and coatings using the Optical Design and Simulation Library. |
 | `matlab-ocr` | Build OCR pipelines in MATLAB using the ocr() function. |
 | `matlab-point-cloud-file-io` | Read and write 3-D point cloud data in PLY, PCD, LAS/LAZ, PCAP, E57, and IDC formats. |
 | `matlab-point-cloud-registration` | Register and align 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms. |
 | `matlab-process-large-images` | Process large images using blockedImage. |
+| `matlab-read-medical-data` | Read, write, and manipulate medical imaging data (DICOM, NIfTI, NRRD) using Image Processing Toolbox and Medical Imaging Toolbox APIs. |
+
+### Math and Optimization (`math-and-optimization`)
+
+PDE Toolbox
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-solve-pde` | Build and solve finite element models for thermal, structural, and electromagnetic problems using PDE Toolbox. |
 
 ### Parallel Computing (`parallel-computing`)
 
@@ -162,9 +197,10 @@ Database Toolbox
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-connect-databricks-jdbc` | Connect MATLAB to Databricks using JDBC drivers via Database Toolbox. |
+| `matlab-connect-databricks-spark` | Connect MATLAB to Databricks via Spark and read large tables with server-side filtering. |
 | `matlab-map-database-objects` | Generate MATLAB Object Relational Mapping (ORM) code using Database Toolbox. |
 | `matlab-read-database` | Read data from relational databases using MATLAB Database Toolbox. |
-| `matlab-use-duckdb` | Use DuckDB for in-memory analytics and direct SQL queries on CSV, Parquet, and JSON files from MATLAB. |
+| `matlab-use-duckdb` | Use DuckDB from MATLAB as a non-math operations engine on large tabular files and as a zero-config embedded database. Includes pre-flight routing, operations boundaries, and a profile-operate-close workflow. |
 | `matlab-write-database` | Write data to relational databases and perform database operations from MATLAB. |
 
 ### RF and Mixed Signal (`rf-and-mixed-signal`)
@@ -208,7 +244,7 @@ Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes T
 
 ### Robotics and Autonomous Systems (`robotics-and-autonomous-systems`)
 
-Navigation Toolbox and UAV Toolbox
+Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -216,6 +252,8 @@ Navigation Toolbox and UAV Toolbox
 | `matlab-connect-mavlink` | Establish MAVLink connections between MATLAB and PX4 or ArduPilot flight controllers. |
 | `matlab-create-uav-scenario` | Create and simulate UAV scenarios with terrain, buildings, sensor-equipped platforms, and 3D visualization. |
 | `matlab-fuse-inertial-sensors` | Analyzes sensor configurations and creates inertial fusion filters in MATLAB Navigation Toolbox. |
+| `matlab-model-robot-kinematics` | Build manipulator models and validate kinematic solutions in MATLAB. |
+| `matlab-plan-robot-motion` | Plan collision-free manipulator motion and generate time-parameterized trajectories. |
 
 ### Signal Processing (`signal-processing`)
 
@@ -238,10 +276,12 @@ Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication To
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-build-industrial-hmi` | Build industrial-grade SCADA/HMI dashboards in MATLAB App Designer following ISA-101 conventions. |
 | `matlab-call-nidaqmx` | Translate NI-DAQmx C functions into correct calldaqlib MATLAB calls. |
 | `matlab-connect-arduino` | Discover, configure, and connect to Arduino boards from MATLAB via USB. |
 | `matlab-connect-opcua-client` | Create OPC UA client connections and inspect security certificates. |
 | `matlab-create-custom-arduino-library` | Create custom Arduino add-on libraries to access unsupported sensors and peripherals from MATLAB. |
+| `matlab-discover-hardware` | Discover, inspect, and set up MATLAB-supported hardware devices via helper functions. |
 | `matlab-discover-opcua-servers` | Discover OPC UA servers using opcuaserverinfo and the OPC UA Local Discovery Service (LDS). |
 | `matlab-enhance-camera-image` | Diagnose and enhance image quality from cameras connected via Image Acquisition Toolbox. |
 | `matlab-find-pi-assets` | Find and query PI Data Archive tags and Asset Framework elements using piclient and afclient. |

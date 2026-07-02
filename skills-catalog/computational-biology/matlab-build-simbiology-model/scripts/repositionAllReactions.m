@@ -253,6 +253,7 @@ end
 %% === Helper: check if a single reaction has a violation (using context) ===
 function hasViol = reactionHasViolation(rxnIdx, ctx)
     MIN_PROXIMITY = 20;
+    MIN_SPECIES_DIST = 40;  % minimum distance to connected species
     hasViol = false;
 
     rxnCx = ctx.rxnCenter(rxnIdx, 1);
@@ -282,6 +283,16 @@ function hasViol = reactionHasViolation(rxnIdx, ctx)
     if nConn == 0, return; end
 
     excludeSet = [rxnIdx, connIndices];
+
+    % Minimum distance to connected species (prevents reaction sitting on
+    % top of its endpoint species — especially elimination/synthesis nodes)
+    for s = 1:nConn
+        d = sqrt((rxnCx - connCenters(s,1))^2 + (rxnCy - connCenters(s,2))^2);
+        if d < MIN_SPECIES_DIST
+            hasViol = true;
+            return
+        end
+    end
 
     % Containment check for inter-compartment reactions
     if isInterComp

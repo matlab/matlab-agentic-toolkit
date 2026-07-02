@@ -1,17 +1,17 @@
 # Copyright 2026 The MathWorks, Inc.
 
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Simulate Bluetooth system-level networks including BLE, Classic BR/EDR, and LE Audio.
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - run_matlab_file
-requires-skills:
+required-skills:
   - matlab-simulate-wireless-network
-requires-products:
+required-products:
   - Bluetooth Toolbox
   - Wireless Network Toolbox
 toolkit: matlab-agentic-toolkit

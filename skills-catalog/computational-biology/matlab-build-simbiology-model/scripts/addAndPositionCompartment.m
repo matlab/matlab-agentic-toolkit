@@ -34,7 +34,8 @@ function [comp, speciesHandles] = addAndPositionCompartment(model, compName, cap
 %
 %   Outputs:
 %     comp           - Handle to the new compartment
-%     speciesHandles - Array of species handles (same order as speciesInfo)
+%     speciesHandles - SimBiology Species ARRAY (NOT a cell array).
+%                      Index with sp(1), sp(2), etc. — NOT sp{1}, sp{2}.
 %
 %   Example:
 %     model = sbiomodel('MyModel');

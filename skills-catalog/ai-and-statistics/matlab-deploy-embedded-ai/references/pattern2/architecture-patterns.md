@@ -17,7 +17,7 @@ if isempty(net)
 end
 
 % Input: single [1 x seq_len x features] -- matches PyTorch [batch, T, C]
-out = net.invoke(single(Xin));
+out = invoke(net, single(Xin));
 pred = single(out);
 end
 ```
@@ -66,7 +66,7 @@ if isempty(net)
 end
 
 % Input: single [1 x num_features] -- matches PyTorch [batch, features]
-out = net.invoke(single(Xin));
+out = invoke(net, single(Xin));
 pred = single(out);
 end
 ```
@@ -100,7 +100,7 @@ if isempty(net)
 end
 
 % Input: single [1 x C x H x W] -- matches PyTorch NCHW format
-out = net.invoke(single(Xin));
+out = invoke(net, single(Xin));
 pred = single(out);
 end
 ```
@@ -135,7 +135,7 @@ if isempty(net)
 end
 
 % Input: single [1 x 3 x 224 x 224] -- same as CNN (NCHW)
-out = net.invoke(single(Xin));
+out = invoke(net, single(Xin));
 pred = single(out);
 end
 ```

@@ -1,0 +1,450 @@
+{
+  "skill": "roadrunner-scenario-authoring",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Cut-In Scenario",
+      "description": "Tests the core cut-in pattern: lane-following mode, ChangeLaneAction, speed differential, direction computation, HD Map placement",
+      "prompt": "I need a RoadRunner scenario where a car merges into the ego vehicle's lane from an adjacent lane. Use the ScenarioBasic scene. Ego is going 20 m/s, the other car is going 15 m/s. The merge should happen when they're about 8 meters apart. Make sure the scenario validates successfully.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses ChangeLaneAction for the merge",
+          "expected": "ChangeLaneAction"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Lane-change actors must NOT have routes (lane-following mode required)",
+          "expected": "addPoint(route"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses distance-based trigger condition",
+          "expected": "LongitudinalDistanceToActorCondition"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Lane change direction is determined programmatically, not hardcoded",
+          "expected": "The code determines lane change direction via one of: (1) LaneChangeReference='actor' with Direction='same-lane' and a ReferenceActor, OR (2) vector math/cross product computation (e.g., crossZ, heading comparison, targetToEgo vector). Simply hardcoding 'left' or 'right' without any of these methods is a FAIL."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Actors placed on verified parallel lanes using HD Map (not LaneOffset)",
+          "expected": "The code uses helperGetPositionFromHDMap or helperSceneAwareness to place actors on separate parallel lanes, rather than using LaneOffset which can land on junction connectors. If laneTable is referenced, it uses .Index (NOT .LaneIndex which does not exist)."
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Pedestrian Crossing (Heading-Aware)",
+      "description": "Comprehensive pedestrian test: CharacterAsset, mandatory route, heading-aware crossing direction (not world-space offsets), freeform route, walking speed, autoAnchor",
+      "prompt": "Create a RoadRunner scenario on ScenarioBasic where a pedestrian crosses the road perpendicular to traffic flow in front of an ego vehicle driving at 15 m/s. Do not assume the road is aligned with any world axis — compute the crossing direction from the road heading. The pedestrian should walk at 1.4 m/s. Validate the scenario.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Crossing direction computed from road heading, NOT hardcoded world-space offset",
+          "expected": "The pedestrian's route crossing point is computed using the road heading vector from helperGetPositionFromHDMap (e.g., perpDir = [-hdg(2), hdg(1), 0] or similar perpendicular computation). The code does NOT use hardcoded world-space offsets like [0, -15, 0], [15, 0, 0], or any fixed [X, Y, 0] pattern added directly to a position. World-space offsets only work on axis-aligned roads and fail on curved or rotated roads."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses helperGetPositionFromHDMap to get position and heading",
+          "expected": "helperGetPositionFromHDMap"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses CharacterAsset for pedestrian (not VehicleAsset)",
+          "expected": "CharacterAsset"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Pedestrian has a route with waypoints (required for character actors)",
+          "expected": "addPoint"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Does NOT disable freeform on pedestrian route segments",
+          "expected": "The code does NOT set Freeform = false on the pedestrian's route segments. Pedestrian routes must remain freeform (the default) because pedestrians cross roads perpendicularly. Setting Freeform = false forces the route to follow road geometry, which prevents road crossing."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "Pedestrian speed is realistic walking speed (1-2 m/s)",
+          "expected": "Pedestrian speed is set between 1.0 and 2.0 m/s (typical walking speed is 1.4 m/s). Speeds above 2.5 m/s are unrealistic for walking."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Emergency Brake Scenario",
+      "description": "Tests ChangeSpeedAction to zero with correct DynamicsDimension/DynamicsValue (not .Rate), same-lane placement, time-based trigger, phase sequencing",
+      "prompt": "Build a RoadRunner scenario on ScenarioBasic where a lead vehicle suddenly brakes to a full stop in front of the ego. Both cars start at 20 m/s in the same lane. The lead car should brake hard (8 m/s^2 deceleration) after 3 seconds. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses ChangeSpeedAction for braking",
+          "expected": "ChangeSpeedAction"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Deceleration uses DynamicsDimension and DynamicsValue (not .Rate which does not exist)",
+          "expected": "The deceleration rate is configured via DynamicsDimension = 'rate' and DynamicsValue = 8 (or equivalent time/distance-based dynamics). The code does NOT use a property called .Rate which does not exist on ChangeSpeedAction."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Phase logic: initial phase triggers brake phase via setEndCondition (two-line pattern)",
+          "expected": "The code uses addPhaseInSerial for the brake phase and setEndCondition on the initial phase. The setEndCondition result MUST be stored in a variable before setting properties (e.g., cond = setEndCondition(phase, 'DurationCondition'); cond.Duration = 3). Chaining like setEndCondition(...).Duration = 3 is WRONG."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Both vehicles placed on same lane with leader ahead",
+          "expected": "Both ego and leader are placed on the same lane with the leader further along (higher fraction) than the follower, providing the gap needed for the scenario."
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Junction Right Turn with Stop",
+      "description": "Tests junction pattern: connected approach-to-exit routing (not cross-arm), appropriate MinLength for intersection lanes, autoAnchor on route points",
+      "prompt": "Create a RoadRunner scenario where a vehicle approaches an intersection, turns right, and then stops. Use the FourWaySignal scene. The vehicle should drive at 10 m/s and come to a complete stop after the turn. Make sure the scenario validates.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Opens FourWaySignal scene",
+          "expected": "FourWaySignal"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Route follows connected lane pair (approach -> exit), NOT cross-arm routing",
+          "expected": "The vehicle's route stays within a single connected corridor: from an approach lane to a connected exit lane (e.g., north approach -> east exit for right turn). The code does NOT attempt to route from one approach arm to a non-adjacent exit arm (e.g., north approach -> south approach) which would fail validation because FourWaySignal approach lanes do not connect to opposing arms."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses appropriate MinLength for intersection (not over-filtering)",
+          "expected": "The MinLength parameter used with helperGetPositionFromHDMap or helperSurveyLanes is 30 or less for the intersection scene. Values of 80+ will filter out all intersection approach lanes since they are typically only 30-60m long."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses autoAnchor to snap route waypoints to road",
+          "expected": "autoAnchor"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does NOT use ForwardOffset on route points (causes validation failure)",
+          "expected": "ForwardOffset"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Time-Gap Following with Kinematic Constraints",
+      "description": "Tests ChangeLongitudinalDistanceAction with correct enum values: DistanceType='time', ConstraintType='custom'",
+      "prompt": "Create a RoadRunner scenario on ScenarioBasic where a follower vehicle maintains a 2-second time gap behind a leader. The leader drives at 15 m/s. Use custom kinematic constraints: max acceleration 3 m/s^2, max deceleration 5 m/s^2. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses ChangeLongitudinalDistanceAction",
+          "expected": "ChangeLongitudinalDistanceAction"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Uses correct enum values for DistanceType and ConstraintType",
+          "expected": "DistanceType is set to 'time' (NOT 'gap' or 'euclidean' which are invalid — only 'space' and 'time' exist). ConstraintType is set to 'custom' (NOT 'acceleration' or 'speed' which are invalid — only 'asset', 'custom', and 'none' exist)."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Custom kinematic constraints are properly configured",
+          "expected": "With ConstraintType='custom', MaxAcceleration is set to 3 m/s^2 and MaxDeceleration is set to 5 m/s^2. DistanceOffset is approximately 2.0 seconds."
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Multi-Actor Phase Logic",
+      "description": "Comprehensive phase logic test: multiple actors with serial phases, setEndCondition two-line pattern (Bug A), every phase has .Actor, every predecessor has end condition, PhaseStateCondition enum correctness",
+      "prompt": "Create a RoadRunner scenario on ScenarioBasic with 3 vehicles on adjacent lanes. Vehicle 1 (ego) drives at 20 m/s. Vehicle 2 starts at 15 m/s and changes speed to 10 m/s after 3 seconds. Vehicle 3 waits until Vehicle 2's speed-change phase ends (use PhaseStateCondition), then changes lane. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "setEndCondition uses two-line pattern (never chained)",
+          "expected": "Every call to setEndCondition stores the result in a variable first (e.g., cond = setEndCondition(phase, 'DurationCondition'); cond.Duration = 3). The code NEVER chains property assignment directly (e.g., setEndCondition(phase, 'DurationCondition').Duration = 3 is WRONG — it fails on ActorActionPhase)."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Every phase with a successor has an end condition",
+          "expected": "Each actor's initial phase that has a subsequent phase (via addPhaseInSerial) must have setEndCondition called on it. Without an end condition, the phase runs indefinitely and subsequent phases never execute."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "PhaseStateCondition uses correct enum value",
+          "expected": "The PhaseState property is set to 'end' (indicating the monitored phase has ended). Values 'completed' and 'running' are INVALID — only 'idle', 'start', 'run', and 'end' are correct."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "ActorActionPhase has .Actor set on every phase",
+          "expected": "Every ActorActionPhase created via addPhaseInSerial has its .Actor property set to the appropriate actor. Never omit .Actor."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Vehicle 3 is in lane-following mode for ChangeLaneAction",
+          "expected": "Vehicle 3 which performs a lane change must NOT have routes (must be in lane-following mode). ChangeLaneAction only works in lane-following mode."
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Lateral Offset Swerving",
+      "description": "Tests ChangeLateralOffsetAction (not LateralOffsetAction), .LateralOffset property (not .Offset), one action per phase, lane-following mode",
+      "prompt": "Create a RoadRunner scenario on ScenarioBasic where a vehicle swerves 1.5 meters to the left within its lane over 2 seconds, holds for 3 seconds, then returns to center. The vehicle drives at 15 m/s. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses correct full action name ChangeLateralOffsetAction",
+          "expected": "ChangeLateralOffsetAction"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does NOT use wrong abbreviated name LateralOffsetAction",
+          "expected": "\"LateralOffsetAction\""
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses .LateralOffset property (not .Offset which does not exist)",
+          "expected": "The property set on ChangeLateralOffsetAction is .LateralOffset (e.g., action.LateralOffset = 1.5). The code does NOT use .Offset which does not exist on this action type and would cause a runtime error."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "One action per ActorActionPhase — swerve phases are separate",
+          "expected": "Each ActorActionPhase contains exactly one action (one addAction call). The swerve-left, hold, and return-to-center are in separate serial phases, NOT multiple addAction calls in the same phase. Only initial phases can have a pre-existing action."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Vehicle is in lane-following mode (no routes)",
+          "expected": "The vehicle using ChangeLateralOffsetAction does NOT have routes (no addPoint on its route). ChangeLateralOffsetAction requires lane-following mode."
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Rear-End Collision Timing",
+      "description": "Tests physics-first design: bumper-to-bumper gap formula, vehicle dimensions, closing rate computation",
+      "prompt": "Create a RoadRunner scenario on ScenarioBasic where a faster vehicle rear-ends a slower vehicle at approximately 5 seconds. The rear vehicle drives at 10 m/s, the front vehicle at 5 m/s. Account for vehicle dimensions in your gap calculation. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Collision timing uses bumper-to-bumper gap (not center-to-center)",
+          "expected": "The gap calculation accounts for vehicle dimensions (subtracting vehicle_length/2 for each vehicle from center-to-center distance to get bumper-to-bumper gap). A Sedan is approximately 4.7m long. Simple center-distance = speed x time is WRONG for collision timing."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Uses closing rate (speed difference) for timing",
+          "expected": "Collision timing uses closing_rate = rear_speed - front_speed (10 - 5 = 5 m/s), then calculates initial gap = closing_rate x desired_time + vehicle_length_adjustments."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Both actors on same lane, correct ordering",
+          "expected": "Both vehicles are placed on the same lane with the slower vehicle ahead (higher fraction) and the faster vehicle behind (lower fraction)."
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Movable Object Placement",
+      "description": "Tests correct asset path (Props/TrafficControl/, not MovableObjects/) and asset type (MovableObjectAsset)",
+      "prompt": "Add a traffic cone and a barricade to a RoadRunner scenario on ScenarioBasic. Place them on the road ahead of an ego vehicle driving at 15 m/s. Validate the scenario.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses Props/TrafficControl/ path (NOT MovableObjects/ which does not exist)",
+          "expected": "Asset paths use 'Props/TrafficControl/' prefix (e.g., Props/TrafficControl/TrafficCone01.fbx, Props/TrafficControl/Barricade01.fbx). The path 'MovableObjects/' does NOT exist in RoadRunner projects."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses MovableObjectAsset type",
+          "expected": "MovableObjectAsset"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Objects are anchored to road surface via autoAnchor or helperPlaceActors",
+          "expected": "The code anchors movable objects to the road using one of: (1) explicit autoAnchor() call on each object's InitialPoint, OR (2) helperPlaceActors() which handles anchoring internally. Simply calling addActor() with a position but never anchoring is WRONG — objects must be snapped to the road surface."
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "Bridge Scene Road Feature Classification",
+      "description": "Tests whether the agent discovers RoadFeature-based lane filtering on a multi-elevation scene without being told which API to use",
+      "prompt": "Create a RoadRunner scenario on the Bridge scene where two vehicles follow each other on the bridge deck — not the ground-level road underneath. Both vehicles should drive at 15 m/s with the leader ahead. Make sure the vehicles are actually on the elevated bridge surface. Validate when done.",
+      "timeout_seconds": 600,
+      "context": {
+        "setup": "RoadRunner must be running and connected via roadrunnerAPI. MATLAB MCP server must be available. Bridge scene must be available."
+      },
+      "assertions": [
+        {
+          "id": "a0",
+          "type": "code_executes",
+          "description": "Scenario code executes and validates without MATLAB errors",
+          "expected": "Code runs without errors"
+        },
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses RoadFeature parameter for elevation-aware filtering",
+          "expected": "RoadFeature"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses FilteredLaneIDs to constrain actor placement to bridge lanes",
+          "expected": "FilteredLaneIDs"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses helperSceneAwareness with RoadFeature (not manual elevation checks)",
+          "expected": "The code calls helperSceneAwareness with RoadFeature=\"bridge\" to get bridge-specific lanes. It does NOT manually iterate over lanes checking Z-coordinates, nor does it hardcode lane IDs. The correct pattern is: sceneInfo = helperSceneAwareness(rrApp, ..., RoadFeature=\"bridge\") then use sceneInfo.FilteredLaneIDs for placement."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Actors constrained to filtered bridge lanes via helperPlaceActors or FilterLaneIDs on actorSpecs",
+          "expected": "Actor placement uses FilterLaneIDs=sceneInfo.FilteredLaneIDs (either passed to helperPlaceActors or set on individual actorSpecs). Without this constraint, helperPlaceActors defaults to the longest lane in the scene regardless of elevation — which is typically a ground-level lane, not the bridge deck."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Both vehicles on same lane with leader ahead (following pattern)",
+          "expected": "Both vehicles are placed on the same lane (same LaneIndex) with the leader at a higher fraction than the follower, creating a following scenario on the bridge deck."
+        }
+      ]
+    }
+  ]
+}

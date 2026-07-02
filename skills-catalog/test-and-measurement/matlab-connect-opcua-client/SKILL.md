@@ -17,7 +17,6 @@ description: >
   opc.ua.exportClientCertificate, Industrial Communication Toolbox
   connection.
 license: MathWorks BSD-3-Clause
-compatibility: ">=R2020b"
 metadata:
   author: MathWorks
   version: "1.0"

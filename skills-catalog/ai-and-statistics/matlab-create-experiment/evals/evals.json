@@ -1,0 +1,172 @@
+{
+  "skill": "matlab-create-experiment",
+  "version": "1.0",
+  "copyright": "Copyright 2026 The MathWorks, Inc.",
+  "evals": [
+    {
+      "id": "general-purpose-sweep",
+      "name": "General Purpose Parameter Sweep",
+      "description": "Tests that the agent correctly classifies a non-DL script as general purpose and generates a proper experiment function",
+      "prompt": "I have this antenna sweep script at /projects/antenna/scripts/sweepAntennaLength.m. I want to create an experiment that sweeps the antenna length and width values so I can compare bandwidth results across configurations.",
+      "context": {
+        "files": ["evals/files/sweepAntennaLength.m"],
+        "setup": "Ensure Antenna Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Generated function accesses parameters via params struct",
+          "expected": "params."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Function signature matches general purpose pattern: outputs = func(params)",
+          "expected": "Function has signature [out1, ...] = functionName(params) with only params as input"
+        },
+        {
+          "id": "a3",
+          "type": "code_executes",
+          "description": "Generated experiment function passes checkcode static analysis"
+        }
+      ]
+    },
+    {
+      "id": "builtin-training-image-classification",
+      "name": "Built-in Training with trainnet",
+      "description": "Tests classification as built-in training and correct Form A signature with trainnet-based code",
+      "prompt": "I have a CNN training script at /projects/imgclass/trainImageClassifier.m that uses trainnet. I want to experiment with different learning rates and mini-batch sizes. Create an experiment for this.",
+      "context": {
+        "files": ["evals/files/trainImageClassifier.m"],
+        "setup": "Ensure Deep Learning Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Function signature ends with net, lossFcn, options as the last 3 outputs",
+          "expected": "Last three output arguments are net, lossFcn, options in that order"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "trainingOptions uses Plots none to suppress GUI in experiment trials",
+          "expected": "'Plots', 'none'"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Swept parameters accessed through params struct",
+          "expected": "params."
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated setup function passes checkcode static analysis"
+        }
+      ]
+    },
+    {
+      "id": "custom-training-loop",
+      "name": "Custom Training Loop with Monitor",
+      "description": "Tests classification as custom training and correct monitor integration pattern",
+      "prompt": "I have a custom GAN training loop at /projects/gan/customTrainGAN.m using dlnetwork and dlfeval. I want to compare different learning rates. Create an experiment from this.",
+      "context": {
+        "files": ["evals/files/customTrainGAN.m"],
+        "setup": "Ensure Deep Learning Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Function signature includes monitor as second input argument",
+          "expected": "params, monitor"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Training loop checks monitor.Stop for early termination",
+          "expected": "monitor.Stop"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses recordMetrics to log training progress to Experiment Manager",
+          "expected": "recordMetrics"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Custom training must not use trainingOptions (that is for built-in only)",
+          "expected": "trainingOptions"
+        }
+      ]
+    },
+    {
+      "id": "path-resolution",
+      "name": "Absolute Path Resolution",
+      "description": "Tests that relative file paths in user code are resolved to absolute paths using fullfile",
+      "prompt": "I have a training script at /projects/mywork/trainModelRelativePaths.m that loads data from relative paths. Create an experiment to sweep learning rate and mini-batch size.",
+      "context": {
+        "files": ["evals/files/trainModelRelativePaths.m"],
+        "setup": "Ensure Deep Learning Toolbox is available"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses fullfile() for constructing data file paths",
+          "expected": "fullfile("
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "All relative paths in the original script are resolved to absolute paths in the generated function code",
+          "expected": "The generated experiment/setup function code uses fullfile() with absolute path components for ALL data file references. No relative paths like '../shared', './data', or 'data/' appear inside the function body. The original script had load('data/train.mat') and load('../shared/validation.mat') — both must be resolved to absolute fullfile() calls in the generated code."
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated function passes checkcode static analysis"
+        }
+      ]
+    },
+    {
+      "id": "confirmation-gate",
+      "name": "Design Confirmation Before Execution",
+      "description": "Tests that the agent presents the design for review and asks for confirmation before creating files",
+      "prompt": "I have an optimization script at /projects/optim/optimizeRosenbrock.m. I want to create an experiment to sweep step size and max iterations. Show me the design first before creating anything.",
+      "context": {
+        "files": ["evals/files/optimizeRosenbrock.m"],
+        "setup": "No special toolboxes required"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Function code is presented before the summary table, not after",
+          "expected": "Generated function code appears before the summary table in the response"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Summary table includes experiment type and parameter list",
+          "expected": "Experiment type"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Agent asks for user confirmation before creating project or writing files",
+          "expected": "Agent pauses and asks for confirmation or approval before executing MATLAB code to create the experiment"
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Agent does not call createExperiment or matlab.project.createProject before getting confirmation",
+          "expected": "matlab.project.createProject"
+        }
+      ]
+    }
+  ]
+}

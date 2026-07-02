@@ -1,15 +1,15 @@
 # Copyright 2026 The MathWorks, Inc.
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: product-specific
 version: "1.0"
 human-description: Design multi-layer PCB antennas with custom metal patterns, feeds, and Gerber export using pcbStack.
 matlab-release: ">=R2021a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - check_matlab_code
   - detect_matlab_toolboxes
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Antenna Toolbox
 toolkit: matlab-agentic-toolkit

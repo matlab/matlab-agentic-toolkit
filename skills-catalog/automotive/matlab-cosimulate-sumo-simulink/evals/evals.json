@@ -1,0 +1,271 @@
+{
+  "skill": "matlab-cosimulate-sumo-simulink",
+  "version": "1.4",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Basic SUMO-Simulink co-simulation setup",
+      "description": "Build a minimal Simulink model that launches SUMO, and monitors active vehicle count. Tests the foundational Server-Client architecture and simulation-level Reader blocks.",
+      "prompt": "Create a Simulink model that co-simulates with Eclipse SUMO. Use the SUMO example at C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg. The model should launch SUMO, connect to it, and display the number of active vehicles over time using a Scope block. Use a fixed-step solver at 0.1s and run for 30 seconds.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Model contains a SUMO Server block configured with the .sumocfg path",
+          "expected": "A Server block from SumoInterfaceLibrary with ServerFile set to the specified .sumocfg path"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Model contains a SUMO Client block with matching port number",
+          "expected": "A Client block with ClientPort matching the Server's ServerPort (default 8813)"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Reader block configured for Simulation/ID count topic with no input port",
+          "expected": "Reader block with TopicCategory=Simulation and SimulationTopicName='ID count'. This topic produces zero input ports and one output port (scalar count)"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Fixed-step solver configured to match SUMO step length",
+          "expected": "Model uses Fixed-step solver with FixedStep=0.1 matching SUMO's step-length"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model builds and simulates without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Read vehicle states using ID List without chaining Reader outputs",
+      "description": "Build a co-simulation that reads both the list of active vehicles AND individual vehicle states. Tests whether the agent avoids chaining a Simulation/ID List Reader output into a Vehicle Reader's input port — a common mistake since ID List returns a variable-length array, not a valid Vehicle Id string.",
+      "prompt": "Create a Simulink model co-simulating with SUMO. I want to first get the list of active vehicle IDs using a Reader block, and also monitor the speed and position of a specific vehicle 'flow.0'. Use C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg. Display the ID list, position, and speed each on their own Display or Scope block.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "ID List Reader and Vehicle Readers are independent — not chained",
+          "expected": "The Reader(Simulation/ID List) output must NOT connect to the Vehicle Id input of the Speed or Position Reader. These are independent blocks: the ID List Reader outputs a variable-length list (not usable as a single Vehicle Id), while the Vehicle Readers need a scalar string from a String Constant."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Vehicle Id for Speed and Position Readers comes from a String Constant block",
+          "expected": "A String Constant block (simulink/String/String Constant) with value '\"flow.0\"' connects to the Vehicle Id input port of both the Speed Reader and the Position Reader. This is the ONLY valid way to provide a Vehicle Id — not from another Reader's output."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "ID List Reader uses TopicCategory=Simulation with no input ports",
+          "expected": "Reader block with TopicCategory='Simulation' and SimulationTopicName='ID list'. This block has 0 input ports (no Vehicle Id input) and 1 output port. It must NOT use TopicCategory='Vehicle'."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Position Reader has exactly 1 output port (2-element vector), not separate x/y ports",
+          "expected": "Reader(Vehicle/Position) has 1 input port (Vehicle Id) and exactly 1 output port carrying a 2-element vector [x, y]. There must NOT be separate output ports for x and y."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Quick-start co-simulation with random traffic",
+      "description": "Build a co-simulation that uses the Server block's EnableRandomTraffic feature instead of requiring a .rou.xml route file. Tests whether the agent knows about this convenience feature.",
+      "prompt": "I want a quick Simulink-SUMO co-simulation with some traffic but I don't want to write route files. Create a model that uses a simple grid network and spawns 10 random vehicles automatically. Show me the vehicle count over time. Generate the network using SUMO's netgenerate tool if needed, but don't create any route XML files manually.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Server block has EnableRandomTraffic turned on",
+          "expected": "Server block with EnableRandomTraffic='on' parameter set"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Server block RandomTraffic parameter set to spawn vehicles",
+          "expected": "RandomTraffic parameter set to '10' or a positive number string"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "No .rou.xml route file is created or written to disk",
+          "expected": "The code must NOT call fopen/fwrite/writelines/fprintf to create a .rou.xml file. No route XML file is generated programmatically. The Server block's EnableRandomTraffic feature replaces the need for manual route files entirely."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "A .sumocfg file references only a network file (no route-files entry needed)",
+          "expected": "sumocfg contains net-file but does not require route-files when using random traffic"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Control ego vehicle speed from Simulink",
+      "description": "Build a co-simulation where Simulink controls one vehicle's speed via the Writer block. Tests whether the agent uses String Constant blocks for Vehicle Id (not Reader outputs), places Actor in an Enabled Subsystem, and wires Writer and Reader correctly.",
+      "prompt": "Create a Simulink model that co-simulates with SUMO. I want to control one vehicle's speed from Simulink. Use the Actor block to spawn a vehicle called 'ego' at the start, then use a Writer block to set its speed to 15 m/s. Also read back its actual speed to confirm the command is taking effect. Use C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg as the base scenario.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "All Vehicle Id inputs come from String Constant blocks, not from Reader outputs",
+          "expected": "Every block that requires a Vehicle Id input (Actor, Writer, Reader) receives it from a String Constant block (simulink/String/String Constant) with value 'ego'. Separate String Constant blocks with the same value are fully acceptable — e.g., one inside an Enabled Subsystem for Actor, another at the top level for Writer and Reader. The key constraint is: NO Vehicle Id input comes from a Reader block output."
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Writer block configured for Vehicle/Speed topic with two input ports",
+          "expected": "Writer block with TopicCategory=Vehicle, VehicleTopic=Speed. This topic produces 2 input ports: port 1 = Vehicle Id (string), port 2 = Speed (double). A Constant block with value 15 connects to port 2."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Actor block spawns vehicle inside an Enabled or Triggered Subsystem",
+          "expected": "Actor block with VehicleState=Add placed inside an Enabled Subsystem or Triggered Subsystem so it fires only once. A String Constant with value 'ego' connects to its Vehicle Id input port. The String Constant may be inside or outside the subsystem."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Reader block reads back ego vehicle speed",
+          "expected": "Reader with TopicCategory=Vehicle, VehicleTopic=Speed. Its Vehicle Id input port receives the ego vehicle name from a String Constant block (not from another Reader's output)."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Track ego vehicle in SUMO GUI using Visualization Writer",
+      "description": "Build a co-simulation where the SUMO GUI camera follows the ego vehicle. Tests whether the agent knows the correct TopicCategory ('Visualization'), parameter name ('GUITopic' not 'VehicleTopic'), default view ID, and port structure for visualization Writer blocks.",
+      "prompt": "Create a Simulink model co-simulating with SUMO. I have an ego vehicle called 'ego_vehicle' defined in the route file. I want the SUMO GUI to automatically follow the ego vehicle as it drives. Set up the model so the camera tracks the ego throughout the simulation. Use C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Writer block uses TopicCategory='Visualization' (not 'Vehicle' or 'GUI')",
+          "expected": "Writer block with TopicCategory set to 'Visualization'. NOT 'Vehicle' and NOT 'GUI' — 'Visualization' is the correct mask option"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "GUITopic parameter set to 'Track Vehicle' (not VehicleTopic)",
+          "expected": "The topic is set via the 'GUITopic' parameter (not 'VehicleTopic'). Value is 'Track Vehicle'"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "View Id input from String Constant with default SUMO view name",
+          "expected": "A String Constant block with value '\"View #0\"' connected to Writer port 1 (View Id). This is the default SUMO GUI view name"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Vehicle Id input from String Constant on port 2",
+          "expected": "The ego vehicle String Constant (e.g., '\"ego_vehicle\"') connected to Writer port 2 (Vehicle Id)"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not use VehicleTopic for Visualization Writer",
+          "expected": "'VehicleTopic', 'Track Vehicle'"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Actor block uses Enabled/Triggered Subsystem for single-shot spawn",
+      "description": "Tests whether the agent places the Actor block inside an Enabled or Triggered Subsystem with correct Priority to prevent the 'vehicle already exists' error and ensure Readers can query the vehicle.",
+      "prompt": "Create a Simulink model that spawns an ego vehicle called 'my_ego' in SUMO using the Actor block, then reads its speed. The vehicle should be spawned exactly once at the start of simulation and must not cause any errors during the rest of the 30-second simulation. Use C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Actor block placed inside an Enabled Subsystem or Triggered Subsystem",
+          "expected": "Actor block is inside an Enabled Subsystem or Triggered Subsystem to ensure it fires only once. Actor blocks must NOT be placed ungated at the model root level"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Spawn subsystem has higher priority than Reader blocks",
+          "expected": "The Enabled/Triggered Subsystem containing the Actor has Priority='1' or a lower number than Reader blocks, ensuring spawn executes before any vehicle query at t=0"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Actor block receives the vehicle ID 'my_ego' via a String Constant",
+          "expected": "The Actor block's Vehicle Id input port receives the string 'my_ego'. This can come from a String Constant inside the Enabled Subsystem, a String Constant outside routed via an Inport, or any other mechanism that delivers the correct string value. What matters is the Actor gets the right ID — not where the String Constant is placed."
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "For Iterator Subsystem for spawning multiple vehicles with one Actor block",
+      "description": "Tests whether the agent uses a For Iterator Subsystem (not For Each) to spawn multiple vehicles with a single Actor block, using a MATLAB Function to generate unique vehicle ID strings from the iteration index.",
+      "prompt": "Create a Simulink model that spawns 10 vehicles in SUMO using a loop approach — I don't want to duplicate 10 Actor blocks. Use a single Actor block inside a loop construct that iterates 10 times, generating unique vehicle IDs like 'traffic_1' through 'traffic_10'. The spawn should happen once when triggered. Use C:/Program Files (x86)/Eclipse/Sumo/doc/examples/sumo/hokkaido/test.sumocfg.",
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Uses For Iterator Subsystem (not For Each Subsystem)",
+          "expected": "A For Iterator Subsystem is used inside an Enabled Subsystem. For Each Subsystem must NOT be used because it does not support string signals required by Actor blocks"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "MATLAB Function converts iteration index to vehicle ID string",
+          "expected": "A MATLAB Function block inside the For Iterator Subsystem converts the numeric iteration index to a unique string vehicle ID (e.g., 'traffic_' + string(idx))"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "For Iterator configured for 10 iterations with 1-based indexing",
+          "expected": "For Iterator block has IterationLimit='10' and IndexMode='One-based'"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Actor block inside Enabled Subsystem for one-shot execution",
+          "expected": "The For Iterator Subsystem containing the Actor is inside an Enabled Subsystem to ensure spawn happens only once when triggered"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not use For Each Subsystem",
+          "expected": "Ports & Subsystems/For Each Subsystem"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Model creation code runs without error"
+        }
+      ]
+    }
+  ]
+}

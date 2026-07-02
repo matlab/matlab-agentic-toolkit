@@ -4,7 +4,7 @@ description: "Fit SimBiology model parameters to data — fitproblem, population
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Fit SimBiology Models
@@ -291,30 +291,73 @@ results.IndividualParameterEstimates
 | Small datasets (< 5 subjects) | Yes | May not converge |
 | Bounds on parameters | Yes (enforced) | **Ignored** — use good InitialValue instead |
 
-## Virtual Patient Generation
+### NLME with covariates (CovariateModel)
 
-### From assumed distributions
+When covariates (e.g., weight, age) influence parameters, use a
+`CovariateModel` instead of `estimatedInfo`:
 
 ```matlab
-rng(123);
-nPat = 100;
-ke_pop = lognrnd(log(0.1), 0.3, nPat, 1);
-ka_pop = lognrnd(log(0.5), 0.25, nPat, 1);
-paramMatrix = [ke_pop, ka_pop];
+covModel = CovariateModel;
+covModel.Expression = {
+    'CL = theta1 + theta2*WT + eta1'
+    'Vd = theta3 + theta4*WT + eta2'
+    'ka = theta5 + eta3'
+};
+initVals = covModel.constructDefaultFixedEffectValues;
+initVals.theta1 = 5; initVals.theta2 = 0.1;
+initVals.theta3 = 50; initVals.theta4 = 0.5;
+initVals.theta5 = 1.2;
+covModel.FixedEffectValues = initVals;
 
-simfun = createSimFunction(model, {'ke','ka'}, {'Drug'}, []);
-results = simfun(paramMatrix, 24);
+prob = fitproblem;
+prob.Model = model;
+prob.Data = data;  % groupedData with WT column
+prob.ResponseMap = "DrugConc = Concentration";
+prob.FitFunction = "sbiofitmixed";
+prob.Estimated = covModel;
+prob.ErrorModel = "proportional";
+results = fit(prob);
 ```
 
-### From NLME results
+**When to use which:**
+- `estimatedInfo` — NLME without covariates (simpler, fewer parameters)
+- `CovariateModel` — NLME with covariates (parameter-covariate relationships)
+
+**Expression rules:** `theta` prefix for fixed effects, `eta` for random
+effects. One random effect max per expression. Use `verify(covModel)` to
+validate syntax before fitting.
+
+## Virtual Patient Generation
+
+### From assumed distributions (Scenarios)
+
+Use `SimBiology.Scenarios` with `makedist` — avoids manual matrix construction:
 
 ```matlab
-mu    = results.FixedEffects;
-omega = results.RandomEffectCovarianceMatrix;
-rng(42);
+sc = SimBiology.Scenarios;
+add(sc, 'elementwise', 'ke', makedist('Lognormal', 'mu', log(0.1), 'sigma', 0.3), 'Number', 100);
+add(sc, 'elementwise', 'ka', makedist('Lognormal', 'mu', log(0.5), 'sigma', 0.25), 'Number', 100);
+
+simfun = createSimFunction(model, sc, {'Drug'}, []);
+results = simfun(sc, 24);
+```
+
+### From NLME results (sbiosampleparameters)
+
+Use `sbiosampleparameters` to sample from fitted population parameters —
+it respects the covariate model parameterization automatically:
+
+```matlab
+% Extract from NLME results
+covModel = covariateModel(nlmeResults);
+thetas = nlmeResults.FixedEffects;
+omega = nlmeResults.RandomEffectCovarianceMatrix;
+
+% Sample 200 virtual patients
 nVP = 200;
-eta = mvnrnd(zeros(size(mu)), omega, nVP);
-vpParams = mu .* exp(eta);   % log-normal parameterization
+vpParams = sbiosampleparameters(covModel.Expression, thetas, omega, nVP);
+
+% Simulate
 simfun = createSimFunction(model, {'CL','Vd','ka'}, {'Cp'}, []);
 vpSim = simfun(vpParams, 48);
 ```
@@ -378,7 +421,10 @@ ncaResults = sbionca(data, opt);
 
 ## Confidence Intervals and Profile Likelihood
 
-After fitting, compute confidence intervals with `sbioparameterci`:
+**Restriction:** `sbioparameterci` only works with results from nonlinear
+regression (`sbiofit`). It does NOT support NLME results (`sbiofitmixed`).
+
+After fitting with `sbiofit`, compute confidence intervals:
 
 ### Gaussian (asymptotic) CI — fast, default
 
@@ -397,56 +443,53 @@ plot(ciResults);
 
 ```matlab
 ciPL = sbioparameterci(fitResults, 'Type', 'ProfileLikelihood');
-disp(ciPL.Results);
 plot(ciPL);  % shows profile likelihood curves with CI bounds
+% Custom confidence level: 'Alpha', 0.10 for 90% CI
 ```
 
-The `plot` method on a profile likelihood result automatically shows the
-log-likelihood profile curves. No extra flags needed.
-
-### Options
-
-```matlab
-% Custom confidence level (default Alpha=0.05 → 95% CI)
-ci90 = sbioparameterci(fitResults, 'Type', 'ProfileLikelihood', 'Alpha', 0.10);
-```
-
-| Type | Speed | Accuracy | Use when |
-|------|-------|----------|----------|
-| `'Gaussian'` (default) | Fast | Approximate | Quick check, well-behaved problems |
-| `'ProfileLikelihood'` | Slower | Exact for nonlinear | Final results, parameter identifiability |
+| Type | Speed | Use when |
+|------|-------|----------|
+| `'Gaussian'` (default) | Fast | Quick check, well-behaved problems |
+| `'ProfileLikelihood'` | Slower | Final results, parameter identifiability |
 
 ## Conventions
 
-- **Species names must differ from compartment names.** SimBiology errors if a species shares the same name as its parent compartment (e.g., species `Depot` inside compartment `Depot`). Use distinct names: compartment `Depot` with species `DrugDepot`, or compartment `GI` with species `Drug`.
-- **Units required when compartment Volume != 1:** When a compartment has `Value` (capacity) set to something other than 1 (e.g., `Vd=50`), you **must** specify units on all components (`'liter'`, `'milligram'`, `'1/hour'`, etc.), enable `DimensionalAnalysis = true` in the configset, **and** set `VariableUnits` on the `groupedData` table (e.g., `data.Properties.VariableUnits = {'hour','milligram'}`). Without units, the fitting engine produces Inf/NaN values during optimization. If you don't need volume-based concentration, set compartment `Value = 1` instead (pure amount-based, no units needed).
-- **Loading `.sbproj` files:** `sbioloadproject` returns a struct with the model name as field — extract dynamically:
-  ```matlab
-  proj = sbioloadproject('file.sbproj');
-  fn = fieldnames(proj);
-  model = proj.(fn{1});
-  ```
-- **Extracting simulation data for fitting:** Use `selectbyname` — it handles qualified names automatically: `result = selectbyname(sbiosimulate(m), 'Drug'); drugVals = result.Data; t = result.Time;`. The three-output form `[t, x, names] = sbiosimulate(m)` returns **qualified** names (e.g., `'Central.Drug'`), so use `contains(names, 'Drug')` or the full qualified name with `strcmp`. When sampling at specific times, remove duplicate time points first (ODE solvers may produce them), then interpolate:
-  ```matlab
-  [tU, ia] = unique(result.Time);
-  yAtSamples = interp1(tU, result.Data(ia), tSample);
-  ```
+- **Species names must differ from compartment names.** Use distinct names: compartment `Depot` with species `DrugDepot` (not species `Depot` inside compartment `Depot`).
+- **Units on compartment volumes:** Always specify units on compartment volumes (e.g., `'liter'`). Set `DimensionalAnalysis = true` and `VariableUnits` on `groupedData`. For pure amount-based models, set `Value = 1` and omit units.
+- **Loading `.sbproj`:** `proj = sbioloadproject('f.sbproj'); model = proj.(fieldnames(proj){1});`
+- **Extracting data:** `selectbyname(sbiosimulate(m), 'Drug')` for specific variables; `resample(sd, tSample, 'linear')` for specific times
 - Start with `'scattersearch'` if unsure about parameter landscape
 - Use `'log'` transform for parameters spanning orders of magnitude (see Rule 5)
-- Use `sbioaccelerate(model)` before fitting for speed (requires MEX compiler; if unavailable, skip — fitting still works, just slower)
-- Set `cs.MaximumWallClock = 60` before fitting — bad parameter guesses can make individual simulations hang; this configset property stops any single simulation exceeding the time limit
-- Set `prob.ProgressPlot = true` for long-running fits so the user sees progress
-- Check fit quality with `plot(results)` and `results.ParameterEstimates`
-- Compute confidence intervals with `sbioparameterci` (see above)
+- Do NOT call `sbioaccelerate(model)` before fitting — no effect, wastes time
+- Set `cs.MaximumWallClock = 60` — stops hung simulations from bad guesses
+- Set `prob.ProgressPlot = true` for long-running fits
+
+## Evaluating Fit Quality
+
+```matlab
+plot(results);                      % observed vs predicted overlay
+plotResiduals(results);             % residuals vs time
+plotResidualDistribution(results);  % histogram — should be ~normal
+plotActualVersusPredicted(results); % identity line check
+
+results.LogLikelihood  % higher = better
+results.AIC            % lower = better (penalizes complexity)
+results.BIC            % lower = better (stronger penalty)
+results.MSE            % mean squared error
+```
+
+**Model comparison:** Compare by BIC — `deltaBIC < -10` = strong evidence
+for complex model; `deltaBIC > 0` = simpler model preferred.
+
+**When to escalate to NLME:** Multiple subjects with different parameter
+values, systematic subject-specific residual patterns, need to quantify
+inter-individual variability, or covariates may explain differences.
 - Pass **model objects** (not UUID strings) to fitting functions
 - Do NOT call `sbiofit`/`sbiofitmixed`/`sbionlmefit` directly — use `fitproblem`
 
 ## References
-
 Load on demand for detailed guidance:
-
 - `references/nca-analysis-guidance.md` — full NCA patterns, IV infusion, metrics interpretation
-
 
 ----
 

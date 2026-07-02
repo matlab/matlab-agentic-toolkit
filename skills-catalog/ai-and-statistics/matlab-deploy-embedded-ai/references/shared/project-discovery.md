@@ -61,10 +61,10 @@ After gathering information, cross-reference with Environment Discovery results:
 Apply the decision tree from the top-level SKILL.md:
 
 1. **FPGA or NPU target** → Not covered by this skill. Inform the user and stop.
-2. **GPU (CUDA) target** → Pattern 2
-3. **MCU/DSP/embedded CPU + train from scratch** → Pattern 1 (native training path)
-4. **MCU/DSP/embedded CPU + 3P model + needs compression/Simulink/weight inspection** → Pattern 1 (import path)
-5. **MCU/DSP/embedded CPU + 3P PyTorch model + just needs C fast** → Pattern 2
+2. **MATLAB-trained model (already a dlnetwork)** → Pattern 1 (native training path)
+3. **External model + needs compression/quantization/Simulink/weight inspection** → Pattern 1 (import path)
+4. **External PyTorch (.pt2) or LiteRT (.tflite) model + fits target + no compression needed** → Pattern 2
+5. **External model in other format (ONNX, TF, JAX) + fits target** → Pattern 1 (import path)
 
 ## Compile Project Summary
 

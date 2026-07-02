@@ -1,12 +1,12 @@
 # Copyright 2026 The MathWorks, Inc.
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Generate a toolbox.ignore file to exclude files from packaging.
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills: []
-requires-products: []
+required-skills: []
+required-products: []
 toolkit: matlab-agentic-toolkit

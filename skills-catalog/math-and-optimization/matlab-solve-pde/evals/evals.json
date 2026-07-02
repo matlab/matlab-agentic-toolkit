@@ -1,0 +1,410 @@
+{
+  "skill": "matlab-solve-pde",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Pressure vessel with hemispherical ends on pedestals",
+      "description": "Tests hollow geometry via Void, hemisphere construction, multi-material union with KeepBoundaries, cell identification. Requires exactly 3 cells.",
+      "prompt": "Create a thick pressure vessel geometry consisting of a cylindrical section with an inner diameter of 1 m, an outer diameter of 1.1 m, and a length of 1 m. Both ends of the cylinder are capped with hemispherical ends of the same thickness as the cylindrical section. The vessel rests on two thick concrete pedestals located at the ends of the cylindrical section. Each pedestal is an isosceles trapezoidal slab with a thickness of 0.2 m. The top edge of each trapezoidal slab aligns with the chord of the vessel's outer cylindrical surface at approximately two-thirds of the radial distance. The final geometry must have exactly 3 cells: one for the vessel (cylinder + hemispherical caps combined) and one for each pedestal, so different materials can be assigned. Report NumCells and NumFaces.",
+      "timeout_seconds": 1200,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated geometry code runs without error"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Creates hollow cylinder using Void parameter or subtract approach",
+          "expected": "The agent creates a hollow cylinder either using multicylinder([innerR, outerR], height, Void=[true, false]) with nested radii or by subtracting an inner cylinder from an outer one. Both approaches are valid."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Multi-material assembly uses KeepBoundaries=true in union",
+          "expected": "union(..., KeepBoundaries=true) is used when combining vessel with pedestals, so cells are preserved for per-material assignment."
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Final geometry has exactly 3 cells",
+          "expected": "NumCells = 3"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "2-D plate with star-shaped features: material regions and cooling cutouts",
+      "description": "Tests 2-D geometry construction with alternating material/void regions, mesh refinement strategy selection, entity identification, boundary classification",
+      "prompt": "Model a 1 m x 1 m square plate with a 3x3 grid of evenly spaced six-pointed stars. Each star has outer tip radius 0.07 m and inner valley radius 0.03 m (12 vertices alternating between tip and valley in polar coordinates). The stars alternate in a checkerboard pattern: stars at positions (1,1), (1,3), (2,2), (3,1), (3,3) are solid material regions (same material as the plate), while stars at positions (1,2), (2,1), (2,3), (3,2) are cutouts representing cooling channels — their boundaries will receive convection BCs (h=100 W/(m^2*K), ambient 25°C). Create the geometry, generate a mesh that is fine near star boundaries and especially refined at the star tip vertices, and report: (1) list of face IDs for material stars vs cutout stars, (2) the boundary edge IDs for each cutout star where convection will be applied, (3) total mesh node count.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "code_executes",
+          "description": "Generated geometry and mesh code runs without error"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Creates 2-D geometry with separate regions for stars and plate",
+          "expected": "The geometry is constructed as a 2-D multi-region domain (using decsg or equivalent) where star shapes are distinguishable regions within the rectangular plate. The cutout stars create internal boundaries."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Mesh is refined near star boundaries with growth control",
+          "expected": "The mesh uses local refinement (HEdge, HFace, HVertex, or equivalent) to make elements finer near star boundaries and/or tips, with a growth rate parameter (Hgrad) to transition smoothly to coarser elements away from features."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Correctly identifies and reports cutout boundary edges for convection",
+          "expected": "The agent identifies edge IDs belonging to the cutout star boundaries (internal edges between cutout regions and the plate) and reports them separately from the material star boundaries. Uses faceEdges or equivalent to collect these edges."
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "2-D structural transient with time-dependent force",
+      "description": "Tests NaN convention for conditional load, vertexLoad Force vector syntax, PlanarType set after construction",
+      "prompt": "Create a MATLAB script for a 2-D structural transient analysis of a cantilever beam (0.5m long, 0.05m tall). The left edge is fixed. Apply a half-sine pulse force of magnitude 5000 N downward at the tip vertex for the first 5 ms, then zero after that. Use plane stress assumption. Material: steel (E=200 GPa, nu=0.3, density=7800 kg/m^3). Solve from t=0 to t=0.02s with 100 time steps. Use default mesh. Plot the y-displacement of the tip vertex over time.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses structuralTransient AnalysisType",
+          "expected": "structuralTransient"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Handles NaN time probe from solver",
+          "expected": "isnan"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses vertexLoad with Force vector (not YForce)",
+          "expected": "Force is applied using vertexLoad(Force=[Fx; Fy]) vector syntax, not component-wise arguments like YForce"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Sets PlanarType after model creation",
+          "expected": "PlanarType"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated script runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Cantilever beam: static stress, natural frequencies, and fast transient vibration",
+      "description": "Tests model reuse across analysis types, FrequencyRange strategy with -Inf, using modes to speed up transient, DampingZeta, catalog material",
+      "prompt": "Analyze a 3-D cantilever beam (0.5m long, 0.05m square cross-section) made of brass. Fix one end and apply 1 MPa pressure on the opposite face. I need three things: (1) the maximum von Mises stress under static load, (2) the first 5 natural frequencies, and (3) the transient vibration response when a 500 N downward step force is applied at the center of the free end for 1 ms then released — use modes to speed up the simulation, with 2% damping. Solve the transient from 0 to 0.01s with 200 time steps and report the tip z-displacement at the final time. Execute the code and show MATLAB output directly — do not just write a file.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Reuses model by changing AnalysisType (never creates second femodel)",
+          "expected": "The model is reused by assigning model.AnalysisType multiple times on the same variable, not calling femodel() again"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses FrequencyRange with -Inf lower bound for modal solve",
+          "expected": "FrequencyRange=[-Inf"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Passes ModalResults to the transient solve",
+          "expected": "ModalResults"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses DampingZeta for modal damping",
+          "expected": "DampingZeta"
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses catalog material for brass",
+          "expected": "Material=\"brass\""
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated script runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Press-fitted bimetallic collar thermal stress (axisymmetric and 3-D)",
+      "description": "Tests concentric annular geometry, PlanarType axisymmetric, multi-cell material assignment, ReferenceTemperature, thermal stress, comparing 2-D axisymmetric vs 3-D results",
+      "prompt": "Analyze the thermal stress in a press-fitted bimetallic collar assembly. The collar consists of two concentric annular cylinders bonded at their interface: an inner steel ring (inner radius 20 mm, outer radius 30 mm) and an outer aluminum ring (inner radius 30 mm, outer radius 40 mm), both 50 mm long. The outer surface of the aluminum ring is fully fixed (zero displacement). The assembly is uniformly heated from a reference temperature of 20°C to 150°C. Due to the CTE mismatch between steel and aluminum, significant stress develops at the interface. Perform this analysis two ways: (1) as a 2-D axisymmetric model, and (2) as a full 3-D model. Print the maximum von Mises stress from both models and compare the results. Use steel (E=200 GPa, nu=0.3, CTE=12e-6/K) and aluminum (E=70 GPa, nu=0.33, CTE=23e-6/K).",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Sets ReferenceTemperature for thermal stress",
+          "expected": "ReferenceTemperature"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses axisymmetric PlanarType for 2-D model",
+          "expected": "axisymmetric"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Creates multi-cell geometry with separate materials per cell",
+          "expected": "The geometry has at least 2 cells (inner and outer ring) with different material properties assigned per cell index. Uses multicylinder with nested radii or equivalent approach."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Fixes outer surface using faceBC with Constraint or zero displacement",
+          "expected": "The outer surface of the aluminum ring is fixed using faceBC(Constraint=\"fixed\") or equivalent zero-displacement BCs on the outermost cylindrical face. In 2-D axisymmetric, the corresponding outer edge is fixed."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Both analyses (axisymmetric and 3-D) run without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Nonlinear magnetostatic with B-H saturation curve",
+      "description": "Tests nonlinear RelativePermeability via state.NormFluxDensity, two-step solve with initial guess, VacuumPermeability, griddedInterpolant for B-H",
+      "prompt": "Create a MATLAB script for a 3-D nonlinear magnetostatic analysis of an iron block exhibiting magnetic saturation. Geometry: a solid cube 0.1m side (multicuboid). The iron has a nonlinear B-H curve — implement the permeability as a function that depends on the local flux density magnitude, with behavior resembling soft iron (high permeability at low field, dropping significantly above 1.5 T). Apply uniform z-directed current density of 5e5 A/m^2. Apply appropriate magnetostatic boundary conditions on all faces. Print the maximum |B| and compare with a linear solution to show the effect of saturation. Use Hmax=0.02 for the mesh.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses state.NormFluxDensity for nonlinear permeability",
+          "expected": "NormFluxDensity"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses cellIC with MagneticVectorPotential for initial guess",
+          "expected": "MagneticVectorPotential"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Sets VacuumPermeability",
+          "expected": "VacuumPermeability"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses griddedInterpolant for B-H data",
+          "expected": "griddedInterpolant"
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated script runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Structural transient post-processing and visualization",
+      "description": "Tests evaluateVonMisesStress (not Stress.Magnitude), filterByIndex, FEStruct .uz naming, pdeplot3D with FaceAlpha/Mesh/colormap, interpolateDisplacement time history",
+      "prompt": "I have a transient structural model (cantilever beam: multicuboid 1x0.1x0.1, E=210e9, nu=0.3, rho=7800, face 5 fixed, face 3 traction [0;0;-1e6], IC zero displacement and velocity, default mesh, solve 0:1e-4:5e-4). Write complete MATLAB code to set it up, solve it, and then: (1) compute von Mises stress at all nodes and times, (2) create a figure with tiled layout showing two panels: left = deformed shape at the last time step colored by von Mises stress with DeformationScaleFactor=500, semi-transparent (FaceAlpha=0.5), mesh edges visible, 'hot' colormap, colorbar; right = uz displacement time history at point [0.5;0;0]. Make the code self-contained and runnable.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses evaluateVonMisesStress method for transient",
+          "expected": "evaluateVonMisesStress"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses filterByIndex to extract single time step for plotting",
+          "expected": "filterByIndex"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Uses domain-specific FEStruct names (.uz not .z)",
+          "expected": "Displacement fields accessed as .ux, .uy, .uz (not .x, .y, .z)"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses FaceAlpha on pdeplot3D for transparency",
+          "expected": "FaceAlpha"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Sets colormap after pdeplot3D (not as argument to it)",
+          "expected": "Colormap is set via colormap('hot') or colormap(ax,'hot') after the pdeplot3D call, since pdeplot3D does not accept a ColorMap name-value argument"
+        },
+        {
+          "id": "a6",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "Frequency response with hysteretic damping",
+      "description": "Tests HystereticDamping on materialProperties, structuralFrequency workflow, interpolateDisplacement without iT, frequency column indexing",
+      "prompt": "Create a complete MATLAB script for a structural frequency response analysis of a cantilever beam (multicuboid 1x0.1x0.1, E=210e9, nu=0.3, rho=7800). Fix the left face and apply pressure=1e4 on the right face. The first bending natural frequency is near 525 Hz. Perform two frequency response solves sweeping linspace(400,650,30) to capture the resonance: (1) undamped, and (2) with structural damping (loss factor 0.05). For each case, interpolate displacement at point [0.5;0.05;0.05] and compute |uz| vs frequency. Print the peak |uz| for both cases to confirm that damping significantly reduces the resonance peak. Use default mesh.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses HystereticDamping parameter on materialProperties",
+          "expected": "HystereticDamping"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses structuralFrequency AnalysisType",
+          "expected": "structuralFrequency"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses interpolateDisplacement for FRF probe",
+          "expected": "interpolateDisplacement"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Damped peak is smaller than undamped peak",
+          "expected": "The output demonstrates that the damped resonance peak displacement is significantly smaller than the undamped peak."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "DC conduction to magnetostatic coupling with mesh regeneration",
+      "description": "Tests dcConduction, multi-cell material assignment, interpolateCurrentDensity, .Jx naming, ConductionResults coupling to magnetostatic, mesh regeneration for Nedelec elements, VacuumPermeability",
+      "prompt": "Create a MATLAB script for a multi-physics analysis of a conductor bar surrounded by an iron ring. Geometry: use multicuboid to create a three-cell geometry — two stacked conductor layers (each 0.1m x 0.01m x 0.005m, bottom=steel conductivity 1.1e6 S/m, top=copper conductivity 5.8e7 S/m) and an iron ring surrounding them (a larger cuboid with the conductor region subtracted, or equivalent approach giving 3 cells). Part 1: Solve a DC conduction problem. Apply Voltage=1 on the left end and Voltage=0 on the right end of the conductor layers. Interpolate current density at the center of each conductor layer and print the Jx components to show the conductivity ratio effect. Part 2: Use the solved current density distribution as the source for a magnetostatic analysis of the full geometry (conductors + iron ring). The iron has relative permeability of 1000. Solve and print the maximum magnetic flux density magnitude. Note that the geometry and mesh from Part 1 must be compatible with the magnetostatic solver requirements. Run the code and show output.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses findCell to identify cells in multi-region geometry",
+          "expected": "findCell"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses interpolateCurrentDensity (correct method name)",
+          "expected": "interpolateCurrentDensity"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Accesses CurrentDensity components as .Jx/.Jy/.Jz",
+          "expected": "Current density FEStruct accessed via .Jx, .Jy, .Jz (domain-specific names), not generic .x, .y, .z"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Passes ConductionResults to magnetostatic cellLoad",
+          "expected": "The magnetostatic analysis uses cellLoad(CurrentDensity=conductionResults) or equivalent to pass the DC conduction solution as the current source"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Regenerates mesh or uses linear order for magnetostatic (Nedelec requirement)",
+          "expected": "The agent either regenerates the mesh before the magnetostatic solve (since magnetostatic uses Nedelec/linear elements while dcConduction defaults to quadratic), or explicitly specifies GeometricOrder='linear' from the start. Without this, the magnetostatic solve would error."
+        },
+        {
+          "id": "a6",
+          "type": "output_contains",
+          "description": "Sets VacuumPermeability for magnetostatic",
+          "expected": "VacuumPermeability"
+        },
+        {
+          "id": "a7",
+          "type": "code_executes",
+          "description": "Generated code runs without error"
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "2-D thermal transient with radiation (Kelvin conversion)",
+      "description": "Tests FaceIC for 2-D, radiation requiring Kelvin and StefanBoltzmannConstant, edgeLoad placement, evaluateHeatFlux 3-output pattern",
+      "prompt": "Create a MATLAB script for a 2-D transient thermal analysis. Geometry: a rectangular plate 0.1m x 0.05m built with decsg. Initial temperature: 500 degC everywhere. Material: aluminum (k=237 W/(m*K), density=2700 kg/m^3, specific heat=900 J/(kg*K)). Boundary conditions: left edge fixed at 25 degC, top edge has both convection (h=50 W/(m^2*K), ambient 25 degC) and radiation (emissivity 0.8), bottom edge has convection only (h=50 W/(m^2*K), ambient 25 degC), right edge has radiation only (emissivity 0.8, ambient 25 degC). Solve from t=0 to t=300s with 50 time steps. Use default mesh. After solving, compute the heat flux at the final time step using the correct multi-output syntax. Print the center temperature at the final time step and the maximum heat flux magnitude.",
+      "timeout_seconds": 600,
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses FaceIC for 2-D geometry initial conditions",
+          "expected": "FaceIC"
+        },
+        {
+          "id": "a2",
+          "type": "output_excludes",
+          "description": "Does not use CellIC for 2-D decsg geometry",
+          "expected": ".CellIC"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Radiation applied via Emissivity on edgeLoad",
+          "expected": "Emissivity"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "All temperatures in Kelvin since radiation is involved",
+          "expected": "Because the model uses radiation (Stefan-Boltzmann law requires absolute temperature), all temperatures must be in Kelvin: initial ~773 K, ambient ~298 K, fixed BC ~298 K."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Sets Stefan-Boltzmann constant on the model",
+          "expected": "The model sets StefanBoltzmannConstant (5.67e-8 W/(m^2*K^4)) because radiation requires it."
+        },
+        {
+          "id": "a6",
+          "type": "convention_followed",
+          "description": "evaluateHeatFlux uses multi-output syntax",
+          "expected": "Heat flux is evaluated with multiple separate output variables ([qx, qy] for 2-D or [qx, qy, qz] for 3-D), not a single struct output."
+        },
+        {
+          "id": "a7",
+          "type": "code_executes",
+          "description": "Generated script runs without error in MATLAB"
+        }
+      ]
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 # Copyright 2026 The MathWorks, Inc.
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Show all installed MATLAB products and support packages for a given MATLAB installation folder.
 matlab-release: ">=R2023a"
-requires-tools: []
-requires-skills: []
-requires-products: []
+required-tools: []
+required-skills: []
+required-products: []
 toolkit: matlab-agentic-toolkit

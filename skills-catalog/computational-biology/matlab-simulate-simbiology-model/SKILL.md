@@ -4,7 +4,7 @@ description: "Simulate SimBiology models — ODE, stochastic (SSA), scenarios, a
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Simulate SimBiology Models
@@ -124,11 +124,11 @@ cs.SolverType = 'ode15s';
 simData = sbiosimulate(m);
 ```
 
-With a dose:
+With a dose (configset is **required** as 2nd argument when passing doses):
 ```matlab
 d = sbiodose('Bolus', 'schedule');
 d.TargetName = 'Drug'; d.Amount = 100; d.Time = 0;
-simData = sbiosimulate(m, cs, d);
+simData = sbiosimulate(m, cs, d);  % NOT sbiosimulate(m, d) — errors
 ```
 
 ## Plotting Results
@@ -168,6 +168,20 @@ three-output form:
 ```matlab
 [t, x, names] = sbiosimulate(m, cs, d);  % t, x are double arrays directly
 ```
+
+### Acceleration (`sbioaccelerate`)
+
+For repeated `sbiosimulate` calls on the same model, accelerate once first:
+```matlab
+sbioaccelerate(m);
+simData = sbiosimulate(m);  % faster
+```
+
+**Rules:**
+- Call only right before `sbiosimulate` — not before fitting or analysis functions
+- Valid after changing parameter/species **values** (e.g., `p.Value = 0.2`)
+- **Invalidated** by structural changes (adding reactions, species, compartments) — must re-accelerate
+- Do NOT use with `createSimFunction`, Scenarios, sensitivity, or fitting — these handle acceleration internally via `AutoAccelerate`
 
 ## Repeated Simulation (`createSimFunction`)
 

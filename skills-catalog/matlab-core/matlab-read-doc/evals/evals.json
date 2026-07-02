@@ -1,0 +1,712 @@
+[
+  {
+    "id": "discover-functions-for-product",
+    "name": "Discover available functions for a product topic",
+    "description": "User needs to find which functions exist for AUTOSAR ARXML export. Tests whether the agent can efficiently deliver a comprehensive, accurate function catalog.",
+    "prompt": "I need to work with AUTOSAR code generation settings programmatically. What functions are available for configuring ARXML export options? Give me a comprehensive list with descriptions. Save your final answer as a markdown file in the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset must be installed. Create output folder: sandbox/eval1_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Agent delivers a comprehensive function list covering export, import, and configuration",
+        "expected": "Lists at least 8 real functions spanning: export (export, exportDictionary), import (arxml.importer), properties (getAUTOSARProperties, setAUTOSARProperties), XML options (setXmlOptions, getXmlOptions), and architecture (autosar.arch.createModel or similar). Missing an entire category (e.g., no import functions) is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "convention_followed",
+        "description": "Agent lists the real ARXML export configuration functions",
+        "expected": "Mentions at least one of: setXmlOptions, getXmlOptions, or ArxmlFilePackaging. These are the core XML option configuration functions. Not mentioning any of them is F."
+      },
+      {
+        "id": "b2_a2",
+        "type": "convention_followed",
+        "description": "Each function has an accurate purpose description",
+        "expected": "Every listed function has a one-line description that matches actual behavior. P: all accurate. P-: vague/generic descriptions without specifics. F: incorrect descriptions."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "find-workflow-page",
+    "name": "Navigate documentation to find a specific workflow page and build a working model",
+    "description": "User wants to learn how to programmatically create AUTOSAR software components. Tests whether the agent can locate the correct page, deliver actionable content, and produce a model that simulates and generates code on first try.",
+    "prompt": "I want to learn how to programmatically create AUTOSAR software components in a System Composer architecture model. Find me the right documentation page, show me the key steps, then create a working example model that demonstrates the workflow. The model must simulate and generate code successfully. Save the model, generated code, and a summary of the steps to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset and System Composer must be installed. Create output folder: sandbox/eval2_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Agent creates an AUTOSAR architecture model, not a flat Simulink model",
+        "expected": "Uses autosar.arch.createModel or equivalent architecture API. A flat Simulink model with new_system + AUTOSAR mapping applied after is F \u2014 it's not what was requested.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "output_contains",
+        "description": "Agent finds and delivers the correct programmatic workflow documentation page",
+        "expected": "configure-autosar-architecture-model-programmatically",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "convention_followed",
+        "description": "Response includes a complete workflow with specific API calls",
+        "expected": "Includes at least: createModel, addComponent, addPort, connect, and setPlatform. Missing setPlatform or createModel is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a4",
+        "type": "convention_followed",
+        "description": "Agent does not return a GUI-focused page instead of the programmatic one",
+        "expected": "Response focuses on programmatic API calls (createModel, addComponent, connect, etc.), not GUI instructions (Architecture Editor, drag-and-drop, toolstrip clicks). Delivering primarily GUI instructions when programmatic was requested is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Architecture creation executes (components, ports, connections, platform)",
+        "expected": "Architecture structure created successfully. P: \u22641 fix call. P-: 2 fix calls. F: 3+ fix calls."
+      },
+      {
+        "id": "b2_a2",
+        "type": "code_executes",
+        "description": "Behavior model population executes (add_block, add_line inside components)",
+        "expected": "Blocks added and connected inside component behavior models. P: \u22643 fix calls. P-: 4-5 fix calls. F: 6+ fix calls. Block wiring inside architecture components is inherently harder than flat models."
+      },
+      {
+        "id": "b2_a3",
+        "type": "model_simulates",
+        "description": "Model simulates successfully",
+        "expected": "sim() completes. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes. (Relaxed threshold \u2014 architecture models are harder to simulate.)"
+      },
+      {
+        "id": "b2_a4",
+        "type": "code_generates",
+        "description": "Model generates code successfully",
+        "expected": "export() or slbuild produces code. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "release-notes-lookup",
+    "name": "Find what's new in a specific release",
+    "description": "User wants to know what features were added in R2025a for Embedded Coder. This information is ONLY available on the web \u2014 not in local help. Should be a fast-path operation.",
+    "prompt": "What's new in R2025a for Embedded Coder? List the new features and changes that were introduced in that release. Save the formatted release notes summary to the output folder.",
+    "context": {
+      "setup": "Embedded Coder must be installed. Note: release notes are only available on the web doc center, not from local help. Create output folder: sandbox/eval3_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "a1",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Code Generation from MATLAB Code' section",
+        "expected": "Mentions at least one of: coder.profile.test.runTests, or Code Profile Analyzer app. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a2",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Model Architecture and Design' section",
+        "expected": "Mentions at least one of: AllChoicesCoderInfo, ActiveChoiceCoderInfo, Simulink.VariantBank, Simulink.VariantControl, Simulink.VariantVariable, or slexpr. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a3",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Code Interface Configuration and Integration' section",
+        "expected": "Mentions at least one of: subcomponent-level code interface packaging, persistency service, service code interface, or GenerateASAP2 removal. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a4",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Code Generation' section",
+        "expected": "Mentions at least one of: Simulink.IntEnumType, preserving MATLAB namespaces in generated code, symbolic dimension support, or Architectural Data Editor. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a5",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Deployment' section",
+        "expected": "Mentions at least one of: coder.asap2.export, DDS Blockset on ARM 64, or ASAP2 variant coding. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a6",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Performance' section",
+        "expected": "Mentions at least one of: unified buffer reuse candidates, Code Replacement Tool, SIMD code for Logical Operator, or SIMD code for Data Type Conversion. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a7",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Verification' section",
+        "expected": "Mentions at least one of: atomic subsystem SIL, atomic subsystem PIL, or tuning model workspace parameters during SIL/PIL simulation. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a8",
+        "type": "convention_followed",
+        "description": "Mentions feature from 'Hardware Support' section",
+        "expected": "Mentions at least one of: Hexagon, Helium, AURIX, Cortex-M55, STM32F1, STM32G0, TC3x, TC4x, eNPU Predict, MCAN Transmit, or MCAN Receive. Not mentioning any feature from this section is F."
+      },
+      {
+        "id": "a9",
+        "type": "convention_followed",
+        "description": "Agent uses an efficient retrieval strategy (direct URL or minimal navigation)",
+        "expected": "Agent fetches release notes via a direct URL pattern (e.g., release-notes.md or release-notes.html) or reaches the release notes page within 2 navigation steps. P: direct fetch with no intermediate page crawling. P-: 1-2 intermediate navigations before finding the release notes. F: 3+ navigation steps, multiple 404s, or guessing multiple URLs before finding the content."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "autosar-architecture-end-to-end",
+    "name": "Build AUTOSAR Classic architecture with SR and CS communication",
+    "description": "Complex end-to-end task: build an AUTOSAR architecture model with both sender-receiver and client-server communication. Model must simulate and export to ARXML+C.",
+    "prompt": "Create an AUTOSAR software architecture model configured for the AUTOSAR Classic Platform that contains both sender-receiver and client-server communication. Use MathWorks best practices. Include interface definitions, port connections, and platform configuration. The model must simulate successfully and export to ARXML + C code. Save the model, exported ARXML, generated C code, and the creation script to the output folder for review.",
+    "context": {
+      "setup": "AUTOSAR Blockset, System Composer, and Simulink must be installed. Create output folder: sandbox/eval4_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Uses AUTOSAR architecture APIs and best-practice workflow",
+        "expected": "Uses autosar.arch.createModel (not new_system), data dictionary for interfaces (Simulink.dictionary.archdata), and sets Classic Platform explicitly. Missing any one of these is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Model includes both sender-receiver AND client-server communication",
+        "expected": "Both communication patterns present with proper interface definitions: S-R with data elements for data exchange and C-S with operation definitions for service calls. Missing either pattern is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Creation script executes without approach abandonment",
+        "expected": "Script runs end-to-end. P: \u22645 fix calls (syntax/enum fixes, no approach abandonment). P-: 6-10 fix calls with no abandonment. F: any approach abandonment OR 11+ fix calls. The key signal: quick error\u2192fix is fine; starting over is not."
+      },
+      {
+        "id": "b2_a2",
+        "type": "model_simulates",
+        "description": "Model simulates successfully",
+        "expected": "sim() completes. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes. (Relaxed \u2014 architecture models are harder to simulate.)"
+      },
+      {
+        "id": "b2_a3",
+        "type": "code_generates",
+        "description": "Model exports to ARXML + C code",
+        "expected": "export() produces ARXML + C for all components. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes OR requires model restructuring to make export work."
+      }
+    ],
+    "timeout_seconds": 900,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "arxml-export-parameter-names",
+    "name": "Use exact ARXML export property names from ref page",
+    "description": "Tests whether the agent delivers working code with exact property names. Creates a model, configures export options, and produces a single-file ARXML export.",
+    "prompt": "Create a simple AUTOSAR architecture model, then configure AUTOSAR XML export with these requirements: (1) Export all ARXML into a single file instead of the default per-component split, (2) Use schema version 4.3 for the exported ARXML. Execute the configuration, simulate the model, and export to ARXML. Save the model, exported ARXML, and the configuration script to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset must be installed. Create output folder: sandbox/eval5_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a0",
+        "type": "convention_followed",
+        "description": "Agent creates an architecture model as requested",
+        "expected": "Uses autosar.arch.createModel or equivalent architecture API. Pivoting to a flat model (new_system, autosar.tlc) is F \u2014 the prompt explicitly says 'architecture model'.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a1",
+        "type": "output_contains",
+        "description": "Agent uses the exact property name ArxmlFilePackaging",
+        "expected": "ArxmlFilePackaging",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Agent correctly handles schema version (model parameter, not setXmlOptions)",
+        "expected": "Identifies that schema version is set via set_param(mdl, 'AutosarSchemaVersion', '4.3') \u2014 a model parameter, NOT a setXmlOptions property. Calling setXmlOptions with a schema version property is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Configuration commands execute without property errors",
+        "expected": "setXmlOptions and set_param execute without 'unrecognized property' or 'invalid value' errors. P: first try. P-: 1 value fix (right property, wrong value enum). F: wrong property names requiring discovery loop."
+      },
+      {
+        "id": "b2_a2",
+        "type": "model_simulates",
+        "description": "Model simulates successfully",
+        "expected": "sim() completes. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes. (Relaxed \u2014 architecture models are harder to simulate.)"
+      },
+      {
+        "id": "b2_a3",
+        "type": "code_generates",
+        "description": "ARXML export produces expected output",
+        "expected": "export() succeeds and confirms single-file packaging. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "deprecated-api-replacement",
+    "name": "Find recommended replacement for deprecated AUTOSAR.Parameter",
+    "description": "Tests whether the agent can identify that AUTOSAR.Parameter is not recommended, find the modern replacement workflow (Simulink.Parameter + Code Mappings), and produce a working model using the recommended approach.",
+    "prompt": "I have legacy code that uses AUTOSAR.Parameter objects in the base workspace to model calibration parameters for an AUTOSAR component. I've heard this approach may be outdated. What's the current recommended way to model AUTOSAR calibration parameters? Show me the modern workflow and create a working example model with at least two calibration parameters that generates code successfully. Save the model, generated code, and your migration script to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset and Embedded Coder must be installed. Create output folder: sandbox/eval6_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Identifies AUTOSAR.Parameter as not recommended and names the correct replacement",
+        "expected": "Explicitly states that AUTOSAR.Parameter is not recommended or deprecated. Must not present AUTOSAR.Parameter as a valid current approach. Correctly identifies Simulink.Parameter objects and autosar.api.getSimulinkMapping as the replacement. Failing to identify the correct replacement is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Identifies correct modern replacement workflow",
+        "expected": "Recommends Simulink.Parameter in the model workspace with Code Mappings (autosar.api.getSimulinkMapping / mapParameter). Must NOT recommend AUTOSAR4.Parameter or AUTOSAR.DualScaledParameter as the primary replacement. Wrong recommendation is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "convention_followed",
+        "description": "Final working model does not rely on deprecated class",
+        "expected": "The final recommended solution uses Simulink.Parameter objects with Code Mappings. The agent may mention or demonstrate AUTOSAR.Parameter for migration context (showing 'before' state), but the final model the user would keep must not depend on AUTOSAR.Parameter. Recommending AUTOSAR.Parameter as the solution is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Migration script executes",
+        "expected": "Model creation + parameter configuration runs. P: \u22643 fix calls. P-: 4-5 fix calls. F: 6+ fix calls. AUTOSAR code mapping APIs have version-specific behavior \u2014 moderate fix counts are expected."
+      },
+      {
+        "id": "b2_a2",
+        "type": "model_simulates",
+        "description": "Model simulates",
+        "expected": "sim() completes. P: \u22641 fix. P-: 2 fixes. F: 3+ fixes."
+      },
+      {
+        "id": "b2_a3",
+        "type": "code_generates",
+        "description": "Model generates C code with calibration parameters visible",
+        "expected": "slbuild produces C code. P: \u22641 fix. P-: 2 fixes. F: 3+ fixes."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "migrate-interface-dictionary",
+    "name": "Find replacement for deprecated Simulink.interface.dictionary APIs",
+    "description": "Tests whether the agent can identify that Simulink.interface.dictionary.create is not recommended, discover the modern replacement (Simulink.dictionary.archdata.create / Simulink.dictionary.ArchitecturalData), and produce a working example using the new API.",
+    "prompt": "I have legacy code that uses Simulink.interface.dictionary.create to manage AUTOSAR interfaces in a standalone dictionary file (.sldd). I want to migrate to whatever MathWorks currently recommends. Find the modern replacement API, explain what changed, and create a working example that: (1) creates an architectural data dictionary, (2) defines a sender-receiver data interface with two data elements, (3) defines a custom value type, (4) adds an AUTOSAR Classic platform mapping, and (5) saves the dictionary. The script must execute cleanly. Save the migration script and a summary of the API changes to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset and System Composer must be installed. Create output folder: sandbox/eval9_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Identifies deprecated API and names correct replacement",
+        "expected": "Explicitly states that Simulink.interface.dictionary.create (and the Simulink.interface.Dictionary object) is not recommended. Correctly identifies Simulink.dictionary.archdata.create and Simulink.dictionary.ArchitecturalData as the replacement (introduced R2023b). Failing to name the correct replacement is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Final working example uses only modern API",
+        "expected": "The final script the user would keep uses Simulink.dictionary.archdata.create, not Simulink.interface.dictionary.create. The agent may mention or reference the deprecated API for migration context, but the working example must not depend on it. Using the deprecated API in the final solution is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "convention_followed",
+        "description": "Example uses correct modern API methods for all 5 requirements",
+        "expected": "Script calls: (1) Simulink.dictionary.archdata.create, (2) addDataInterface + addElement for S-R interface with 2 data elements, (3) addValueType or addNumericType for a custom type, (4) addPlatformMapping for AUTOSAR Classic, (5) save. Missing any requirement is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a4",
+        "type": "convention_followed",
+        "description": "Explains key API differences between old and new",
+        "expected": "Mentions at least 2 of: (1) namespace change (Simulink.interface.dictionary \u2192 Simulink.dictionary.archdata), (2) object type change (Simulink.interface.Dictionary \u2192 Simulink.dictionary.ArchitecturalData), (3) dictionary type change, (4) R2023b introduction. Fewer than 2 is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Migration script executes cleanly",
+        "expected": "The MATLAB script runs end-to-end producing a valid .sldd file. P: \u22641 fix call. P-: 2-3 fix calls. F: 4+ fix calls. The archdata API is new (R2023b) \u2014 2-3 fixes for type/argument issues is reasonable."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "autosar-behavior-model-blocks",
+    "name": "Add Simulink block behavior to AUTOSAR component",
+    "description": "Tests whether the agent can programmatically add Simulink block content (behavior) inside an AUTOSAR software component. Requires knowing how to open a component's behavior model, add blocks, connect them, configure parameters, and produce AUTOSAR-compliant C code.",
+    "prompt": "I have an AUTOSAR Classic architecture model with a software component called 'Controller'. I need to add behavior to this component: a PID controller that reads a sensor value from a sender-receiver input port, computes a control signal, and writes the output to a sender-receiver output port. Create the architecture model with the component, open its behavior model, add the PID Controller block and any necessary blocks (Unit Delay, Sum, etc.), connect everything to the component's inport and outport, configure the PID gains (P=2.5, I=0.8, D=0.1), simulate, and generate code. Save everything to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset, System Composer, Simulink, and Simulink Control Design must be installed. Create output folder: sandbox/eval7_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Agent creates an AUTOSAR architecture model, not a flat Simulink model",
+        "expected": "Uses autosar.arch.createModel and correct API to create/open the behavior model for the component (e.g., createModel or linkToModel). A flat Simulink model with new_system is F \u2014 the prompt explicitly describes an architecture model.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "PID Controller block added with correct parameter names",
+        "expected": "Adds PID Controller block and sets gains using exact parameter names: P, I, D (or Kp, Ki, Kd depending on variant). Wrong parameter names (ProportionalGain, PGain) that require correction are not a gate fail. Completely wrong block type is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "convention_followed",
+        "description": "Signal flow is complete from input to output",
+        "expected": "PID controller input connects to the component's inport (sensor value) and output connects to the component's outport (control signal). Complete signal path required. Unconnected ports in final model is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "code_executes",
+        "description": "Architecture creation executes (model, component, ports)",
+        "expected": "Architecture model created with Controller component and ports. P: \u22641 fix call. P-: 2 fix calls. F: 3+ fix calls."
+      },
+      {
+        "id": "b2_a2",
+        "type": "code_executes",
+        "description": "Behavior model population executes (blocks, connections, parameters)",
+        "expected": "Blocks added, connected, and configured inside the behavior model. P: \u22643 fix calls. P-: 4-5 fix calls. F: 6+ fix calls. add_line port syntax inside architecture components is inherently error-prone."
+      },
+      {
+        "id": "b2_a3",
+        "type": "model_simulates",
+        "description": "Model simulates successfully",
+        "expected": "sim() completes. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes. (Relaxed \u2014 architecture models are harder to simulate.)"
+      },
+      {
+        "id": "b2_a4",
+        "type": "code_generates",
+        "description": "Generates AUTOSAR-compliant C code with RTE calls",
+        "expected": "Generated code contains Rte_IRead/Rte_IWrite for sender-receiver ports. P: \u22642 fixes. P-: 3-4 fixes. F: 5+ fixes."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "autosar-specific-blocks",
+    "name": "Use AUTOSAR-specific library blocks instead of Simulink equivalents",
+    "description": "Tests whether the agent can find and use AUTOSAR-specific blocks from the autosarlib library (Classic Platform/Library Routines) instead of their generic Simulink equivalents. The AUTOSAR interpolation blocks generate AUTOSAR library routine calls in the C code rather than generic implementations.",
+    "prompt": "Create an AUTOSAR Classic component behavior model that implements an engine torque lookup. The generated code must call AUTOSAR IFX (fixed-point) or IFL (floating-point) library routines (e.g., Ifx_IntIpoCur, Ifl_IntIpoMap) instead of generic interpolation implementations. Requirements: (1) Use an AUTOSAR-specific 1-D interpolation block for a speed-to-base-torque lookup, (2) Use an AUTOSAR-specific 2-D interpolation block for a speed+load-to-torque-correction lookup, (3) Multiply the base torque by the correction factor, (4) Apply an AUTOSAR-specific rate limiter block to limit the rate of change of the final output. Do NOT use standard Simulink Lookup Table blocks or the standard Simulink Ramp \u2014 find and use the AUTOSAR library routine equivalents that generate IFX/IFL code. The model must simulate and generate code successfully. Save the model, generated code, and creation script to the output folder.",
+    "context": {
+      "setup": "AUTOSAR Blockset, System Composer, and Embedded Coder must be installed. Create output folder: sandbox/eval8_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Uses AUTOSAR-specific interpolation blocks, not Simulink Lookup Tables",
+        "expected": "Uses blocks from autosarlib/Classic Platform/Library Routines/Interpolation (Curve for 1-D, Map for 2-D). Does NOT use simulink/Lookup Tables/n-D Lookup Table or Interpolation Using Prelookup. Using standard Simulink lookup blocks is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Uses AUTOSAR-specific rate limiter block, not Simulink equivalent",
+        "expected": "Uses the Ramp block from autosarlib/Classic Platform/Library Routines/Math Operations. Does NOT use simulink/Sources/Ramp or standard Rate Limiter. Using standard Simulink blocks is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "code_generates",
+        "description": "Generated code contains AUTOSAR library routine calls",
+        "expected": "slbuild produces C code that calls AUTOSAR IFL/IFX interpolation routines (e.g., Ifl_IntIpoCur_*, Ifl_IntIpoMap_*, Mfl_RampCalc or equivalent). Generic lookup table implementations in generated code is F \u2014 the user explicitly required library routine calls.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "convention_followed",
+        "description": "Block parameters are configured with correct names and valid values",
+        "expected": "Interpolation blocks have breakpoint and table data configured. Rate block has limit parameters set. P: no 'unrecognized parameter' errors. P-: 1 parameter fix. F: 2+ parameter fixes."
+      },
+      {
+        "id": "b2_a2",
+        "type": "code_executes",
+        "description": "Creation script executes",
+        "expected": "Model creation, block addition, and configuration all execute. P: \u22642 fix calls. P-: 3-4 fix calls. F: 5+ fix calls."
+      },
+      {
+        "id": "b2_a3",
+        "type": "model_simulates",
+        "description": "Model simulates successfully",
+        "expected": "sim() completes. P: \u22641 fix. P-: 2 fixes. F: 3+ fixes."
+      }
+    ],
+    "timeout_seconds": 900,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "recover-from-broken-url",
+    "name": "Recover from a 404 by navigating the index instead of guessing alternative URLs",
+    "description": "User provides a broken documentation URL (page was renamed in R2023b) and asks for the content. Tests whether the agent uses index navigation to discover the correct URL rather than guessing variations. Without the skill, agents typically try 5-15 URL mutations before giving up or finding it by luck.",
+    "prompt": "I tried to read this documentation page but it doesn't work anymore: https://www.mathworks.com/help/ecoder/ref/generate-xml-file-for-adaptive-schema-version.html \u2014 I need the content from that page. It was about generating XML files for AUTOSAR Adaptive schema versions in Embedded Coder. Find the correct current page and give me the key information. Save the content summary to the output folder.",
+    "context": {
+      "setup": "Embedded Coder and AUTOSAR Blockset must be installed. Create output folder: sandbox/eval10_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Agent uses index navigation strategy after the initial 404, not URL guessing",
+        "expected": "After encountering the 404 on the provided URL, the agent navigates via fetch_product_index or extract_page_slugs (or equivalent index crawling) to discover the correct page. Does NOT try 2+ guessed URL variations (e.g., changing slug hyphens, trying different subdirectories, removing words from slug). Trying the user-provided URL first is acceptable (1 allowed 404). P: uses index navigation immediately after first 404. F: tries 2+ guessed alternatives before finding it, or never finds the correct page.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "output_contains",
+        "description": "Agent finds the correct relocated page in the AUTOSAR product",
+        "expected": "generating-autosar-code-and-description-files-adaptive",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "convention_followed",
+        "description": "Agent delivers accurate information from the fetched page",
+        "expected": "Response includes specific technical details (function names, parameter names, workflow steps) from the actual page at generatexmlfileforschemaversionforadaptiveplatform.html. Generic descriptions guessed from training data do not count \u2014 must show evidence of having fetched and read the page. P: specific details clearly from the page. P-: some details but mixed with generic. F: no evidence of having read the actual page."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "retrieve-reference-info-two-toolboxes",
+    "name": "Summarize information from reference documentation for Optimization Toolbox and Mapping Toolbox",
+    "description": "User asks for specific function information from two different toolboxes. Tests whether the agent can efficiently retrieve and accurately report reference documentation content without hallucinating URLs or function details.",
+    "prompt": "Find some information about functions in MATLAB and its toolboxes. First, tell me how to specify lower and upper linear inequalities for linprog and intlinprog solvers. Second, tell me how to display buildings to a geographic globe using the addCustomBuildings function. After reporting out the information, summarize your sources for the information.",
+    "context": {
+      "setup": "Optimization Toolbox and Mapping Toolbox must be installed. Create output folder: sandbox/eval11_run{N}_{withskill|noskill}/"
+    },
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "convention_followed",
+        "description": "Agent delivers reference-page depth for both topics",
+        "expected": "For linprog/intlinprog: must describe the full constraint formulation (A*x \u2264 b with matrix dimensions, lb \u2264 x \u2264 ub) AND at least one Name-Value option (e.g., Algorithm, Display). For addCustomBuildings: must describe at least 2 Name-Value pairs (e.g., CoordinateData, HeightData, FaceColor). Delivering only what 'help' shows (basic syntax line) without argument detail is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "convention_followed",
+        "description": "Agent uses help or webread to find information",
+        "expected": "Agent uses MATLAB help command (e.g., help linprog, help addCustomBuildings) or webread to fetch documentation pages. Answering purely from training data without consulting any source is F. P: uses help or webread for both topics. P-: uses source for one topic only."
+      },
+      {
+        "id": "b2_a2",
+        "type": "convention_followed",
+        "description": "Information is implementation-ready, not just overview-level",
+        "expected": "For linprog/intlinprog: must include the exact cell-array syntax {bl, b} AND describe what happens with the output (e.g., Lagrange multiplier fields or exitflag behavior with range constraints). For addCustomBuildings: must describe the required geospatial table variables (Shape, MinHeight, MaxHeight) with their types/units, not just the top-level function signature. P: implementation-ready detail for both. P-: implementation-ready for one topic, overview-level for the other. F: both topics at overview level only, or incorrect information."
+      },
+      {
+        "id": "b2_a3",
+        "type": "convention_followed",
+        "description": "Uses the correct variable names for the Buildings data geospatial table input argument",
+        "expected": "From the reference page, the table variables are: Shape, MinHeight, MaxHeight. P: all variable names correct. F: uses other variable names (e.g., 'Height' instead of MinHeight/MaxHeight), or uses fewer variables."
+      }
+    ],
+    "timeout_seconds": 600,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  },
+  {
+    "id": "airport-departure-optimization",
+    "name": "Optimize airport departure path for multiple constraints with 3D plot",
+    "description": "Complex multi-toolbox task: solve a map-based optimal control problem minimizing fuel burn, departure time, and ground-noise exposure for a 737-300 departing SNA, then plot the georeferenced 3D trajectory over a basemap with noise overlays. Tests whether the agent uses the doc skill to discover correct toolbox functions and produces working, converging code.",
+    "prompt": "Use MATLAB and its toolboxes to solve a map-based optimal control problem. SNA is a highly noise-sensitive airport. For the initial climb of a 737-300, minimize a weighted sum of fuel burn, departure distance/time, and a ground-noise exposure metric, subject to nonlinear aircraft dynamics, safe takeoff constraints, and runway geometry associated with SNA Runway 02L/20R, published as 5,700 ft by 150 ft. Create a georeferenced 3D departure trajectory plotted over an SNA-area basemap together with official airport noise-monitoring and noise-contour overlays. Noise monitoring station locations are provided in sna_noise_monitors.csv in your working directory. Use MathWorks documentation and help to determine correct functions and syntax. Give me a plan before building the algorithm. Save all scripts, figures, and outputs to the output folder.",
+    "context": {
+      "setup": "Optimization Toolbox, Mapping Toolbox, and Aerospace Toolbox should be installed. Create output folder: sandbox/eval12_run{N}_{withskill|noskill}/"
+    },
+    "files": [
+      "evals/fixtures/sna_noise_monitors.csv"
+    ],
+    "assertions": [
+      {
+        "id": "b1_a1",
+        "type": "code_executes",
+        "description": "Code runs without errors",
+        "expected": "All generated scripts execute end-to-end without uncaught errors. Warnings are acceptable. Any unresolved error that halts execution is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a2",
+        "type": "convention_followed",
+        "description": "Uses Optimization Toolbox and Mapping Toolbox at minimum",
+        "expected": "Code calls functions from Optimization Toolbox (fmincon, fminunc, ga, optimoptions, or similar) AND Mapping Toolbox (geoplot, geobasemap, geoglobe, geoshow, or similar). Missing either toolbox entirely is F.",
+        "weight": 2.0
+      },
+      {
+        "id": "b1_a3",
+        "type": "convention_followed",
+        "description": "Uses documentation or help to verify functions, as requested in the prompt",
+        "expected": "The prompt explicitly requires 'Use MathWorks documentation and help to determine correct functions and syntax.' Agent must consult documentation (help, doc, webread to mathworks.com, or skill scripts) for at least 2 toolbox functions before using them. Any method counts. F: no evidence of documentation consultation, which indicates the agent proceeds from training data.",
+        "weight": 2.0
+      },
+      {
+        "id": "b2_a1",
+        "type": "convention_followed",
+        "description": "No hallucinated functions",
+        "expected": "Every function called in the generated code exists in the installed MATLAB + toolboxes. P: all functions real. P-: 1 hallucinated function that is caught and corrected. F: 2+ hallucinated functions in the final delivered code."
+      },
+      {
+        "id": "b2_a2",
+        "type": "convention_followed",
+        "description": "Function syntax errors fewer than 3",
+        "expected": "P: 0 syntax errors in final code (wrong argument order, wrong property names, invalid options). P-: 1-2 syntax errors that required fix calls. F: 3+ syntax errors requiring correction."
+      },
+      {
+        "id": "b2_a3",
+        "type": "convention_followed",
+        "description": "Optimization converges to a solution",
+        "expected": "The optimizer (fmincon or equivalent) reports convergence (exitflag > 0) or produces a physically reasonable trajectory. P: converges first try. P-: converges after adjusting tolerances or initial guess. F: does not converge or produces nonsensical trajectory (e.g., underground, backwards)."
+      },
+      {
+        "id": "b2_a4",
+        "type": "convention_followed",
+        "description": "Plots departure path and noise monitoring stations on 3D georeferenced map of SNA area",
+        "expected": "Final output includes a 3D plot (geoplot3, geoglobe, or geographic axes with altitude) showing: (1) the departure trajectory, (2) noise monitoring station locations, (3) basemap of SNA vicinity. Missing any of these three elements is F. A 2D-only plot without altitude representation is P-."
+      }
+    ],
+    "timeout_seconds": 1920,
+    "metrics": {
+      "tool_calls": "Total tool calls in the session",
+      "fix_calls": "Tool calls that fix a prior error (error \u2192 correction cycle)",
+      "wasted_calls": "Calls that did not advance the task: dead-ends, no-info returns, abandonments",
+      "404_calls": "HTTP 404 errors from documentation URL fetches (informational)",
+      "cost_ratio": "This condition's total calls / other condition's total calls"
+    },
+    "scoring": {
+      "model": "B1 gate (all must pass) \u2192 B2 score. B3 graded post-hoc from metrics."
+    }
+  }
+]

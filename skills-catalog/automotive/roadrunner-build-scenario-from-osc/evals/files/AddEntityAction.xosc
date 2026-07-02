@@ -1,0 +1,687 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 The MathWorks, Inc. -->
+<OpenSCENARIO>
+    <FileHeader author="MathWorks RoadRunner" date="2025-11-10T23:36:06" description="Exported from RoadRunner version R2025b Update 3 (1.11.3.e3568b7a0b1)" revMajor="1" revMinor="1"/>
+    <ParameterDeclarations/>
+    <CatalogLocations/>
+    <RoadNetwork>
+        <LogicFile filepath="RoadNetwork1.xodr"/>
+    </RoadNetwork>
+    <Entities>
+        <ScenarioObject name="Backhoe">
+            <Vehicle mass="3500" model3d="Vehicles/CementTruck.fbx" name="Backhoe" vehicleCategory="truck">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.173545" y="-0.000000" z="1.75796"/>
+                    <Dimensions height="3.51623" length="7.79187" width="3.03103"/>
+                </BoundingBox>
+                <Performance maxAcceleration="3" maxDeceleration="3" maxSpeed="30"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.55221" positionZ="0.477118" trackWidth="2.1" wheelDiameter="0.954235"/>
+                    <RearAxle maxSteering="0" positionX="-0.543723" positionZ="0.637772" trackWidth="2.43022" wheelDiameter="1.27554"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="CementTruck">
+            <Vehicle mass="2250" model3d="Vehicles/CementTruck.fbx" name="CementTruck" vehicleCategory="truck">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0.000000" y="-0.000000" z="1.92868"/>
+                    <Dimensions height="3.85199" length="9.03399" width="2.67363"/>
+                </BoundingBox>
+                <Performance maxAcceleration="3" maxDeceleration="3" maxSpeed="50"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="3.42705" positionZ="0.540311" trackWidth="1.55189" wheelDiameter="1.08062"/>
+                    <RearAxle maxSteering="0" positionX="-2.68505" positionZ="0.540305" trackWidth="2.14627" wheelDiameter="1.08061"/>
+                    <AdditionalAxle maxSteering="0" positionX="-1.55273" positionZ="0.540305" trackWidth="2.14627" wheelDiameter="1.08061"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="CompactCar">
+            <Vehicle mass="1500" model3d="Vehicles/CompactCar.fbx" name="CompactCar" vehicleCategory="car">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="0" y="0" z="0.705196"/>
+                    <Dimensions height="1.41489" length="3.65698" width="1.86693"/>
+                </BoundingBox>
+                <Performance maxAcceleration="5" maxDeceleration="5" maxSpeed="65"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="1.17035" positionZ="0.315215" trackWidth="1.19184" wheelDiameter="0.63043"/>
+                    <RearAxle maxSteering="0" positionX="-1.2491" positionZ="0.315215" trackWidth="1.19184" wheelDiameter="0.63043"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+        <ScenarioObject name="Ambulance">
+            <Vehicle mass="2000" model3d="Vehicles/Ambulance.fbx" name="Ambulance" vehicleCategory="van">
+                <ParameterDeclarations/>
+                <BoundingBox>
+                    <Center x="-0.000003" y="0.000000" z="1.25339"/>
+                    <Dimensions height="2.51114" length="6.52112" width="2.55945"/>
+                </BoundingBox>
+                <Performance maxAcceleration="3" maxDeceleration="3" maxSpeed="50"/>
+                <Axles>
+                    <FrontAxle maxSteering="0.698132" positionX="2.31286" positionZ="0.391857" trackWidth="1.65684" wheelDiameter="0.783714"/>
+                    <RearAxle maxSteering="0" positionX="-1.3045" positionZ="0.391858" trackWidth="2.0404" wheelDiameter="0.783716"/>
+                </Axles>
+                <Properties/>
+            </Vehicle>
+        </ScenarioObject>
+    </Entities>
+    <Storyboard>
+        <Init>
+            <Actions/>
+        </Init>
+        <Story name="Story">
+            <Act name="Act">
+                <ManeuverGroup maximumExecutionCount="1" name="Act_GlobalGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                    <Maneuver name="Act_Maneuver">
+                        <Event name="ForceActToExecuteUntilStopTrigger" priority="parallel">
+                            <Action name="NeverExecutedAction">
+                                <UserDefinedAction>
+                                    <CustomCommandAction type="MW_WaitAction"/>
+                                </UserDefinedAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="NeverSatisfiedCondition">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Story" storyboardElementType="story"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0" name="SimulationStart">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterOrEqual" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="5" name="Duration">
+                            <ByValueCondition>
+                                <StoryboardElementStateCondition state="runningState" storyboardElementRef="Act" storyboardElementType="act"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+            <Act name="Act2">
+                <ManeuverGroup maximumExecutionCount="1" name="Act2_BackhoeGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Backhoe"/>
+                    </Actors>
+                    <Maneuver name="Act2_BackhoeGroup_Maneuver">
+                        <Event name="Act2_BackhoeGroup_Event" priority="parallel">
+                            <Action name="Backhoe_EntityAction">
+                                <GlobalAction>
+                                    <EntityAction entityRef="Backhoe">
+                                        <AddEntityAction>
+                                            <Position>
+                                                <LanePosition laneId="-1" offset="-0.000000" roadId="25" s="25.9788">
+                                                    <Orientation h="0.124364" p="0" r="0" type="absolute"/>
+                                                </LanePosition>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <Action name="Backhoe_SpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="17.8816"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="Phase_State">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Act" storyboardElementType="act"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="Act2_CementTruckGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="CementTruck"/>
+                    </Actors>
+                    <Maneuver name="Act2_CementTruckGroup_Maneuver">
+                        <Event name="Act2_CementTruckGroup_Event" priority="parallel">
+                            <Action name="CementTruck_EntityAction">
+                                <GlobalAction>
+                                    <EntityAction entityRef="CementTruck">
+                                        <AddEntityAction>
+                                            <Position>
+                                                <LanePosition laneId="-1" offset="-0.000000" roadId="215" s="6.67603">
+                                                    <Orientation h="0.170215" p="0" r="0" type="absolute"/>
+                                                </LanePosition>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <Action name="CementTruck_FollowTrajectoryAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <None/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <Trajectory closed="false" name="CementTruck_Trajectory">
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-82.4553" y="-11.5087" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-80.1735" y="-11.1165" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-73.3818" y="-9.94917" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-72.8127" y="-9.85135" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-69.4618" y="-9.27541" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-69.4125" y="-9.26694" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170215" p="0" r="0" x="-62.9674" y="-8.15916" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.170219" p="0" r="0" x="-59.956" y="-7.64157" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.167481" p="0" r="0" x="-59.8695" y="-7.6267" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.164722" p="0" r="0" x="-57.2766" y="-7.1886" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.159407" p="0" r="0" x="-54.6814" y="-6.76429" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.154091" p="0" r="0" x="-52.0839" y="-6.35377" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.148776" p="0" r="0" x="-49.4843" y="-5.95707" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.14346" p="0" r="0" x="-46.8827" y="-5.57419" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.138144" p="0" r="0" x="-44.279" y="-5.20515" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.134988" p="0" r="0" x="-41.6734" y="-4.84995" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex>
+                                                            <Position>
+                                                                <WorldPosition h="0.130175" p="0" r="0" x="-41.4045" y="-4.8141" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="CementTruck_SpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="17.8816"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="Phase_State2">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Act3" storyboardElementType="act"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="Act2_CompactCarGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="CompactCar"/>
+                    </Actors>
+                    <Maneuver name="Act2_CompactCarGroup_Maneuver">
+                        <Event name="Act2_CompactCarGroup_Event" priority="parallel">
+                            <Action name="CompactCar_EntityAction">
+                                <GlobalAction>
+                                    <EntityAction entityRef="CompactCar">
+                                        <AddEntityAction>
+                                            <Position>
+                                                <LanePosition laneId="-2" offset="-0.000000" roadId="25" s="6.91881">
+                                                    <Orientation h="0.162584" p="0" r="0" type="absolute"/>
+                                                </LanePosition>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <Action name="CompactCar_TeleportAction">
+                                <PrivateAction>
+                                    <TeleportAction>
+                                        <Position>
+                                            <LanePosition laneId="-2" offset="-0.000000" roadId="25" s="6.91881">
+                                                <Orientation h="0.162584" p="0" r="0" type="absolute"/>
+                                            </LanePosition>
+                                        </Position>
+                                    </TeleportAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="CompactCar_AssignRouteAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <AssignRouteAction>
+                                            <Route closed="false" name="CompactCar_Route">
+                                                <Waypoint routeStrategy="shortest">
+                                                    <Position>
+                                                        <LanePosition laneId="-2" offset="-0.000000" roadId="25" s="6.91881">
+                                                            <Orientation h="0.162584" p="0" r="0" type="absolute"/>
+                                                        </LanePosition>
+                                                    </Position>
+                                                </Waypoint>
+                                                <Waypoint routeStrategy="shortest">
+                                                    <Position>
+                                                        <LanePosition laneId="-2" offset="-0.000000" roadId="25" s="25.1571">
+                                                            <Orientation h="0.126104" p="0" r="0" type="absolute"/>
+                                                        </LanePosition>
+                                                    </Position>
+                                                </Waypoint>
+                                            </Route>
+                                        </AssignRouteAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <Action name="CompactCar_SpeedAction">
+                                <PrivateAction>
+                                    <LongitudinalAction>
+                                        <SpeedAction>
+                                            <SpeedActionDynamics dynamicsDimension="time" dynamicsShape="step" value="0"/>
+                                            <SpeedActionTarget>
+                                                <AbsoluteTargetSpeed value="17.8816"/>
+                                            </SpeedActionTarget>
+                                        </SpeedAction>
+                                    </LongitudinalAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="Phase_State3">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Act4" storyboardElementType="act"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <ManeuverGroup maximumExecutionCount="1" name="Act2_AmbulanceGroup">
+                    <Actors selectTriggeringEntities="false">
+                        <EntityRef entityRef="Ambulance"/>
+                    </Actors>
+                    <Maneuver name="Act2_AmbulanceGroup_Maneuver">
+                        <Event name="Act2_AmbulanceGroup_Event" priority="parallel">
+                            <Action name="Ambulance_EntityAction">
+                                <GlobalAction>
+                                    <EntityAction entityRef="Ambulance">
+                                        <AddEntityAction>
+                                            <Position>
+                                                <LanePosition laneId="-2" offset="-0.000000" roadId="25" s="32.1362">
+                                                    <Orientation h="0.112142" p="0" r="0" type="absolute"/>
+                                                </LanePosition>
+                                            </Position>
+                                        </AddEntityAction>
+                                    </EntityAction>
+                                </GlobalAction>
+                            </Action>
+                            <Action name="Ambulance_FollowTrajectoryAction">
+                                <PrivateAction>
+                                    <RoutingAction>
+                                        <FollowTrajectoryAction>
+                                            <TimeReference>
+                                                <Timing domainAbsoluteRelative="relative" offset="0" scale="1"/>
+                                            </TimeReference>
+                                            <TrajectoryFollowingMode followingMode="position"/>
+                                            <Trajectory closed="false" name="Ambulance_Trajectory">
+                                                <Shape>
+                                                    <Polyline>
+                                                        <Vertex time="0">
+                                                            <Position>
+                                                                <WorldPosition h="0.110925" p="0" r="0" x="-31.0893" y="-7.04071" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="0.485949">
+                                                            <Position>
+                                                                <WorldPosition h="0.109311" p="0" r="0" x="-29.333" y="-6.84612" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="1.51448">
+                                                            <Position>
+                                                                <WorldPosition h="0.107054" p="0" r="0" x="-25.6578" y="-6.44564" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="1.85057">
+                                                            <Position>
+                                                                <WorldPosition h="0.102479" p="0" r="0" x="-24.4645" y="-6.32292" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="2.07793">
+                                                            <Position>
+                                                                <WorldPosition h="0.0938381" p="0" r="0" x="-23.6586" y="-6.24004" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="2.64259">
+                                                            <Position>
+                                                                <WorldPosition h="0.084689" p="0" r="0" x="-21.657" y="-6.05871" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="3.13678">
+                                                            <Position>
+                                                                <WorldPosition h="0.0782289" p="0" r="0" x="-19.9027" y="-5.9212" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="3.20694">
+                                                            <Position>
+                                                                <WorldPosition h="0.0674497" p="0" r="0" x="-19.6534" y="-5.90166" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="3.76951">
+                                                            <Position>
+                                                                <WorldPosition h="0.0629202" p="0" r="0" x="-17.6481" y="-5.76892" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="3.96808">
+                                                            <Position>
+                                                                <WorldPosition h="0.0539667" p="0" r="0" x="-16.9372" y="-5.73052" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="4.32885">
+                                                            <Position>
+                                                                <WorldPosition h="0.0465997" p="0" r="0" x="-15.6413" y="-5.66051" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="4.8836">
+                                                            <Position>
+                                                                <WorldPosition h="0.0357754" p="0" r="0" x="-13.6333" y="-5.57645" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="5.43252">
+                                                            <Position>
+                                                                <WorldPosition h="0.0236468" p="0" r="0" x="-11.6245" y="-5.51675" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="5.97449">
+                                                            <Position>
+                                                                <WorldPosition h="0.0126676" p="0" r="0" x="-9.61503" y="-5.48142" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="6.40795">
+                                                            <Position>
+                                                                <WorldPosition h="0.0016887" p="0" r="0" x="-7.98632" y="-5.47066" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="6.83577">
+                                                            <Position>
+                                                                <WorldPosition h="-0.00814083" p="0" r="0" x="-6.35759" y="-5.47591" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="7.25758">
+                                                            <Position>
+                                                                <WorldPosition h="-0.0174213" p="0" r="0" x="-4.72898" y="-5.49718" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                        <Vertex time="7.59">
+                                                            <Position>
+                                                                <WorldPosition h="-0.0228859" p="0" r="0" x="-3.42825" y="-5.52566" z="0"/>
+                                                            </Position>
+                                                        </Vertex>
+                                                    </Polyline>
+                                                </Shape>
+                                            </Trajectory>
+                                        </FollowTrajectoryAction>
+                                    </RoutingAction>
+                                </PrivateAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="Phase_State4">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Act5" storyboardElementType="act"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0" name="SimulationStart2">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterOrEqual" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+            </Act>
+            <Act name="Act3">
+                <ManeuverGroup maximumExecutionCount="1" name="Act3_GlobalGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                    <Maneuver name="Act3_Maneuver">
+                        <Event name="ForceActToExecuteUntilStopTrigger2" priority="parallel">
+                            <Action name="NeverExecutedAction2">
+                                <UserDefinedAction>
+                                    <CustomCommandAction type="MW_WaitAction"/>
+                                </UserDefinedAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="NeverSatisfiedCondition2">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Story" storyboardElementType="story"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0" name="SimulationStart3">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterOrEqual" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="5" name="Duration2">
+                            <ByValueCondition>
+                                <StoryboardElementStateCondition state="runningState" storyboardElementRef="Act3" storyboardElementType="act"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+            <Act name="Act4">
+                <ManeuverGroup maximumExecutionCount="1" name="Act4_GlobalGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                    <Maneuver name="Act4_Maneuver">
+                        <Event name="ForceActToExecuteUntilStopTrigger3" priority="parallel">
+                            <Action name="NeverExecutedAction3">
+                                <UserDefinedAction>
+                                    <CustomCommandAction type="MW_WaitAction"/>
+                                </UserDefinedAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="NeverSatisfiedCondition3">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Story" storyboardElementType="story"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0" name="SimulationStart4">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterOrEqual" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="5" name="Duration3">
+                            <ByValueCondition>
+                                <StoryboardElementStateCondition state="runningState" storyboardElementRef="Act4" storyboardElementType="act"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+            <Act name="Act5">
+                <ManeuverGroup maximumExecutionCount="1" name="Act5_GlobalGroup">
+                    <Actors selectTriggeringEntities="false"/>
+                    <Maneuver name="Act5_Maneuver">
+                        <Event name="ForceActToExecuteUntilStopTrigger4" priority="parallel">
+                            <Action name="NeverExecutedAction4">
+                                <UserDefinedAction>
+                                    <CustomCommandAction type="MW_WaitAction"/>
+                                </UserDefinedAction>
+                            </Action>
+                            <StartTrigger>
+                                <ConditionGroup>
+                                    <Condition conditionEdge="none" delay="0" name="NeverSatisfiedCondition4">
+                                        <ByValueCondition>
+                                            <StoryboardElementStateCondition state="completeState" storyboardElementRef="Story" storyboardElementType="story"/>
+                                        </ByValueCondition>
+                                    </Condition>
+                                </ConditionGroup>
+                            </StartTrigger>
+                        </Event>
+                    </Maneuver>
+                </ManeuverGroup>
+                <StartTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="0" name="SimulationStart5">
+                            <ByValueCondition>
+                                <SimulationTimeCondition rule="greaterOrEqual" value="0"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StartTrigger>
+                <StopTrigger>
+                    <ConditionGroup>
+                        <Condition conditionEdge="none" delay="5" name="Duration4">
+                            <ByValueCondition>
+                                <StoryboardElementStateCondition state="runningState" storyboardElementRef="Act5" storyboardElementType="act"/>
+                            </ByValueCondition>
+                        </Condition>
+                    </ConditionGroup>
+                </StopTrigger>
+            </Act>
+        </Story>
+        <StopTrigger>
+            <ConditionGroup>
+                <Condition conditionEdge="none" delay="0" name="">
+                    <ByValueCondition>
+                        <SimulationTimeCondition rule="greaterOrEqual" value="60"/>
+                    </ByValueCondition>
+                </Condition>
+            </ConditionGroup>
+            <ConditionGroup>
+                <Condition conditionEdge="none" delay="0" name="">
+                    <ByEntityCondition>
+                        <TriggeringEntities triggeringEntitiesRule="any">
+                            <EntityRef entityRef="Backhoe"/>
+                            <EntityRef entityRef="CementTruck"/>
+                            <EntityRef entityRef="CompactCar"/>
+                            <EntityRef entityRef="Ambulance"/>
+                        </TriggeringEntities>
+                        <EntityCondition>
+                            <CollisionCondition>
+                                <ByType type="vehicle"/>
+                            </CollisionCondition>
+                        </EntityCondition>
+                    </ByEntityCondition>
+                </Condition>
+            </ConditionGroup>
+        </StopTrigger>
+    </Storyboard>
+</OpenSCENARIO>

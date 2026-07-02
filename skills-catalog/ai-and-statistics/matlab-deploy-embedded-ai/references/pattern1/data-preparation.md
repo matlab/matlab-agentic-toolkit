@@ -135,7 +135,7 @@ XTest = normalize(XTest, "center", mu, "scale", sigma);
 save("normParams.mat", "mu", "sigma");
 ```
 
-### Feature Extraction for Time-Series
+### Windowing/Segmentation for Time-Series
 
 ```matlab
 % Windowing for sequence data

@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "aerospace",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Aerospace Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -23,8 +23,8 @@
     },
     {
       "name": "ai-and-statistics",
-      "version": "0.2.0",
-      "description": "Deep Learning Toolbox.",
+      "version": "0.3.0",
+      "description": "Deep Learning Toolbox and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -42,7 +42,7 @@
     },
     {
       "name": "automotive",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder.",
       "author": {
         "name": "MathWorks"
@@ -83,8 +83,25 @@
       "skills": "./skills-catalog/cloud-solutions/"
     },
     {
+      "name": "code-generation",
+      "version": "0.1.0",
+      "description": "Fixed-Point Designer.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "code-generation",
+        "fixed-point"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/code-generation/"
+    },
+    {
       "name": "computational-biology",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "SimBiology.",
       "author": {
         "name": "MathWorks"
@@ -100,9 +117,26 @@
       "skills": "./skills-catalog/computational-biology/"
     },
     {
+      "name": "computational-finance",
+      "version": "0.1.0",
+      "description": "Datafeed Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "finance",
+        "datafeed"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/computational-finance/"
+    },
+    {
       "name": "image-processing-and-computer-vision",
-      "version": "0.4.0",
-      "description": "Image Processing Toolbox and Computer Vision Toolbox.",
+      "version": "0.5.0",
+      "description": "Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -110,12 +144,30 @@
         "matlab",
         "image-processing",
         "computer-vision",
-        "lidar"
+        "lidar",
+        "medical-imaging"
       ],
       "source": "./",
       "category": "development",
       "strict": false,
       "skills": "./skills-catalog/image-processing-and-computer-vision/"
+    },
+    {
+      "name": "math-and-optimization",
+      "version": "0.1.0",
+      "description": "PDE Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "pde",
+        "finite-element"
+      ],
+      "source": "./",
+      "category": "development",
+      "strict": false,
+      "skills": "./skills-catalog/math-and-optimization/"
     },
     {
       "name": "matlab-app-building",
@@ -137,7 +189,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.3.3",
+      "version": "0.4.0",
       "description": "Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -266,7 +318,7 @@
     },
     {
       "name": "reporting-and-database-access",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Database Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -300,8 +352,8 @@
     },
     {
       "name": "robotics-and-autonomous-systems",
-      "version": "0.2.0",
-      "description": "Navigation Toolbox and UAV Toolbox.",
+      "version": "0.3.0",
+      "description": "Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -309,7 +361,8 @@
         "matlab",
         "robotics",
         "navigation",
-        "ros"
+        "ros",
+        "robotics-system-toolbox"
       ],
       "source": "./",
       "category": "development",
@@ -337,7 +390,7 @@
     },
     {
       "name": "test-and-measurement",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.",
       "author": {
         "name": "MathWorks"

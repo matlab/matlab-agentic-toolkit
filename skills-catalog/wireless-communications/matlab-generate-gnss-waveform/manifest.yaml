@@ -1,15 +1,15 @@
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Generate GNSS baseband waveforms (GPS, Galileo, NavIC) with physically realistic or user-specified channel impairments using the Satellite Communications Toolbox.
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - check_matlab_code
   - run_matlab_file
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Satellite Communications Toolbox
 toolkit: matlab-agentic-toolkit
 

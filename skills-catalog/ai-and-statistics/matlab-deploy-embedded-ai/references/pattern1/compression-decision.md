@@ -21,7 +21,9 @@ the available code-replacement libraries.
 | **ARM Cortex-M without Simulink** | MATLAB Coder + `coder.DeepLearningConfig('cmsis-nn')` | INT8 via CMSIS-NN for FC; LSTM supported but computed in float32. ~1.3x speedup typical (vs ~2.8x for the Simulink path). |
 | **ARM Cortex-A** | MATLAB Coder + ARM Compute Library | Conv2D, FC, LSTM, GRU, BiLSTM all supported. Broader layer coverage than Cortex-M. |
 | **Generic CPU / no acceleration library** | MATLAB Coder, generic C/C++ | All codegen-compatible layers supported, but no kernel-level acceleration. |
-| **GPU / FPGA / DSP / NPU** | Out of scope for this skill | Refer to GPU Coder, Deep Learning HDL Toolbox, or vendor-specific tools. |
+| **x86 (desktop/server)** | MATLAB Coder + `coder.DeepLearningConfig('mkldnn')` | Intel MKL-DNN/oneDNN acceleration for all major DL layers. Compression less critical — targets typically have ample memory. |
+| **GPU (NVIDIA)** | MATLAB Coder + `coder.DeepLearningConfig('cudnn')` or `'tensorrt'` | cuDNN or TensorRT acceleration. Compression rarely needed for GPU targets; use TensorRT's built-in optimizations instead. |
+| **FPGA / NPU** | Out of scope for this skill | Refer to Deep Learning HDL Toolbox or vendor-specific tools. |
 
 Auto-detect when possible: if Simulink is not on the toolbox list from
 `detect_matlab_toolboxes`, present only the Cortex-M-without-Simulink option.
@@ -43,8 +45,8 @@ Auto-detect when possible: if Simulink is not on the toolbox list from
 ## Question 3 — Retraining tolerance
 
 Skip this question when the agent already knows the dataset is unavailable
-(MATLAB-trained workflows: training data is in scope; 3P import workflows:
-already covered in Project Discovery).
+(MATLAB-trained workflows: training data is in scope; external model import
+workflows: already covered in Project Discovery).
 
 | Option | Available techniques | Reason |
 |---|---|---|

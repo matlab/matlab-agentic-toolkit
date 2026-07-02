@@ -1,54 +1,47 @@
 # Pattern 2: Direct C/C++ Code Generation from PyTorch and LiteRT Models
 
 Generate embedded C/C++ directly from PyTorch and LiteRT models using MATLAB Coder
-with the PyTorch and LiteRT support package. No Deep Learning Toolbox layer system
-required. Proven across 8+ real-world models (LSTM, MLP, CNN, Vision Transformer)
-spanning 1K to 5.7M parameters, deployed to ARM Cortex-M7, Cortex-A53, and generic
-embedded targets.
+with the MATLAB Coder Support Package for PyTorch and LiteRT Models. The model is
+loaded as a `PyTorchExportedProgram` or `LiteRTModel` and represented as portable
+intermediate operations that MATLAB Coder compiles to C/C++ without converting to
+Deep Learning Toolbox layers.
 
 ## When to Use
 
-- User has a trained PyTorch model and wants C code quickly
+- User has a PyTorch (.pt2) or LiteRT (.tflite) model that already fits target memory
 - User does NOT need compression (quantization, projection, pruning)
-- User does NOT need Simulink integration
 - User does NOT need weight inspection or modification
-- User targets Cortex-M, Cortex-A, x86, or GPU platforms
+- User wants the shorter path from trained model to C code
 
 ## When NOT to Use
 
-- User needs compression, Simulink, or weight inspection → Pattern 1 (import path)
-- User wants to train from scratch in MATLAB → Pattern 1 (native training)
+- User needs compression, weight inspection, or modification → Pattern 1
+- User wants to train from scratch in MATLAB → Pattern 1
 - User targets FPGA or NPU (not covered by this skill)
 
 ## How It Works
 
 ```
-PyTorch model (.pt2) --> MLIR --> TOSA primitives --> MATLAB Coder --> C/C++
+PyTorch model (.pt2) --> Support Package --> Intermediate Operations --> MATLAB Coder --> C/C++
 ```
 
-The PyTorch Support Package takes a `.pt2` exported model and lowers it through
-TOSA (Tensor Operator Set Architecture) primitive ops (`tosa.matmul`, `tosa.sigmoid`,
-`tosa.relu`, etc.) before MATLAB Coder sees it. This path **never uses MATLAB's
-Deep Learning Toolbox layer system**. The loaded object is NOT a `dlnetwork`.
+The PyTorch Support Package takes a `.pt2` exported model and represents it as
+intermediate operations that MATLAB Coder compiles to C/C++. This path **does not use
+Deep Learning Toolbox layers**. The loaded object is NOT a `dlnetwork`.
 
 ## Prerequisites
 
 - MATLAB R2026+ with **MATLAB Coder Support Package for PyTorch and LiteRT Models**
 - MATLAB Coder (+ Embedded Coder for ARM targets)
-- Python environment with `torch >= 2.0` configured in MATLAB via `pyenv('Version', '<path to python executable>')`
+- Python environment with `torch == 2.8.0` configured in MATLAB via `pyenv('Version', '<path to python executable>')`
 - PyTorch model exported as `.pt2` via `torch.export`
 
 ## Quick-Start Workflow
 
 ### Step 1: Export from PyTorch
 
-```python
-import torch
-model.eval()
-example_input = torch.randn(1, 10, 5)  # Must match model's expected shape exactly
-ep = torch.export.export(model, (example_input,))
-torch.export.save(ep, 'model.pt2')
-```
+Export your model as `.pt2` using `torch.export.export()` and `torch.export.save()`.
+The example input must match the model's expected shape exactly.
 
 See [`pytorch-export.md`](pytorch-export.md) for detailed export guidance,
 common failures, and test vector generation.
@@ -61,15 +54,15 @@ function pred = predict_model(Xin)
 
 persistent net;
 if isempty(net)
-    net = loadPyTorchExportedProgram('/absolute/path/to/model.pt2');
+    net = loadPyTorchExportedProgram(fullfile(pwd, 'model.pt2'));
 end
 
-out = net.invoke(single(Xin));
+out = invoke(net, single(Xin));
 pred = single(out);
 end
 ```
 
-**Key:** Use `net.invoke()` -- the loaded `PyTorchExportedProgram` object is NOT a
+**Key:** Use `invoke(net, ...)` -- the loaded `PyTorchExportedProgram` object is NOT a
 standard `dlnetwork`. Do not try to inspect `.Layers` or call `predict()` on it.
 
 ### Step 3: Configure and Run Codegen
@@ -77,19 +70,29 @@ standard `dlnetwork`. Do not try to inspect `.Layers` or call `predict()` on it.
 ```matlab
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
-cfg.GenerateReport = true;
 
 % CRITICAL: Pure C without external library dependencies
-cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
+cfg.DeepLearningConfig = coder.DeepLearningConfig('none');  % default, stated explicitly
 
 inputType = coder.typeof(single(zeros(1, 10, 5)), [1 10 5], [false false false]);
-codegen -config cfg predict_model -args {inputType} -report
+codegen -config cfg predict_model -args {inputType}
 ```
 
 See [`coder-configuration.md`](coder-configuration.md) for full production settings
 including SIMD, OpenMP, and target-specific configurations.
 
-### Step 4: Verify Generated C
+### Step 4: Simulink Integration (if needed)
+
+Pattern 2 supports Simulink integration using dedicated blocks from `dlosslib.slx`:
+
+- **PyTorch ExportedProgram block** — for `.pt2` models
+- **LiteRT block** — for `.tflite` models
+
+Add the block to your Simulink model and configure the `ModelFilePath` parameter
+to point to the exported model file. These blocks do NOT require conversion to
+`dlnetwork` or `exportNetworkToSimulink`.
+
+### Step 5: Verify Generated C
 
 Compare C output against PyTorch reference on 100+ diverse inputs. See
 [`verification-testing.md`](verification-testing.md).
@@ -109,7 +112,7 @@ Load only the references relevant to your current task:
 ## Key Lessons
 
 1. **Always set `DeepLearningConfig('none')`** for pure C without MathWorks runtime dependencies
-2. **Use `net.invoke()`**, not `predict()` -- the loaded object is a `PyTorchExportedProgram`, not a dlnetwork
+2. **Use `invoke(net, ...)`**, not `predict()` -- the loaded object is a `PyTorchExportedProgram`, not a dlnetwork
 3. **Use absolute paths** for the .pt2 file in the entry-point function
 4. **Input shape must match exactly** what was used during `torch.export` -- no dynamic dimensions
 5. **Column-major layout in generated C** -- test harnesses must transpose from PyTorch's row-major
@@ -130,8 +133,8 @@ Set up MATLAB Coder for target (load `coder-configuration.md`)
 
 ### Phase 3: Generate
 Run `codegen` to produce C/C++
-- **Open the code generation report** when complete
-- **Pause** for user to review report
+- If user requests it, open the code generation report
+- **Pause** for user review
 
 ### Phase 4: Verify
 Three-stage validation: PyTorch → MATLAB → MEX → C (load `verification-testing.md`)

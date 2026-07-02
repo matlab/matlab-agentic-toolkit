@@ -1,14 +1,14 @@
 # Copyright 2026 The MathWorks, Inc.
 # manifest.yaml — Tooling metadata for matlab-use-duckdb
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: product-specific
-version: "1.1"
-human-description: Use DuckDB for in-memory analytics and direct SQL queries on CSV, Parquet, and JSON files from MATLAB.
+version: "1.2"
+human-description: Use DuckDB from MATLAB as a non-math operations engine on large tabular files and as a zero-config embedded database. Includes pre-flight routing, operations boundaries, and a profile-operate-close workflow.
 matlab-release: ">=R2026a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - Database Toolbox
 toolkit: matlab-agentic-toolkit

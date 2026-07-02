@@ -1,14 +1,14 @@
-schema_version: 1
+schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
 version: "1.0"
 human-description: Optimize performance of MATLAB code.
 matlab-release: ">=R2021a"
-requires-tools:
+required-tools:
   - evaluate_matlab_code
   - check_matlab_code
-requires-skills: []
-requires-products:
+required-skills: []
+required-products:
   - MATLAB
 toolkit: matlab-agentic-toolkit
 

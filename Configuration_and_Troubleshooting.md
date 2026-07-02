@@ -21,9 +21,9 @@ To manually install and configure the MCP server rather than using the automated
 
  Platform | MCP Configuration |  Platform-Specific Notes |
 |----------|------------------|-------------------|
-| Claude Code | `~/.claude/settings.json` |  - |
+| Claude Code | `~/.claude.json` |  Use `claude mcp add` to configure. |
 | GitHub Copilot | VS Code user-profile `mcp.json` |  Reload VS Code after setup completes. |
-| OpenAI Codex | `~/.codex/config.toml` | After setup, you can tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`: 1) Set `tool_timeout_sec = 600` to increase the tool timeout for longer MATLAB operations like test suites and simulations. Increase further for very long-running tasks. 2) Set `env_vars = ['WINDIR']` on Windows for Simulink to work, since Codex strips environment variables from MCP server subprocesses by default. |
+| OpenAI Codex | `~/.codex/config.toml` | After setup, you can tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`: 1) Set `tool_timeout_sec = 600` to increase the tool timeout for longer MATLAB operations like test suites and simulations. Increase further for very long-running tasks. 2) Set `env_vars = ['WINDIR']` on Windows for Simulink&reg; to work, since Codex strips environment variables from MCP server subprocesses by default. |
 | Gemini CLI | `~/.gemini/settings.json` | Start a new Gemini session after setup. |
 | Sourcegraph Amp | `~/.config/amp/settings.json` |  If you have `amp.mcpPermissions` rules that block MCP servers, setup will detect this and ask before making changes. |
 
@@ -210,7 +210,7 @@ We are actively exploring more robust solutions to improve skill discovery and a
 ---
 
 ## Support and Contributions
-MathWorks encourages you to use this repository and provide feedback. Pull requests are not enabled on this repository. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact technical support](https://www.mathworks.com/support/contact_us.html). 
+MathWorks&reg; encourages you to use this repository and provide feedback. Pull requests are not enabled on this repository. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact technical support](https://www.mathworks.com/support/contact_us.html). 
 
 ----
 

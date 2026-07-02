@@ -12,7 +12,7 @@ license: MathWorks BSD-3-Clause
 compatibility: R2022a+
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use
@@ -132,7 +132,7 @@ fs = 1 / median(diff(tSec));
 
 ```matlab
 if numel(unique(tSec)) < 2 || ~isfinite(fs)
-    fs = <documented_rate>;   % use the stated or datasheet rate
+    fs = 100;   % use the stated or datasheet rate
 end
 ```
 
@@ -141,7 +141,8 @@ end
 All stateful filters accumulate error across a recording gap (a large jump in timestamps). Split the data at each gap and reset the filter at the start of each segment.
 
 ```matlab
-gapIdx = find(diff(tSec) > threshold);   % e.g. threshold = 1 sec
+gapThreshold = 5 / fs;                   % 5× the expected sample interval
+gapIdx = find(diff(tSec) > gapThreshold);
 segments = [1; gapIdx+1];                % start index of each segment
 ```
 

@@ -4,7 +4,7 @@ description: "Build, modify, and diagram SimBiology models — API reference, he
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Build SimBiology Models
@@ -36,11 +36,12 @@ addpath(fullfile('<WORKSPACE_ROOT>', '.claude', 'skills', 'matlab-build-simbiolo
 disp('Helper scripts added to path.')
 ```
 
-### 2. Only open the Builder when the user wants a diagram
+### 2. Only open the Builder when needed
 
-Do NOT open the Model Builder by default. Only open it when the user
-explicitly requests a diagram, layout, or visual (e.g., "show me the
-diagram", "lay out the model", "open the Builder").
+Do NOT open the Model Builder by default. Open it when:
+- The user explicitly requests a diagram, layout, or visual
+- The input is an `.sbproj` file — use `loadViaBuilder` to preserve
+  diagram layout/styling (`sbioloadproject` loses this data)
 
 A model is fully functional without a diagram — it can be simulated,
 fitted, and analyzed using only the model object on `sbioroot`.
@@ -61,9 +62,11 @@ kl.ParameterVariableNames = {'ke'};
 ```
 
 For **standard PK models** (1- or 2-compartment with standard dosing and
-elimination), prefer `PKModelDesign` — it produces models consistent with
-the PK library (correct parameterization, naming, rules). See
-`references/pk-library-guidance.md`.
+elimination), use `references/pk-library-guidance.md` as the reference for
+correct parameterization, naming, and rules. When no diagram is needed,
+call `PKModelDesign` directly. When the user requests a diagram, construct
+the model manually following the same PK library conventions but use
+`addAndPositionCompartment` for layout control (see Rule 8b).
 
 ### 4. Write reactions in the biological forward direction
 
@@ -130,7 +133,6 @@ p.Value = 0.1;        % NOT redundant, but never use p.ValueUnits or p.ConstantV
 p.Units = '1/hour';
 p.Constant = true;
 ```
-
 ### 7. Close Builder and Analyzer before `sbioreset`
 
 `sbioreset` does NOT close these apps, leaving orphaned windows:
@@ -143,7 +145,6 @@ try ma = SimBiology.web.desktophandler.getModelAnalyzer();
 catch, end
 pause(1); sbioreset;
 ```
-
 ### 8. Diagram rules (only when user requests a diagram)
 
 The following rules apply ONLY when the user asks for a diagram or layout.
@@ -167,6 +168,7 @@ speciesInfo = {
     struct('Name', 'DrugBound', 'Value', 0, 'Position', [140, 30, 100, 16])
 };
 [comp, sp] = addAndPositionCompartment(model, 'Central', 1, [20, 20, 280, 80], speciesInfo);
+% sp is a SimBiology Species ARRAY — index with sp(1), sp(2), NOT sp{1}
 ```
 
 **b. Diagram build order**
@@ -202,7 +204,6 @@ if results.nTotal > 0
 end
 positionAncillaryBlocks(model);  % must run LAST, after all objects exist
 ```
-
 
 **e. Always use the safe-open pattern for the Builder**
 
@@ -246,7 +247,7 @@ updates the diagram in real time. Only close when the user explicitly asks.
 
 | Function | Signature | Purpose |
 |----------|-----------|---------|
-| `addAndPositionCompartment` | `[comp,sp] = addAndPositionCompartment(model,name,cap,compPos,speciesInfo,Name=Value)` | Create compartment + species and position atomically. Options: `FontWeight` (`"bold"`), `TextLocation` (`"center"`), `Padding` (20), `AutoExpand` (true), `AutoFixPositions` (true) |
+| `addAndPositionCompartment` | `[comp,sp] = addAndPositionCompartment(model,name,cap,compPos,speciesInfo,Name=Value)` | Create compartment + species and position atomically. **`sp` is a Species array — index with `sp(1)`, NOT `sp{1}`.** Options: `FontWeight` (`"bold"`), `TextLocation` (`"center"`), `Padding` (20), `AutoExpand` (true), `AutoFixPositions` (true) |
 | `checkDiagramLayout` | `results = checkDiagramLayout(model)` | Containment + line-through-block + overlap checks |
 | `computeSafeReactionPosition` | `pos = computeSafeReactionPosition(model,rxn)` | Crossing-free reaction node position |
 | `repositionAllReactions` | `nFixed = repositionAllReactions(model)` | Batch-reposition all reactions (up to 3 passes) |
@@ -276,15 +277,16 @@ results.nOverlap      % blocks <10px apart
   fn = fieldnames(proj);
   model = proj.(fn{1});
   ```
-- `copyobj(model)` — deep clone; `verify(model)` — check consistency
+- `copyobj(model)` — deep clone (does NOT copy diagram layout); `verify(model)` — check consistency
 - `sbioreset` — clear all models (close apps first!)
 
 ### Compartments
-- `addcompartment(model, name, capacity)`
+- `addcompartment(model, name, value)`
 - `comp.Value`, `comp.Constant`, `comp.Units`, `model.Compartments`
+- **Units consistency:** If any component has units, ALL components must have units (compartments, species, parameters). Missing units cause `'Dimensional analysis failed'` errors at simulation/fit time.
 
 ### Species
-- `addspecies(comp, name, initialValue)`
+- `addspecies(comp, name, value)`
 - `sp.Value`, `sp.Units`, `sp.BoundaryCondition`, `sp.Constant`
 - `sp.Parent.Name` — parent compartment; `model.Species`
 
@@ -295,12 +297,12 @@ results.nOverlap      % blocks <10px apart
 
 ### Reactions
 - `addreaction(model, 'A -> B')` — forward; `'A <-> B'` — reversible
-- `addkineticlaw(rx, 'MassAction')` then `kl.ParameterVariableNames = {'k1'}`
-- `rx.ReactionRate = 'k1*A'` — custom rate (no kinetic law needed)
+- `kl = addkineticlaw(rx, 'MassAction'); kl.ParameterVariableNames = {'k1'}` (or `{'kf','kr'}` for reversible)
 - Multi-compartment: `'Central.Drug -> Peripheral.Drug'`
 
 ### Rules, Events, Doses
 - `addrule(model, 'x = expr', ruleType)` — `'initialAssignment'`, `'repeatedAssignment'`, `'rate'`
+- **Rule/reaction exclusivity:** A species that is the LHS of a rate rule or repeated assignment rule cannot also appear as a reactant or product in a reaction. Use one or the other to govern its dynamics.
 - **Rule LHS requirement:** The LHS must be an existing species, parameter,
   or compartment with `Constant = false`. Create the parameter *before* the
   rule (not after as a fix — this ensures diagram blocks exist for layout):
@@ -324,7 +326,7 @@ results.nOverlap      % blocks <10px apart
 ### Observables & Variants
 - `addobservable(model, name, expression)` — use `./` and `.*` for element-wise ops
 - **StatesToLog caveat:** If the observable references a constant parameter (e.g., `'Drug ./ Vd'`), add that *parameter* to `StatesToLog` — otherwise it logs as NaN. Observables themselves are auto-logged when their dependencies are present (do NOT add observables to StatesToLog — it only accepts species, parameters, and compartments).
-- `addvariant(model, name)` + `addcontent(v, {'type','name','prop',val})`
+- `v = addvariant(model, name)` then `addcontent(v, {'type','name','prop',val})`
 - `v.Content`, `getvariant(model, name)`
 
 ### Simulation Config
@@ -482,9 +484,7 @@ prevents connection lines from crossing through sibling species.
 | Simple PK | Left-to-right or diagonal |
 
 ## References
-
 Load on demand for detailed guidance:
-
 - `references/layout-strategy-guidance.md` — strategy selection, pre-build checklist, 7 recipes
 - `references/pbpk-layout-guidance.md` — PBPK circulation and ACAT chain layouts
 - `references/evacuation-procedure-guidance.md` — 5-phase rearrangement for existing models

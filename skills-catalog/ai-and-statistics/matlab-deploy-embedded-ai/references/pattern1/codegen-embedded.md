@@ -47,6 +47,9 @@ Before generating code, run the analysis function to check for unsupported layer
 analyzeNetworkForCodegen(netNative, TargetLibrary='none');
 ```
 
+Set `TargetLibrary` to match your deployment target if not using library-free codegen
+(e.g., `'mkldnn'`, `'arm-compute'`, `'cudnn'`, `'tensorrt'`).
+
 This reports any layers or operations that will fail during code generation.
 
 ---
@@ -60,40 +63,32 @@ Wrap the trained model in a standalone prediction function suitable for code gen
 **For dlnetwork (tabular/image data):**
 
 ```matlab
-function y = predictDLNet(net, x)
-    %predictDLNet Run inference with a dlnetwork
-    %
-    % This function is designed for code generation.
-
-    arguments
-        net     dlnetwork
-        x       (1,:) single
+function y = predictDLNet(x)
+%#codegen
+    persistent net;
+    if isempty(net)
+        net = coder.loadDeepLearningNetwork('trainedNet.mat');
     end
 
-    dlX = dlarray(x, "CB");
+    dlX = dlarray(x, 'BC');  % x is [1 x numFeatures] (Batch x Channel)
     dlY = predict(net, dlX);
     y = extractdata(dlY);
 end
 ```
 
-**For dlnetwork (LSTM/GRU sequence models -- one time step at a time):**
+**For dlnetwork (LSTM/GRU sequence models -- stateful, one step at a time):**
 
 ```matlab
-function y = predictSeqDLNet(net, x)
-    %predictSeqDLNet Run stateful sequence inference with a dlnetwork
-    %
-    % Input x is one time step: (1, numFeatures) single.
-    % The network must be stateful (maintains hidden state between calls).
-    % Without dlarray wrapping, codegen fails with:
-    %   "Input data argument to predict must be dlarray type."
-
-    arguments
-        net     dlnetwork
-        x       (1,:) single
+function y = predictSeqDLNet(x)
+%#codegen
+    persistent net;
+    if isempty(net)
+        net = coder.loadDeepLearningNetwork('trainedSeqNet.mat');
     end
 
-    dlX = dlarray(x, "TC");  % Time x Channels for sequence models
-    dlY = predict(net, dlX);
+    dlX = dlarray(x, 'CB');  % x is [numFeatures x 1] (Channel x Batch)
+    [dlY, state] = predict(net, dlX);
+    net.State = state;
     y = extractdata(dlY);
 end
 ```
@@ -101,14 +96,11 @@ end
 **For fitcnet:**
 
 ```matlab
-function [label, score] = predictClassifier(mdl, x)
-    %predictClassifier Run classification inference
-    %
-    % This function is designed for code generation.
-
-    arguments
-        mdl     ClassificationNeuralNetwork
-        x       (1,:) single
+function [label, score] = predictClassifier(x)
+%#codegen
+    persistent mdl;
+    if isempty(mdl)
+        mdl = loadLearnerForCoder('trainedClassifier.mat');
     end
 
     [label, score] = predict(mdl, x);
@@ -118,14 +110,11 @@ end
 **For fitrnet:**
 
 ```matlab
-function y = predictRegressor(mdl, x)
-    %predictRegressor Run regression inference
-    %
-    % This function is designed for code generation.
-
-    arguments
-        mdl     RegressionNeuralNetwork
-        x       (1,:) single
+function y = predictRegressor(x)
+%#codegen
+    persistent mdl;
+    if isempty(mdl)
+        mdl = loadLearnerForCoder('trainedRegressor.mat');
     end
 
     y = predict(mdl, x);
@@ -143,14 +132,11 @@ cfg = coder.config("lib");
 % Set target language
 cfg.TargetLang = "C";
 
-% Configure for embedded target
+% Configure for ARM Cortex-M target
 cfg.HardwareImplementation.ProdHWDeviceType = "ARM Compatible->ARM Cortex-M";
 
-% Enable single-precision (important for lean hardware)
-cfg.PurelyIntegerCode = false;  % Set true if target has no FPU
-
-% Set code generation report
-cfg.GenerateReport = true;
+% cfg.PurelyIntegerCode = true;  % Uncomment only if target has no FPU and
+%                                % you are generating fixed-point code
 
 % Optimize for speed or size
 cfg.BuildConfiguration = "Faster Runs";  % or "Smaller Size"
@@ -161,16 +147,12 @@ cfg.BuildConfiguration = "Faster Runs";  % or "Smaller Size"
 ```matlab
 cfg = coder.config('lib', 'ecoder', true);
 cfg.TargetLang = 'C';
-cfg.GenerateReport = true;
-cfg.GenCodeOnly = true;
 
 % Use 'none' for native dlnetwork (no third-party deep learning library)
-cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
+cfg.DeepLearningConfig = coder.DeepLearningConfig('none');  % default, stated explicitly
 
-% Separate weight files for large networks
-cfg.LargeConstantThreshold = 0;    % Weights in .bin files
-
-cfg.SupportNonFinite = false;
+% For MCUs without filesystem, keep all weights in source files
+cfg.LargeConstantGeneration = 'KeepInSourceFiles';
 
 % ARM Cortex-M (single-core MCU)
 cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-M';
@@ -193,11 +175,8 @@ cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-A';
 numFeatures = 10;  % Match your feature count
 inputType = coder.typeof(single(0), [1 numFeatures]);
 
-% For dlnetwork, also specify the network
-netType = coder.loadDeepLearningNetwork("trainedNet.mat");
-
-% Generate code
-codegen -config cfg predictDLNet -args {netType, inputType} -report
+% Generate code (network is loaded internally via coder.loadDeepLearningNetwork)
+codegen -config cfg predictDLNet -args {inputType}
 ```
 
 ### Step 3b: Generate MEX First for Desktop Validation
@@ -208,11 +187,11 @@ validate the pipeline on the desktop:
 ```matlab
 % Generate MEX for desktop testing
 cfgMex = coder.config("mex");
-codegen -config cfgMex predictDLNet -args {netType, inputType} -report
+codegen -config cfgMex predictDLNet -args {inputType}
 
 % Compare MEX output to MATLAB output
-yMATLAB = predictDLNet(net, xSample);
-yMEX    = predictDLNet_mex(net, xSample);
+yMATLAB = predictDLNet(xSample);
+yMEX    = predictDLNet_mex(xSample);
 maxDiff = max(abs(yMATLAB - yMEX));
 fprintf("Max MEX vs. MATLAB difference: %e\n", maxDiff);
 ```
@@ -236,10 +215,10 @@ for i = 1:numTests
     xTest = single(testInputs{i});
 
     % MATLAB reference
-    yMatlab = predictDLNet(net, xTest);
+    yMatlab = predictDLNet(xTest);
 
     % MEX output
-    yMex = predictDLNet_mex(net, xTest);
+    yMex = predictDLNet_mex(xTest);
 
     % Simulink output (if available from Phase 6)
     ySimulink = simulinkOutputs(i, :);
@@ -253,52 +232,27 @@ fprintf('============================================\n');
 fprintf('Tests run:                %d\n', numTests);
 fprintf('MATLAB vs MEX -- MAE:    %.4e, Max: %.4e\n', mean(errMex), max(errMex));
 fprintf('MATLAB vs Simulink MAE:  %.4e, Max: %.4e\n', mean(errSimulink), max(errSimulink));
-fprintf('Pipeline status:         %s\n', ...
-    iif(max(errMex) < 1e-5 && max(errSimulink) < 1e-4, 'PASS', 'INVESTIGATE'));
+if max(errMex) < 1e-5 && max(errSimulink) < 1e-4
+    fprintf('Pipeline status:         PASS\n');
+else
+    fprintf('Pipeline status:         INVESTIGATE\n');
+end
 ```
 
-This validates the complete chain: 3P model → MATLAB import/rebuild → compression →
+This validates the complete chain: original model → MATLAB import/rebuild → compression →
 Simulink → generated code. All stages must agree within expected tolerances.
 
-### Step 5: Review Generated Code and Open Report
+### Step 5: Review Generated Code (Optional)
 
-**ALWAYS** open the code generation report when code generation is complete:
+If the user asks to review the generated code, open the code generation report:
 
 ```matlab
-% Open the code generation report
-% For MATLAB Coder (direct codegen):
-reportPath = fullfile('codegen', 'lib', 'predictDLNet', 'html', 'report.mldatx');
+% For MATLAB Coder:
+rtw.report.open('predictDLNet', fullfile(pwd, 'codegen', 'lib', 'predictDLNet'));
 
-% For Simulink/Embedded Coder (slbuild):
-% The report is in <modelName>_ert_rtw/html/ — use rtw.report.open:
-codeDir = fullfile(pwd, [modelName '_ert_rtw']);
-rtw.report.open(modelName, codeDir);
-
-% Fallback: open the HTML report directly
-if ~isfile(reportPath)
-    htmlReport = fullfile(codeDir, 'html', 'index.html');
-    if isfile(htmlReport)
-        web(htmlReport);
-    else
-        % Search for any report file
-        reportFiles = dir(fullfile(pwd, '**', 'report.mldatx'));
-        if ~isempty(reportFiles)
-            open(fullfile(reportFiles(1).folder, reportFiles(1).name));
-        end
-    end
-end
-
-% Check generated files
-dir(fullfile(codeDir, '*.c'));
-dir(fullfile(codeDir, '*.h'));
+% For Simulink/Embedded Coder:
+rtw.report.open(modelName, fullfile(pwd, [modelName '_ert_rtw']));
 ```
-
-**NOTE:** For Simulink builds, the report is NOT a `.mldatx` file. Use
-`rtw.report.open(modelName, codeDir)` which is printed in the `slbuild` console output.
-
-Announce: "The code generation report is now open. Please review the generated code,
-any warnings, ROM/RAM estimates, and code metrics. Let me know if you have questions
-or want to adjust any settings."
 
 ### Target Support Packages
 
@@ -332,6 +286,28 @@ cfg.HardwareImplementation.ProdHWDeviceType = "ARM Compatible->ARM Cortex-A";
 cfg.HardwareImplementation.ProdHWDeviceType = "Texas Instruments->C2000";
 ```
 
+### x86 (Desktop/Server with MKL-DNN)
+
+```matlab
+cfg = coder.config('lib', 'ecoder', true);
+cfg.TargetLang = 'C';
+cfg.DeepLearningConfig = coder.DeepLearningConfig('mkldnn');
+```
+
+### GPU (NVIDIA — cuDNN or TensorRT)
+
+```matlab
+% cuDNN
+cfg = coder.config('lib', 'ecoder', true);
+cfg.TargetLang = 'C++';
+cfg.DeepLearningConfig = coder.DeepLearningConfig('cudnn');
+
+% TensorRT (optimized inference)
+cfg = coder.config('lib', 'ecoder', true);
+cfg.TargetLang = 'C++';
+cfg.DeepLearningConfig = coder.DeepLearningConfig('tensorrt');
+```
+
 ---
 
 ## CMSIS/CMSIS-NN Optimization for ARM Cortex-M
@@ -362,7 +338,8 @@ Sources:
   plain fixed-point C, not an accelerated CMSIS kernel.
 - Float32 CMSIS-DSP replacement (`mw_arm_mat_mult_f32`) covers FC, LSTM, GRU,
   BiLSTM. For recurrent-heavy networks where latency matters, the float32 path
-  with CMSIS-DSP often outperforms the quantized path.
+  with CMSIS-DSP may outperform the quantized path (since no INT8 kernel exists
+  for recurrent layers).
 
 ### Scenario A: Simulink Path with CMSIS CRL (INT8 or float32)
 
@@ -382,57 +359,13 @@ slbuild(modelName);
 - **With float32 model:** CMSIS-DSP `mw_arm_mat_mult_f32` replaces matrix multiply in
   FC, LSTM, GRU, and BiLSTM layers.
 
-### Scenario B: MATLAB Coder Path with CMSIS-NN (INT8, no Simulink)
+### Note: Library-Free Codegen with CRL (Recommended Approach)
 
-Use this when Simulink is not available but you still want INT8 CMSIS-NN acceleration.
-
-**Critical:** Do NOT call `quantize()`. The code generator handles quantization
-internally using calibration data. This is a different mechanism from the Simulink path.
-
-```matlab
-%% Step 1: Calibrate (but do NOT quantize)
-quantObj = dlquantizer(net, ExecutionEnvironment="MATLAB");
-calibrate(quantObj, calibDs);
-
-% Save the calibration result (NOT a quantized network)
-save('calibration_data.mat', 'quantObj');
-
-%% Step 2: Create predict entry-point function
-% function out = predict_cmsis(in)
-%     persistent net
-%     if isempty(net)
-%         net = coder.loadDeepLearningNetwork('trained_net.mat');
-%     end
-%     out = predict(net, in);
-% end
-
-%% Step 3: Configure code generation with CMSIS-NN
-cfg = coder.config('lib', 'ecoder', true);
-cfg.TargetLang = 'C';
-cfg.GenerateReport = true;
-
-% CMSIS-NN deep learning configuration
-dlcfg = coder.DeepLearningConfig('cmsis-nn');
-dlcfg.CalibrationResultFile = 'calibration_data.mat';
-cfg.DeepLearningConfig = dlcfg;
-
-% Target hardware
-cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-M';
-
-%% Step 4: Generate code
-inputType = coder.typeof(single(0), [1 numFeatures]);
-codegen -config cfg predict_cmsis -args {inputType} -report
-```
-
-**Key differences from Simulink path:**
-
-| | Simulink path | MATLAB Coder CMSIS-NN path |
-|---|---|---|
-| Calls `quantize()`? | Yes | **No** |
-| Requires Simulink? | Yes | **No** |
-| Input to code gen | Quantized dlnetwork in Simulink model | Calibration MAT + original network |
-| Config object | `set_param(..., 'CodeReplacementLibrary', ...)` | `coder.DeepLearningConfig('cmsis-nn')` |
-| Performance | ~2.8–3x | ~1.3x |
+For ARM Cortex-M deployment, the recommended approach is library-free code generation
+(`DeepLearningConfig('none')`) combined with Code Replacement Libraries (CRLs) via
+the Simulink path (Scenarios A and C above). Do NOT use `coder.DeepLearningConfig('cmsis-nn')`
+directly — use CRLs instead. Consult the Embedded Coder Support Package for ARM
+Cortex-M documentation for the latest CRL configuration.
 
 ### Scenario C: Simulink Path with CMSIS-DSP CRL (float32, LSTM/GRU focus)
 
@@ -482,7 +415,7 @@ codegen -config cfg predict_cmsis -args {inputType}
 
 % Compare PIL output to MATLAB output
 yPIL = predict_cmsis_pil(xTest);
-yMATLAB = predict(net, dlarray(single(xTest), "CB"));
+yMATLAB = predict(net, dlarray(single(xTest), 'BC'));  % xTest is [1 x numFeatures]
 maxErr = max(abs(yPIL(:) - extractdata(yMATLAB(:))));
 fprintf('PIL vs MATLAB max error: %.4e\n', maxErr);
 ```
@@ -512,8 +445,6 @@ cs = getActiveConfigSet("myModel");
 switchTarget(cs, "ert.tlc", []);
 set_param("myModel", "ProdHWDeviceType", "ARM Compatible->ARM Cortex-M");
 
-% Enable code generation report
-set_param("myModel", "GenerateReport", "on");
 ```
 
 ### Build the Model
@@ -533,59 +464,41 @@ Generated code is placed in:
 - `<modelName>_grt_rtw/` (Simulink Coder)
 
 Key files:
-- `<modelName>.c` -- Main model code
+- `<modelName>.c` -- Main model code and parameters
 - `<modelName>.h` -- Model header
-- `<modelName>_data.c` -- Model parameters and weights
 - `<modelName>_types.h` -- Type definitions
 - `rtwtypes.h` -- Common data types
+- `*.bin` -- Weight data (when `LargeConstantThreshold` is exceeded)
 
 ---
 
 ## Code Size Estimation
 
-After code generation, estimate ROM and RAM usage:
+### Pre-Codegen Estimate (MATLAB)
+
+Use `analyzeNetwork` to estimate parameter counts and memory before
+generating code:
 
 ```matlab
-% Check generated code size
-codeDir = "codegen/lib/predictDLNet/";
-files = dir(fullfile(codeDir, "*.c"));
-totalCodeSize = sum([files.bytes]);
-
-dataFiles = dir(fullfile(codeDir, "*_data.c"));
-totalDataSize = sum([dataFiles.bytes]);
-
-fprintf("Generated code size: %.1f KB\n", totalCodeSize / 1024);
-fprintf("Data (weights) size: %.1f KB\n", totalDataSize / 1024);
-fprintf("Total: %.1f KB\n", (totalCodeSize + totalDataSize) / 1024);
+na = analyzeNetwork(net, Plots='none');
+fprintf('Total learnables: %d\n', na.TotalLearnables);
 ```
 
-For accurate ROM/RAM estimates, compile with the target toolchain and examine
-the linker map file.
+### Post-Codegen Measurement (Compiled Binary)
 
-### WARNING: Generated Data File Size vs. MATLAB Model Size
+After compiling with the target toolchain, use `arm-none-eabi-size` for accurate
+flash/RAM measurements:
 
-The `*_data.c` file size does **NOT** equal the MATLAB model's parameter byte count.
-The generated C data file is typically **much larger** than expected because:
-
-1. **C source text overhead:** Each weight value is stored as a text literal (e.g.,
-   `0.0234375F` takes 10+ bytes in source vs. 4 bytes as float32 binary)
-2. **Scaling/offset tables:** Quantized layers include per-layer scale factors,
-   zero-points, and accumulator type definitions
-3. **LSTM state buffers:** Hidden state and cell state arrays are pre-allocated
-4. **Layer types without CMSIS-NN INT8 kernels:** Quantized LSTM/GRU/BiLSTM layers
-   generate as plain fixed-point C (CMSIS-NN replacement applies only to Conv2D and
-   FC). The fixed-point arithmetic plus state buffers can outweigh the per-weight
-   savings. See the CMSIS support table earlier in this file.
-
-**Example:** A model with 55K parameters (~215 KB float32) may produce a `_data.c`
-file of 600-700 KB in source text. The **compiled binary** (`.o` / `.elf`) will be
-much smaller — use the linker map file for accurate flash usage.
-
-**To estimate actual flash usage:**
 ```bash
 arm-none-eabi-size model.elf
-# Or examine the .map file for .rodata and .text section sizes
 ```
+
+The `.text` + `.rodata` sections give flash usage; `.data` + `.bss` give RAM usage.
+
+Do NOT estimate weight sizes from generated `.c` source file sizes — C source text
+overhead inflates the numbers significantly (e.g., `0.0234375F` takes 10+ bytes in
+source vs. 4 bytes as float32 binary). When `LargeConstantThreshold = 0` is set,
+weights are stored in `.bin` files rather than in `.c` source.
 
 ---
 
@@ -621,11 +534,11 @@ Before delivering generated code:
 - [ ] RAM usage within target SRAM capacity
 - [ ] Inference time meets latency requirements
 - [ ] Numerical results match MATLAB simulation within acceptable tolerance
-- [ ] **Full pipeline numerical equivalency validated** (3P → MATLAB → Simulink → C)
+- [ ] **Full pipeline numerical equivalency validated** (original model → MATLAB → Simulink → C)
 - [ ] SIL test passed (simulation vs. generated code agreement)
 - [ ] PIL test passed (if target hardware available)
 - [ ] No dynamic memory allocation in generated code (for safety-critical)
-- [ ] **Code generation report opened** and reviewed for warnings
+- [ ] **Code generation report reviewed** (if user requested it)
 - [ ] Accuracy loss from compression explicitly documented
 
 

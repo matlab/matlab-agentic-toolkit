@@ -1,0 +1,438 @@
+{
+  "skill": "matlab-model-optics",
+  "version": "1.0",
+  "evals": [
+    {
+      "id": "eval-01",
+      "name": "Build System from Prescription Table",
+      "description": "Tests that the agent correctly translates a realistic patent-style prescription table into an optical system, recognizing the stop surface, computing diaphragm size from F/# and focal length, and calling updateSemiDiameters",
+      "prompt": "I have a two-element lens from a patent. It is F/4 with a 50 mm focal length and ±15° half-field. Build the system and visualize it.\n\n| Surface | Radius | Thickness | Glass |\n|---------|--------|-----------|-------|\n| 1 | 60.0 | 4.0 | N-BK7 |\n| 2 | -60.0 | 3.0 | — |\n| 3* | — | 6.0 | — |\n| 4 | 35.0 | 4.0 | N-SF11 |\n| 5 | -35.0 | 15.0 | — |",
+      "context": {
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses addDiaphragm for the stop surface marked with asterisk",
+          "expected": "addDiaphragm"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Correctly maps the Thickness column to DistanceToNext parameter for each surface",
+          "expected": "Each surface uses DistanceToNext with the value from the Thickness column (e.g., Surface 1 has DistanceToNext=4, Surface 2 has DistanceToNext=3, Stop has DistanceToNext=6). Does NOT use addGap for inter-surface spacing."
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Calls updateSemiDiameters to propagate apertures through the system",
+          "expected": "updateSemiDiameters("
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Computes diaphragm radius from F/# and focal length (50/4/2 = 6.25 mm)",
+          "expected": "Diaphragm SemiDiameter is computed from F/# and focal length. F/4 with 50 mm focal length gives entrance pupil diameter = 50/4 = 12.5 mm, so semi-diameter = 6.25 mm. The code must derive this value, not hardcode an arbitrary number."
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-02",
+      "name": "Build System from Prescription Image",
+      "description": "Tests that the agent correctly reads a prescription table from a PNG image and builds a complex optical system (double Gauss with diaphragm, materials as [nd,vd] pairs)",
+      "prompt": "The attached image shows a prescription table for a double Gauss lens from a patent. Create an optical system using that prescription and display it. The field angle is ±22.5 degrees.",
+      "context": {
+        "files": ["evals/files/doubleGaussPatent.png"],
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses addDiaphragm for surface 6 which is marked as diaphragm",
+          "expected": "addDiaphragm"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Materials are specified as [nd, vd] pairs from the table (e.g., [1.62286 60.08] for lens 1)",
+          "expected": "opticalMaterial is created using [nd vd] numeric pairs read from the Refractive Index and Abbe Number columns"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Correctly maps Distance to next surface column to DistanceToNext for each surface",
+          "expected": "Each refractive surface uses DistanceToNext with a value read from the Thickness column. Values should be reasonable positive numbers consistent with an optical system (not defaults like 0 or 1). Do not require exact numeric matches — the agent is reading from an image."
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not hardcode SemiDiameter since SD info is not in the prescription table",
+          "expected": "SemiDiameter="
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Calls updateSemiDiameters with EntryPupilRadius constraint",
+          "expected": "EntryPupilRadius"
+        }
+      ]
+    },
+    {
+      "id": "eval-03",
+      "name": "Field Point Coordinate Convention",
+      "description": "Tests that the agent uses the correct Hy/Hx field point convention and does not swap horizontal and vertical angles",
+      "prompt": "Create a field point with a vertical angle of 10 degrees.",
+      "context": {
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses fieldPoint function with Angles parameter",
+          "expected": "fieldPoint(Angles="
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Sets vertical angle to 10 with correct convention [10 0]",
+          "expected": "[10 0]"
+        },
+        {
+          "id": "a3",
+          "type": "output_excludes",
+          "description": "Does not swap the angles to [0 10] which would be horizontal",
+          "expected": "Angles=[0 10]"
+        }
+      ]
+    },
+    {
+      "id": "eval-04",
+      "name": "Compose System from Multiple Components",
+      "description": "Tests that the agent uses the component composition workflow (add) rather than reading ZMX files and recreating surfaces sequentially",
+      "prompt": "I want you to create a single optical system from components in the four zmx files: one.zmx, two.zmx, three.zmx, four.zmx. I want a gap of 5 mm between each component.",
+      "context": {
+        "files": ["evals/files/one.zmx", "evals/files/two.zmx", "evals/files/three.zmx", "evals/files/four.zmx"],
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses zmximport to load each component",
+          "expected": "zmximport"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses add() to compose components into a single system",
+          "expected": "add("
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses changeGap to set 5mm spacing between components",
+          "expected": "changeGap"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "All four components are loaded and added, with 5mm gaps between each",
+          "expected": "Four zmximport calls (one.zmx, two.zmx, three.zmx, four.zmx), composed via add() into a single opticalSystem, with changeGap setting 5mm between each pair"
+        },
+        {
+          "id": "a5",
+          "type": "output_excludes",
+          "description": "Does not recreate surfaces sequentially using addRefractiveSurface (should use component composition)",
+          "expected": "addRefractiveSurface"
+        }
+      ]
+    },
+    {
+      "id": "eval-05",
+      "name": "Trace Rays and Extract Hit Normals",
+      "description": "Tests that the agent uses the RayData workflow to extract surface normals at hit points rather than trying to compute them manually",
+      "prompt": "For a Cooke Triplet, trace rays for an on-axis field point and plot the variation of normals at hit points on surface 4 across the pupil.",
+      "context": {
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses traceRays to perform ray tracing",
+          "expected": "traceRays"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Accesses RayData from the ray bundle",
+          "expected": "RayData"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Requests HitNormal as a RayProperty and extracts normals for surface 4",
+          "expected": "RayProperties includes 'HitNormal' or equivalent, and the code indexes into surface 4 to extract the normal vectors"
+        },
+        {
+          "id": "a4",
+          "type": "output_contains",
+          "description": "Uses OrientedGrid to sample rays across the pupil for plotting",
+          "expected": "OrientedGrid"
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses scatter or similar plot to visualize normal variation across the pupil",
+          "expected": "Uses scatter, scatter3, or quiver to plot the hit normals across pupil positions"
+        }
+      ]
+    },
+    {
+      "id": "eval-06",
+      "name": "Dynamic Optical System in Simulink",
+      "description": "Tests that the agent produces the correct two-part pattern for simulating a dynamic optical system in Simulink: a MATLAB Function Block and a separate extrinsic function, with no optics types at the block boundary",
+      "prompt": "I have a zoom lens system imported from 'ZoomLens.zmx' with two movable lens groups (components 2 and 4). I want to build a Simulink model where a controller adjusts the positions of these two groups to maintain a target focal length. At each timestep I need to compute the effective focal length of the system. Show me the MATLAB code for the optical simulation part — just generate the code, don't try to run it.",
+      "context": {
+        "setup": "Optical Design and Simulation Library and Simulink must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Declares the optics function as extrinsic for code generation",
+          "expected": "coder.extrinsic"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Initializes output variables in the MATLAB Function Block before the extrinsic call",
+          "expected": "Output variable (e.g., efl or focalLength) is initialized to a numeric value (e.g., 0) before the extrinsic function call"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses persistent to create the optical system once and reuse across timesteps",
+          "expected": "persistent"
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "MATLAB Function Block inputs and outputs use only basic numeric types, no optics types",
+          "expected": "All block inputs (group positions) and outputs (focal length) are numeric (double/single/integer). No type whose isa includes 'optics' or 'opticalSystem' appears in the block function signature."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Produces two separate code pieces: block code and extrinsic function",
+          "expected": "Output contains both a MATLAB Function Block function (with %#codegen) and a separate extrinsic function file that performs the optical computation"
+        }
+      ]
+    },
+    {
+      "id": "eval-07",
+      "name": "Dual-Axis Galvo Scanner",
+      "description": "Tests that the agent uses addMirror with correct TiltAngles for a folded mirror geometry rather than trying to use refractive surfaces or incorrect tilt conventions",
+      "prompt": "I need to model a dual-axis galvo scanner for a 633 nm laser. The system has two flat mirrors in a folded arrangement: the first mirror (Galvo X) steers the beam in the X direction by tilting about the Y-axis, and the second mirror (Galvo Y) steers in Y by tilting about the X-axis. The mirrors are 5 mm radius and separated by 14.7 mm. Both mirrors are at 45 degrees to fold the beam. Create the optical system and trace rays from an on-axis field point.",
+      "context": {
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses addMirror to create mirror surfaces",
+          "expected": "addMirror"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Sets TiltAngles for the mirror orientation",
+          "expected": "TiltAngles"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Mirrors use different tilt axes matching their steering directions (Galvo X tilts about Y-axis, Galvo Y tilts about X-axis)",
+          "expected": "The two mirrors use TiltAngles with 45-degree values in different axis positions. Galvo X (steers in X) should have tilt in the Y-axis element: [0 45 0]. Galvo Y (steers in Y) should have tilt in the X-axis element: [45 0 0] or [-45 0 0]. FAIL if both mirrors use the same TiltAngles axis (e.g., both [45 0 0] or both [0 45 0])."
+        },
+        {
+          "id": "a4",
+          "type": "output_excludes",
+          "description": "Does not use addRefractiveSurface for mirrors",
+          "expected": "addRefractiveSurface("
+        },
+        {
+          "id": "a5",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-08",
+      "name": "F-Theta Distortion Plot",
+      "description": "Tests that the agent uses lensDistortion with the correct Distortion type for F-theta analysis and uses show() to visualize the result",
+      "prompt": "Plot the F-theta distortion of a Cooke Triplet.",
+      "context": {
+        "setup": "Optical Design and Simulation Library must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses lensDistortion function for distortion analysis",
+          "expected": "lensDistortion"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Specifies FTheta as the distortion type in the lensDistortion call",
+          "expected": "FTheta"
+        },
+        {
+          "id": "a3",
+          "type": "output_contains",
+          "description": "Uses show() to plot the distortion result",
+          "expected": "show("
+        },
+        {
+          "id": "a4",
+          "type": "code_executes",
+          "description": "Generated code runs without error in MATLAB"
+        }
+      ]
+    },
+    {
+      "id": "eval-09",
+      "name": "Optical System Design Optimization Framework",
+      "description": "Tests that the agent decomposes an optimization request into the correct structure: design variables, ranges, goal with metrics and field points, conversion function, merit function, and optimizer",
+      "prompt": "Starting with a Cooke Triplet, how would you create a framework to optimize it for a wider field of view? Show me the optimization code structure. Just generate the code, don't run it.",
+      "context": {
+        "setup": "Optical Design and Simulation Library and Optimization Toolbox must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses the opticalSystem class to represent the lens (not a custom ray tracer)",
+          "expected": "opticalSystem"
+        },
+        {
+          "id": "a2",
+          "type": "convention_followed",
+          "description": "Creates a conversion function that maps the variable vector back to an opticalSystem",
+          "expected": "A function (named x2opsys or similar) takes the numeric design variable vector and reconstructs an opticalSystem object from it by setting Radius, DistanceToNext, or similar parameters. FAIL if the code uses a custom ray tracer, manual Snell's law, or does not rebuild an opticalSystem from the vector."
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Merit function uses library analysis functions to evaluate optical performance",
+          "expected": "The merit/objective function calls library analysis functions such as spotDiagram, wavefrontError, lensDistortion, or traceRays on the reconstructed opticalSystem. FAIL if it uses custom ray tracing math, manual Snell's law, or does not call any Optical Design and Simulation Library analysis function."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Defines a goal with metrics and field points that reflect wider FOV",
+          "expected": "Field points at wider angles than the original Cooke Triplet AND a performance metric (spot RMS, distortion, or similar) evaluated at those field points. FAIL if field points are only on-axis or if no performance metric is defined."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Uses a bounded optimizer with lb/ub to minimize the merit function",
+          "expected": "Uses lsqnonlin, fmincon, ga, surrogateopt, or another bounded optimizer. The optimizer call includes lb, ub, and a merit/objective function handle. FAIL if no bounds are provided or if it uses unbounded optimization."
+        }
+      ]
+    },
+    {
+      "id": "eval-10",
+      "name": "Broadband AR Coating Design",
+      "description": "Tests that the agent decomposes a coating design request into the correct structure: materials, layer thicknesses as variables, spectral goals, merit function using fresnelCoefficients, and optimizer",
+      "prompt": "Design a broadband anti-reflection coating for visible light (400-700 nm) on BK7 glass. Optimize the layer thicknesses to minimize reflectance below 0.5% across the band.",
+      "context": {
+        "setup": "Optical Design and Simulation Library and Optimization Toolbox must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "output_contains",
+          "description": "Uses opticalCoating to create the coating",
+          "expected": "opticalCoating"
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses fresnelCoefficients to evaluate spectral response",
+          "expected": "fresnelCoefficients"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Defines spectral goal covering 400-700 nm with reflectance target",
+          "expected": "Evaluation wavelengths span 400-700 nm (or close). The target is reflectance (Ra or similar) below 0.5% (0.005). These are used in a merit function or pass/fail criterion."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Uses bounded optimizer with lb/ub on layer thicknesses",
+          "expected": "Layer thicknesses are the design variables with lower and upper bounds. An optimizer (lsqnonlin, fmincon, ga, or similar) is called with these bounds."
+        },
+        {
+          "id": "a5",
+          "type": "output_contains",
+          "description": "Uses pickCoatingMaterial to load coating materials",
+          "expected": "pickCoatingMaterial"
+        }
+      ]
+    },
+    {
+      "id": "eval-11",
+      "name": "Coating Tolerance Monte Carlo Yield",
+      "description": "Tests that the agent decomposes a tolerancing request into the correct structure: parameters to perturb, perturbation ranges, metric, pass/fail criterion, and Monte Carlo execution",
+      "prompt": "I have a 24-layer AR coating (alternating TiO2/SiO2) on BK7 that must maintain reflectance below 1% over 450-650 nm. Show me the code to estimate manufacturing yield assuming typical evaporation tolerances. Just generate the code, don't run it.",
+      "context": {
+        "setup": "Optical Design and Simulation Library and Parallel Computing Toolbox must be installed"
+      },
+      "assertions": [
+        {
+          "id": "a1",
+          "type": "convention_followed",
+          "description": "Identifies perturbation parameters with material-specific sigma values",
+          "expected": "Defines thickness sigma and/or refractive index sigma values. Values are material-specific (different for TiO2 vs SiO2). Sigma values are reasonable for evaporation (e.g., 1-4 nm for thickness)."
+        },
+        {
+          "id": "a2",
+          "type": "output_contains",
+          "description": "Uses fresnelCoefficients to evaluate each trial",
+          "expected": "fresnelCoefficients"
+        },
+        {
+          "id": "a3",
+          "type": "convention_followed",
+          "description": "Defines a pass/fail criterion based on reflectance over the specified band",
+          "expected": "A pass/fail check evaluates whether reflectance (Ra or similar) stays below 1% (0.01) across 450-650 nm wavelength range. Each Monte Carlo trial is classified as pass or fail."
+        },
+        {
+          "id": "a4",
+          "type": "convention_followed",
+          "description": "Runs multiple Monte Carlo trials and computes yield percentage",
+          "expected": "Runs N trials (N >= 100) with randomized perturbations applied to the nominal coating. Computes yield as percentage of trials that pass. Uses parfor or a loop over trials."
+        },
+        {
+          "id": "a5",
+          "type": "convention_followed",
+          "description": "Applies Gaussian perturbations using randn scaled by sigma",
+          "expected": "Perturbations are generated using randn (or normrnd) scaled by the material-specific sigma values. Each layer is perturbed independently."
+        }
+      ]
+    }
+  ]
+}
