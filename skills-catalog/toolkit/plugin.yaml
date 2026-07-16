@@ -1,8 +1,0 @@
-# Copyright 2026 The MathWorks, Inc.
-description: >
-  Detects MATLAB, installs the MCP server, registers with your AI coding agent, and verifies the environment.
-keywords:
-  - matlab
-  - setup
-  - mcp
-  - configuration

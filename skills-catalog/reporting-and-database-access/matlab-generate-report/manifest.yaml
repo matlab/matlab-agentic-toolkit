@@ -1,0 +1,19 @@
+# manifest.yaml — matlab-generate-report
+#
+# Copyright 2026 The MathWorks, Inc.
+
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Generate structured PDF, Word, and HTML reports from MATLAB data and Simulink models using the Report Generator API.
+matlab-release: ">=R2024a"
+required-tools:
+  - evaluate_matlab_code
+  - detect_matlab_toolboxes
+required-skills: []
+required-products:
+  - MATLAB Report Generator
+optional-products:
+  - Simulink Report Generator
+toolkit: matlab-agentic-toolkit

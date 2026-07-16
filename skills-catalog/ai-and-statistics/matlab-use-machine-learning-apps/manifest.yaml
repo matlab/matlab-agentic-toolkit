@@ -1,0 +1,20 @@
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Train, compare, and export machine learning models using Classification Learner and Regression Learner apps.
+matlab-release: ">=R2023a"
+required-tools:
+  - evaluate_matlab_code
+optional-products:
+  - Parallel Computing Toolbox
+  - Simulink
+  - Deep Learning Toolbox
+  - MATLAB Coder
+  - MATLAB Compiler SDK
+required-skills: []
+required-products:
+  - Statistics and Machine Learning Toolbox
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

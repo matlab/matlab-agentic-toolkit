@@ -169,6 +169,10 @@ isPeak = islocalmax(y,FlatSelection="first");
 TT.IsPeak = islocalmax(TT,DataVariables="Value");
 peakTimes = TT.Time(TT.IsPeak);
 
+% OutputFormat="tabular": returns a table/timetable of logicals (keeps variable names)
+peaks = islocalmax(TT, OutputFormat="tabular", DataVariables=["Temp","Pressure"]);
+TT.Time(peaks.Temp)    % peak times for Temp — no positional indexing needed
+
 % Avoid: Manual peak detection
 isPeak = false(size(y));
 for i = 2:numel(y)-1
@@ -192,6 +196,10 @@ changes = ischange(y, "mean", Threshold=2);
 
 % Works on tables/timetables with DataVariables and SamplePoints
 changes = ischange(T, "mean", DataVariables="Value", SamplePoints="Time");
+
+% OutputFormat="tabular": returns a table/timetable of logicals (keeps variable names)
+changes = ischange(T, "mean", OutputFormat="tabular", DataVariables=["Temp","Pressure"]);
+T(changes.Pressure, :)  % rows where Pressure has a mean shift
 
 % Avoid: Manual change detection
 changes = [false; abs(diff(y)) > threshold];
@@ -226,6 +234,8 @@ edges = h.BinEdges;                % read computed bin edges
 [counts,centers] = hist(T.Value,20);
 counts = histc(T.Value,edges);
 ```
+
+For 2D smoothing (`smoothdata2`) and 2D peak detection (`islocalmax2`/`islocalmin2`) on grid data, see [array-and-grid-data.md](array-and-grid-data.md).
 
 ---
 

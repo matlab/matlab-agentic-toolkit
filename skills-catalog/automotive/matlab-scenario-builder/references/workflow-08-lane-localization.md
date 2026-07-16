@@ -10,8 +10,8 @@ description: Snap ego trajectory onto correct lane center using lane boundary de
 > **Related references:** [`workflow-04-roadrunner-export-detail.md`](workflow-04-roadrunner-export-detail.md) for the upstream OSM/HD-map setup. The localization step replaces direct GPS export.
 >
 > **Official MathWorks docs:**
-> - Lane extraction: <https://in.mathworks.com/help/driving/ug/extract-lane-information-from-recorded-camera-data-for-scene-generation.html>
-> - `localizeEgoUsingLanes` reference: <https://in.mathworks.com/help/driving/ref/localizeegousinglanes.html>
+> - Lane extraction: <https://www.mathworks.com/help/driving/ug/extract-lane-information-from-recorded-camera-data-for-scene-generation.html>
+> - `localizeEgoUsingLanes` reference: <https://www.mathworks.com/help/driving/ref/localizeegousinglanes.html>
 
 When GPS accuracy is insufficient for lane-level positioning, use `localizeEgoUsingLanes` to snap the ego trajectory onto the correct lane center using lane boundary detections.
 
@@ -137,8 +137,12 @@ cameraParams = monoCamera(intrinsics, camHeight, ...
 % the user — same disclosure rule as in sensor-import-api.md.
 
 %% Step 1 — Detect lane boundary points in image coordinates
-% RVLD first (preferred); fall back to CLRNet only if the user does NOT
-% have RVLD installed.
+% RVLD first (preferred). Two fallback conditions trigger CLRNet:
+%   (a) RVLD constructor throws — model not installed.
+%   (b) After tracking, all LaneBoundary lateral offsets share one sign —
+%       i.e., RVLD only saw boundaries on ONE side of the ego. CLRNet
+%       typically returns boundaries on both sides on the same data.
+%       (Detected post-tracking — see Step 4 sanity check below.)
 try
     detector = laneBoundaryDetector(Model="RVLD");
 catch ME
@@ -239,6 +243,28 @@ for i = 1:nF
 end
 trackedLanes = laneData(cameraData.Timestamps, lbDataSorted, TrackIDs=trackIDsStr);
 
+%% Step 4b — Single-side sanity check (RVLD → CLRNet fallback)
+% localizeEgoUsingLanes needs the ego BRACKETED — boundaries on both sides.
+% RVLD on some datasets returns same-sign offsets only (typically all
+% positive). The localizer would then error with "ego lane detections
+% missing for the frame N" on every frame. CLRNet usually catches the
+% other side; re-run detection with CLRNet if RVLD output is single-sided.
+allOffsets = [];
+for i = 1:numel(lbDataSorted)
+    if ~isempty(lbDataSorted{i})
+        allOffsets = [allOffsets; arrayfun(@(b) b.Parameters(3), lbDataSorted{i}(:))]; %#ok<AGROW>
+    end
+end
+if ~isempty(allOffsets) && (all(allOffsets >= 0) || all(allOffsets <= 0)) ...
+        && detector.Model == "RVLD"
+    warning("RVLD detected boundaries on a single side of ego only. " + ...
+            "Re-running with CLRNet.");
+    detector = laneBoundaryDetector();   % CLRNet default
+    laneBoundaryPoints = detect(detector, cameraData, ...
+        DetectionThreshold=0.3, OverlapThreshold=0.1, ShowProgress=true);
+    % Re-run Steps 2–4 on the new detections (omitted here — see canonical script).
+end
+
 %% Step 5 — Get start lane index from the user (DO NOT auto-pick)
 % mode(egoLaneIndex(trackedLanes)) is detection-only — it counts the
 % boundaries the tracker actually held onto, not the lanes on the road.
@@ -276,12 +302,25 @@ startLaneIdx = <ASK USER — leftmost lane = 1, excluding shoulders>;
 - **Do filter out-of-bounds pixels** before `imageToVehicle` (mask shown in Step 2). RVLD/CLRNet near-horizon points routinely fall above `cy` and outside `[1..W,1..H]`; the function errors on those.
 - **Do NOT pass a custom `ValidateBoundaryFcn` that touches `b.Strength`** — RANSAC calls it with raw model parameters (a numeric vector), not a struct. Defaults work.
 - **Do NOT call `egoToWorldLaneBoundarySegments`** — that function is for *static lane-geometry reconstruction* (feeds `laneBoundaryGroup`), not ego localization. Localization takes the `laneData` object directly.
-- **RVLD first, CLRNet as fallback:** Always try `laneBoundaryDetector(Model="RVLD")` first — RVLD is the preferred model for this workflow. Only fall back to `laneBoundaryDetector()` (CLRNet default) if RVLD is **not installed** (the constructor throws). Do NOT default to CLRNet for performance reasons.
+- **RVLD first, CLRNet as fallback (two trigger conditions):** Always try `laneBoundaryDetector(Model="RVLD")` first — RVLD is the preferred model for this workflow. Fall back to `laneBoundaryDetector()` (CLRNet default) when **either** (a) the RVLD constructor throws (not installed) **or** (b) after tracking, all `LaneBoundary` lateral offsets share the same sign — meaning RVLD only saw boundaries on ONE side of ego, and `localizeEgoUsingLanes` would error with *"ego lane detections missing"* on every frame. CLRNet typically returns boundaries on both sides on the same data. Do NOT default to CLRNet for performance reasons; only swap on (a) or (b).
+- **RVLD availability — WRONG way to check:** Do NOT use `which("rvldLaneDetector")` or `exist("rvldLaneDetector")` — no such standalone function exists. RVLD is a **model option** on `laneBoundaryDetector`, not a separate class. The ONLY correct check is the try-catch on `laneBoundaryDetector(Model="RVLD")`. If you grep for function names and find nothing, that does NOT mean RVLD is unavailable.
+- **Flat OSM scene — flatten ego Z + preserve Orientation after localization:** `localizedTrajectory.Position(:,3)` carries GPS altitude (~40m+). On flat OSM scenes (Z=0 roads), you MUST zero the ego Z before export — otherwise ego floats above the road. When rebuilding the trajectory with `Z=0`, always pass `Orientation=localizedTrajectory.Orientation` to preserve the lane-aligned heading from localization. Without it, heading is re-derived from waypoint deltas (less accurate at low speed/curves).
 - **Python-SPKG install errors (RVLD is Python-backed):** if the RVLD constructor or first run fails with a `proxyError`, `SSL: CERTIFICATE_VERIFY_FAILED`, `SSLConnectionError`, or `ReadTimeoutError: HTTPSConnectionPool(host='download.pytorch.org', ...)`, this is a known customer-network issue, not a MATLAB bug. Load [`python-spkg-install-troubleshooting.md`](python-spkg-install-troubleshooting.md) for the symptom→fix matrix (proxy / SSL → set `http_proxy`+`https_proxy`; PyTorch read timeout → reinstall the SPKG).
 - **Always ASK the user for `startLaneIdx`** (1 = leftmost lane, excluding shoulders). Never auto-pick. `egoLaneIndex` is detection-only and undercounts on 3+ lane roads, so `mode(egoLaneIndex(...))` is unreliable as a startLaneIdx source. Compute it as a hint to show the user, but the value passed to `localizeEgoUsingLanes` MUST come from the user.
-- **`localizeEgoUsingLanes` accepts `roadrunnerHDMap` or `roadrunner` app** — NOT an OSM file path. For an OSM-built scene use `rrMap = getRoadRunnerHDMap(scenario)`. For a pre-built `.rrscene` already opened in `rrApp`, use `exportScene(rrApp, file, "RoadRunner HD Map")` then `rrMap = roadrunnerHDMap; read(rrMap, file)` — see [`workflow-04-roadrunner-export-detail.md`](workflow-04-roadrunner-export-detail.md) Option E.
+- **`localizeEgoUsingLanes` accepts `roadrunnerHDMap` or `roadrunner` app** — NOT an OSM file path. **Do NOT call `getRoadRunnerHDMap(rrApp)`** — that function does not exist on the `roadrunner` class (it's a `drivingScenario` method only) and errors with *"Undefined function for input arguments of type 'roadrunner'"*. Use one of: (a) `rrMap = roadrunnerHDMap(); read(rrMap, rrhdFile);` then pass `rrMap`, or (b) pass `rrApp` directly as the second argument to `localizeEgoUsingLanes`. Both paths are documented in `help localizeEgoUsingLanes`. For a pre-built `.rrscene` already opened in `rrApp`, use `exportScene(rrApp, file, "RoadRunner HD Map")` to extract the rrhd, then path (a) — see [`workflow-04-roadrunner-export-detail.md`](workflow-04-roadrunner-export-detail.md) Option B.1.
 - **Warnings about missing frames are normal** — the function interpolates through gaps.
 - **HD Map import option is mandatory** — every `importScene(rrApp, ..., "RoadRunner HD Map", ...)` call in this workflow's upstream MUST pass `ImportOptions=iOpts` built with `enableOverlapGroupsOptions(IsEnabled=false)`. Forgetting this is a recurring miss; treat it as a hard default.
+- **`laneBoundaryTracker` returns cell-of-structs, NOT a struct array.** Each element is a cell: `tracked = trackerObj(boundaries, ts)` → `tracked{k}` is a struct with `.TrackID`, `.UpdateTime`, `.LaneBoundary`. Extract with curly braces: `tracked{k}.LaneBoundary`. Using parentheses `tracked(k).LaneBoundary` errors because `tracked` is a cell, not a struct array.
+- **Empty frames need typed empty, not `[]`.** Passing `[]` (class double) to `laneBoundaryTracker` errors with *"Expected input to be one of these types: cell, parabolicLaneBoundary"*. Use `parabolicLaneBoundary.empty(1,0)` for frames with no detections:
+  ```matlab
+  if isempty(allBoundaries{i})
+      tracked = trackerObj(parabolicLaneBoundary.empty(1,0), ts(i));
+  else
+      tracked = trackerObj(allBoundaries{i}, ts(i));
+  end
+  ```
+- **Do NOT name your boundary cell array `laneData`** — this shadows the `laneData` class. `localizeEgoUsingLanes` requires a `laneData` *object* (constructed via `laneData(timestamps, lbCell)`), not a raw cell. If you shadow the class, `clear laneData` is needed before you can construct the object. Use `lbCell` or `laneBoundsPerFrame` for the intermediate cell array.
+- **`localizeEgoUsingLanes` passes Z through unchanged** — it localizes XY (snaps to lane center) but copies `Position(:,3)` from the input trajectory verbatim. On flat OSM scenes, GPS altitude (~30–50 m) survives into the localized output. Always zero Z after localization for flat scenes (and preserve `Orientation` — see gotcha above).
 
 ## Advanced Path (Manual pixel filtering — use when simplified path fails)
 ### Step 1: Run RVLD lane detector on camera data
@@ -423,7 +462,7 @@ close(camWriter);
 rawReader = VideoReader(rawVideoTmp);
 simReader = VideoReader(locVideoSrc);
 targetH = 480;
-maxFrames = 200;
+maxFrames = 100;  % side-by-side = heavier I/O per frame; matches visualization-patterns.md
 totalDur = min(rawReader.Duration, simReader.Duration);
 timeSteps = linspace(0, totalDur - 0.01, maxFrames);
 
@@ -492,22 +531,18 @@ localizedTrajectory.TimeOrigin = 0;          % already 0 in practice; keep expli
 % (4) Extract non-ego actors — scenariobuilder.Trajectory works directly
 nonEgoActorInfo = actorprops(trackObjNorm, localizedTrajectory, SaveAs="none");
 
-% (5) Export each non-ego actor (Color="auto", deg2rad orientations).
-% On flat scenes (OSM, OpenDRIVE without elevation), flatten waypoint Z to 0
-% — the per-track Z is sensor-mount offset, not road height; without flatten
-% every actor floats ~1 m above the road. See workflow-04 Step 4 "Flatten
-% waypoint Z" note for the flat-vs-terrain decision.
+% (5) Export each non-ego actor.
+% HARD RULE — do NOT pass Orientation= here. actorprops Yaw uses compass
+% convention (~340° for northbound) which is incompatible with RR's ENU frame.
+% RR auto-derives heading from waypoint deltas — that matches recorded motion.
+% On flat scenes (OSM), flatten waypoint Z to 0 — per-track Z is sensor-mount
+% offset, not road height. See workflow-04 "Flatten waypoint Z" note.
 egoLocalOrigin = localizedTrajectory.LocalOrigin;
 for i = 1:height(nonEgoActorInfo)
-    yaw   = nonEgoActorInfo.Yaw{i};
-    pitch = nonEgoActorInfo.Pitch{i};
-    roll  = nonEgoActorInfo.Roll{i};
-    ori   = deg2rad([yaw pitch roll]);
     wp = nonEgoActorInfo.Waypoints{i};
     wp(:,3) = 0;   % flat scene only
     actorTraj = scenariobuilder.Trajectory( ...
         nonEgoActorInfo.Time{i}, wp, ...
-        Orientation=ori, ...
         Name=nonEgoActorInfo.TrackID(i), ...
         LocalOrigin=egoLocalOrigin);
     smooth(actorTraj);

@@ -124,6 +124,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
+# MATLAB Skill SDK — cloned locally by .meta/Makefile.check (sync-sdk target)
+.meta/.sdk/
+
 # Environments
 .env
 .venv

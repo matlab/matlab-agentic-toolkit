@@ -11,6 +11,12 @@ Trecent = T(T.Date > datetime(2024,1,1), :);
 
 **Exception**: Use `find` when you need the actual indices (e.g., for reporting positions).
 
+**Floating-point pitfall:** Do not use `==` to match computed numeric values — round-off error makes exact equality unreliable. Use `isapprox` (R2024b) instead:
+```matlab
+T(isapprox(T.Ratio, 1.0), :)                    % default tolerance (~1e-15 for double)
+T(isapprox(T.Ratio, 1.0, "loose"), :)            % wider tolerance (~1e-8)
+```
+
 ## Use `sortrows` for sorting tables
 ```matlab
 T = sortrows(T,"Date");                                       % ascending (default)

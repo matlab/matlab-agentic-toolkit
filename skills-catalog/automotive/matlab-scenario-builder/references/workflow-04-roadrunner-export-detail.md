@@ -19,6 +19,17 @@ if ~exist('rrApp', 'var') || ~isvalid(rrApp)
 end
 ```
 
+**RoadRunner crash recovery (use at chunk boundaries or after timeout):**
+If RoadRunner has crashed or become unresponsive mid-pipeline, the handle is stale. Always wrap RR calls after a pause/chunk boundary in a try-catch:
+```matlab
+try
+    worldSettings(rrApp);  % lightweight probe — errors if RR died
+catch
+    clear rrApp;
+    rrApp = roadrunner(rrProjectPath, InstallationFolder=rrAppPath);
+end
+```
+
 **Stale cosimulation connection fix:** If you get the error `"MATLAB is already connected to RoadRunner Scenario cosimulation server"`, close and relaunch RoadRunner to clear it:
 ```matlab
 % Close and relaunch RoadRunner to clear stale cosim connection
@@ -58,22 +69,26 @@ for i = 1:numel(trackPositions)
 end
 buffer = maxLateral + 50;  % 50m margin for road width
 
-% Step 2: Download OSM with actor-aware buffer
+% Step 2: Download OSM with actor-aware buffer (skip-if-exists + timeout), convert to RoadRunner HD Map
 mapROI = getMapROI(gpsData.Latitude, gpsData.Longitude, Extent=buffer);
 osmFile = fullfile(tempdir, "drive_map.osm");
-websave(osmFile, mapROI.osmUrl, weboptions(ContentType="xml"));
-[roadProperties, localOrigin] = roadprops(OpenStreetMap=osmFile);
+if ~isfile(osmFile)
+    websave(osmFile, mapROI.osmUrl, weboptions(ContentType="xml", Timeout=30));
+end
+ds =  drivingScenario;
+roadNetwork(ds,OpenStreetMap=osmFile)
+rrMap = getRoadRunnerHDMap(ds);
+rrhdFile = fullfile(tempdir, "roads.rrhd");
+write(rrMap, rrhdFile);
 
 % Step 3: Build ego trajectory with OSM local origin
+localOrigin = rrMap.GeoReference;
 egoTrajectory = trajectory(gpsData, "LocalOrigin", localOrigin);
 smooth(egoTrajectory);
 
-% Step 4: Export to drivingScenario with OSM roads, convert to RoadRunner HD Map
+% Step 4: Export to drivingScenario with OSM roads
 scenario = exportToDrivingScenario(egoTrajectory, ...
     RoadNetworkSource="OpenStreetMap", FileName=osmFile, Name="Ego");
-rrMap = getRoadRunnerHDMap(scenario);
-rrhdFile = fullfile(tempdir, "roads.rrhd");
-write(rrMap, rrhdFile);
 
 % Step 5: Import HD Map — overlap groups MUST BE DISABLED by default.
 % This is a hard rule, not an optimization: importing with the default
@@ -257,26 +272,79 @@ exportToRoadRunner(egoTrajectory, rrApp, ...
 ## Step 4: Export non-ego actor trajectories
 **Always smooth actor trajectories** before exporting — raw track data is often noisy/jittery.
 
-**Use `Color="auto"` for non-ego actors** — RoadRunner assigns distinct colors per actor automatically. Hard-coded colors (e.g. `"yellow"`) make all actors look identical and obscure individual behaviour in the sim video. Reserve named colors (`"red"`, `"green"`, `"blue"`) for ego comparison scenarios (raw vs localized, GPS_A vs GPS_B) where the colour carries meaning.
+**Vehicle classification (Workflow 18 — automatic).** Before the export loop, run the vehicle classification pipeline from [`workflow-18-vehicle-classification.md`](workflow-18-vehicle-classification.md). When camera intrinsics + `CameraHeight` + actor tracks are all present, the agent:
+1. Calls `buildBestCropGrid` (in `scripts/`) to project tracks → image crops → composite grid
+2. Views the grid and classifies each track by color + type
+3. Maps type → `AssetPath` (e.g. `"Vehicles/SUV.fbx"`) and color → RR named color
 
-**Flatten waypoint Z to 0 on flat scenes (OSM, OpenDRIVE without elevation, Pandaset).** `actorInfo.Waypoints` carries each actor's Z in **world frame**, but for scenes that lack terrain elevation the per-track Z is dominated by the **sensor mount offset** (camera height ≈ 1–1.5 m), not the road surface. Without flattening, every actor floats ~1 m above the road. Flatten only on flat scenes — on terrain-aware scenes (HERE HD, Zenrin, OpenDRIVE+CRG, point-cloud-derived rrhd) keep Z and use `adjustHeight` upstream on the ego (see [`workflow-07-height-correction.md`](workflow-07-height-correction.md)).
+If prerequisites are missing (no intrinsics, no camera, text-only agent), the classification step is skipped and actors export with the default `AssetPath="Vehicles/Sedan.fbx"`, `Color="auto"`.
+
+**Use classified Color/AssetPath when available; otherwise `Color="auto"`.** Reserve named colors (`"red"`, `"green"`, `"blue"`) for ego comparison scenarios (raw vs localized, GPS_A vs GPS_B) where colour carries meaning.
+
+**Flatten waypoint Z to 0 on flat scenes (OSM, OpenDRIVE without elevation, Pandaset).** `actorInfo.Waypoints` carries each actor's Z in **world frame**, but for scenes that lack terrain elevation the per-track Z is dominated by the **sensor mount offset** (camera height ≈ 1–1.5 m), not the road surface. Without flattening, every actor floats ~1 m above the road. Flatten only on flat scenes — on terrain-aware scenes (HERE HD, Zenrin, OpenDRIVE+CRG, point-cloud-derived rrhd) keep Z and apply the terrain offset described below.
+
+**Terrain-aware actor Z offset (HERE HD, Zenrin, point-cloud scenes).** On terrain-aware scenes, **do NOT flatten Z to 0** and **do NOT use raw Z as-is**. The ego actor (`SetupSimulation=true`) is snapped to the terrain surface by RoadRunner's simulation engine, but non-ego actors (`SetupSimulation=false`) render at their exact CSV Z value — which is typically 0.5–1.0 m below the rendered terrain mesh. This causes actors to clip into or disappear below the road surface.
+
+**Fix:** Add `+0.75` m (half the standard sedan height) to non-ego actor Z before export. This compensates for the terrain mesh sitting above the HD map geometry:
 
 ```matlab
+wp(:,3) = wp(:,3) + 0.75;  % terrain compensation — actors render ON road surface
+```
+
+This offset was empirically validated: Z+0 → actors invisible below terrain; Z+0.75 → actors sit naturally on road; Z+3/+5 → actors float above road.
+
+```matlab
+%% Vehicle classification — Workflow 18 (self-gating)
+% Run buildBestCropGrid → agent views grid → classifies → builds map.
+% Full pipeline: references/workflow-18-vehicle-classification.md
+classificationMap = containers.Map();  % populated below by agent vision pass
+hasIntrinsics = exist('intrinsics','var') && isfield(intrinsics,'fx') && exist('camHeight','var');
+if hasIntrinsics && trackData.NumSamples > 0 && cameraData.NumSamples > 0
+    addpath(fullfile(fileparts(mfilename("fullpath")), "scripts"));
+    classifyDir = fullfile(dataDir, "classification");
+    [gridPath, cropManifest] = buildBestCropGrid(trackData, cameraData, ...
+        intrinsics, camHeight, classifyDir);
+    fprintf("Classification grid: %s (%d tracks)\n", gridPath, height(cropManifest));
+    % >>> AGENT: View gridPath. Classify each labeled track by color + type.
+    % >>> Build classificationMap entries per workflow-18 Step 2–4.
+end
+
+%% Export non-ego actors with classified assets
 % SetupSimulation=false for non-ego actors to avoid overwriting simulation params
 egoLocalOrigin = egoTrajectory.LocalOrigin;
+isTerrainScene = true;  % Set false for flat OSM scenes — see "How to tell" note below
 for i = 1:height(actorInfo)
     wp = actorInfo.Waypoints{i};
-    wp(:,3) = 0;   % flat scene only — see "Flatten waypoint Z" note above
+    if isTerrainScene
+        wp(:,3) = wp(:,3) + 0.75;  % terrain compensation for non-ego actors
+    else
+        wp(:,3) = 0;               % flat scene — zero Z
+    end
+    % HARD RULE — do NOT pass Orientation= for non-ego actors. actorprops yaw
+    % uses a compass convention (~340° for northbound) incompatible with RR's
+    % world frame; RR auto-derives heading from waypoint deltas correctly.
+    % Also do NOT pass Speed= — it is not a valid Trajectory N-V argument.
     actorTraj = scenariobuilder.Trajectory( ...
         actorInfo.Time{i}, wp, ...
         Name=actorInfo.TrackID(i), LocalOrigin=egoLocalOrigin);
     smooth(actorTraj);  % Remove noise from actor tracks
-    exportToRoadRunner(actorTraj, rrApp, ...
-        Name=actorInfo.TrackID(i), Color="auto", SetupSimulation=false);
+
+    tid = char(actorInfo.TrackID(i));
+    if isKey(classificationMap, tid)
+        cls = classificationMap(tid);
+        exportToRoadRunner(actorTraj, rrApp, ...
+            Name=actorInfo.TrackID(i), AssetPath=cls.AssetPath, ...
+            Color=cls.Color, SetupSimulation=false);
+    else
+        exportToRoadRunner(actorTraj, rrApp, ...
+            Name=actorInfo.TrackID(i), Color="auto", SetupSimulation=false);
+    end
 end
 ```
 
 **How to tell if the scene is "flat":** read the rrhd's geometry Z range. On OSM-derived rrhd, `range(geometryZ) < ~2 m` (essentially noise from `getRoadRunnerHDMap`). On terrain-aware rrhd it spans tens to hundreds of metres along the route. Compare against `range(gpsData.Altitude)` — if both are near zero, flatten; if the rrhd has real elevation, run `adjustHeight` on ego instead.
+
+**Ego Z on flat scenes:** The ego trajectory also needs Z=0 on flat OSM scenes — GPS altitude puts ego 30–50 m above the road. When rebuilding the ego `Trajectory` with Z=0 after localization, MUST preserve `Orientation=localizedTrajectory.Orientation` — without it, heading is re-derived from waypoints and loses the lane-aligned orientation from `localizeEgoUsingLanes`. Full pattern in [`osm-flat-scene-gotchas.md`](osm-flat-scene-gotchas.md) Gotcha 1.
 
 ## `exportToRoadRunner` Name-Value Arguments
 | Argument | Description | Default |
@@ -299,8 +367,48 @@ exportToRoadRunner(egoTrajectory, rrApp, ...
     AssetPath="Vehicles/Sedan.fbx", Name="Ego");
 ```
 
+**Asset filename casing matters.** RR ships filenames with TitleCase stems
+(`Sedan.fbx`, `Suv.fbx`, `Hatchback.fbx`, `Box_Truck.fbx`). Lowercase forms
+(`sedan.fbx`) silently resolve to white placeholder boxes on Windows because
+`<PROJECT>/Assets/...` resolution is case-sensitive even on case-insensitive
+filesystems. Confirm spelling with `dir(fullfile(rrProjectPath,"Assets","Vehicles"))`
+before composing `AssetPath`.
+
+### Post-Export Asset Replacement via API
+When modifying actor assets **after** `exportToRoadRunner` (e.g., applying classification results iteratively), use `<PROJECT>/` relative paths — **never** absolute paths:
+```matlab
+rrAPI = roadrunnerAPI(rrApp);
+allActors = rrAPI.Scenario.Actors;  % index 1 = ego
+allActors(k).ActorAsset = "<PROJECT>/Assets/Vehicles/Suv.fbx_rrx";
+allActors(k).Color = [0.15 0.15 0.15 1];  % [R G B A] normalized
+```
+**CRITICAL:** Absolute paths silently break the asset reference — actors render as white placeholder boxes. The `<PROJECT>/` prefix is required for RoadRunner to resolve the asset correctly.
+
 ## Running the Scenario Simulation
 After exporting ego + actors, run the simulation in RoadRunner.
+
+### Duration-Aware Simulation & Actor Count Caps
+
+Long datasets (>30s) and dense actor lists (>15 actors) cause MCP timeouts. Use these caps:
+
+```matlab
+simDuration = egoTrajectory.Duration;
+if simDuration <= 30
+    nExportActors = height(actorInfo);       % all actors
+else
+    nExportActors = min(15, height(actorInfo)); % top 15 by Age for validation
+    % Sort by track age (longest-lived actors are most important)
+    [~, ageOrder] = sort(actorInfo.Age, "descend");
+    actorInfo = actorInfo(ageOrder(1:nExportActors), :);
+end
+```
+
+For datasets >30s: validate at 30s first (confirm Y-axis, roads, actors look correct), then trigger the full-duration simulation. If the full sim times out via MCP, the simulation continues in RoadRunner — export the video in the next MCP call:
+```matlab
+% After timeout: sim is still running in RR — wait for it
+pause(2);  % RR finishes async
+exportVideo(rrApp, VideoFolder=simVideoFolder, FileName="sim_frontCamera", VideoResolution="HD");
+```
 
 **MANDATORY PRE-FLIGHT CHECKLIST — verify ALL before proceeding:**
 - [ ] Actor-aware OSM buffer used (`getMapROI(..., Extent=buffer)`)
@@ -327,6 +435,10 @@ failCond.Duration = egoTrajectory.Duration + 10;  % ensure it won't trigger
 %   "orbit"  — free-rotating overview of entire scene
 setCameraMode(rrApp, "front", FocusActorID=1);
 
+% HARD RULE — do NOT pass Pacing= here. Pacing throttles real-time playback
+% but truncates/desyncs the EnableLogging capture for long clips. For full-
+% length recording, omit Pacing entirely and let the simulation run as fast
+% as the host allows.
 % EnableLogging=true is REQUIRED for exportVideo to work after simulation
 simulateScenario(rrApp, EnableLogging=true);
 ```
@@ -341,7 +453,18 @@ After simulation completes, export the simulation video and create a side-by-sid
 % output path positionally — `exportVideo(rrApp, fullPath)` — errors with
 % "Name-value pair arguments require a name followed by a value."
 % FileName must be a STEM (no extension) — exportVideo appends .mp4 / .avi.
+%
+% HARD RULE — VideoFolder must be a path WITHOUT SPACES. RR's video exporter
+% silently fails (or returns "permission denied") when the target path
+% contains spaces — common on Windows OneDrive paths like
+% "C:\Users\<user>\OneDrive - <Organization>\...". If dataDir contains a space,
+% redirect VideoFolder to a no-space staging folder (e.g. tempdir or C:\rr_out)
+% and copyfile the result back to dataDir afterwards.
 simVideoFolder = dataDir;  % Always save in dataset folder
+if contains(simVideoFolder, " ")
+    simVideoFolder = fullfile(tempdir, "rr_video_export");
+    if ~isfolder(simVideoFolder); mkdir(simVideoFolder); end
+end
 exportVideo(rrApp, VideoFolder=simVideoFolder, FileName="sim_frontCamera", VideoResolution="HD");
 
 % exportVideo may save as .avi depending on codecs — always convert to .mp4
@@ -367,42 +490,50 @@ end
 3. **Defensive field-name inspect on the input recording's struct/MAT** — datasets vary in case (`Timestamp` vs `timestamp`, `ImagePath` vs `imagePath`, `TrackID` vs `trackID`). Before referencing fields off the loaded `S = load(...)` struct or any table, print `disp(fieldnames(S))` (or `disp(S.<Sensor>.Properties.VariableNames')` for a table) and use the discovered name. Hard-coding a guess produces a silent `Reference to non-existent field` mid-script and the comparison video never gets built.
 
 ```matlab
-%% Side-by-side comparison video: Input vs Simulation
+%% Side-by-side comparison video: Input (track-overlaid) vs Simulation
+% PREFERRED: compose overlay on-the-fly from original frames to avoid
+% double-compression blur (encode trackOverlay.mp4 → decode → resize → re-encode).
+% Reading the pre-saved overlay video introduces generation loss.
 simReader = VideoReader(simVideoPath);
 
-% For input video: use the saved BEV/overlay/raw video, OR read from source
-% inputVideoPath = the video saved earlier (bevCamera_video.mp4, trackOverlay_video.mp4, or rawCamera_video.mp4)
-inputReader = VideoReader(inputVideoPath);
+targetH = 540; targetW = 960;
+maxFrames = 100;  % side-by-side = heavier I/O per frame
+step = max(1, ceil(cameraData.NumSamples / maxFrames));
+frameIndices = 1:step:cameraData.NumSamples;
+effectiveFPS = numel(frameIndices) / cameraData.Duration;
 
-targetHeight = 480;
-totalDuration = min(simReader.Duration, inputReader.Duration);
-maxFrames = 300;
-effectiveFPS = maxFrames / totalDuration;
-timeSteps = linspace(0, totalDuration - 0.01, maxFrames);
+% Determine left-panel mode (same priority as Rule 2)
+hasIntrinsics = ~isempty(cameraData.SensorParameters) ...
+    && isstruct(cameraData.SensorParameters) ...
+    && isfield(cameraData.SensorParameters, 'Intrinsics');
+hasTracks = exist('trackData','var') && ~isempty(trackData.UniqueTrackIDs);
 
 compVideoFile = fullfile(dataDir, "comparison_input_vs_sim.mp4");
 vidWriter = VideoWriter(compVideoFile, "MPEG-4");
 vidWriter.FrameRate = round(effectiveFPS);
 open(vidWriter);
 
-for k = 1:maxFrames
-    t = timeSteps(k);
-    inputReader.CurrentTime = t;
-    imgInput = readFrame(inputReader);
-    simReader.CurrentTime = t;
-    imgSim = readFrame(simReader);
+for frameIdx = frameIndices
+    % Left panel: overlay from original frames (no double-compression)
+    img = imread(cameraData.Frames(frameIdx));
+    if hasIntrinsics && hasTracks
+        imgL = plotActorCircles(img, frameIdx, cameraData, trackData, intrinsics);
+    else
+        imgL = img;
+    end
+    imgL = imresize(imgL, [targetH targetW]);
+    t = cameraData.Timestamps(frameIdx);
+    imgL = insertText(imgL, [10 10], sprintf("Input+Tracks (t=%.1fs)", t), ...
+        FontSize=20, BoxColor="black", TextColor="white", BoxOpacity=0.6);
 
-    % Resize to same height
-    imgInputR = imresize(imgInput, targetHeight / size(imgInput, 1));
-    imgSimR = imresize(imgSim, targetHeight / size(imgSim, 1));
+    % Right panel: RR sim
+    simReader.CurrentTime = min(t, simReader.Duration - 0.01);
+    imgR = readFrame(simReader);
+    imgR = imresize(imgR, [targetH targetW]);
+    imgR = insertText(imgR, [10 10], sprintf("RR Sim Front (t=%.1fs)", t), ...
+        FontSize=20, BoxColor="black", TextColor="white", BoxOpacity=0.6);
 
-    % Add labels with timestamps on both panels
-    imgInputR = insertText(imgInputR, [10 10], sprintf("Input Camera (t=%.1fs)", t), ...
-        FontSize=18, BoxColor="black", TextColor="white", BoxOpacity=0.6);
-    imgSimR = insertText(imgSimR, [10 10], sprintf("RoadRunner Sim (t=%.1fs)", t), ...
-        FontSize=18, BoxColor="black", TextColor="white", BoxOpacity=0.6);
-
-    writeVideo(vidWriter, [imgInputR, imgSimR]);
+    writeVideo(vidWriter, [imgL, imgR]);
 end
 close(vidWriter);
 

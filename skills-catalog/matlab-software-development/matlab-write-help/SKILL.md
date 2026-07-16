@@ -2,12 +2,12 @@
 name: matlab-write-help
 description: "Generate or improve MATLAB help text (documentation comments) for a function, class, or script file following MathWorks standards (H1 line, syntax paragraphs, See Also, 75-char lines). Read BEFORE writing MATLAB help — default patterns (Inputs:/Outputs: lists, block comments, uppercase See Also) produce non-conforming output. Use when writing, rewriting, fixing, or reviewing MATLAB help comments or function documentation."
 license: MathWorks BSD-3-Clause
-argument-hint: [name-or-path]
+argument-hint: "[name-or-path]"
 arguments: [file]
 allowed-tools: Read(*) Edit(*) Bash(matlab *) mcp__matlab__evaluate_matlab_code(*)
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 ## When to Use

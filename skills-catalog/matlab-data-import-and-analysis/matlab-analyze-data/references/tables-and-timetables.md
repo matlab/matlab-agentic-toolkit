@@ -256,6 +256,9 @@ TTsync = synchronize(TT1,TT2,"hourly","mean");
 `synchronize` supports the same time steps and methods as `retime` (interpolation, aggregation, and fill).
 
 ## Use `lag` to time-shift timetable data
+
+**Pitfall:** `lag` requires a regular (uniformly spaced) timetable — it errors on irregular spacing. Use `retime` to regularize first if needed.
+
 ```matlab
 TT_prev = lag(TT,1);              % shift data forward by 1 time step (previous values)
 TT_next = lag(TT,-1);             % shift backward (next values)
@@ -339,7 +342,7 @@ numericData = table2array(T(:,vartype("numeric")));
 T = array2table(matrix, VariableNames=["X" "Y" "Z"]);
 ```
 
-Note: Many plotting and analysis functions now accept tables directly — only convert to array when the function requires it.
+Note: Many plotting and analysis functions now accept tables directly — only convert to array when the function requires it. If your data is already in arrays and naturally 2D/grid (sensors, geospatial), see [array-and-grid-data.md](array-and-grid-data.md) for array-native workflows.
 
 ---
 

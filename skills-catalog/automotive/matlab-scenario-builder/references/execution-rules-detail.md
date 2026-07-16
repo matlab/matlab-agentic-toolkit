@@ -102,12 +102,49 @@ Present this table to the user before importing. Fill the "Your Data" and "Raw M
 | nuScenes | microseconds since epoch | ~1.5e15 | `/1e6` |
 | KITTI raw | POSIX seconds | ~1.3e9 | `/1` |
 | HERE HD recordings | microseconds-since-trip-start (small first sample, large span) | sample ~0, span ~1e7 | `/1e6` (span check) |
+| OEM CAN (AH_ACC) | POSIX seconds (GPS) / relative seconds (CAN) | ~1.5e9 (GPS), variable (CAN) | `/1` — but check Y-axis flip |
 
 **Field name case sensitivity:** MATLAB table variable names are case-sensitive. Datasets vary in naming (e.g., `timestamp` vs `timeStamp`, `filename` vs `fileName`, `TrackID` vs `trackID`). Always inspect `.Properties.VariableNames` before accessing any field:
 ```matlab
 disp(data.GPSData_Raw.Properties.VariableNames');
 disp(data.CameraData.Properties.VariableNames');
 ```
+
+## Rule 7 — MCP Chunking & Skip-If-Done
+
+### MCP Timeout Prevention
+
+When executing via MCP (each `evaluate_matlab_code` call has a ~90s timeout), never combine multiple expensive operations in one call. Split into chunks:
+
+| Chunk | Operations | Typical time |
+|-------|-----------|--------------|
+| 1 | Load CAN/MAT data + reshape + build objects + actorprops | 30–40s |
+| 2 | Export ego + N actors to RoadRunner | 5–10s per actor |
+| 3 | simulateScenario (capped duration) | ≤30s for validation |
+| 4 | exportVideo | 10–20s |
+| 5 | Comparison video composition | 15–20s |
+| 6 | (If long data) Full-duration simulate + export | runs in RR, agent polls |
+
+**Never combine** simulate + exportVideo in one MCP call. Never combine data-load + full export pipeline. Each chunk must complete within 90s.
+
+### Skip-If-Done Pattern (mandatory for all expensive operations)
+
+Every expensive step MUST check if its output already exists before re-running. This prevents wasted time on re-runs after a failure at step N:
+
+```matlab
+if ~isfile(osmFile)
+    websave(osmFile, mapROI.osmUrl, weboptions(ContentType="xml", Timeout=30));
+end
+if ~isfile(rrhdFile)
+    write(rrMap, rrhdFile);
+end
+if ~isfile(tempSceneFile)
+    importScene(rrApp, ...);
+    saveScene(rrApp, tempSceneFile);
+end
+```
+
+Apply this pattern to: OSM download, RRHD write, scene import/save, video export. Do NOT apply to `exportToRoadRunner` (actor state changes between runs) or `simulateScenario` (must always re-run after actor changes).
 
 ## Rule 7 — Standard Script Header Template
 

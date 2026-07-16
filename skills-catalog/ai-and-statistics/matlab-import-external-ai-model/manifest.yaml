@@ -1,0 +1,16 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Import PyTorch, ONNX, and Keras deep learning models into MATLAB and verify numerical correctness.
+matlab-release: ">=R2024b"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Deep Learning Toolbox
+  - Deep Learning Toolbox Converter for PyTorch Models
+  - Deep Learning Toolbox Converter for ONNX Model Format
+  - Deep Learning Toolbox Converter for TensorFlow Models
+toolkit: matlab-agentic-toolkit

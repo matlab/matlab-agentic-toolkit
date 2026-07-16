@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "aerospace",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Aerospace Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -16,14 +16,14 @@
         "matlab",
         "aerospace"
       ],
-      "source": "./",
+      "source": "./skills-catalog/aerospace",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/aerospace/"
+      "skills": "./"
     },
     {
       "name": "ai-and-statistics",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Deep Learning Toolbox and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -35,14 +35,14 @@
         "machine-learning",
         "ai"
       ],
-      "source": "./",
+      "source": "./skills-catalog/ai-and-statistics",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/ai-and-statistics/"
+      "skills": "./"
     },
     {
       "name": "automotive",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder.",
       "author": {
         "name": "MathWorks"
@@ -60,10 +60,10 @@
         "asset-mapping",
         "vehicle-dynamics"
       ],
-      "source": "./",
+      "source": "./skills-catalog/automotive",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/automotive/"
+      "skills": "./"
     },
     {
       "name": "cloud-solutions",
@@ -77,14 +77,14 @@
         "cloud",
         "matlab-drive"
       ],
-      "source": "./",
+      "source": "./skills-catalog/cloud-solutions",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/cloud-solutions/"
+      "skills": "./"
     },
     {
       "name": "code-generation",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Fixed-Point Designer.",
       "author": {
         "name": "MathWorks"
@@ -94,10 +94,10 @@
         "code-generation",
         "fixed-point"
       ],
-      "source": "./",
+      "source": "./skills-catalog/code-generation",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/code-generation/"
+      "skills": "./"
     },
     {
       "name": "computational-biology",
@@ -111,14 +111,14 @@
         "bioinformatics",
         "simbiology"
       ],
-      "source": "./",
+      "source": "./skills-catalog/computational-biology",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/computational-biology/"
+      "skills": "./"
     },
     {
       "name": "computational-finance",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Datafeed Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -128,14 +128,14 @@
         "finance",
         "datafeed"
       ],
-      "source": "./",
+      "source": "./skills-catalog/computational-finance",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/computational-finance/"
+      "skills": "./"
     },
     {
       "name": "image-processing-and-computer-vision",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -147,14 +147,14 @@
         "lidar",
         "medical-imaging"
       ],
-      "source": "./",
+      "source": "./skills-catalog/image-processing-and-computer-vision",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/image-processing-and-computer-vision/"
+      "skills": "./"
     },
     {
       "name": "math-and-optimization",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "PDE Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -164,14 +164,14 @@
         "pde",
         "finite-element"
       ],
-      "source": "./",
+      "source": "./skills-catalog/math-and-optimization",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/math-and-optimization/"
+      "skills": "./"
     },
     {
       "name": "matlab-app-building",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -182,10 +182,10 @@
         "app-designer",
         "uifigure"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-app-building",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-app-building/"
+      "skills": "./"
     },
     {
       "name": "matlab-core",
@@ -201,14 +201,14 @@
         "code-review",
         "live-scripts"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-core",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-core/"
+      "skills": "./"
     },
     {
       "name": "matlab-data-import-and-analysis",
-      "version": "0.1.1",
+      "version": "0.2.0",
       "description": "Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
       "author": {
         "name": "MathWorks"
@@ -218,15 +218,15 @@
         "data-import",
         "data-analysis"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-data-import-and-analysis",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-data-import-and-analysis/"
+      "skills": "./"
     },
     {
       "name": "matlab-external-language-interfaces",
       "version": "0.1.0",
-      "description": "Call Python&trade; libraries from MATLAB and upgrade MEX files to the interleaved complex API.",
+      "description": "Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API.",
       "author": {
         "name": "MathWorks"
       },
@@ -238,10 +238,10 @@
         "external-interfaces",
         "interop"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-external-language-interfaces",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-external-language-interfaces/"
+      "skills": "./"
     },
     {
       "name": "matlab-programming",
@@ -255,14 +255,14 @@
         "programming",
         "oop"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-programming",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-programming/"
+      "skills": "./"
     },
     {
       "name": "matlab-software-development",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans.",
       "author": {
         "name": "MathWorks"
@@ -276,10 +276,10 @@
         "modernization",
         "performance"
       ],
-      "source": "./",
+      "source": "./skills-catalog/matlab-software-development",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/matlab-software-development/"
+      "skills": "./"
     },
     {
       "name": "parallel-computing",
@@ -294,10 +294,10 @@
         "parfor",
         "gpu"
       ],
-      "source": "./",
+      "source": "./skills-catalog/parallel-computing",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/parallel-computing/"
+      "skills": "./"
     },
     {
       "name": "radar",
@@ -311,14 +311,14 @@
         "radar",
         "phased-array"
       ],
-      "source": "./",
+      "source": "./skills-catalog/radar",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/radar/"
+      "skills": "./"
     },
     {
       "name": "reporting-and-database-access",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Database Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -328,10 +328,10 @@
         "database",
         "reporting"
       ],
-      "source": "./",
+      "source": "./skills-catalog/reporting-and-database-access",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/reporting-and-database-access/"
+      "skills": "./"
     },
     {
       "name": "rf-and-mixed-signal",
@@ -345,10 +345,10 @@
         "rf",
         "mixed-signal"
       ],
-      "source": "./",
+      "source": "./skills-catalog/rf-and-mixed-signal",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/rf-and-mixed-signal/"
+      "skills": "./"
     },
     {
       "name": "robotics-and-autonomous-systems",
@@ -364,14 +364,14 @@
         "ros",
         "robotics-system-toolbox"
       ],
-      "source": "./",
+      "source": "./skills-catalog/robotics-and-autonomous-systems",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/robotics-and-autonomous-systems/"
+      "skills": "./"
     },
     {
       "name": "signal-processing",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -383,14 +383,14 @@
         "audio",
         "filtering"
       ],
-      "source": "./",
+      "source": "./skills-catalog/signal-processing",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/signal-processing/"
+      "skills": "./"
     },
     {
       "name": "test-and-measurement",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -413,28 +413,10 @@
         "mdf",
         "arxml"
       ],
-      "source": "./",
+      "source": "./skills-catalog/test-and-measurement",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/test-and-measurement/"
-    },
-    {
-      "name": "toolkit",
-      "version": "0.2.7",
-      "description": "Detects MATLAB, installs the MCP server, registers with your AI coding agent, and verifies the environment.",
-      "author": {
-        "name": "MathWorks"
-      },
-      "keywords": [
-        "matlab",
-        "setup",
-        "mcp",
-        "configuration"
-      ],
-      "source": "./",
-      "category": "development",
-      "strict": false,
-      "skills": "./skills-catalog/toolkit/"
+      "skills": "./"
     },
     {
       "name": "wireless-communications",
@@ -467,10 +449,10 @@
         "Bluetooth",
         "Ble"
       ],
-      "source": "./",
+      "source": "./skills-catalog/wireless-communications",
       "category": "development",
       "strict": false,
-      "skills": "./skills-catalog/wireless-communications/"
+      "skills": "./"
     }
   ]
 }

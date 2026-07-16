@@ -2,7 +2,7 @@
 
 ## Getting Help
 
-To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact MathWorks&reg; Technical Support](https://www.mathworks.com/support/contact_us.html).
+To request technical support or submit an enhancement request, [create a GitHub&reg; issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact MathWorks&reg; Technical Support](https://www.mathworks.com/support/contact_us.html).
 
 For MATLAB&reg; MCP Server issues, see the [MATLAB MCP Server](https://github.com/matlab/matlab-mcp-core-server) repository.
 

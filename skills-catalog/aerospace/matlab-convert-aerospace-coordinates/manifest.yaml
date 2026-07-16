@@ -5,7 +5,7 @@
 schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Convert between aerospace coordinate frames, rotation representations, time systems, and unit systems using Aerospace Toolbox.
 matlab-release: ">=R2022a"
 required-tools:

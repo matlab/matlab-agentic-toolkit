@@ -1,10 +1,10 @@
 ---
 name: matlab-analyze-data
-description: Analyze tabular data using MATLAB. Use when the task involves tables, timetables, or time-series data — including but not limited to exploring, filtering, sorting, cleaning, transforming, aggregating, smoothing, and answering questions about data. MATLAB provides extensive, easy-to-use built-in functions for these workflows with no additional products required.
+description: Analyze data using MATLAB. Use when the task involves tables, timetables, time-series data, numeric arrays, sensor matrices, or gridded data — including but not limited to exploring, filtering, sorting, cleaning, transforming, aggregating, smoothing, padding, trimming, and answering questions about data. MATLAB provides extensive, easy-to-use built-in functions for these workflows with no additional products required.
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # MATLAB Data Analysis
@@ -26,14 +26,18 @@ Generate idiomatic MATLAB code for tabular data analysis tasks using tables and 
 
 This skill covers core MATLAB functions for tabular and time-series workflows. These functions work natively with `table` and `timetable`, handle missing data correctly, and are performance-optimized. Prefer the modern functions recommended here (e.g., `groupsummary`, `datetime`, `fillmissing`) over legacy alternatives (e.g., `accumarray`, `nanmean`, `datenum`). Override only if the user explicitly requests otherwise.
 
+**Before writing code, read the reference file linked at the end of the relevant section below.** Reference files contain correct syntax, common pitfalls, and "Avoid" patterns that prevent silent bugs. Skipping the reference risks using a deprecated approach or hitting a known pitfall.
+
 ### Key Functions — Available From
 
 Most functions in this skill are available in R2023a or earlier. The following require a newer release:
 
 | Function | Available From | Purpose |
 |----------|---------------|---------|
+| `paddata`, `trimdata`, `resize` | R2023b | Pad, trim, or resize arrays to target length |
 | `clip` | R2024a | Clamp values to a range |
 | `summary` (enhanced) | R2024b | Supports arrays (numeric, datetime, duration, logical); adds `Statistics`, `DataVariables`, `Detail` name-value args |
+| `isapprox` | R2024b | Tolerance-aware floating-point comparison (use instead of `==` for computed values) |
 | `isbetween` (numeric) | R2024b | Check elements within a numeric range |
 | `numunique` | R2025a | Count distinct values in a variable |
 | `allbetween` | R2025a | Validate all values are within a range |
@@ -54,12 +58,14 @@ If producing a standalone script, leave the semicolon off to invoke the `display
 
 ```matlab
 summary(T)                  % types, ranges, missing counts per variable
+size(T)                     % [nRows, nVars]
+sum(ismissing(T))           % missing count per variable
 T                           % dimensions + header + truncated preview
 ```
 
-> Systematic exploration checklist: [exploration.md](references/exploration.md)
+**For Pearson correlation, use `corrcoef` (base MATLAB)** with `Rows="complete"` to handle NaN: `corrcoef(T{:,vartype("numeric")}, Rows="complete")`. For Kendall or Spearman rank correlation, use `corr` (requires Statistics Toolbox): `corr(X, Type="Spearman")`.
 
----
+> Systematic exploration checklist (distributions, cardinality, duplicates, outlier screening, `groupcounts`, `corrcoef`, time-based checks): [exploration.md](references/exploration.md)
 
 ## Data Types
 
@@ -110,6 +116,8 @@ T.Size = reordercats(T.Size,["Small" "Medium" "Large"]);
 
 Tables are the primary container for tabular data. Each table variable can be single-column or multi-column (e.g., a matrix); the only requirement is consistent row count. Use "variable" (not "column") to match MathWorks documentation. Prefer dot notation and named access over numeric indexing.
 
+**Table orientation: each variable (column) holds values of the same type, units, and meaning; each row is one observation.** If data arrives transposed (measurements as rows, subjects as columns), restructure — don't store heterogeneous quantities (e.g., Height and Weight) in one variable, because grouping, filtering, and math operations all assume variables are homogeneous.
+
 **It is rarely better to use a `for` loop to iterate over table variables.** MATLAB's table functions operate on multiple variables at once via `DataVariables` and `vartype` — prefer these over column-by-column loops.
 
 ```matlab
@@ -142,7 +150,10 @@ Another benefit of timetables: functions like `fillmissing`, `smoothdata`, and `
 
 If working with legacy `timeseries` objects, consider converting with `timeseries2timetable(ts)` — the modern `timetable` is recommended.
 
-> `retime`, `synchronize`, `lag`, `timerange`, `eventtable`, `SamplePoints`, `ReplaceValues` details: [tables-and-timetables.md](references/tables-and-timetables.md)
+**When you want to tag or annotate timetable rows with events, episodes, or phases** (sensor anomalies, storms, maintenance windows, warning periods), use `eventtable` to attach event information to the timetable — do NOT add boolean columns, string labels, or categorical state variables to the timetable itself. The eventtable system keeps event metadata separate from measured data, enables event-based filtering (`eventfilter`), tolerance matching (`withtol`), automatic event overlays in `stackedplot` (no manual `subplot`+`patch`/`xline` plumbing), and timetable display annotation, and avoids polluting the timetable with sparse columns that are mostly missing. To push events from an attached eventtable to the main timetable, use `syncevents`.
+
+> `retime`, `synchronize`, `lag`, `timerange`, `withtol`, `SamplePoints`, `ReplaceValues` details: [tables-and-timetables.md](references/tables-and-timetables.md)
+> `eventtable`, `eventfilter`, `syncevents`, `extractevents` details: [eventtables.md](references/eventtables.md)
 
 ## Data Cleaning
 
@@ -196,6 +207,8 @@ T = filloutliers(T,"linear","movmedian",5, DataVariables="Value"); % interpolate
 ```
 
 Detection methods: `"median"` (default), `"mean"`, `"quartiles"`, `"percentiles"`, `"grubbs"`, `"gesd"`, `"movmedian"`, `"movmean"`. **Use `ThresholdFactor` to control sensitivity** — it sets the number of scaled MADs (`"median"`), standard deviations (`"mean"`), or IQR multiplier (`"quartiles"`). Default is 3 for median/mean, 1.5 for quartiles.
+
+**Use `OutputFormat="tabular"` when detecting across multiple variables.** Detection functions (`isoutlier`, `islocalmax`, `islocalmin`, `ischange`, `ismissing`) return a plain logical matrix by default on tables — variable names are lost. Pass `OutputFormat="tabular"` to get a table of logicals you can index by name: `isOut = isoutlier(T, OutputFormat="tabular", DataVariables=vars); T(isOut.Revenue, :)`.
 
 **Range operations:** check, validate, or clamp values to a range:
 ```matlab
@@ -277,10 +290,13 @@ T = mergevars(T,["X" "Y"], NewVariableName="Coords");     % merge into multicolu
 
 Prefer vectorized table arithmetic where possible. For iterative code where each row depends on the previous, extract variables into arrays, compute in a helper function, and assign back — do not index `T.Var(i)` inside a loop.
 
+**Pass tables directly to math functions (`std`, `mean`, `sum`, `log10`, etc.) — do not extract with `T{:,:}` or `table2array` for operations that accept tables natively.** Use `std(T(:,vars))` not `std(T{:,:})`. Only extract to array for functions that require it (e.g., `eig`, `svd`, `corrcoef`).
+
 ```matlab
 T.Total = T.A + T.B + T.C;                               % vectorized arithmetic
 T.BMI = T.Weight ./ (T.Height / 100).^2;                  % element-wise ops
 Tsum = sum(T(:,["A" "B" "C"]),2);                         % math functions work on tables: sum, mean, max, etc.
+colStd = std(T(:,["A" "B" "C"]));                         % column-wise std — returns a table
 T.Result = rowfun(@myFcn, T, ...                           % complicated row operations
     InputVariables=["A" "B" "C"], OutputFormat="uniform");
 ```
@@ -315,7 +331,6 @@ T = outerjoin(T1,T2, Keys="Key", MergeKeys=true);
 ```
 
 > `topkrows`, `varfun`, `splitvars`/`mergevars`, reshape examples: [data-transformation.md](references/data-transformation.md)
-
 ## Grouping and Aggregation
 
 **`groupsummary`** is the go-to for grouped statistics. Do not use `findgroups`+`accumarray` or manual loops for aggregation — `groupsummary` is faster and works directly with tables. Use `findgroups` alone only when you need group indices without aggregation.
@@ -332,7 +347,7 @@ Notes:
 - Consider `IncludeMissingGroups=false` to exclude groups defined by a missing value (such as `NaN` for numeric types) that can dominate results.
 - Use `IncludeEmptyGroups=true` to include all categories of a categorical variable, even those with no rows.
 - Supports on-the-fly binning: `groupsummary(T,"Age",[0 18 35 50 Inf],"mean","Income")` - no need for `discretize` first. Works with `groupcounts`, `groupfilter`, and `grouptransform` too.
-- **Time binning has two forms** — sequential (`"hour"`, `"month"`, `"year"`) creates one bin per calendar period in the data (e.g., Jan 2023, Feb 2023, ...). Cyclic (`"hourofday"`, `"dayofweek"`, `"monthofyear"`) collapses across the higher unit to reveal repeating patterns (e.g., all Mondays together). Choose based on whether you want a timeline or a cycle. No need to extract components with `hour()`/`month()` first — pass the binning rule directly to `groupsummary`.
+- **Time binning has two forms — choose carefully.** Sequential (`"hour"`, `"month"`, `"year"`) creates one bin per calendar period in the data (e.g., Jan 2023, Feb 2023, ...). Cyclic (`"hourofday"`, `"dayofweek"`, `"monthofyear"`) collapses across the higher unit to reveal repeating patterns (e.g., all Mondays together). **For example, use `"monthofyear"` (cyclic) for seasonal patterns; use `"month"` (sequential) for a timeline.** No need to extract components with `hour()`/`month()` first — pass the binning rule directly to `groupsummary`.
 - **Multiple binning methods:** use a cell array when types are mixed (e.g., a named method and custom edges), or a string array when all are named methods:
   ```matlab
   G = groupsummary(TT,["Time" "Time"],["year" "month"],"mean","Value");   % all named — string array
@@ -352,10 +367,11 @@ T = groupfilter(T,"Category",@(x) ~isoutlier(x),"Value");
 
 **When the filter logic matches a built-in detection function (`isoutlier`, `ismissing`, `ischange`), use it inside the function handle rather than reimplementing the arithmetic.** Built-in functions handle edge cases (NaN, constant groups) and accept tuning parameters like `ThresholdFactor`.
 
-**`grouptransform`** transforms data within each group, returning a same-size result (normalize, fill, center, or custom):
+**`grouptransform`** transforms data within each group, returning a same-size result (normalize, fill, center, or custom). **Use `ReplaceValues=false` to keep the original column and append the result as a new variable** — do not overwrite the original when both raw and transformed values are needed:
 
 ```matlab
-T = grouptransform(T,"Category","zscore","Value");     % overwrites Value with per-Category z-score
+T = grouptransform(T,"Category","zscore","Value");                        % overwrites Value
+T = grouptransform(T,"Category","zscore","Value",ReplaceValues=false);    % appends zscore_Value
 ```
 
 **`pivot`** for cross-tabulation:
@@ -409,65 +425,72 @@ changes = ischange(y,"variance");                     % variance change points
 
 > `smoothdata` methods, `trenddecomp` options, `ischange` details: [smoothing-and-trends.md](references/smoothing-and-trends.md)
 
----
+## Array and Grid Data
 
-## Data Exploration
+**Use arrays when data is homogeneous numeric AND either (a) naturally 2D/grid (sensors, geospatial), (b) performance-critical inner loop, or (c) upstream tooling delivers arrays. Otherwise, convert to table for metadata and named access.**
 
-The following are common starting points, not an exhaustive checklist. Use your judgment about what is relevant for the specific dataset and question — explore beyond these examples based on the data's characteristics:
+### Dimension pitfalls
+
+**`std` and `var` take a weight as the SECOND argument — not a dimension. `movstd` and `movvar` take a weight as the THIRD argument — not a dimension. Always pass weight explicitly before dimension:**
 
 ```matlab
-head(T)                         % first 8 rows
-tail(T)                         % last 8 rows
-summary(T)                      % types, ranges, missing counts
-size(T)                         % [nRows, nVars]
-sum(ismissing(T))               % missing count per variable
-groupcounts(T,"Category")      % value counts for a categorical column
+std(X,0,2)         % weight=0, dim=2 (per-row std). NOT std(X,2)
+var(X,0,2)         % weight=0, dim=2 (per-row var). NOT var(X,2)
+movstd(X,k,0,2)   % window=k, weight=0, dim=2. NOT movstd(X,k,2)
+movvar(X,k,0,2)   % window=k, weight=0, dim=2. NOT movvar(X,k,2)
 ```
 
-Check cardinality (`numunique(T.Col)` (R2025a+) or `groupcounts` for value counts), duplicates, and outliers (`isoutlier`) early. For wide tables, `summary` is more informative than `head`.
+**Array stats functions do NOT skip NaN automatically.** Pass `"omitnan"` explicitly: `mean(X,1,"omitnan")`, `std(X,0,1,"omitnan")`.
 
-> Systematic exploration checklist: [exploration.md](references/exploration.md)
+### 2D operations for grids
 
----
+For 2D grid data (sensor matrices, geospatial fields), use the dedicated 2D functions — do not loop 1D functions over rows/columns:
+
+| Task | 1D (per column) | 2D (grid) |
+|------|-----------------|-----------|
+| Smooth | `smoothdata` | `smoothdata2` |
+| Fill missing | `fillmissing` | `fillmissing2` |
+| Find peaks | `islocalmax` | `islocalmax2` |
+| Find valleys | `islocalmin` | `islocalmin2` |
+
+```matlab
+S = smoothdata2(X,"gaussian",{5,5});              % 2D Gaussian smoothing
+F = fillmissing2(X,"natural");                    % 2D natural neighbor interpolation
+TF = islocalmax2(X,MinProminence=10);             % 2D peak detection
+```
+
+### Array-native utilities
+
+**Use `paddata`/`trimdata`/`resize` to align arrays — not manual indexing or NaN concatenation:**
+```matlab
+B = paddata(X,100);                 % pad to 100 rows
+B = trimdata(X,50);                 % trim to 50 rows
+B = resize(X,100);                  % pad or trim as needed
+```
+
+**Use `mink`/`maxk` for k smallest/largest — not `sort` followed by indexing:**
+```matlab
+[vals,idx] = mink(X,5);            % 5 smallest per column with indices
+[vals,idx] = maxk(X,5);            % 5 largest per column with indices
+```
+
+**Use `bounds` for simultaneous min and max:**
+```matlab
+[lo,hi] = bounds(X);               % min and max per column in one call
+```
+
+> Dimension-aware operations, 2D functions, grouping on arrays, resizing: [array-and-grid-data.md](references/array-and-grid-data.md)
 
 ## Answering Questions About Data
 
 Strategies for producing correct answers when querying tabular data:
 
-### Top/Bottom N queries
-
-Use `topkrows` for quick retrieval:
-```matlab
-top5 = topkrows(T,5,"Sales");               % top 5 by Sales descending
-bot5 = topkrows(T,5,"Sales","ascend");      % bottom 5
-```
-
-For more control, use `sortrows` with `MissingPlacement="last"`:
-```matlab
-Ts = sortrows(T,"Sales","descend", MissingPlacement="last");
-result = Ts(1:5,:);
-```
-
-**Think about sort direction.** "Highest rank" means rank #1 (lowest number). "Highest salary" means the largest number. Consider variable semantics before choosing `"ascend"` or `"descend"`.
-
-For cross-variable lookups ("ages of the top 4 by pregnancies"), sort by the ranking variable and read the answer variable from the first N rows.
-
-### Missing data in analysis
-
-- Watch for sentinel values (0, -999, "N/A") that aren't marked as missing but shouldn't participate in analysis. Use `standardizeMissing` to fix them.
-- Set `IncludeMissingGroups=false` in `groupcounts`/`groupsummary` when groups defined by a missing value (such as `NaN` for numeric types) would dominate.
-- **Never apply `rmmissing` to an entire table** just to answer a question about one variable.
-
-### Return data as stored
-
-Return the actual values from the dataset, not interpretations. If a variable stores numeric codes, return the codes. If it stores category labels, return the labels. Don't substitute or map unless asked.
-
-### Filtering
-
-Consider whether exact matching (`==`, `matches`) or partial matching (`contains`, `startsWith`) is appropriate. For counting after filtering, use `height(filtered)` or `nnz(logicalIdx)`.
+- **Top/Bottom N:** Use `topkrows(T,5,"Sales")` — handles missing values automatically (NaN/NaT placed last). Use `sortrows` with `MissingPlacement` only for multi-step workflows where you need the full sorted table afterward. Think about sort direction — "highest rank" means rank #1 (lowest number), "highest salary" means largest number.
+- **Cross-variable lookups** ("ages of the top 4 by pregnancies"): sort by the ranking variable, read the answer variable from the first N rows.
+- **Missing data:** Watch for sentinel values (0, -999, "N/A") — use `standardizeMissing`. Set `IncludeMissingGroups=false` when NaN groups dominate. Never apply `rmmissing` to an entire table just to answer a question about one variable.
+- **Return data as stored.** Don't substitute or map values unless asked.
+- **Filtering:** Consider exact (`==`, `matches`) vs partial (`contains`, `startsWith`) matching. Count with `height(filtered)` or `nnz(logicalIdx)`.
 
 > Full strategies and examples: [answering-data-questions.md](references/answering-data-questions.md)
-
----
 
 Copyright 2026 The MathWorks, Inc.

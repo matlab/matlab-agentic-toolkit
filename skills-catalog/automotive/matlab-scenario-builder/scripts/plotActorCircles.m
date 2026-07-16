@@ -1,4 +1,4 @@
-function img = plotActorCircles(img, frameIdx, camObj, trackData, intrinsics)
+function img = plotActorCircles(img, frameIdx, camObj, trackData, intrinsics, opts)
 %plotActorCircles Overlay filled circles at actor center positions
 %
 %   img = plotActorCircles(img, frameIdx, camObj, trackData, intrinsics)
@@ -9,6 +9,11 @@ function img = plotActorCircles(img, frameIdx, camObj, trackData, intrinsics)
 %     fx, fy   — focal lengths (pixels)
 %     cx, cy   — principal point (pixels)
 %     camHeight — camera mounting height above the ego origin (meters)
+%
+%   Optional:
+%     ClassificationMap — containers.Map keyed by TrackID string, values
+%       are structs with at least .RRCategory (e.g. "Sedan", "SUV").
+%       When provided, label shows "ID <tid> | <RRCategory>".
 
 arguments
     img
@@ -16,6 +21,7 @@ arguments
     camObj   scenariobuilder.CameraData
     trackData scenariobuilder.ActorTrackData
     intrinsics (1,1) struct
+    opts.ClassificationMap = []
 end
 
 ts = camObj.Timestamps(frameIdx);
@@ -56,7 +62,13 @@ for i = 1:numActors
         nValid = nValid + 1;
         pts(nValid, :) = [round(u), round(v)];
         depths(nValid) = pos_cam(3);
-        labels{nValid} = char(trackIDs(i));
+        tid = char(trackIDs(i));
+        if ~isempty(opts.ClassificationMap) && isKey(opts.ClassificationMap, tid)
+            cls = opts.ClassificationMap(tid);
+            labels{nValid} = sprintf('ID %s | %s %s', tid, cls.Color, cls.RRCategory);
+        else
+            labels{nValid} = tid;
+        end
     end
 end
 

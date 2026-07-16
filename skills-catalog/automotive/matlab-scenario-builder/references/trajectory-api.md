@@ -24,10 +24,75 @@ trajectory = scenariobuilder.Trajectory(___, Name=Value)
 | Argument | Description | Default |
 |----------|-------------|---------|
 | `Name` | Name of the trajectory object. | `''` |
-| `Orientation` | N-by-3 matrix of `[yaw, pitch, roll]` at each waypoint. Units: radians (intrinsic ZYX Euler). | Computed from `Position` |
+| `Orientation` | N-by-3 matrix of **`[Yaw, Pitch, Roll]`** at each waypoint. Units: **radians** (intrinsic ZYX Euler). **NOT [Roll, Pitch, Yaw].** Only pass for ego (fused CAN heading); actors auto-derive from waypoints. | Computed from `Position` |
 | `LocalOrigin` | Anchor point. `[lat, lon, alt]` for GPS or `[x, y, z]` for Cartesian. | `[0 0 0]` |
 | `TimeOrigin` | Reference time subtracted from all timestamps. | `0` |
 | `Attributes` | Cell array of additional recorded attributes (same length as timestamps). | `[]` |
+
+### HARD RULES — non-ego actors built from `actorprops`
+
+1. **Do NOT pass `Orientation=`.** The `Yaw` column from `actorprops` is in
+   compass convention (0° = North, ~340° for a northbound actor). Passing
+   it as `Orientation=[yaw pitch roll]` rotates actors to the wrong heading
+   in RoadRunner's ENU world frame. Omit the argument and let RR derive
+   heading from waypoint deltas — this matches recorded motion.
+2. **`Speed=` is not a valid N-V argument** to the constructor. It exists
+   on `vehicle()` in `drivingScenario`, not on `scenariobuilder.Trajectory`.
+   Speed is read-only on the object (`GroundSpeed` property), derived from
+   waypoint timestamps. Passing `Speed=` errors with *"Unrecognized name-
+   value pair argument"*.
+
+These rules apply only to NON-EGO actors. The ego trajectory is built from
+GPS via the `trajectory()` function (lowercase) and follows different
+conventions — see [`workflow-04-roadrunner-export-detail.md`](workflow-04-roadrunner-export-detail.md).
+
+### Ego Orientation — GPS heading is unreliable
+
+`trajectory(gpsData)` derives heading from position deltas. **At low speed
+or early GPS lock, the heading can be 180° wrong** — the ego faces
+backwards at the start of the simulation. CAN ego yaw rate or GPS compass
+heading are accurate alternatives.
+
+**When CAN ego signals exist (speed, yaw rate, compass heading):** use the
+GPS+CAN heading fusion pattern to build a fused ego trajectory with
+`Orientation=[canHeading, 0, 0]`.
+
+**When only GPS is available:** accept the limitation. The heading corrects
+itself once the vehicle reaches sufficient speed (>5 m/s). For short
+low-speed segments at the start, `smooth(egoTrajectory)` can help but
+won't fully fix a 180° flip.
+
+### Known Product Bugs (workarounds until fixed)
+
+**P9 — `actorprops` Yaw gives ego heading to ALL actors.** `actorprops`
+returns the ego's yaw for every actor regardless of their actual direction
+of travel. Oncoming vehicles show ~273° instead of ~93°. **Workaround:**
+Never pass `actorprops` Yaw to `Trajectory`. Omit `Orientation=` entirely
+— the `Trajectory` object auto-derives correct heading from waypoint
+deltas.
+
+**P10 — `actorprops` Yaw is in degrees but `Trajectory(Orientation=...)`
+expects radians.** No validation or warning is thrown — 273 degrees is
+silently interpreted as 273 radians, causing vehicles to spin wildly.
+**Workaround:** Even if you had correct per-actor yaw, you would need
+`deg2rad()` before passing. But since P9 makes the values wrong anyway,
+the correct fix is to never pass Orientation for actors.
+
+**P11 — `Trajectory.Orientation` column order is undocumented in help.**
+The help text says "N-by-3 matrix" but does not specify column order.
+Actual order: **`[Yaw, Pitch, Roll]`** in **radians**. Most robotics
+conventions use `[Roll, Pitch, Yaw]` — agents get this wrong on first
+attempt every time. **Workaround:** Always use `[Yaw, Pitch, Roll]`.
+Only relevant for ego trajectory (fused CAN heading) — actors should not
+have Orientation passed at all (see P9).
+
+**Summary — correct actor export pattern:**
+```matlab
+% NO Orientation, NO Speed — auto-derived heading from waypoints is correct
+actorTraj = scenariobuilder.Trajectory( ...
+    actorInfo.Time{i}, wp, ...
+    Name=actorInfo.TrackID(i), LocalOrigin=egoLocalOrigin);
+```
 
 ## Properties
 

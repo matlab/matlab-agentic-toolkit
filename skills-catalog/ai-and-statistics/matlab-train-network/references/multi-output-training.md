@@ -15,29 +15,25 @@ net = dlnetwork;
 
 layers = [
     sequenceInputLayer(numChannels)
-    lstmLayer(128, OutputMode="last", Name="lstm")
-];
+    lstmLayer(128,OutputMode="last",Name="lstm")];
 net = addLayers(net,layers);
 
-classHead = [
-    fullyConnectedLayer(numClasses, Name="fcClass")
-    softmaxLayer(Name="softmax")
-];
-net = addLayers(net,classHead);
-net = connectLayers(net,"lstm","fcClass");
+head1 = [
+    fullyConnectedLayer(numClasses,Name="fc1")
+    softmaxLayer(Name="softmax")];
+net = addLayers(net,head1);
+net = connectLayers(net,"lstm","fc1");
 
-regHead = [
-    fullyConnectedLayer(1, Name="fcEnergy")
-];
-net = addLayers(net,regHead);
-net = connectLayers(net,"lstm","fcEnergy");
+head2 = fullyConnectedLayer(1,Name="fc2");
+net = addLayers(net,head2);
+net = connectLayers(net,"lstm","fc2");
 ```
 
 ### 2. Check net.OutputNames — this is the source of truth
 
 ```matlab
 net.OutputNames
-% ans = {'softmax', 'fcEnergy'}
+% ans = {'softmax', 'fc2'}
 ```
 
 The order here determines everything below.
@@ -45,12 +41,12 @@ The order here determines everything below.
 ### 3. Build the combined datastore with targets in OutputNames order
 
 ```matlab
-dsXTrain = arrayDatastore(XTrain, IterationDimension=3, OutputType="cell");
-dsTClass = arrayDatastore(TClassTrain);
-dsTEnergy = arrayDatastore(TEnergyTrain);
+dsX = arrayDatastore(XTrain,IterationDimension=3,OutputType="cell");
+dsT1 = arrayDatastore(T1Train);
+dsT2 = arrayDatastore(T2Train);
 
-% Columns: input, target1 (class), target2 (energy) — matching OutputNames
-dsTrain = combine(dsXTrain,dsTClass,dsTEnergy);
+% Columns: input, target1, target2 — matching OutputNames order
+dsTrain = combine(dsX,dsT1,dsT2);
 ```
 
 ### 4. Write the loss function to match OutputNames order
@@ -59,10 +55,10 @@ The loss function receives: outputs first (in `OutputNames` order), then
 targets (in the same order).
 
 ```matlab
-% OutputNames = {'softmax', 'fcEnergy'}
-% So: lossFcn(YClass, YEnergy, TClass, TEnergy)
-lossFcn = @(YClass, YEnergy, TClass, TEnergy) ...
-    crossentropy(YClass,TClass) + 0.01*mse(YEnergy,TEnergy);
+% OutputNames = {'softmax', 'fc2'}
+% So: lossFcn(Y1,Y2,T1,T2)
+lossFcn = @(Y1,Y2,T1,T2) ...
+    crossentropy(Y1,T1) + 0.01*mse(Y2,T2);
 ```
 
 ### 5. Train
@@ -71,8 +67,7 @@ lossFcn = @(YClass, YEnergy, TClass, TEnergy) ...
 % Metrics must be a cell array, not a matrix — use { } not [ ]
 metrics = {
     accuracyMetric(NetworkOutput="softmax")
-    rmseMetric(NetworkOutput="fcEnergy")
-};
+    rmseMetric(NetworkOutput="fc2")};
 
 options = trainingOptions("adam", ...
     MaxEpochs=15, ...
@@ -93,10 +88,10 @@ targets (one per output). You cannot pass `XTest, TTest` when there are
 multiple outputs.
 
 ```matlab
-dsXTest = arrayDatastore(XTest, IterationDimension=3, OutputType="cell");
-dsTClassTest = arrayDatastore(TClassTest);
-dsTEnergyTest = arrayDatastore(TEnergyTest);
-dsTest = combine(dsXTest,dsTClassTest,dsTEnergyTest);
+dsX = arrayDatastore(XTest,IterationDimension=3,OutputType="cell");
+dsT1 = arrayDatastore(T1Test);
+dsT2 = arrayDatastore(T2Test);
+dsTest = combine(dsX,dsT1,dsT2);
 
 results = testnet(net,dsTest,metrics);
 % results = [accuracy, rmse] — one value per metric, in order

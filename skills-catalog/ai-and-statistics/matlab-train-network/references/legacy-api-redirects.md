@@ -1,21 +1,23 @@
-# Legacy API Redirects — Code Examples
+# Legacy and Discouraged API Redirects — Code Examples
 
-When a user asks for legacy functionality, use the recommended replacements instead.
-See the mapping table in SKILL.md for which legacy APIs map to which replacements.
-The examples below show before/after code for the most common migrations: transfer learning, shallow neural networks (`patternnet`/`fitnet`), and NARX time series.
+When a user asks for legacy or discouraged functionality, use the recommended
+replacements instead. See the mapping table in SKILL.md for which APIs map to
+which replacements. The examples below show before/after code for the most common
+migrations: transfer learning, shallow neural networks (`patternnet`/`fitnet`),
+and NARX time series.
 
-## Common Legacy Patterns and Modern Equivalents
+## Common Legacy and Discouraged Patterns
 
-### Legacy transfer learning
+### Transfer learning with discouraged layerGraph surgery
 
 ```matlab
-% DON'T — legacy pattern
+% DON'T — discouraged pattern
 net = squeezenet;
 lgraph = layerGraph(net);
 lgraph = replaceLayer(lgraph,"conv10",newConvLayer);
 lgraph = replaceLayer(lgraph,"ClassificationLayer_predictions",newClassLayer);
 trainedNet = trainNetwork(imdsTrain,lgraph,options);
-[label, scores] = classify(trainedNet,imdsTest);
+[label,scores] = classify(trainedNet,imdsTest);
 
 % DO — modern pattern
 net = imagePretrainedNetwork("squeezenet",NumClasses=5);
@@ -39,14 +41,13 @@ mdl = fitcnet(X,T,LayerSizes=20);
 labels = predict(mdl,X);
 
 % OR — Deep Learning Toolbox alternative
-net = dlnetwork([
+layers = [
     featureInputLayer(numFeatures)
     fullyConnectedLayer(20)
     reluLayer
     fullyConnectedLayer(numClasses)
-    softmaxLayer
-]);
-net = trainnet(X,T,net,"crossentropy",options);
+    softmaxLayer];
+net = trainnet(X,T,layers,"crossentropy",options);
 scores = minibatchpredict(net,X);
 labels = scores2label(scores,classNames);
 ```
@@ -65,7 +66,7 @@ data = iddata(YTrain,XTrain,Ts);
 sys = nlarx(data,[na nb nk],idSigmoidNetwork(hiddenSize));
 futureInput = iddata([],XTest,Ts);
 yF = forecast(sys,data,numSteps,futureInput);
-YPred = yF.OutputData';
+Y = yF.OutputData';
 
 % OR — Deep Learning Toolbox alternative (two-branch NARX with 1-D convolution)
 % Uses maglev_dataset: current (exogenous input) → position (output)
@@ -112,13 +113,13 @@ options = trainingOptions("lm",MaxIterations=500);
 net = trainnet(ds,net,"mse",options);
 
 % Closed-loop prediction: feed predictions back iteratively
-YPred = positionTest(1:numSequenceDelays,:);
+Y = positionTest(1:numSequenceDelays,:);
 for idx = 1:numSteps
-    YPred(end+1,:) = predict(net, ...
-        YPred(end-numSequenceDelays+1:end,:), ...
+    Y(end+1,:) = predict(net, ...
+        Y(end-numSequenceDelays+1:end,:), ...
         currentTest(idx:idx+numExogenousDelays-1,:));
 end
-YPred = YPred(numSequenceDelays+1:end,:);
+Y = Y(numSequenceDelays+1:end,:);
 ```
 
 

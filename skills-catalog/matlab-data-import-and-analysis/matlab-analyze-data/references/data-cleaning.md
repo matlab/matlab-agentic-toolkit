@@ -8,6 +8,10 @@
 missingElements = ismissing(value);
 missingElements = isnan(value);
 
+% On tables: use OutputFormat="tabular" to get a table of logicals (index by name)
+missTbl = ismissing(T, OutputFormat="tabular");
+T(missTbl.Revenue, :)   % rows where Revenue is missing
+
 % Avoid: value == NaN and NaN == NaN are always false
 missingElements = value == NaN;
 ```
@@ -113,6 +117,10 @@ isOut = isoutlier(T, "quartiles", DataVariables="Value");           % IQR method
 isOut = isoutlier(T, "percentiles", [5 95], DataVariables="Value"); % custom bounds
 isOut = isoutlier(T, "mean", ThresholdFactor=3, DataVariables="Value"); % 3 std from mean
 
+% OutputFormat="tabular": returns a table of logicals (keeps variable names)
+isOut = isoutlier(T, OutputFormat="tabular", DataVariables=["Revenue","Cost"]);
+T(isOut.Revenue, :)   % rows where Revenue is an outlier — no positional indexing needed
+
 % Remove outlier rows
 Tclean = rmoutliers(T, "quartiles", DataVariables="Value");
 
@@ -161,6 +169,8 @@ T = clip(T, 0, 100, DataVariables="Score");  % (R2024a+)
 ```
 
 `isbetween` supports interval types (`"open"`, `"closed"`, `"openleft"`, `"openright"`) and works with numeric (R2024b+), datetime, and duration data.
+
+For missing data handling on arrays (`fillmissing` with dim argument, `fillmissing2` for 2D grids), see [array-and-grid-data.md](array-and-grid-data.md).
 
 ---
 

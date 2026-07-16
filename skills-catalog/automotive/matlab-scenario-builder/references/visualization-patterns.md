@@ -17,6 +17,71 @@ description: Full code patterns for the three camera-playback modes (track-overl
 - `localizedTrajectory.Position` (and `egoTrajectory.Position`) — N-by-3 `[x y z]`. **NOT** `Waypoints`. (`Waypoints` is the column name in the `actorprops` *result table* — different object.)
 - See [[trajectory-api]] and the `CameraData` section of [[actortrackdata-api]] before using any other property.
 
+## HARD RULE — Validate CameraData frames after construction
+
+```matlab
+% Run immediately after constructing or rebuilding CameraData
+assert(numel(unique(cameraData.Frames)) > 1, ...
+    "All CameraData.Frames point to the same file — check image file list");
+```
+
+If `CameraData.Frames` is read-only and you must rebuild the object (e.g., to fix paths), **always pass `SensorParameters=`** to preserve intrinsics. Without it, Mode 1 silently degrades to Mode 3. See [[osm-flat-scene-gotchas]] Gotcha 9.
+
+## Mode Selection — Executable Decision Tree
+
+Copy this logic exactly when choosing which mode to use. Do NOT skip Mode 2 just because intrinsics are missing.
+
+```matlab
+% Rule 2 — visualization mode selection (copy this logic)
+hasIntrinsics = ~isempty(cameraData.SensorParameters) ...
+    && isstruct(cameraData.SensorParameters) ...
+    && isfield(cameraData.SensorParameters, 'Intrinsics');
+hasTracks = exist('trackData','var') && ~isempty(trackData.UniqueTrackIDs);
+sameSampleCount = hasTracks && (cameraData.NumSamples == trackData.NumSamples);
+
+if hasIntrinsics && hasTracks
+    % MODE 1: track-overlay (plotActorCircles) — PRIMARY when intrinsics exist
+elseif hasTracks && sameSampleCount
+    % MODE 2: BEV + Camera (plotBEVAndCamera) — fallback when no intrinsics
+else
+    % MODE 3: raw camera playback — last resort
+end
+```
+
+> **WRONG:** "No intrinsics → skip to raw playback."
+> **RIGHT:** "No intrinsics → check if BEV+Camera is possible (tracks + matching sample counts). Only raw playback if tracks are also missing."
+
+---
+
+## Double-Compression Blur — Comparison Video
+
+**NEVER** compose the final comparison video by reading the pre-saved `trackOverlay_video.mp4` through `VideoReader`. This causes double H.264 compression:
+1. Original frames → encode as `trackOverlay_video.mp4` (first compression, quality loss)
+2. Decode → `imresize` → re-encode as `compare.mp4` (second compression, visible blur)
+
+**CORRECT:** Compose the overlay on-the-fly from original frames in the comparison loop:
+```matlab
+% Left panel: overlay from originals (single-encode, no blur)
+img = imread(cameraData.Frames(frameIdx));
+imgL = plotActorCircles(img, frameIdx, cameraData, trackData, intrinsics);
+imgL = imresize(imgL, [targetH targetW]);
+```
+
+The standalone `trackOverlay_video.mp4` is still saved separately (for the questdlg popup / user inspection), but the comparison video must NOT read from it.
+
+---
+
+## MCP Timeout Note
+
+When running video composition through MCP eval (each call ~90s timeout), reduce frame targets:
+- **Single-camera video** (track-overlay, BEV+Camera, raw): `maxFrames = 150` (default below)
+- **Side-by-side composition** (input vs sim, GPS compare, localization compare): `maxFrames = 100` — these do 2× the I/O per frame (two VideoReaders + resize + insertText × 2)
+- **Standalone script** (user runs locally): up to 300 is fine
+
+If a composition loop times out, reduce `maxFrames` to 50 and retry — a 50-frame video at correct FrameRate still covers the full drive duration.
+
+---
+
 ## Mode 1: Track-overlay video (intrinsics available)
 
 > **One UI event per video.** Do NOT call interactive `play(cameraData, PlotFcn=...)` *and* the save-video block below — the user would have to dismiss the Camera Player window AND the `questdlg` popup for the same content. Pick one: **save + popup** is the default for a non-interactive scripted run; interactive `play()` is only for ad-hoc inspection in the MATLAB desktop.
@@ -31,7 +96,7 @@ intrinsics = struct( ...
     camHeight=CameraHeight);
 
 overlaidVideoFile = fullfile(dataDir, "trackOverlay_video.mp4");
-maxFrames = 300;
+maxFrames = 150;  % ~150 target: covers full drive (no truncation), fast in MCP eval
 step = max(1, ceil(cameraData.NumSamples / maxFrames));
 frameIndices = 1:step:cameraData.NumSamples;
 effectiveFPS = numel(frameIndices) / cameraData.Duration;
@@ -82,7 +147,7 @@ end
 %% Save BEV + Camera video (subsampled if many frames for speed)
 addpath("<skill-scripts-path>");  % path to scripts/plotBEVAndCamera.m
 bevVideoFile = fullfile(dataDir, "bevCamera_video.mp4");
-maxFrames = 300;
+maxFrames = 150;  % ~150 target: covers full drive (no truncation), fast in MCP eval
 step = max(1, ceil(cameraData.NumSamples / maxFrames));
 frameIndices = 1:step:cameraData.NumSamples;
 effectiveFPS = numel(frameIndices) / cameraData.Duration;
@@ -151,7 +216,7 @@ end
 ```matlab
 %% Save raw camera video (subsampled if many frames for speed)
 rawVideoFile = fullfile(dataDir, "rawCamera_video.mp4");
-maxFrames = 300;
+maxFrames = 150;  % ~150 target: covers full drive (no truncation), fast in MCP eval
 step = max(1, ceil(cameraData.NumSamples / maxFrames));
 frameIndices = 1:step:cameraData.NumSamples;
 effectiveFPS = numel(frameIndices) / cameraData.Duration;

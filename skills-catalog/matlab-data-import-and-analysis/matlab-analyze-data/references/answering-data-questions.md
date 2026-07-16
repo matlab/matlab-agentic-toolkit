@@ -33,7 +33,7 @@ When asked for the "top N", "highest N", "lowest N", or "largest N" values of a 
   bot5 = topkrows(T,5,"Sales","ascend");      % bottom 5 by Sales ascending
   ```
   `topkrows` is cleaner and avoids a full sort, so it can also be faster on large tables.
-- For more control, use `sortrows` with `MissingPlacement="last"` to keep missing values out of the result.
+- Missing values (NaN, NaT) are automatically placed last by `topkrows`. Use `sortrows` with `MissingPlacement="last"` only when you need the full sorted table for subsequent operations.
 - Return exactly N values from the sorted result.
 - Consider whether the question is asking for N distinct/unique values or the N largest individual entries (which may include duplicates).
 - **Think carefully about sort direction** - some columns have inverse semantics. For example, "highest rank" or "top rank" typically means the lowest numeric value (rank #1 is the top), while "highest salary" means the largest numeric value. Consider the meaning of the column before choosing `"ascend"` or `"descend"`.

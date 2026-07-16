@@ -47,6 +47,16 @@ data = table(5.99, VariableNames="Price");
 sqlupdate(conn, "inventoryTable", data, rf);
 ```
 
+### Multi-Row Update (cell array of filters)
+
+```matlab
+% Update multiple rows with different values — one filter per row
+rf = rowfilter("ProductID");
+filters = {rf.ProductID == 1; rf.ProductID == 2};
+data = table([5.99; 13.99], VariableNames="Price");
+sqlupdate(conn, "inventoryTable", data, filters);
+```
+
 ### `sqlupdate` Parameters
 
 | Parameter | Description |
@@ -54,7 +64,7 @@ sqlupdate(conn, "inventoryTable", data, rf);
 | `conn` | Database connection object |
 | `tablename` | Target table name |
 | `data` | MATLAB table with new values |
-| `filter` | `RowFilter` object or cell array of `RowFilter` objects |
+| `filter` | `RowFilter` object (single, broadcasts 1-row data) or cell array of `RowFilter` objects (one per data row) |
 | `Catalog` | Database catalog name (for databases that support catalogs) |
 | `Schema` | Database schema name (use when the table is not in the default schema) |
 
@@ -74,7 +84,7 @@ close(conn);
 
 - `sqlwrite` creates the table if it doesn't exist. If appending to an existing table, column names and types must match.
 - `sqlupdate` requires R2023a+. For older releases, use `update` (legacy) or `execute` with raw SQL UPDATE.
-- **`sqlupdate` row count**: The `data` table must have exactly 1 row (broadcasts to all matches) or exactly as many rows as the filter matches. Mismatched counts produce unpredictable results. Verify match count first with `sqlread` + the same `RowFilter`.
+- **`sqlupdate` row count**: A single `RowFilter` works only with a 1-row data table (broadcasts to all matches). For multi-row updates, pass a **cell array of RowFilter objects** — one filter per data row. A single filter matching N rows with an N-row data table errors.
 - `sqlwrite` has no `BatchSize` parameter. For very large data, loop over chunks of the MATLAB table manually.
 - **NEVER** call `sqlwrite` row-by-row in a loop — batch rows into a single table.
 

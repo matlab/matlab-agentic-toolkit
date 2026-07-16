@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Generate C/C++ or CUDA code from PyTorch ExportedProgram models using loadPyTorchExportedProgram and codegen.
+matlab-release: ">=R2026a"
+required-tools: []
+required-skills: []
+required-products:
+  - MATLAB Coder
+  - MATLAB Coder Support Package for PyTorch and LiteRT Models
+optional-products:
+  - GPU Coder
+toolkit: matlab-agentic-toolkit

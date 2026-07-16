@@ -2,7 +2,7 @@
 
 ## Execute Arbitrary SQL with `execute`
 
-Use for DDL, DML, DELETE, or any SQL the database supports:
+Use for DDL, DML, DELETE, or any SQL the database supports. **Destructive operations (DROP, TRUNCATE, DELETE, ALTER) require explicit user confirmation before execution.**
 
 ```matlab
 % Create a new table
@@ -17,6 +17,8 @@ execute(conn, "DELETE FROM employees WHERE Salary < 30000");
 % Drop a table
 execute(conn, "DROP TABLE IF EXISTS tempResults");
 ```
+
+> **Destructive operations require confirmation.** Before executing `DROP`, `TRUNCATE`, `DELETE`, or column-dropping `ALTER` statements, present the exact SQL to the user and receive explicit approval. Do not execute destructive SQL automatically.
 
 ### `execute` Parameters
 

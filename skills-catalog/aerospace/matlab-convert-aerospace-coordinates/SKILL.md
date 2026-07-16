@@ -13,7 +13,7 @@ description: >
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Aerospace Fundamentals
@@ -33,11 +33,11 @@ Core Aerospace Toolbox functions for unit conversions, time conversions, coordin
 
 ## When NOT to Use
 
-- Atmosphere models (`atmosisa`, `atmoscoesa`) — not covered here
+- Atmosphere models (`atmosisa`, `atmoscoesa`) — use `matlab-compute-aerospace-environment`
 - Airspeed corrections (`correctairspeed`) — not covered here
-- Orbit propagation or satellite maneuvers — use Aerospace Blockset or Satellite Communications Toolbox
+- Orbit propagation or satellite maneuvers — use Aerospace Toolbox, Aerospace Blockset or Satellite Communications Toolbox
 - Navigation-specific transforms (`lla2enu`, `lla2ned`) — use Navigation Toolbox
-- Simulink blocks — use `/model-based-design-core:building-simulink-models`
+- Simulink blocks — use `/model-based-design-core:building-simulink-models` with Aerospace Blockset
 
 ## Workflow
 

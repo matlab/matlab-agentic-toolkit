@@ -116,7 +116,6 @@ Return formats are not uniform. Some methods return structured tables (access vi
 
 - `fred` is obsolete — always use `fredrs`
 - Available since R2026a in Datafeed Toolbox
-- Use `series(c, id, "observations", ...)` to retrieve data (replaces the old `fetch` syntax)
 
 ---
 

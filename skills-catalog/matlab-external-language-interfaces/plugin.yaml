@@ -1,5 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Call Python&trade; libraries from MATLAB and upgrade MEX files to the interleaved complex API.
+description: Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API.
 keywords:
   - matlab
   - python

@@ -181,6 +181,8 @@ G = groupsummary(T,["Row" "Col"],"sum","Value");
 P = unstack(G,"sum_Value","Col");
 ```
 
+For `groupsummary`, `grouptransform`, and `groupfilter` on arrays (grouping vector syntax instead of variable names), see [array-and-grid-data.md](array-and-grid-data.md).
+
 ---
 
 Copyright 2026 The MathWorks, Inc.

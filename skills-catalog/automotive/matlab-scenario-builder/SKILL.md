@@ -1,10 +1,10 @@
 ---
 name: matlab-scenario-builder
-description: "Generate driving scenes, scenarios, road surfaces, and 3D content from already-wrapped scenariobuilder.* sensor data (GPS, camera, lidar, actor tracks) using Scenario Builder for Automated Driving Toolbox. Use to BUILD, EXPORT, or AUGMENT a virtual scenario/scene/map: ego or actor trajectories, trajectory smoothing, OpenCRG road-surface extraction, 3D asset generation, static-object placement, point-cloud georeferencing + elevation, lane-based ego localization, sensor-fusion tracking, scenario-event extraction (cut-ins, hard brakes, near-misses, ADAS disengagements), or export to RoadRunner, drivingScenario, OpenDRIVE, OpenCRG, OpenSCENARIO, or Unreal Engine. Also: log-to-scenario, scenario harvesting, accident/near-miss reconstruction, SOTIF (ISO 21448) and ISO 26262 scenario coverage, USGS-aerial-lidar scene augmentation, traffic-sign placement from camera+lidar logs. NOT for raw-data import or multi-sensor sync/crop/offset/timestamp normalization — route those to matlab-driving-data-importer."
+description: "Generate driving scenes, scenarios, road surfaces, and 3D content from scenariobuilder.* sensor data (GPS, camera, lidar, actor tracks) using Scenario Builder for Automated Driving Toolbox. BUILD, EXPORT, or AUGMENT a virtual scenario/scene/map: ego or actor trajectories, trajectory smoothing, OpenCRG road-surface extraction, 3D asset generation, static-object placement, point-cloud georeferencing + elevation, lane-based ego localization, sensor-fusion tracking, scenario-event extraction (cut-ins, hard brakes, near-misses, ADAS disengagements), or export to RoadRunner, drivingScenario, OpenDRIVE, OpenCRG, OpenSCENARIO, or Unreal Engine. Also: log-to-scenario, scenario harvesting, accident/near-miss reconstruction, SOTIF (ISO 21448) and ISO 26262 scenario coverage, USGS-aerial-lidar augmentation, traffic-sign placement, vision-based vehicle classification for actor assets. NOT for raw-data import or multi-sensor sync/crop/offset/timestamp normalization — route those to matlab-driving-data-importer."
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Scenario Builder for MATLAB
@@ -45,7 +45,7 @@ isfile(which("scenariobuilder.Trajectory"))
 
 ## Workflow Catalog
 
-This skill supports 17 workflows. Workflows 1–3 and 6 (the core happy path) are inline below. Workflow 4 has a minimal inline pattern with a pointer to its detailed reference. Workflows 5, 7–17 live in `references/` and are loaded on demand.
+This skill supports 18 workflows. Workflows 1–3 and 6 (the core happy path) are inline below. Workflow 4 has a minimal inline pattern with a pointer to its detailed reference. Workflows 5, 7–18 live in `references/` and are loaded on demand.
 
 | # | Workflow | Where | Load when user says |
 |---|----------|-------|---------------------|
@@ -66,8 +66,46 @@ This skill supports 17 workflows. Workflows 1–3 and 6 (the core happy path) ar
 | 15 | Driving Scenario Designer (drivingScenario object) | [`workflow-15-driving-scenario-designer.md`](references/workflow-15-driving-scenario-designer.md) | **explicit only:** "Driving Scenario Designer", "DSD", "open in `drivingScenarioDesigner`", "build a `drivingScenario` object" |
 | 16 | Road Scene Augmentation from Aerial Lidar | [`workflow-16-aerial-lidar-augmentation.md`](references/workflow-16-aerial-lidar-augmentation.md) | "augment / enhance / improve the scene with trees / buildings", "single lat/lon US — generate scene", "USGS aerial lidar", "improve OSM elevation / banking / gradient / height", `.las` / `.laz` aerial input |
 | 17 | Traffic Signs from Recorded Camera + Lidar | [`workflow-17-traffic-signs-from-sensor-data.md`](references/workflow-17-traffic-signs-from-sensor-data.md) | "add traffic signs", "place signs on the map", "signs from camera detections + lidar" (pre-detected sign boxes required) |
+| 18 | Vehicle Classification from Camera | [`workflow-18-vehicle-classification.md`](references/workflow-18-vehicle-classification.md) | "classify vehicles", "vehicle color", "vehicle type", "actor asset type", "what kind of car", "realistic actors", "use real colors" |
+| 19 | Ego Lane Inference from Camera | [`workflow-19-ego-lane-inference.md`](references/workflow-19-ego-lane-inference.md) | "which lane am I in", "predict lane index", "ego lane", "lane count", auto-fires before startLaneIdx question in Step 7 when vision is available |
 
-**Related references (not workflows):** [`visualization-patterns.md`](references/visualization-patterns.md) — full code for camera-playback video saving (loaded after Rule 2 decision).
+**Related references (not workflows):** [`visualization-patterns.md`](references/visualization-patterns.md) — full code for camera-playback video saving (loaded after Rule 2 decision). [`osm-flat-scene-gotchas.md`](references/osm-flat-scene-gotchas.md) — common pitfalls on OSM flat scenes (Z handling, importScene options, stale sim, image-frame datasets).
+
+## STOP — Common Agent Failures (check BEFORE writing code)
+
+> 1. Missing `enableOverlapGroupsOptions(IsEnabled=false)` on `importScene` for RRHD
+> 2. Skipping lane localization when scene=OSM + Raw GPS + camera (**REQUIRED** per matrix)
+> 3. Skipping comparison video gate before reporting task complete
+> 4. Exporting ego to RoadRunner BEFORE importing roads (OSM scene must exist first)
+> 5. Using `importScene` on a saved `.rrscene` — use `openScene(rrApp, file)` instead (`importScene` requires a format string and is for RRHD/OpenDRIVE)
+> 6. Rebuilding `CameraData` without `SensorParameters=` — loses intrinsics, silently downgrades Mode 1 → Mode 3
+> 7. Comparison video uses raw camera on left — use the **track-overlaid** video (or BEV+Camera) when available
+
+## Mandatory Execution Order (evaluate BEFORE writing code)
+
+When the prompt is "generate scenario from data" (short or long), execute in this order:
+
+0. `addpath(scripts/)` — skill helper functions (`openFile`, `plotActorCircles`, etc.)
+1. Load data → create objects → Rule 5 timestamp scale detection + normalize
+2. Plot GPS + trajectory side-by-side (**VALIDATION** — confirm data loaded correctly)
+3. Camera validation video (Rule 2 decision tree) → questdlg popup (**BEFORE** any RR export)
+4. Multi-GPS gate (if >1 GPS series) → compare video → ASK which series
+5. Establish scene: OSM download + `importScene` WITH `enableOverlapGroupsOptions(IsEnabled=false)`
+   — Roads MUST exist before any `exportToRoadRunner` call
+6. Build ego trajectory → localization decision matrix (Rule 4 Step 7)
+   — OSM + Raw GPS + camera = **REQUIRED**, no ASK needed
+   — Otherwise: ASK or Skip per matrix
+7. Export ego + actors to RoadRunner (no `Orientation=`, flatten Z on flat scenes, preserve `Orientation=` on ego rebuild)
+8. Simulate (`setCameraMode(rrApp, "Front")`, no `Pacing=`, `EnableLogging=true`) → `exportVideo`
+   — `exportVideo` `VideoFolder` MUST NOT contain spaces — use `tempdir` staging + `copyfile` if needed
+9. Side-by-side comparison video (**track-overlaid** left | sim right) → questdlg popup → DONE
+   — Use the Mode 1/2 video as the left panel, NOT raw camera frames
+
+Every step that saves a video MUST end with `questdlg`+`openFile` popup — no exceptions.
+
+**Skip-if-done:** Every expensive file-producing step (`websave`, `write(rrMap,...)`, `importScene`+`saveScene`) MUST check `if ~isfile(output)` before re-running. See `execution-rules-detail.md` Rule 7 MCP Chunking.
+
+**CAN-bus data:** When dataset has OEM CAN signals (multiplexed slots, ego speed/yaw): negate Y, prefer IaEBA over MRR, use GPS+CAN heading fusion for ego.
 
 ## IMPORTANT — Execution Rules
 
@@ -142,7 +180,7 @@ At a high level, always follow this end-to-end pipeline (skip steps that don't a
 1. **Load raw sensor data** — GPS, actor tracks, camera, lidar
 2. **Create sensor data objects** — `GPSData`, `ActorTrackData`, `CameraData`
 3. **Preprocess** — `normalizeTimestamps`, `crop`, `synchronize`
-4. **Download roads (actor-aware)** — Compute actor lateral extent, pass `Extent=buffer` to `getMapROI`. **NEVER call `getMapROI` without `Extent`.** When the OSM-derived `.rrhd` is imported into RoadRunner via `importScene(rrApp, ..., "RoadRunner HD Map", ImportOptions=iOpts)`, **always** build `iOpts` with `enableOverlapGroupsOptions(IsEnabled=false)`. Never call `importScene` without these options. Only re-enable (and re-import) **after** the user flags junction/overpass artifacts.
+4. **Download roads (actor-aware)** — Compute actor lateral extent, pass `Extent=buffer` to `getMapROI`. **NEVER call `getMapROI` without `Extent`.** When the OSM-derived `.rrhd` is imported into RoadRunner via `importScene(rrApp, ..., "RoadRunner HD Map", ImportOptions=iOpts)`, **always** build `iOpts` with `enableOverlapGroupsOptions(IsEnabled=false)`. Never call `importScene` without these options. Only re-enable (and re-import) **after** the user flags junction/overpass artifacts. **After `importScene`, acquire the map object:** `rrMap = roadrunnerHDMap(); read(rrMap, rrhdFile);` — or pass `rrApp` directly as the 2nd arg to `localizeEgoUsingLanes` (both paths documented). **HARD RULE — `getRoadRunnerHDMap(rrApp)` does NOT exist** on the `roadrunner` app class (it's a `drivingScenario` method); calling it errors. Do NOT pass the `.rrhd` file path as a string to `localizeEgoUsingLanes` — the 2nd arg must be an object.
 5. **Build ego trajectory** — `trajectory(gpsData, "LocalOrigin", localOrigin)` then `smooth`
 6. **Validate sensors** — Show GPS vs. Ego Trajectory plot AND BEV+Camera video (or track-overlay when intrinsics exist). Save the video to disk. **Mandatory popup-and-open step:** every saved validation video MUST end with a `questdlg` "Open it now? (Yes/No)" that calls `openFile(path)` on Yes — even when the next step doesn't need a user decision. The popup is the consent gate that confirms the file is viewable before the agent moves on. See [`feedback-saved-video-popup`] memory rule and [`visualization-patterns.md`](references/visualization-patterns.md).
 7. **Localize ego (decision matrix — read BEFORE writing any lane-detection code)** — Localization is NOT one-size-fits-all. Before writing a single `laneBoundaryDetector` line, classify the situation against this matrix and act accordingly. The agent has been observed correctly identifying the case (e.g., "user chose Corrected GPS + pre-built HERE HD scene, this is Option B.1 — no localization") and then auto-running localization anyway. That is a HARD RULE violation. The classification IS the gate — once you've named the case, you MUST follow its action without re-deriving from scratch.
@@ -164,9 +202,9 @@ At a high level, always follow this end-to-end pipeline (skip steps that don't a
 
    **HARD RULE — naming the case is the gate.** If you write a sentence like "the user chose Corrected GPS and has a pre-built `.rrscene`, so I'll use Option B.1 (no localization)", you have already classified the case. The very next code block MUST NOT be lane detection. Either ask (matrix → ASK), or skip (matrix → Skip), or proceed without localization (Option B.1). Auto-running localization after stating you wouldn't is the failure mode this rule exists to prevent.
 
-   **If localization runs (REQUIRED or user opted in):** Build `monoCamera` first → lane detection (RVLD first, CLRNet fallback) → `imageToVehicle(monoCamera, ...)` → `findParabolicLaneBoundaries` → `laneBoundaryTracker` → `laneData` → ASK startLaneIdx → `localizeEgoUsingLanes`. **HARD RULE — `imageToVehicle` REQUIRES a `monoCamera` object, NOT a bare `cameraIntrinsics`.** Build `cameraParams = monoCamera(intrinsics, camHeight, Pitch=..., Yaw=..., Roll=...)` BEFORE Step 1 of the detection chain — it carries the camera-to-vehicle geometry the bare intrinsics object lacks. Skipping `imageToVehicle` + `findParabolicLaneBoundaries` and feeding pixel coordinates straight into `laneBoundaryTracker` ALSO fails — the tracker expects `parabolicLaneBoundary` rows in vehicle coordinates. **`startLaneIdx` is always ASKED, never inferred.** When the gate is reached: (a) confirm the track-overlay (Step 6) video popup has fired, (b) reference the saved video path in the chat question, (c) ask one direct question — *"Watching the dashcam, which lane is the ego in? Count from the leftmost driving lane = 1 (no shoulders / parking)."* — and (d) pass the user's integer directly to `localizeEgoUsingLanes`. **Do NOT** generate a `lane_count_vs_frame.png` plot, **do NOT** print a frames-per-lane-count summary table, and **do NOT** print "Detection-based HINT: ego in lane X of Y tracked boundaries". **No variable-lane gate question:** after the user provides startLaneIdx, just call `localizeEgoUsingLanes` — it interpolates through frames with fewer lanes. Do NOT ask "the map narrows to K lanes, want to crop or split?" The silent lane-count probe is still computed internally for diagnostics, but never shown to the user and never blocks localization. Only report a lane-count problem if `localizeEgoUsingLanes` actually throws an error. Verification video = **raw camera (left) | RR follow-cam on Ego_Localized + red/green legends (right)**, gated by the mandatory `questdlg`+`openFile` popup. Ask the user **in chat** which trajectory to use. Full code in [`workflow-08-lane-localization.md`](references/workflow-08-lane-localization.md).
-8. **Generate final scenario** — Same RR instance: `newScenario(rrApp)` → re-export only `localizedTrajectory` with `Color="auto"` → `actorprops(trackObjNorm, localizedTrajectory)` (accepts `scenariobuilder.Trajectory` directly — do NOT convert to `waypointTrajectory`). MUST `normalizeTimestamps(copy(trackData))` + set `localizedTrajectory.TimeOrigin=0` first or every actor is rejected. Do NOT relaunch RR. Skip the GPS-vs-Trajectory plot — the red/green compare already covers it. **Non-ego actors:** export each with `Color="auto"` (RoadRunner assigns distinct colours; reserve named colours for ego compare scenarios). On flat scenes (OSM, OpenDRIVE without elevation), flatten waypoint Z to 0 before constructing the actor `Trajectory` — `actorInfo.Waypoints(:,3)` carries sensor-mount offset (~1 m), not road height, so without flattening every actor floats above the road. Keep Z and use `adjustHeight` on ego only when the rrhd has real terrain elevation (HERE HD, Zenrin, OpenDRIVE+CRG, point-cloud-derived). See [`workflow-04-roadrunner-export-detail.md`](references/workflow-04-roadrunner-export-detail.md) Step 4.
-9. **Simulate & export video** — Disable collision (`setFailCondition("DurationCondition")`), `setCameraMode(rrApp, "front", FocusActorID=1)` (NEVER follow for the final scenario), `simulateScenario(EnableLogging=true)`, `exportVideo`, build the comparison video. All four are mandatory.
+   **If localization runs (REQUIRED or user opted in):** Build `monoCamera` first → lane detection (RVLD first, CLRNet fallback when RVLD detects boundaries on only one side of ego — i.e., all `LaneBoundary` lateral offsets share the same sign — so the localizer would error with "ego lane detections missing") → `imageToVehicle(monoCamera, ...)` → `findParabolicLaneBoundaries` → `laneBoundaryTracker` → `laneData` → ASK startLaneIdx → `localizeEgoUsingLanes(egoTrajectory, rrMap, laneData, startLaneIdx)` (POSITIONAL args — `StartLaneIndex=N` is rejected). Acquire `rrMap` via `rrMap = roadrunnerHDMap(); read(rrMap, rrhdFile);` (the empty constructor + `read` pattern). **HARD RULE — `getRoadRunnerHDMap(rrApp)` does NOT exist on the `roadrunner` app object** (it's a `drivingScenario` method). Calling it errors with "Undefined function ... for input arguments of type 'roadrunner'". `localizeEgoUsingLanes` also accepts `rrApp` directly as the second argument if you prefer not to construct the map; both paths are documented. **HARD RULE — `imageToVehicle` REQUIRES a `monoCamera` object, NOT a bare `cameraIntrinsics`.** Build `cameraParams = monoCamera(intrinsics, camHeight, Pitch=..., Yaw=..., Roll=...)` BEFORE Step 1 of the detection chain — it carries the camera-to-vehicle geometry the bare intrinsics object lacks. Skipping `imageToVehicle` + `findParabolicLaneBoundaries` and feeding pixel coordinates straight into `laneBoundaryTracker` ALSO fails — the tracker expects `parabolicLaneBoundary` rows in vehicle coordinates. **`startLaneIdx` — predict then confirm (Workflow 19).** When the gate is reached: (a) confirm the track-overlay (Step 6) video popup has fired, (b) IF the agent can view images, run Workflow 19 (sample 5 frames, classify lane count + ego lane, bisect transitions if any) — see [`workflow-19-ego-lane-inference.md`](references/workflow-19-ego-lane-inference.md). (c) Present prediction for confirmation: *"From the dashcam I see N lanes, ego in lane M (leftmost=1, no shoulders/ramps). Confirm or correct?"* (d) If agent cannot view images OR confidence is low, fall back to plain ASK: *"Watching the dashcam, which lane is the ego in? Count from the leftmost driving lane = 1 (no shoulders / parking)."* (e) Pass the user's confirmed/corrected integer to `localizeEgoUsingLanes`. **Do NOT** generate a `lane_count_vs_frame.png` plot, **do NOT** print a frames-per-lane-count summary table, and **do NOT** print "Detection-based HINT: ego in lane X of Y tracked boundaries". **No variable-lane gate question:** after the user provides startLaneIdx, just call `localizeEgoUsingLanes` — it interpolates through frames with fewer lanes. Do NOT ask "the map narrows to K lanes, want to crop or split?" The silent lane-count probe is still computed internally for diagnostics, but never shown to the user and never blocks localization. Only report a lane-count problem if `localizeEgoUsingLanes` actually throws an error. Verification video = **raw camera (left) | RR follow-cam on Ego_Localized + red/green legends (right)**, gated by the mandatory `questdlg`+`openFile` popup. Ask the user **in chat** which trajectory to use. Full code in [`workflow-08-lane-localization.md`](references/workflow-08-lane-localization.md).
+8. **Generate final scenario** — Same RR instance: `newScenario(rrApp)` → re-export only `localizedTrajectory` with `Color="auto"` → `actorprops(trackObjNorm, localizedTrajectory)` (accepts `scenariobuilder.Trajectory` directly — do NOT convert to `waypointTrajectory`). MUST `normalizeTimestamps(copy(trackData))` + set `localizedTrajectory.TimeOrigin=0` first or every actor is rejected. Do NOT relaunch RR. Skip the GPS-vs-Trajectory plot — the red/green compare already covers it. **Non-ego actors:** run Workflow 18 (vehicle classification) automatically — build best-crop grid, view it, classify by color + type, map to `AssetPath` + RR named `Color`. If prerequisites are missing (no intrinsics / no camera / text-only agent) or confidence is low, fall back to `AssetPath="Vehicles/Sedan.fbx"`, `Color="auto"`. **HARD RULE — do NOT pass `Orientation=` when constructing `scenariobuilder.Trajectory` for non-ego actors.** `actorprops` returns yaw in compass convention (e.g., ~340° for northbound) which is incompatible with RoadRunner's heading convention; passing it as `Orientation` produces actors facing sideways or yaw-flickering across frames. Omit the parameter entirely and let RR auto-derive heading from the waypoint sequence: `scenariobuilder.Trajectory(t, wp, Name=tid)` — no `Orientation`, no `Speed`. On flat scenes (OSM, OpenDRIVE without elevation), flatten waypoint Z to 0 before constructing the actor `Trajectory` — `actorInfo.Waypoints(:,3)` carries sensor-mount offset (~1 m), not road height, so without flattening every actor floats above the road. Keep Z and use `adjustHeight` on ego only when the rrhd has real terrain elevation (HERE HD, Zenrin, OpenDRIVE+CRG, point-cloud-derived). See [`workflow-04-roadrunner-export-detail.md`](references/workflow-04-roadrunner-export-detail.md) Step 4. **Post-export asset replacement** (when iterating on classification without re-exporting trajectories): `rrAPI = roadrunnerAPI(rrApp); allActors = rrAPI.Scenario.Actors;` then `allActors(k).ActorAsset = "<PROJECT>/Assets/Vehicles/Suv.fbx_rrx";` — CRITICAL: always use `<PROJECT>/Assets/...` relative paths, NEVER absolute paths (absolute silently produces white placeholder boxes). See [`osm-flat-scene-gotchas.md`](references/osm-flat-scene-gotchas.md) for common flat-scene pitfalls.
+9. **Simulate & export video** — Disable collision (`setFailCondition("DurationCondition")`), `setCameraMode(rrApp, "front", FocusActorID=1)` (NEVER follow for the final scenario), `simulateScenario(rrApp, EnableLogging=true)` — **HARD RULE: do NOT pass `Pacing=` to `simulateScenario` for the final capture**; `Pacing` caps the logged simulation duration and silently produces a 1-second video instead of the full clip. `exportVideo`, build the comparison video. All four are mandatory.
 
 **Camera-mode rule (do NOT mix up):** Step 7 (localization compare) = `"follow"` on localized ego (keeps red/green both in frame). Step 9 (final scenario) = `"front"` on ego ID=1 (mirrors the dashcam). **Export-order HARD RULE — `FocusActorID=1` follows whatever was exported FIRST.** RoadRunner assigns ActorID in `exportToRoadRunner` call order (1st→ID=1, 2nd→ID=2, …). Export the actor the camera should track FIRST: localization compare = `Ego_Localized` first then `Ego_Raw`; multi-GPS compare (workflow-04 Step 2.5) = the series whose perspective matters first; final scenario = ego first then non-egos. Inverting silently produces a video that follows the wrong actor — looks like a "video bug" but root cause is export sequence.
 
@@ -200,6 +238,8 @@ For the full conversion + sync code block, see [`references/execution-rules-deta
 **HARD RULE — Raw Magnitude column is mandatory.** Run `max(rawTs)` (and span `rawTs(end)-rawTs(1)` if the first sample is small) BEFORE constructing any `scenariobuilder.*` object; write the magnitude AND Rule 5 scale factor (`/1`, `/1e3`, `/1e6`, `/1e9`) into the table. A blank magnitude cell is not acceptable — Polysync (~1.46e15 µs) silently builds million-second trajectories that only fail at `simulateScenario`. Full table template + known-dataset quick reference (Pandaset, Polysync, nuScenes, KITTI, HERE HD) in [`references/execution-rules-detail.md`](references/execution-rules-detail.md) (Rule 6 section).
 
 **Field name case sensitivity:** MATLAB table variable names are case-sensitive. Datasets vary (`timestamp` vs `timeStamp`, `TrackID` vs `trackID`). Always `disp(data.X.Properties.VariableNames')` before accessing any field.
+
+**Y-axis convention (CAN/OEM data — HARD RULE):** OEM radar (`MRR_*`) and camera AEB (`IaEBA_*`) signals use **+Y = right**. MATLAB/SAE/ISO use **+Y = left**. **ALWAYS negate Y** from CAN object sources: `posY = -rawLatDist`. Without negation actors on the left appear on the right — silent, no error. Add a "Coordinate flip needed?" column to the format table when CAN data is detected.
 
 ### Rule 7: Generate and Run a MATLAB Script
 **Always generate a well-documented `.m` script and run it** (via `run_matlab_file` or `evaluate_matlab_code`) — do not execute snippets piecemeal. Include `%%` section headers, comments, and a header block stating purpose, inputs, and outputs. Always set a `dataDir` variable for video outputs and clean up `rrApp` before re-launching. For the standard header template, see [`references/execution-rules-detail.md`](references/execution-rules-detail.md) (Rule 7 section).
@@ -288,7 +328,7 @@ This prevents opening multiple RoadRunner windows when the script is re-run or w
 | `roadprops` | Extract road properties and geo-reference from OSM/OpenDRIVE file |
 | `updateLaneSpec` | Update lane widths/markings using lane detections |
 | **Lane Detection & Localization** | |
-| `laneBoundaryDetector` | Detect lane boundaries — try `Model="RVLD"` first; fall back to default CLRNet only if RVLD constructor errors (not installed) |
+| `laneBoundaryDetector` | Detect lane boundaries. **Constructor:** `laneBoundaryDetector(Model="RVLD")` — RVLD is preferred. Fall back to `laneBoundaryDetector()` (CLRNet default) only if the RVLD constructor errors. **WRONG:** checking `which("rvldLaneDetector")` or `exist("rvldLaneDetector")` — no such function exists. RVLD is a model option on `laneBoundaryDetector`, not a separate class. Also fall back to CLRNet if tracker output has boundaries on only one side of ego (all same-sign lateral offsets). |
 | `laneBoundaryTracker` | Track lane boundaries across frames |
 | `laneData` | Store recorded lane boundary data with timestamps |
 | `egoToWorldLaneBoundarySegments` | Convert tracked ego-frame lane boundaries → world-frame `laneBoundarySegment` |
@@ -317,31 +357,14 @@ This prevents opening multiple RoadRunner windows when the script is re-run or w
 
 ## Workflow 1 — Import Raw Sensor Data
 
-Use `recordedSensorData` (factory) or construct directly. For per-schema field-mapping (consolidated `sensorData.mat` vs per-sensor folders + `timestamps/*.mat`) and the list of sensor types **without** wrappers (radar, IMU, per-frame 3D detections), see the **`matlab-driving-data-importer`** skill (`references/sensor-import-api.md`).
-
-```matlab
-%% GPS
-gpsData = scenariobuilder.GPSData(timestamps, latitude, longitude, altitude);
-
-%% Actor tracks — timestamps N×1; trackID N×1 cell of M×1 string; position N×1 cell of M×3
-trackData = scenariobuilder.ActorTrackData(timestamps, trackID, position, ...
-    Category=category, Dimension=dimension, Orientation=orientation);
-
-%% Camera (image files OR video file OR rosbag)
-cameraData = scenariobuilder.CameraData(camTimestamps, imageFileNames, ...
-    Name="FrontCamera", SensorParameters=cameraParams);
-
-%% Lidar (pointCloud array OR pcd file list OR rosbag)
-lidarData  = scenariobuilder.LidarData(lidarTimestamps, pcdFiles, Name="OSLidar");
-```
-
-**No wrapper exists for radar or IMU** — keep raw structs and visualize with regular MATLAB. Do NOT fabricate `scenariobuilder.RadarData` / `scenariobuilder.IMUData`.
+Use `recordedSensorData` (factory) or construct directly: `scenariobuilder.GPSData(timestamps, lat, lon, alt)`, `scenariobuilder.ActorTrackData(timestamps, trackID, position, ...)`, `scenariobuilder.CameraData(camTimestamps, imageFileNames, ...)`, `scenariobuilder.LidarData(lidarTimestamps, pcdFiles, ...)`. For per-schema field-mapping see the **`matlab-driving-data-importer`** skill. **No wrapper exists for radar or IMU** — do NOT fabricate `scenariobuilder.RadarData` / `scenariobuilder.IMUData`.
 
 ---
 
 ## Workflow 2 — Build GPS Data and Extract Trajectory
 
 ```matlab
+altitude = zeros(size(latitude));  % OSM has no elevation — zero it
 gpsData = scenariobuilder.GPSData(timestamps, latitude, longitude, altitude);
 [roadProperties, localOrigin] = roadprops(OpenStreetMap="drive_map.osm");
 egoTrajectory = trajectory(gpsData, "LocalOrigin", localOrigin);
@@ -370,17 +393,7 @@ actorInfo = actorprops(trackData, egoTrajectory, SaveAs="none");   % in-memory o
 `actorprops` returns a table with `Age, TrackID, ClassID, EntryTime, ExitTime, Mesh, Time, Waypoints, Speed, Roll, Pitch, Yaw, IsStationary`.
 
 ### Lightweight off-ramp: world-coordinate trajectories as CSV
-If the user just wants trajectories in world coords (no RoadRunner, no drivingScenario), use the `actorprops` → `Trajectory` → `writeCSV` path:
-```matlab
-actorInfo = actorprops(trackData, egoTrajectory, SaveAs="none");
-writeCSV(egoTrajectory, FileName="ego_trajectory.csv", IncludeOrientation=true);
-for i = 1:height(actorInfo)
-    actorTraj = scenariobuilder.Trajectory( ...
-        actorInfo.Time{i}, actorInfo.Waypoints{i}, Name=actorInfo.TrackID(i));
-    writeCSV(actorTraj, FileName=actorInfo.TrackID(i) + "_trajectory.csv", ...
-        IncludeOrientation=true);
-end
-```
+If the user just wants trajectories in world coords (no RoadRunner, no drivingScenario), use `actorprops` → `Trajectory` → `writeCSV(traj, FileName="ego_trajectory.csv", IncludeOrientation=true)`.
 
 ### Step 4: Ask User About Actor Track Smoothness
 After generating actor trajectories, **always ask:**
@@ -429,13 +442,27 @@ newScenario(rrApp);
 exportToRoadRunner(egoTrajectory, rrApp, ...
     RoadRunnerScene=tempSceneFile, Name="Ego", SetupSimulation=true);
 
-%% Step 5: Export non-ego actors (always smooth first; SetupSimulation=false)
+%% Step 5: Classify vehicles (Workflow 18 — automatic when intrinsics exist)
+% Builds best-crop grid, agent views + classifies, maps to AssetPath + Color.
+% See references/workflow-18-vehicle-classification.md for full pipeline.
+% Self-gating: skipped if no intrinsics/CameraHeight or agent can't view images.
+classificationMap = containers.Map();  % populated by agent vision pass
+
+%% Step 6: Export non-ego actors with classified asset types
 for i = 1:height(actorInfo)
     actorTraj = scenariobuilder.Trajectory( ...
         actorInfo.Time{i}, actorInfo.Waypoints{i}, Name=actorInfo.TrackID(i));
     smooth(actorTraj);
+    tid = char(actorInfo.TrackID(i));
+    if isKey(classificationMap, tid)
+        cls = classificationMap(tid);
+        assetPath = cls.AssetPath;  rrColor = cls.Color;
+    else
+        assetPath = "Vehicles/Sedan.fbx"; rrColor = "auto";
+    end
     exportToRoadRunner(actorTraj, rrApp, ...
-        Name=actorInfo.TrackID(i), SetupSimulation=false);
+        Name=actorInfo.TrackID(i), AssetPath=assetPath, ...
+        Color=rrColor, SetupSimulation=false);
 end
 
 %% Step 6: Disable collision fail condition + simulate (see Rule 11 snippet)
@@ -444,13 +471,7 @@ end
 
 `exportToRoadRunner` name-value args (full list in reference): `Name`, `Color`, `AssetPath`, `SetupSimulation`, `RoadRunnerScene`.
 
-**Comparison video — three MANDATORY requirements (have failed in past evals when omitted):**
-
-1. **`insertText` timestamp burn on BOTH halves** — every frame of both the input recording and the simulated RR video must have its timestamp burned in via `insertText(frame, [10 10], sprintf("t=%.2f s", t), FontSize=18, BoxColor="black", TextColor="white")`. Concatenating raw frames (`[rawFrame simFrame]`) without the burn fails the comparison-video assertion.
-2. **`questdlg` + `openFile` popup AFTER `close(vw)`** — the input-vs-sim comparison video is NOT exempt from the saved-video popup HARD RULE. Every `close(vw)` ends with the popup gate.
-3. **Defensive field-name inspect on the input recording's struct/MAT** — datasets vary in case (`Timestamp` vs `timestamp`, `ImagePath` vs `imagePath`). Before referencing fields off the loaded `S = load(...)` struct or any table from the input recording, print `disp(fieldnames(S))` (or `disp(S.<table>.Properties.VariableNames')`).
-
-Full pattern (frame-rate alignment, padding, `VideoReader`/`VideoWriter` wiring) in [`workflow-04-roadrunner-export-detail.md`](references/workflow-04-roadrunner-export-detail.md) Step 2 of the simulation-export section.
+**Comparison video requirements:** `insertText` timestamp burn on BOTH halves, `questdlg` popup after `close(vw)`, defensive field-name inspect on input struct. Full pattern in [`workflow-04-roadrunner-export-detail.md`](references/workflow-04-roadrunner-export-detail.md).
 
 ---
 
@@ -460,29 +481,13 @@ DLA (`drivingLogAnalyzer`) routing for "visualize / inspect / explore / analyze 
 
 ## Workflow 6 — Preprocess, Synchronize, Crop, and Correct Offset
 
-```matlab
-%% Step 1: Normalize timestamps (align to common t=0)
-timeRef = normalizeTimestamps(cam);         % normalize reference sensor first
-normalizeTimestamps(gpsData, timeRef);
-normalizeTimestamps(trackData, timeRef);
-
-%% Step 2: Crop to common time range
-cropRange = [startTime endTime];            % seconds
-crop(cam, cropRange(1), cropRange(2));
-crop(gpsData, cropRange(1), cropRange(2));
-crop(trackData, cropRange(1), cropRange(2));
-
-%% Step 3: Synchronize (resample to common timestamps)
-synchronize(gpsData, cam);
-synchronize(trackData, cam);
-
-%% Step 4 (optional): Convert timestamp format — "numeric" / "duration" / "datetime"
-convertTimestamps(gpsData, "numeric");
-```
+Use `normalizeTimestamps`, `crop`, `synchronize`, `convertTimestamps` on the scenariobuilder data objects. Route complex preprocessing to `matlab-driving-data-importer`.
 
 ## Workflows 7–17, Object APIs, End-to-End Examples
 
-Workflows 7–17 are reference-only — see the **Workflow Catalog** above for triggers and `references/workflow-NN-<slug>.md`. Workflow 15 (DSD) is opt-in. Workflows 16–17 cover scene augmentation.
+Workflows 7–18 are reference-only — see the **Workflow Catalog** above for triggers and `references/workflow-NN-<slug>.md`. Workflow 15 (DSD) is opt-in. Workflows 16–17 cover scene augmentation. Workflow 18 (vehicle classification) runs automatically inside Workflow 4 Step 4 when the prerequisites are met.
+
+**Workflow 15 (DSD) actor safeguards — NEVER use `smoothTrajectory` on recorded actor waypoints.** Use `trajectory(veh, wpu, spdu)` instead. `smoothTrajectory`'s `accumulateDistance` is brittle on sparse, near-stationary, or noisy paths and throws "Unable to create smooth trajectory." Also: dedup consecutive identical (x,y) waypoints, compute per-waypoint speed via finite differences, clamp speed to `max(spdu, 0.1)` (zero stalls DSD), and flatten actor Z to 0 on OSM scenes. Full pattern in [`workflow-15-driving-scenario-designer.md`](references/workflow-15-driving-scenario-designer.md).
 
 Object APIs (load on demand): [`trajectory-api.md`](references/trajectory-api.md), [`actortrackdata-api.md`](references/actortrackdata-api.md), [`gpsdata-api.md`](references/gpsdata-api.md). For raw-dataset wrapping → `matlab-driving-data-importer`.
 

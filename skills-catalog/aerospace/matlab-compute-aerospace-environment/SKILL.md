@@ -13,7 +13,7 @@ description: >
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Compute Aerospace Environment
@@ -37,7 +37,7 @@ Calculate environment properties for aerospace vehicle analysis: atmosphere, gra
 - Coordinate frame conversions or rotations — use `matlab-convert-aerospace-coordinates`
 - Orbital mechanics or trajectory propagation (use ephemeris for positions, not orbit propagation)
 - Aerodynamic coefficient calculations
-- Simulink environment model blocks
+- Simulink environment model blocks — use Aerospace Blockset 
 
 ## Workflow
 
@@ -86,6 +86,24 @@ Calculate environment properties for aerospace vehicle analysis: atmosphere, gra
 % 1976 COESA (valid 0-1000 km)
 [T, a, P, rho] = atmoscoesa(1000);
 ```
+
+### Pressure Altitude (atmospalt)
+
+Converts pressure (Pa) to altitude (m) using the International Standard Atmosphere.
+
+```matlab
+% Pressure altitude at standard sea-level pressure
+alt = atmospalt(101325);  % returns 0 m
+
+% Pressure altitude at multiple pressures
+alt = atmospalt([101325, 79501, 54048, 26500]);
+
+% Typical use: convert measured pressure to altitude
+measuredPressure_Pa = 75000;
+pressureAltitude_m = atmospalt(measuredPressure_Pa);
+```
+
+Input: pressure in **Pascals**. Output: geometric altitude in **meters** based on 1976 COESA.
 
 ### Non-Standard Atmosphere (atmosnonstd)
 

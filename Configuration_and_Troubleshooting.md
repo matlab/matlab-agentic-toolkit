@@ -11,7 +11,49 @@ This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an ove
   - GitHub&reg; Copilot  
   - OpenAI&reg; Codex  
   - Gemini&trade; CLI  
-  - Sourcegraph Amp
+  - Amp
+
+---
+
+## Install from Local Files (Offline Computer)
+
+To install MATLAB Agentic Toolkit in an offline or air-gapped environment, first download these artifacts on a computer with internet access and transfer them to the target machine or a shared location.
+
+| Artifact | Where to Get It |
+|----------|----------------|
+| MCP server binary | [Latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download the binary for your platform (e.g., `matlab-mcp-server-macos-arm64`, `matlab-mcp-server-windows-x64.exe`) |
+| MCP server toolbox | [Latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download `MATLABMCPServerToolbox.mltbx` |
+| MATLAB Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/matlab-agentic-toolkit) |
+| Simulink Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/simulink-agentic-toolkit). Required only when installing Simulink Agentic Toolkit|
+
+
+After you download these artifacts, run the `setupAgenticToolkit` command in your MATLAB command window with these name-value arguments.
+
+| Argument | Value |
+|----------|-----------------|
+| `MCPServerLocation` | Path to the MCP server binary download |
+| `MCPToolboxLocation` | Path to the MATLAB toolbox (`.mltbx`) download |
+| `MATLABAgenticToolkitLocation` | Path to the MATLAB Agentic Toolkit repository clone |
+| `SimulinkAgenticToolkitLocation` | Path to the Simulink Agentic Toolkit repository clone |
+
+The installer downloads any artifact you do not provide locally. To prevent internet access and report an error if an artifact is unavailable, set `Offline=true`. For example, use this command to install MATLAB Agentic Toolkit from local files.
+
+```matlab
+setupAgenticToolkit("install", Offline=true,  ...
+    MCPServerLocation="/shared/agentic-toolkits/bin/matlab-mcp-server-linux-x64", ...
+    MCPToolboxLocation="/shared/agentic-toolkits/toolboxes/MATLABMCPServerToolbox.mltbx", ...
+    MATLABAgenticToolkitLocation="/shared/agentic-toolkits/matlab-agentic-toolkit")
+```
+
+---
+
+## Install MATLAB Using Your Agent
+
+If you do not have MATLAB installed, you can install MATLAB with your AI agent using these steps.
+1) Install MATLAB Agentic Toolkit skills using the steps in [Adding Skills Only](#adding-skills-only).
+2) Ask your agent to install MATLAB using the `matlab-install-products` skill. 
+
+After you install MATLAB, you can complete the MATLAB Agentic Toolkit setup either by following the instructions in [Agentic Toolkit Installer](README.md#install-the-matlab-agentic-toolkit) to automatically install MATLAB MCP Server, or by manually installing and configuring MATLAB MCP Server.
 
 ---
 
@@ -19,13 +61,26 @@ This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an ove
 
 To manually install and configure the MCP server rather than using the automated setup, see the instructions in the [MATLAB MCP Server](https://github.com/matlab/matlab-mcp-core-server) GitHub repository. After you install the MCP server, point your agent's MCP configuration at the installed binary. See this table for configuration file locations, or refer to your agent's documentation.
 
- Platform | MCP Configuration |  Platform-Specific Notes |
+| Platform | MCP Configuration | Platform-Specific Notes |
 |----------|------------------|-------------------|
-| Claude Code | `~/.claude.json` |  Use `claude mcp add` to configure. |
-| GitHub Copilot | VS Code user-profile `mcp.json` |  Reload VS Code after setup completes. |
+| Claude Code | `~/.claude.json` | Use `claude mcp add` to configure. |
+| GitHub Copilot | VS Code user-profile `mcp.json` | Reload VS Code after setup completes. |
 | OpenAI Codex | `~/.codex/config.toml` | After setup, you can tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`: 1) Set `tool_timeout_sec = 600` to increase the tool timeout for longer MATLAB operations like test suites and simulations. Increase further for very long-running tasks. 2) Set `env_vars = ['WINDIR']` on Windows for Simulink&reg; to work, since Codex strips environment variables from MCP server subprocesses by default. |
 | Gemini CLI | `~/.gemini/settings.json` | Start a new Gemini session after setup. |
-| Sourcegraph Amp | `~/.config/amp/settings.json` |  If you have `amp.mcpPermissions` rules that block MCP servers, setup will detect this and ask before making changes. |
+| Amp | `~/.config/amp/settings.json` | If you have `amp.mcpPermissions` rules that block MCP servers, add an allow rule for the MATLAB server. |
+
+### Disable Data Collection
+
+MATLAB MCP Server collects anonymized usage data by default. To opt out, add `--disable-telemetry=true` to the arguments in your agent's MCP configuration file. For the file locations, see the table above. Each time you update MATLAB Agentic Toolkit, you must reapply this setting.
+
+```json
+"matlab": {
+  "command": "~/.matlab/agentic-toolkits/bin/matlab-mcp-server",
+  "args": [
+    "--disable-telemetry=true"
+  ]
+}
+```
 
 
 ---
@@ -58,8 +113,6 @@ For example, to add signal processing and wireless communications skills:
 claude plugin install signal-processing@matlab-agentic-toolkit
 claude plugin install wireless-communications@matlab-agentic-toolkit
 ```
-> To get the setup skill to manage the MCP server, run this command.
-> `claude plugin install toolkit@matlab-agentic-toolkit`
 
 Choose your preferred scope (per-project, per-user, or global) when prompted. Your existing MCP configuration is not modified.
 
@@ -88,7 +141,7 @@ Alternatively, for Gemini, you can add the skills by installing the toolkit as a
  gemini extensions install https://github.com/matlab/matlab-agentic-toolkit
   ```
 
-### Sourcegraph Amp
+### Amp
 
 Amp reads skills from the paths listed in `~/.config/amp/settings.json`. First, clone the toolkit.
 
@@ -153,7 +206,7 @@ The [`templates/`](templates/) directory contains starter configurations for eac
 | Platform | Template | Project location |
 |----------|----------|-----------------|
 | GitHub Copilot | `templates/vscode-mcp.json` | `.vscode/mcp.json` |
-| Sourcegraph Amp | `templates/amp-settings.json` | `.amp/settings.json` |
+| Amp | `templates/amp-settings.json` | `.amp/settings.json` |
 | OpenAI Codex | `templates/codex-mcp.json` | `.codex/config.json` in project root |
 
 > **Claude Code** uses `claude plugin install` with scope selection (per-project, per-user, or global) rather than a project config file. See [Adding Skills Only](#adding-skills-only).
@@ -203,7 +256,7 @@ Agents have limited context. When you install many skill groups, some skills may
 3. Remove skill groups you don't use: If you installed all groups via the agent-based setup, remove the ones you don't need.
    - Claude Code: `claude plugin remove <group-name>@matlab-agentic-toolkit`.
    - Copilot, Codex, Gemini CLI: Remove the corresponding symlinks from `~/.agents/skills/`.
-   - Sourcegraph Amp: Remove the group path from `amp.skills.path` in `~/.config/amp/settings.json`.
+   - Amp: Remove the group path from `amp.skills.path` in `~/.config/amp/settings.json`.
 
 We are actively exploring more robust solutions to improve skill discovery and auto-loading when many skills are installed.
 

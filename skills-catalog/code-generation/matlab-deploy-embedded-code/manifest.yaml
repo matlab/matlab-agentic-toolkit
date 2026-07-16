@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Deploy MATLAB-generated code to embedded hardware with PIL verification.
+matlab-release: ">=R2024b"
+required-tools: []
+required-skills: []
+required-products:
+  - MATLAB Coder
+  - Embedded Coder
+optional-products: []
+toolkit: matlab-agentic-toolkit

@@ -4,7 +4,7 @@ description: Reviews MATLAB fixed-point (fi) code for performance, code generati
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # fi Best Practices Review
@@ -248,28 +248,7 @@ Do **not** cast to `double` for this purpose — `single` is sufficient for inte
 
 **Detection**: Flag code that uses `sin`, `cos`, `sqrt`, `exp`, `log`, or similar transcendental functions on fi inputs, OR code that mentions using lookup tables without actually implementing them via `FunctionApproximation.Problem` or CORDIC.
 
-### 8. Scaled Doubles for Overflow Detection (Optional, Advanced)
-
-Scaled doubles can detect overflows by retaining floating-point range while tracking fixed-point scaling. However, they add significant complexity and have pitfalls — use them only when you have a specific overflow concern that simpler methods (comparing fixed vs. double output, checking saturation counts) cannot diagnose.
-
-**Quick check using global override** (simplest approach):
-
-```matlab
-fipref('DataTypeOverride', 'ScaledDoubles');
-y = myAlgorithm(x, T);
-fipref('DataTypeOverride', 'ForceOff');
-```
-
-**Pitfalls to be aware of**:
-- Global `fipref` override affects ALL fi objects in the session — can produce misleading results if other code runs concurrently
-- Scaled doubles do not model wrap behavior — overflow is detected but the algorithm path may differ from actual fixed-point execution
-- Adding a `'ScaledDouble'` case to the types table (duplicating every fi prototype with `'DataType','ScaledDouble'`) creates maintenance burden for limited additional insight over simply comparing double vs. fixed outputs
-
-**When scaled doubles are worth it**: Debugging a specific overflow in a deep computation chain where you need to know *which intermediate* overflowed, not just that the final output differs from the double baseline.
-
-**When to skip**: For most workflows, comparing `double` output to `fixed` output and inspecting the difference is simpler and sufficient. If the difference is large, increase word length or adjust scaling — no need for the scaled-double intermediate step.
-
-### 9. fi Constructor Best Practices
+### 8. fi Constructor Best Practices
 
 **Use positional or numerictype syntax** — the name-value pair constructor is slower due to string parsing overhead.
 
@@ -293,7 +272,7 @@ x = fi(v, T, F);
 - Non-finite values (Inf, NaN) require fully specified numerictype.
 - For codegen, numerictype properties must be compile-time constants.
 
-### 10. Use quantizenumeric for Double-Based Quantization
+### 9. Use quantizenumeric for Double-Based Quantization
 
 **Problem**: Converting to fi objects just to model quantization effects adds unnecessary overhead when your algorithm otherwise stays in double.
 
@@ -326,7 +305,7 @@ x_quantized = floor(x * 2^FL) * 2^-FL;
 
 Prefer `quantizenumeric` (R2016a+) which handles all rounding/overflow modes.
 
-### 11. Manage Floating-Point in Fixed-Point Algorithms
+### 10. Manage Floating-Point in Fixed-Point Algorithms
 
 For efficient code generation, minimize floating-point variables in the algorithm body. However, not everything benefits from fixed-point conversion.
 
@@ -358,7 +337,7 @@ end
 
 Loop indices are exempt — MATLAB Coder automatically converts them to integers.
 
-### 12. Profile and Accelerate fi Code
+### 11. Profile and Accelerate fi Code
 
 **Common fi performance bottlenecks** (in order of typical cost):
 
@@ -373,7 +352,7 @@ Loop indices are exempt — MATLAB Coder automatically converts them to integers
 
 1. **Vectorize** — eliminate scalar fi loops, significantly faster
 2. **`fiaccel`** — compile to MEX, faster execution, no Coder license needed
-3. **`quantizenumeric`** — stay in double, inject quantization only where needed (Check 10)
+3. **`quantizenumeric`** — stay in double, inject quantization only where needed (Check 9)
 4. **`buildInstrumentedMex`** — MEX with logging for type proposals
 
 ```matlab
@@ -401,13 +380,13 @@ When reviewing code, report findings using these categories:
 
 ```
 [PERF] Line 42: Scalar fi() in loop — vectorize (Check 1)
-[PERF] Line 88: Name-value fi constructor in hot path — use positional or numerictype (Check 9)
+[PERF] Line 88: Name-value fi constructor in hot path — use positional or numerictype (Check 8)
 [CODEGEN] Line 15: Default fimath generates bloated C — use Floor/Wrap/KeepLSB (Check 4)
 [CODEGEN] Line 67: Division in fixed-point — use bitsra or inverse multiply (Check 6)
 [CORRECTNESS] Line 33: Missing subscripted assignment — accumulator type will grow (Check 3)
 [PATTERN] Line 20: Hardcoded fi type — separate into types table (Check 2)
-[PATTERN] Line 55: High dynamic range forced to fixed-point — isolate in floating-point (Check 11)
-[DEBUG] Line 40: Output diverges from double — check for overflow (Check 8)
+[PATTERN] Line 55: High dynamic range forced to fixed-point — isolate in floating-point (Check 10)
+[DEBUG] Line 40: Output diverges from double — check for overflow
 ```
 
 Report every applicable check. Omit checks with no findings.

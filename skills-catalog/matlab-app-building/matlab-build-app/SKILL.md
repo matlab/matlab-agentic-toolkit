@@ -1,244 +1,322 @@
 ---
 name: matlab-build-app
-description: Build MATLAB apps programmatically using uifigure, uigridlayout, UI components, callbacks, and uihtml for web integration. Use when creating GUIs, dashboards, interactive tools, apps with sliders/buttons/dropdowns, or embedding HTML/JavaScript components.
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "2.0"
+description: >
+  Build MATLAB apps from requirements to working code. Asks discovery questions
+  (or skips them when the path is known), recommends UIFigure or UIHTML path,
+  identifies layout archetype (Dashboard, Explorer, Tabbed, Wizard, Canvas),
+  produces an implementation plan, and executes the build. Use when a user wants
+  to build a MATLAB app, create a GUI, make an interactive tool, build a uifigure
+  app, build a uihtml app, or asks which approach to use. Also use when user
+  describes spatial layout needs: dashboard, control panel, sidebar, tabs, wizard,
+  stepper, canvas, workspace.
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
 ---
 
-# App Builder
+# MATLAB App Builder
 
-Build MATLAB desktop apps entirely in code using `uifigure` and `uigridlayout`. Since `.mlapp` files are binary and cannot be created or edited as text, all apps are built as class-based `.m` files.
+Determine the best implementation path for a MATLAB application, produce an implementation plan grounded in internal references, and execute the build.
 
-## When to Use
+## When to Use This Skill
 
-- User asks to create a GUI, app, dashboard, or interactive tool
-- User wants buttons, sliders, dropdowns, or other UI controls
-- User needs a visual interface for data exploration or parameter tuning
-- User wants to embed HTML/CSS/JavaScript components via `uihtml`
+Use this skill when:
+- User wants to build a MATLAB app, GUI, or interactive tool
+- User asks "how should I build this app?" or "which approach should I use?"
+- User describes an application — with or without specifying an implementation path
+- User mentions: MATLAB app, GUI, uifigure, uihtml, interactive tool, dashboard, visualization app
+- User describes spatial layout needs: dashboard, control panel, sidebar, tabs, wizard, stepper, canvas, workspace
+- User has already chosen a path (e.g., "build me a uihtml app") — handle directly
 
-## When NOT to Use
+## When Not to Use
 
-- User needs a simple plot or figure without interactive controls (just use `figure` + `plot`)
-- User wants to edit an existing `.mlapp` file (binary format — cannot be text-edited)
-- User needs a web app deployed to MATLAB Web App Server (use deployment skills)
+- The request is purely about MATLAB computation with no UI component
+- The user is asking about an existing app they want to modify (not build from scratch)
+
+## Critical Rules
+
+- MUST ask discovery questions before recommending a path — unless the user already specified one
+- MUST confirm the path choice with the user before producing the implementation plan
+- MUST produce an implementation plan grounded in internal references before writing any code
+- MUST write the plan to a file (`<app-name>-plan.md`) in the working directory
+- NEVER recommend a path without understanding the user's constraints (unless path was pre-specified)
+- ALWAYS present the recommendation as guidance, not a mandate — the user decides
+- MUST choose archetype based on the user's primary task, not aesthetics
+- NEVER treat two archetypes as equals within one app — one is always the primary container
+- UIFigure app: MUST use `uigridlayout` for all structural layout — never `Position`-based sizing
+- UIHTML/web app: MUST use CSS Grid or Flexbox for chrome — no absolute positioning for structural panels
+- The chrome (header, sidebar, tabs, step indicator) MUST remain spatially stable
 
 ## Workflow
 
-1. **Define requirements** — What components, what layout, what data flows
-2. **Create the app class** — `handle` class with `uifigure`, `uigridlayout`, component properties
-3. **Build the layout** — Grid-based, using `'fit'` and `'1x'` for responsive sizing
-4. **Add components** — Place in grid cells, wire callbacks
-5. **Implement callbacks** — Respond to user interaction, update display
-6. **Verify** — Run the app via `evaluate_matlab_code` to confirm it launches and renders correctly
-
-## Key Components
-
-| Component | Constructor | Key callback |
-|-----------|------------|-------------|
-| Button | `uibutton(parent)` | `ButtonPushedFcn` |
-| Edit field (numeric) | `uieditfield(parent, 'numeric')` | `ValueChangedFcn` |
-| Edit field (text) | `uieditfield(parent, 'text')` | `ValueChangedFcn` |
-| Dropdown | `uidropdown(parent)` | `ValueChangedFcn` |
-| Slider | `uislider(parent)` | `ValueChangedFcn` |
-| Checkbox | `uicheckbox(parent)` | `ValueChangedFcn` |
-| Label | `uilabel(parent)` | — |
-| Axes | `uiaxes(parent)` | — |
-| Table | `uitable(parent)` | `CellEditCallback` |
-| Panel | `uipanel(parent)` | — |
-| Tab group | `uitabgroup(parent)` | `SelectionChangedFcn` |
-| HTML | `uihtml(parent)` | `DataChangedFcn` |
-
-## Patterns
-
-### Standard App Template
-
-Every app follows this structure: a `handle` class that creates all components in a dedicated method.
-
-```matlab
-classdef MyApp < handle
-    %MyApp Short description of the app.
-
-    properties (Access = private)
-        UIFigure     matlab.ui.Figure
-        GridLayout   matlab.ui.container.GridLayout
-        InputField   matlab.ui.control.NumericEditField
-        RunButton    matlab.ui.control.Button
-        ResultLabel  matlab.ui.control.Label
-        PlotAxes     matlab.ui.control.UIAxes
-    end
-
-    methods (Access = public)
-        function app = MyApp()
-            createComponents(app);
-            if nargout == 0
-                clear app
-            end
-        end
-
-        function delete(app)
-            delete(app.UIFigure);
-        end
-    end
-
-    methods (Access = private)
-        function createComponents(app)
-            app.UIFigure = uifigure('Name', 'My App', ...
-                'Position', [100 100 640 480]);
-
-            app.GridLayout = uigridlayout(app.UIFigure, [2 2]);
-            app.GridLayout.RowHeight = {'fit', '1x'};
-            app.GridLayout.ColumnWidth = {'fit', '1x'};
-
-            app.InputField = uieditfield(app.GridLayout, 'numeric', ...
-                'Value', 10, ...
-                'Limits', [1 100]);
-            app.InputField.Layout.Row = 1;
-            app.InputField.Layout.Column = 1;
-
-            app.RunButton = uibutton(app.GridLayout, ...
-                'Text', 'Run', ...
-                'ButtonPushedFcn', @(~,~) runAnalysis(app));
-            app.RunButton.Layout.Row = 1;
-            app.RunButton.Layout.Column = 2;
-
-            app.PlotAxes = uiaxes(app.GridLayout);
-            app.PlotAxes.Layout.Row = 2;
-            app.PlotAxes.Layout.Column = [1 2];
-            title(app.PlotAxes, 'Output');
-            xlabel(app.PlotAxes, 'X');
-            ylabel(app.PlotAxes, 'Y');
-        end
-
-        function runAnalysis(app)
-            n = app.InputField.Value;
-            x = linspace(0, 2*pi, n);
-            plot(app.PlotAxes, x, sin(x), 'LineWidth', 1.5);
-        end
-    end
-end
+```
+User request arrives
+        │
+        ├── Path NOT specified → Full Discovery
+        │       │
+        │       ▼
+        │   Ask discovery questions (2-4 questions, conversational)
+        │       │
+        │       ▼
+        │   Present path recommendation with trade-offs
+        │       │
+        │       ▼
+        │   User confirms path (or redirects)
+        │       │
+        │       ▼
+        │   Identify layout archetype (if not already clear)
+        │       │
+        │       ▼
+        │   Produce Implementation Plan → write to <app-name>-plan.md
+        │       │
+        │       ▼
+        │   User reviews plan → confirms or adjusts
+        │       │
+        │       ▼
+        │   Begin building (read references per the plan)
+        │
+        └── Path IS specified (e.g., "build me a uihtml app")
+                │
+                ├── Requirements sufficient + archetype clear
+                │       → Skip to: Produce Implementation Plan
+                │
+                └── Requirements thin or archetype unclear
+                        → Ask only missing requirements + archetype question
+                        → Then: Produce Implementation Plan
 ```
 
-### Grid Layout Sizing
+## Discovery Questions
 
-Use `'fit'` for rows/columns that should size to content and `'1x'` for those that fill remaining space:
+Ask these conversationally — not as a rigid checklist. Stop as soon as the path is clear. Typically 2-4 questions suffice.
 
-```matlab
-gl = uigridlayout(fig, [4 3]);
-gl.RowHeight   = {'fit', '1x', '1x', 'fit'};   % toolbar, content, content, statusbar
-gl.ColumnWidth = {200, '1x', '1x'};             % sidebar(px), main, main
-gl.Padding     = [10 10 10 10];
-gl.RowSpacing  = 5;
-gl.ColumnSpacing = 5;
+### Core Questions
+
+**1. What does the app do and who is it for?**
+> What will this app do? Who will use it?
+
+Listen for archetype signals: "dashboard", "control panel", "step-by-step", "workspace".
+
+**2. Is this a quick tool or something you'll maintain over time?**
+> Is this meant to be maintained and evolved, or is it more of a quick, proof-of-concept tool?
+
+- **Maintained** → proceed to remaining questions; team skills matter
+- **Ephemeral** → favor UIHTML app path; can skip team question
+
+**3. How polished does the UI need to look?**
+> Are standard MATLAB buttons, sliders, tables, and plots enough? Or do you need custom visuals — branded, animated, or visually richer?
+
+- Standard controls sufficient → UIFigure app signal
+- Custom visuals needed → UIHTML app signal
+
+**4. Who will work on this app going forward?**
+> Will this be maintained by people comfortable only with MATLAB, or by people also comfortable with web technologies?
+
+Only ask for maintained apps.
+- MATLAB-only team → UIFigure app
+- Web-comfortable team → UIHTML app
+
+### Follow-up Probes (only if path isn't clear)
+
+- **Interaction style:** Real-time feedback needed? → slight UIFigure lean
+- **Existing work:** Existing MATLAB UI code? → UIFigure. Existing web assets? → UIHTML
+- **Distribution:** May need to work outside MATLAB? → UIHTML
+
+## Path Decision Logic
+
+```
+Ephemeral app? → Strong default to UIHTML app
+
+Maintained app? → Weigh signals:
+
+Strong UIFigure signals:
+  ✓ Maintained + MATLAB-only team
+  ✓ Standard UI components sufficient
+  ✓ Tight real-time interaction
+  ✓ Existing MATLAB UI code
+
+Strong UIHTML signals:
+  ✓ Ephemeral (regardless of team)
+  ✓ Maintained + web-skilled team
+  ✓ Custom visuals, branded look, animations
+  ✓ Existing web assets
+  ✓ Future portability outside MATLAB
+
+UIFigure + uihtml accent:
+  Mostly standard app but needs one custom visualization panel.
 ```
 
-### Spanning Rows and Columns
+**Weighting:** 1. Lifespan  2. Team skills  3. Visual requirements
 
-```matlab
-ax = uiaxes(gl);
-ax.Layout.Row = [2 3];       % span rows 2-3
-ax.Layout.Column = [2 3];    % span columns 2-3
+## Paths at a Glance
+
+| Path | Key strength |
+|------|--------------|
+| **UIFigure app** | Single language, any MATLAB dev can maintain |
+| **UIHTML app** | Full visual control, rich interactivity |
+| **UIFigure + accent** | Best of both when you need one custom visual |
+
+## Layout Archetype
+
+Pick based on the user's **primary task**:
+
+| Archetype | Primary user task | Structure |
+|---|---|---|
+| **Dashboard** | Monitor and compare at a glance | KPI cards + charts + table; read-only |
+| **Explorer** | Adjust parameters, observe live results | Sidebar controls + live display |
+| **Tabbed** | Navigate between independent sections | Tab bar + content panels |
+| **Wizard** | Complete a sequential workflow | Step indicator + one-step-at-a-time |
+| **Canvas** | Create, inspect, or edit spatial artifacts | Central workspace + tools |
+
+If unclear, ask: "Will users mostly be *watching results* (Dashboard), *tweaking controls* (Explorer), *switching sections* (Tabbed), *going through steps* (Wizard), or *working on a central figure* (Canvas)?"
+
+## Implementation Plan
+
+After confirming path and archetype, produce a plan and write it to `<app-name>-plan.md` in the working directory. Present a concise summary inline with the approval request.
+
+### Plan Template
+
+```
+**Implementation Plan: [App Name]**
+
+**Path:** [UIFigure app / UIHTML app / UIFigure + accent]
+**Layout:** [Archetype] — [one sentence describing spatial structure]
+
+**Structure:**
+- [Major panel/area — spatial description]
+- [e.g., "Left sidebar (220px) with date range picker, category filter, refresh button"]
+- [e.g., "Main area with line chart showing filtered results"]
+
+**Key behaviors:**
+- [User-visible interaction effects]
+
+**Internal references that will be used:**
+
+| Reference | Role in this app |
+|-----------|-----------------|
+| `references/path/file.md` | [what it provides] |
+| ... | ... |
+
+**External skills:**
+- `matlab-build-chart` — [role, if applicable]
+- `matlab-theming` — [role, if applicable]
+
+**File organization:**
+[app directory tree]
+
+**Implementation sequence:**
+1. [First reference read] — [what it establishes]
+2. [Next reference] — [what it adds]
+3. [...]
 ```
 
-### Callback Patterns
+Each reference pointer carries provenance: `[src: references/uifigure/grid-layout.md §Spanning]`
 
-```matlab
-% Inline — short logic
-btn.ButtonPushedFcn = @(~,~) disp("Clicked");
+### Plan Quality Checks
 
-% Method reference — preferred for anything non-trivial
-slider.ValueChangedFcn = @(src, event) sliderChanged(app, event);
+Before presenting:
+- [ ] Every reference listed has a concrete role
+- [ ] Structure uses spatial terms the user can visualize
+- [ ] Behaviors describe user-visible effects
+- [ ] Implementation sequence shows a logical build order
+- [ ] Plan is specific enough for "yes, that's what I want" or "change X"
 
-function sliderChanged(app, event)
-    newValue = event.Value;
-    previousValue = event.PreviousValue;
-    % Update display
-    app.ResultLabel.Text = sprintf('Value: %.1f', newValue);
-end
-```
+## Reference Router
 
-### Web Components with uihtml
+After plan approval, read the relevant internal references to execute the build.
 
-For rich UI elements beyond native MATLAB components, embed HTML/CSS/JavaScript:
+### UIFigure Path
 
-```matlab
-h = uihtml(gl);
-h.HTMLSource = fullfile(pwd, 'components', 'chart.html');
+| When building... | Read |
+|-----------------|------|
+| Grid layout, sizing, components | `references/uifigure/guide.md` |
+| Grid details (spanning, collapse) | `references/uifigure/grid-layout.md` |
+| Panels, tab groups, nested grids | `references/uifigure/containers.md` |
+| Component reference (controls, display) | `references/uifigure/components.md` |
+| Callback patterns, data sharing | `references/uifigure/callbacks.md` |
+| Layout recipes (sidebar, form, split) | `references/uifigure/layout-patterns.md` |
+| MVVM architecture (complex apps) | `references/uifigure/mvvm-guide.md` |
+| View binding patterns | `references/uifigure/mvvm-view-binding.md` |
+| ViewModel testing | `references/uifigure/mvvm-testing.md` |
 
-% Send data from MATLAB to JavaScript
-h.Data = struct('values', [1 2 3 4 5], ...
-    'labels', {{'A', 'B', 'C', 'D', 'E'}});
+### UIHTML Path
 
-% Receive data from JavaScript
-h.DataChangedFcn = @(src, ~) handleWebEvent(app, src.Data);
-```
+| When building... | Read |
+|-----------------|------|
+| MATLAB-JS bridge, setup(), events | `references/uihtml/bridge-guide.md` |
+| Communication patterns (4 patterns) | `references/uihtml/communication-patterns.md` |
+| Data type conversion | `references/uihtml/data-types.md` |
+| Platform constraints | `references/uihtml/platform-limitations.md` |
+| uihtml creation, hybrid layouts | `references/uihtml/setup.md` |
+| Error handling (both sides) | `references/uihtml/error-handling.md` |
+| JS MVVM architecture | `references/uihtml/mvvm-guide.md` |
+| Observable/Computed classes | `references/uihtml/mvvm-observable-classes.md` |
+| JS View binding | `references/uihtml/mvvm-view-binding.md` |
+| JS coding patterns, modules | `references/uihtml/js-coding-guide.md` |
+| JS testing & debugging | `references/uihtml/js-testing-debugging.md` |
+| Chart.js setup & patterns | `references/uihtml/charting-guide.md` |
+| Chart type selection | `references/uihtml/chart-type-selection.md` |
+| Chart.js initialization | `references/uihtml/chartjs-setup.md` |
+| Line & bar charts | `references/uihtml/line-bar-charts.md` |
+| Doughnut & scatter charts | `references/uihtml/doughnut-scatter-charts.md` |
+| Chart data updates | `references/uihtml/chart-updates.md` |
+| Chart ↔ bridge integration | `references/uihtml/chart-bridge-integration.md` |
+| Chart performance | `references/uihtml/chart-performance.md` |
+| CSS styling & tokens | `references/uihtml/styling-guide.md` |
+| Component CSS (buttons, inputs) | `references/uihtml/component-styles.md` |
+| CSS layout patterns | `references/uihtml/css-layout-patterns.md` |
+| Brand design tokens | `references/uihtml/brand-design-tokens.md` |
+| Dark mode | `references/uihtml/dark-mode.md` |
+| External color schemes | `references/uihtml/external-color-schemes.md` |
 
-**HTML side — minimal template:**
+### Archetype References
 
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: system-ui; margin: 0; padding: 16px; }
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    function setup(htmlComponent) {
-      htmlComponent.addEventListener("DataChanged", function() {
-        var data = htmlComponent.Data;
-        document.getElementById('app').textContent = JSON.stringify(data);
-      });
-    }
-    setup(document.querySelector('html-component') || HTMLComponent());
-  </script>
-</body>
-</html>
-```
+| Archetype | File |
+|-----------|------|
+| Dashboard | `references/archetypes/dashboard.md` |
+| Explorer | `references/archetypes/explorer.md` |
+| Tabbed | `references/archetypes/tabbed.md` |
+| Wizard | `references/archetypes/wizard.md` |
+| Canvas | `references/archetypes/canvas.md` |
 
-**Data flow:**
+### External Skills (invoked, not read)
 
-| Direction | Mechanism |
-|-----------|-----------|
-| MATLAB → JS | Set `h.Data = struct(...)` |
-| JS → MATLAB | Set `htmlComponent.Data = {...}` in JavaScript → triggers `DataChangedFcn` |
+- `matlab-build-chart` — when the app includes MATLAB plots (UIFigure path or UIFigure+accent)
+- `matlab-theming` — when the app needs dark mode, brand colors, or custom palettes (UIFigure path)
 
-Always use `struct` (not tables or objects) for MATLAB-to-JavaScript data. Use `fullfile` for HTML source paths.
+## After Plan Approval
 
-### Multi-Tab App
+1. Read the archetype reference for the spatial skeleton
+2. If MVVM warranted (Explorer, Wizard, Canvas, or complex apps): read the architecture reference
+3. Read the builder/bridge reference to establish layout
+4. Layer in path-specific references per the implementation sequence
+5. For visual polish: read styling reference (UIHTML) or invoke `matlab-theming` (UIFigure)
+6. For charts: read charting references (UIHTML) or invoke `matlab-build-chart` (UIFigure)
 
-```matlab
-tabGroup = uitabgroup(gl);
-tabGroup.Layout.Row = [1 3];
-tabGroup.Layout.Column = [1 2];
+## Recommendation Template
 
-tab1 = uitab(tabGroup, 'Title', 'Input');
-gl1 = uigridlayout(tab1, [3 2]);
+**Recommended path: [UIFigure app / UIHTML app / UIFigure + accent]**
 
-tab2 = uitab(tabGroup, 'Title', 'Results');
-gl2 = uigridlayout(tab2, [1 1]);
-ax = uiaxes(gl2);
-```
+Based on what you've described:
+- [Key signal 1]
+- [Key signal 2]
+- [Key signal 3, if applicable]
 
-## Conventions
+**What this means:** [1-2 sentences on development experience]
 
-- Never use the `appdesigner` GUI tool — always write programmatic code in `.m` files
-- Use `uigridlayout` for all layout — never use absolute pixel positioning for components
-- Name app files with PascalCase: `MyApp.m`, `DashboardApp.m`
-- Use `handle` as the base class (or `matlab.apps.AppBase`)
-- Keep `createComponents` focused on layout — put logic in separate private methods
-- Include a `delete` method that cleans up the figure
-- Use `if nargout == 0; clear app; end` in the constructor for clean command-window usage
-- Store component handles as private properties with type annotations
-- Use `fullfile()` for cross-platform HTML source paths
-- Send `struct` data to `uihtml` — JavaScript receives it as a plain object
+**Trade-off:** [Main thing they'd give up vs the other path]
+
+Want to proceed with this approach, or would you prefer the other path?
 
 ----
 
 Copyright 2026 The MathWorks, Inc.
 
 ----
-

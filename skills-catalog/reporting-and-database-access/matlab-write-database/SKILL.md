@@ -4,7 +4,7 @@ description: "Writes data from MATLAB to relational databases and performs datab
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # MATLAB Database Export Architect
@@ -44,6 +44,11 @@ Use when writing data to relational databases, executing SQL statements, managin
 - **ALWAYS** set `AutoCommit` to `off` when using `commit` / `rollback` for transaction control.
 - **ALWAYS** wrap multi-statement operations in a transaction when atomicity is required.
 - **ALWAYS** use `rollback` in error-handling blocks to undo partial changes on failure.
+
+### Destructive Operations
+- **ALWAYS** ask the user for explicit confirmation before executing any SQL that could irreversibly destroy or alter data. This includes: `DROP`, `TRUNCATE`, `DELETE`, and `ALTER` statements that remove columns or modify constraints.
+- **NEVER** execute a destructive SQL statement via `execute()` without first presenting the exact SQL to the user and receiving explicit approval.
+- The confirmation prompt must include the exact SQL statement or a clear description of what will be affected (e.g., "This will drop table `employees`. All data will be permanently lost. Proceed?").
 
 
 ## Decision Framework
@@ -129,6 +134,18 @@ sqlwrite(conn, "products", data);  % Error if ID is auto-increment
 % CORRECT — omit auto-increment column
 data = table("Widget", 9.99, VariableNames=["Name", "Price"]);
 sqlwrite(conn, "products", data);
+
+% INCORRECT — single filter with multi-row data table
+rf = rowfilter("Category");
+filter = rf.Category == "Widgets";  % matches 2 rows
+data = table([8.99; 12.99], VariableNames="Price");  % 2 rows
+sqlupdate(conn, "products", data, filter);  % Error: filters must match table height
+
+% CORRECT — cell array of filters for multi-row update
+rf = rowfilter("ProductID");
+filters = {rf.ProductID == 1; rf.ProductID == 2};
+data = table([8.99; 12.99], VariableNames="Price");
+sqlupdate(conn, "products", data, filters);
 ```
 
 ## Best Practices
@@ -141,6 +158,7 @@ sqlwrite(conn, "products", data);
 - Use prepared statements for repeated parameterized operations — they improve performance and prevent SQL injection.
 - Prepared statements are **JDBC only** — not available for ODBC or native connections.
 - `runstoredprocedure` is **JDBC/ODBC only** (`database()` connections) — not available for native connections (sqlite, postgresql, mysql, duckdb). Use `execute` with a CALL statement instead.
+- **ALWAYS** confirm destructive intent with the user before running `DROP`, `TRUNCATE`, `DELETE`, or column-dropping `ALTER` — present the SQL and wait for explicit approval, even if the user's request implied the operation.
 
 ## Common Patterns
 
@@ -184,6 +202,7 @@ Before finalizing, verify:
 - [ ] `AutoCommit` restored to `'on'` after transaction blocks
 - [ ] Prepared statements closed with `close(pstmt)`
 - [ ] Connection closed with `close(conn)` at the end
+- [ ] Destructive SQL (`DROP`, `TRUNCATE`, `DELETE`, `ALTER`) confirmed with user before execution
 
 ## Troubleshooting
 
@@ -193,8 +212,8 @@ Before finalizing, verify:
 **Issue**: `sqlupdate` not recognized
 - **Solution**: `sqlupdate` requires R2023a or later. For older releases, use `update` or execute a raw SQL UPDATE statement with `execute`.
 
-**Issue**: `sqlupdate` silently updates wrong number of rows
-- **Solution**: The `data` table passed to `sqlupdate` must have either exactly 1 row (broadcasts to all matching rows) or exactly as many rows as the filter matches. **ALWAYS** verify the filter match count first with `sqlread` + the same `RowFilter`.
+**Issue**: `sqlupdate` errors with "Number of filters must match the height of the table"
+- **Solution**: For multi-row updates, pass a **cell array of RowFilter objects** (one filter per data row). A single `RowFilter` only works with a 1-row data table (broadcasts to all matching rows). Do not pass a single filter that matches N rows with an N-row data table — this errors.
 
 **Issue**: Transaction changes not visible after `commit`
 - **Solution**: Verify `AutoCommit` was set to `'off'` before the transaction. If `AutoCommit` is `'on'`, each statement auto-commits immediately.

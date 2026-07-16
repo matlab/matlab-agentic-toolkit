@@ -1,23 +1,24 @@
 ---
 name: matlab-train-network
 description: >
-  Train, evaluate, and deploy neural networks in MATLAB.
-  Migrate legacy code (fitnet, patternnet, trainNetwork,
-  DAGNetwork) to modern, recommended R2024a+ APIs (trainnet, dlnetwork,
+  Train, evaluate, and export neural networks to Simulink in MATLAB.
+  Migrate legacy (fitnet, patternnet) and discouraged (trainNetwork,
+  DAGNetwork) code to modern, recommended R2024a+ APIs (trainnet, dlnetwork,
   testnet, imagePretrainedNetwork). Use when training, fine-tuning, evaluating,
   running inference, exporting to Simulink, or converting old training
   scripts.
 license: MathWorks BSD-3-Clause
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # matlab-train-network
 
-Train, evaluate, and deploy neural networks in MATLAB using the
+Train, evaluate, and export neural networks to Simulink in MATLAB using the
 recommended `dlnetwork`-based API (`trainnet`, `dlnetwork`, `minibatchpredict`,
-`scores2label`, `testnet`, `imagePretrainedNetwork`, `fitcnet`, `fitrnet`).
+`scores2label`, `testnet`, `imagePretrainedNetwork`) or, for tabular data, the
+Statistics and Machine Learning Toolbox functions `fitcnet` and `fitrnet`.
 
 ## When to Use
 
@@ -28,8 +29,8 @@ Activate this skill when a user asks to:
 - Evaluate a trained network on test data
 - Run inference / predict with a trained network
 - Export a trained network to Simulink
-- Migrate existing legacy deep learning code (trainNetwork, patternnet, fitnet,
-  narxnet, gensim) to recommended APIs
+- Migrate existing legacy (patternnet, fitnet, narxnet, gensim) or discouraged
+  (trainNetwork, DAGNetwork, classify) code to recommended APIs
 - Create a "pattern recognition network", "function fitting network", "NARX
   network", or any task historically associated with the Neural Network Toolbox
   shallow nets API
@@ -44,20 +45,36 @@ Activate this skill when a user asks to:
 
 ## Decision: fitrnet/fitcnet or trainnet
 
-- **Tabular data?** → `fitrnet` (regression) or `fitcnet` (classification)
-- **Tabular data, but need a non-LBFGS solver or a non-MSE/cross-entropy loss?** → `trainnet`
-- **Everything else?** → `trainnet`
+Apply this check before starting any training workflow below.
+
+| Criterion | fitcnet/fitrnet | trainnet |
+|-----------|----------------|----------|
+| Ease of use | Simplest — one function call | Requires network definition + trainingOptions |
+| Solver | L-BFGS | Adam, SGDM, RMSProp, L-BFGS, LM (R2024b+) |
+| Loss functions | MSE and cross-entropy only | Any built-in or custom (pass function handle) |
+| Multiple input/output branches | No | Yes |
+| Custom architecture | Via `Network` argument (R2025a+) | Yes |
+| Data type | Tabular data only (a table or a numeric matrix) | Tabular data plus everything else (sequences, images, multi-input) |
+
+Pass tables directly to `trainnet`, `fitcnet`, and `fitrnet`. If inputs have
+categorical columns, pass them directly — they are encoded automatically
+(`fitcnet`/`fitrnet` always; `trainnet`/`minibatchpredict`/`testnet` from R2025a).
 
 ```matlab
 % Classification
-mdl = fitcnet(XTrain, TTrain, LayerSizes=20);
-[labels,score] = predict(mdl,XTest);
-L = loss(mdl, XTest, TTest);
+mdl = fitcnet(tbl,responseName,LayerSizes=20);
+[labels,score] = predict(mdl,tblTest);
+L = loss(mdl,tblTest);
 
 % Regression
-mdl = fitrnet(XTrain, TTrain, LayerSizes=[20 20]);
-YTest = predict(mdl,XTest);
-L = loss(mdl, XTest, TTest);
+mdl = fitrnet(tbl,responseName,LayerSizes=[20 20]);
+Y = predict(mdl,tblTest);
+L = loss(mdl,tblTest);
+
+% Tabular data with trainnet (when fitcnet/fitrnet can't be used)
+net = trainnet(tbl,net,"crossentropy",options);
+accuracy = testnet(net,tblTest,"accuracy");
+scores = minibatchpredict(net,tblPredictors);
 ```
 
 - From R2024b, `fitrnet` supports multi-response variables.
@@ -76,7 +93,7 @@ L = loss(mdl, XTest, TTest);
 | Input layer | Expected data shape |
 |-------------|-------------------|
 | `featureInputLayer(C)` | observations×channels (e.g., 150×4) |
-| `imageInputLayer([H W C])` | H×W×C×observations (e.g., 28×28×1×5000) |
+| `imageInputLayer([H W C])` | height×width×channels×observations (e.g., 28×28×1×5000) |
 | `sequenceInputLayer(C)` | timesteps×channels×observations, or an observations×1 cell array where each element is a timesteps×channels time series |
 
 If your data has a different layout, use `InputDataFormats` and/or
@@ -105,15 +122,15 @@ customization is impossible via `trainingOptions` — for example, a custom weig
 update rule. Note that `trainingOptions` supports L-BFGS (R2023b+) and
 Levenberg-Marquardt `"lm"` (R2024b+).
 
-### NEVER use these legacy APIs
+### NEVER use these legacy or discouraged APIs
 
 If the user has existing code using these APIs, migrate it to the recommended
 replacement and briefly explain which APIs were replaced and what the modern
-equivalents are. If the user asks for a legacy API by name, acknowledge their
-request and explain that the function has been replaced with a recommended
-alternative before providing the solution.
+equivalents are. If the user asks for a legacy or discouraged API by name,
+acknowledge their request and explain that the function has been replaced with a
+recommended alternative before providing the solution.
 
-| Legacy API | Recommended replacement |
+| Legacy or discouraged API | Recommended replacement |
 |-----------|-------------------|
 | `trainNetwork` | `trainnet` |
 | `patternnet` | `fitcnet` (preferred), or `dlnetwork` + `trainnet` |
@@ -123,11 +140,11 @@ alternative before providing the solution.
 | `train()` (shallow `network` object) | `trainnet` |
 | `classify` | `minibatchpredict` + `scores2label` |
 | `activations` | `minibatchpredict(net,data,Outputs=layer)` |
-| `predictAndUpdateState`, `classifyAndUpdateState` | `[Y, state] = predict(net,X); net.State = state;` |
+| `predictAndUpdateState`, `classifyAndUpdateState` | `[Y,state] = predict(net,X); net.State = state;` |
 | `classificationLayer` | Not required — use `trainnet` with `"crossentropy"` as the loss |
 | `regressionLayer` | Not required — use `trainnet` with `"mse"` as the loss |
-| `DAGNetwork`, `SeriesNetwork`, `layerGraph` | `dlnetwork` — supports `addLayers` and `connectLayers` for multi-branch architectures, anything `layerGraph` can do, `dlnetwork` can do directly |
-| `resnet18`, `googlenet`, `squeezenet`, etc. (pretrained network functions that return `DAGNetwork`) | `imagePretrainedNetwork("resnet18", ...)` — returns a `dlnetwork` |
+| `DAGNetwork`, `SeriesNetwork`, `layerGraph` | `dlnetwork` — supports `addLayers`, `connectLayers`, and `replaceLayer` for multi-branch architectures, anything `layerGraph` can do, `dlnetwork` can do directly |
+| `resnet18`, `googlenet`, `squeezenet`, etc. (pretrained network functions that return `DAGNetwork`) | `imagePretrainedNetwork("resnet18", ...)` — returns a `dlnetwork` and handles head replacement automatically |
 | Manually converting network scores to labels (e.g., `[~,idx] = max(scores)`) | `scores2label` |
 | `plotconfusion` | `confusionchart` |
 | `gensim` | `exportNetworkToSimulink` (preferred), or Predict block |
@@ -136,42 +153,52 @@ alternative before providing the solution.
 
 ### Inference — use minibatchpredict (or predict)
 
-- `predict` on a `dlnetwork` accepts plain numeric arrays. Do not wrap inputs
-  in `dlarray` or call `extractdata` on outputs.
 - For classification: use `minibatchpredict` (or `predict`) + `scores2label`.
 - For regression or when you need raw scores: use `minibatchpredict` or `predict`.
+- `predict` is for single-batch/small-batch use and accepts plain numeric
+  arrays directly — do not wrap inputs in `dlarray` or call `extractdata` on outputs.
 
 ### Evaluation — use testnet
 
-- Always use `testnet` for post-training evaluation on a test set.
+- Use `testnet` to calculate post-training metrics on a test dataset instead
+  of doing it manually.
 - For single-output networks, use string metrics: `"accuracy"`, `"rmse"`.
 - `trainnet` and `testnet` accept targets as a separate argument only for
-  in-memory data. When passing a datastore, targets must be embedded in the
-  datastore itself (e.g., labeled imageDatastore or combined datastore with
-  targets in a second column) — datastores do not support a separate targets
-  argument.
+  in-memory data (`testnet(net,XTest,TTest,"accuracy")`). When passing a
+  datastore, targets must already be embedded in it (e.g., labeled
+  imageDatastore or combined datastore with targets in a second column).
 - For multi-output networks or advanced metric customization, see
   `references/metrics-guidance.md`.
 
 ### Transfer learning — use imagePretrainedNetwork
 
-- Use `net = imagePretrainedNetwork("squeezenet", NumClasses=5)` — it handles
-  layer replacement automatically. The function returns class names only when
-  both `NumClasses` and `NumResponses` are unset (pretrained mode). For transfer
-  learning, get class names from training data: `categories(imdsTrain.Labels)`.
-- Never manually extract `layerGraph`, `replaceLayer`, or add
-  `classificationLayer`.
+```matlab
+net = imagePretrainedNetwork("squeezenet",NumClasses=5);
+
+options = trainingOptions("adam", ...
+    MaxEpochs=10, ...
+    MiniBatchSize=16, ...
+    InitialLearnRate=1e-4, ...
+    ValidationData=imdsVal, ...
+    Metrics="accuracy", ...
+    Plots="training-progress");
+
+net = trainnet(augimdsTrain,net,"crossentropy",options);
+
+% Inference — class names come from training data, not the pretrained net
+classNames = categories(imdsTrain.Labels);
+scores = minibatchpredict(net,imdsTest);
+labels = scores2label(scores,classNames);
+```
+
+`imagePretrainedNetwork` returns class names only when both `NumClasses` and
+`NumResponses` are unset (pretrained mode, no transfer learning).
 
 ---
 
 ## Workflow: Training
 
-### Before choosing a workflow
-
-**Stop and check:** Is your data tabular?
-
-- **Yes** → Use `fitrnet` (regression) or `fitcnet` (classification). See the Decision section above.
-- **No** → Use `trainnet` below.
+Check the Decision section above first — tabular data goes to `fitrnet`/`fitcnet` unless you need a non-LBFGS solver or a non-MSE/cross-entropy loss.
 
 ### Standard training
 
@@ -179,12 +206,11 @@ alternative before providing the solution.
 % Define network
 numChannels = 3;
 numClasses = 5;
-net = dlnetwork([
-    sequenceInputLayer(numChannels)
-    lstmLayer(100, OutputMode="last")
+layers = [
+    sequenceInputLayer(numChannels,Normalization="zscore")
+    lstmLayer(100,OutputMode="last")
     fullyConnectedLayer(numClasses)
-    softmaxLayer
-]);
+    softmaxLayer];
 
 % Training options
 options = trainingOptions("adam", ...
@@ -195,16 +221,26 @@ options = trainingOptions("adam", ...
     Plots="training-progress");
 
 % Train
-net = trainnet(XTrain,TTrain,net,"crossentropy",options);
+net = trainnet(XTrain,TTrain,layers,"crossentropy",options);
 ```
+
+Always normalize inputs. Set `Normalization` on the input layer (see example
+above). For regression, also normalize targets:
+
+- **R2026a+**: append `inverseNormalizationLayer` to the last layer and set
+  `NormalizeTargets=true` in `trainingOptions`
+- **Pre-R2026a**: manually z-score targets before training and denormalize
+  predictions at inference
+
+See `references/normalization.md` for both workflows.
 
 ### Custom loss function for multi-output
 
 The function handle receives network outputs then targets, in order.
-Pass categorical targets directly — `trainnet` one-hot encodes them automatically.
+Pass categorical targets directly — `trainnet` encodes them automatically.
 
 ```matlab
-lossFcn = @(Y1, Y2, T1, T2) crossentropy(Y1,T1) + mse(Y2,T2);
+lossFcn = @(Y1,Y2,T1,T2) crossentropy(Y1,T1) + mse(Y2,T2);
 
 net = trainnet(ds,net,lossFcn,options);
 ```
@@ -212,81 +248,15 @@ net = trainnet(ds,net,lossFcn,options);
 For the full multi-output recipe (OutputNames alignment, combined datastores,
 testnet evaluation), see `references/multi-output-training.md`.
 
-### Transfer learning
-
-```matlab
-net = imagePretrainedNetwork("squeezenet",NumClasses=5);
-
-options = trainingOptions("adam", ...
-    MaxEpochs=10, ...
-    MiniBatchSize=16, ...
-    InitialLearnRate=1e-4, ...
-    ValidationData=augimdsVal, ...
-    Metrics="accuracy", ...
-    Plots="training-progress");
-
-net = trainnet(augimdsTrain,net,"crossentropy",options);
-
-% Inference — class names come from training data
-classNames = categories(imdsTrain.Labels);
-scores = minibatchpredict(net,XTest);
-labels = scores2label(scores,classNames);
-```
-
 ---
 
-## Workflow: Inference
+## Workflow: Simulink Export
 
-### Classification
+- **`dlnetwork` (small, all layers supported)**: use `exportNetworkToSimulink`
+- **`dlnetwork` (large, or has layers unsupported by `exportNetworkToSimulink`)**: use the Predict block at library path `deeplib/Predict`
+- **`fitcnet`/`fitrnet` models**: use the `ClassificationNeuralNetwork Predict` or `RegressionNeuralNetwork Predict` blocks from `statsLibrary/`
 
-```matlab
-scores = minibatchpredict(net,XTest);
-labels = scores2label(scores,classNames);
-```
-
-### Regression
-
-```matlab
-YTest = minibatchpredict(net,XTest);
-```
-
-### Single-image or small-batch prediction
-
-```matlab
-YPred = predict(net,X);
-```
-
-`predict` on `dlnetwork` accepts plain numeric arrays directly. Do not wrap
-inputs in `dlarray` or call `extractdata` on outputs.
-
----
-
-## Workflow: Evaluation
-
-### In-memory data (separate targets)
-
-```matlab
-accuracy = testnet(net,XTest,TTest,"accuracy");
-rmse = testnet(net,XTest,TTest,"rmse");
-```
-
-### Datastores (targets embedded — do NOT pass separate targets)
-
-```matlab
-% Labels are already in the datastore — pass only datastore + metric
-accuracy = testnet(net,augimdsTest,"accuracy");
-```
-
-For multi-output networks or custom metrics, see `references/metrics-guidance.md`.
-
----
-
-## Workflow: Simulink Deployment
-
-- **Small networks** (all layers supported): use `exportNetworkToSimulink`
-- **Large networks**: use the Predict block
-
-See `references/simulink-deployment.md` for details.
+See `references/simulink-export.md` for details.
 
 ---
 
@@ -306,6 +276,7 @@ See `references/simulink-deployment.md` for details.
 | `predict` | Single-batch inference on `dlnetwork`, `ClassificationNeuralNetwork`, `RegressionNeuralNetwork` |
 | `imagePretrainedNetwork` | Load pretrained model with automatic head replacement |
 | `exportNetworkToSimulink` | Export `dlnetwork` to Simulink as layer blocks |
+| `analyzeNetwork` | Inspect network: `info = analyzeNetwork(net)` returns layer info, parameter counts, and architecture issues |
 
 ---
 
@@ -315,22 +286,26 @@ See `references/simulink-deployment.md` for details.
 |--------------------------|---------------|-----------------|
 | `predict(net,dlarray(X,"TCB"))` | Unnecessary — `predict` on a `dlnetwork` accepts plain arrays | `predict(net,X)` |
 | Manual accuracy/RMSE after training | Covered by existing functionality | `testnet(net,XTest,TTest,"accuracy")` |
-| `squeezenet` + `layerGraph` + `replaceLayer` | Legacy transfer learning | `imagePretrainedNetwork("squeezenet",NumClasses=N)` |
+| `squeezenet` + `layerGraph` + `replaceLayer` | Discouraged manual layer surgery for transfer learning | `imagePretrainedNetwork("squeezenet",NumClasses=N)` |
 | Custom training loop for multi-output | Unnecessary complexity | `trainnet` with function handle loss |
 | Transposing data to match the default layout (e.g., `cellfun(@transpose,...)`) | Unnecessary complexity | `InputDataFormats`, `TargetDataFormats` — arrange letters to match your data's actual dimension order |
 | `testnet(net,ds,labels,"accuracy")` | `testnet` does not accept separate targets with datastores | `testnet(net,ds,"accuracy")` |
 | `trainnet` for tabular data | Unnecessary complexity when using MSE/cross-entropy loss and LBFGS solver | `fitrnet` or `fitcnet` |
+| `analyzeNetwork(net)` without capturing output | Loses programmatic access to layer info, parameter counts, and issues | `info = analyzeNetwork(net)` |
+| Manually encoding categorical columns before passing to `trainnet`/`fitcnet`/`fitrnet` | Unnecessary complexity when these functions encode categorical data automatically | Pass categorical data directly |
 
 ---
 
 See also:
-- `references/legacy-api-redirects.md` — legacy API mapping and before/after
-  code examples
+- `references/legacy-api-redirects.md` — legacy and discouraged API mapping
+  and before/after code examples
 - `references/metrics-guidance.md` — when to use string vs object vs function
   vs `deep.Metric` subclass
 - `references/multi-output-training.md` — end-to-end multi-output recipe:
   OutputNames alignment, combined datastores, loss function ordering
-- `references/simulink-deployment.md` — `exportNetworkToSimulink` vs Predict block
+- `references/normalization.md` — how to normalize inputs and targets for
+  training
+- `references/simulink-export.md` — `exportNetworkToSimulink` vs Predict block
 
 ----
 

@@ -2,8 +2,8 @@
 schema-version: 1
 license: MathWorks BSD-3-Clause
 scope: cross-product
-version: "1.0"
-human-description: Create OPC UA client connections and inspect security certificates.
+version: "2.0"
+human-description: Discover OPC UA servers and create secure client connections in MATLAB.
 matlab-release: ">=R2021a"
 required-tools:
   - evaluate_matlab_code

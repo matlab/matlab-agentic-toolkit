@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Extract per-frame time, frequency, and time-frequency features from 1D signals.
+matlab-release: ">=R2024a"
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+required-skills: []
+required-products:
+  - Signal Processing Toolbox
+toolkit: matlab-agentic-toolkit

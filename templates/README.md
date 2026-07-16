@@ -17,7 +17,7 @@ Reference MCP server configurations for manual setup. Each file is a starting po
 | `codex-mcp.json` | OpenAI&reg; Codex | Use `codex mcp add` instead, or edit `~/.codex/config.toml` |
 | `gemini-extension.json` | Gemini&trade; CLI | Project root, then `gemini extensions link .` (local dev) or `gemini extensions install` (from GitHub&reg;) |
 | `vscode-mcp.json` | GitHub Copilot / VS Code | `.vscode/mcp.json` in each project |
-| `amp-settings.json` | Sourcegraph Amp | `~/.config/amp/settings.json` (global) or `.amp/settings.json` (project) |
+| `amp-settings.json` | Amp | `~/.config/amp/settings.json` (global) or `.amp/settings.json` (project) |
 
 For full instructions, see [Configuration and Troubleshooting](../Configuration_and_Troubleshooting.md).
 

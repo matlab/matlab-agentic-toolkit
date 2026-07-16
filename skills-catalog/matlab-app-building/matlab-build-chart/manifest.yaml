@@ -1,0 +1,12 @@
+# Copyright 2026 The MathWorks, Inc.
+# manifest.yaml — Tooling metadata for matlab-build-chart
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Create and customize MATLAB charts with correct axes handling, modern layout, annotations, interactivity, and animation patterns.
+matlab-release: ">=R2025a"
+required-tools: []
+required-skills: []
+required-products: []
+toolkit: matlab-agentic-toolkit

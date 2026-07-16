@@ -1,0 +1,12 @@
+# Copyright 2026 The MathWorks, Inc.
+# manifest.yaml — Tooling metadata for matlab-theming
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Apply color palettes, brand theming, dark mode, and conditional styling to MATLAB charts and uifigure apps.
+matlab-release: ">=R2025a"
+required-tools: []
+required-skills: []
+required-products: []
+toolkit: matlab-agentic-toolkit

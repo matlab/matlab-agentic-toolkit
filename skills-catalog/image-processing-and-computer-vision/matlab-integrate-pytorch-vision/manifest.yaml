@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: MathWorks BSD-3-Clause
+scope: cross-product
+version: "1.0"
+human-description: Create MATLAB interfaces to Python image processing and computer vision models from GitHub repositories or pip packages using MPyReq.
+matlab-release: ">=R2024b"
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+  - check_matlab_code
+required-skills: []
+required-products:
+  - Image Processing Toolbox
+toolkit: matlab-agentic-toolkit

@@ -20,10 +20,10 @@ How to choose the right metric format for `testnet` and `trainingOptions`.
 4. **Custom metric where weighted average across minibatches is acceptable?** →
    Define a custom metric function:
    ```matlab
-   options = trainingOptions("adam", Metrics=@myMetricFcn);
+   options = trainingOptions("adam",Metrics=@myMetricFcn);
    ```
    The custom metric function receives all network outputs followed by all
-   targets, in order: `metric = myMetricFcn(Y1, Y2, ..., T1, T2, ...)`.
+   targets, in order: `metric = myMetricFcn(Y1,Y2,...,T1,T2,...)`.
 
 5. **Custom metric requiring accumulation of intermediate values across
    minibatches** (e.g., accumulating true negatives/false positives to compute
@@ -39,7 +39,7 @@ How to choose the right metric format for `testnet` and `trainingOptions`.
 Metrics specified in `trainingOptions` are displayed during training:
 
 ```matlab
-options = trainingOptions("adam", Metrics="accuracy");
+options = trainingOptions("adam",Metrics="accuracy");
 ```
 
 For multi-output networks, see `references/multi-output-training.md`.

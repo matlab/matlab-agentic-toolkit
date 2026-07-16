@@ -7,7 +7,7 @@ description: Detect critical driving events (lane changes, hard braking, cut-ins
 
 > **Parent skill:** [`SKILL.md`](../SKILL.md) — Loaded when user wants to surface critical events (cut-ins, hard brakes, lane changes, turns) from recorded drives.
 
-Identify critical driving events (lane changes, hard braking, cut-ins, turns) from recorded sensor data. There is no single public function — use the helper-based pipeline from the [example](https://in.mathworks.com/help/driving/ug/extract-key-scenario-events-from-recorded-sensor-data.html).
+Identify critical driving events (lane changes, hard braking, cut-ins, turns) from recorded sensor data. There is no single public function — use the helper-based pipeline from the [example](https://www.mathworks.com/help/driving/ug/extract-key-scenario-events-from-recorded-sensor-data.html).
 
 ## Pipeline Overview
 1. Load GPS + actor track data (same as Workflow 1)
