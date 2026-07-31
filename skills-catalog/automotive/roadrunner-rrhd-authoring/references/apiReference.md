@@ -42,6 +42,8 @@ rrMap = roadrunnerHDMap;  % loads namespace
 | `LaneGroup` | `ID`, `Geometry` (Nx3), `Lanes` (AlignedReference[]) |
 | `Barrier` | `ID`, `Geometry` (Nx3), `BarrierTypeReference` (Reference), `FlipLaterally` (logical), `Metadata` |
 | `BarrierType` | `ID`, `ExtrusionPath` (RelativeAssetPath) |
+| `ParkingSpace` | `ID`, `Edges` (Reference[]), `Metadata` |
+| `ParkingEdge` | `ID`, `Geometry` (Nx3), `Open` (logical — `true` = entry/exit edge), `MarkingReference` (MarkingReference) |
 | `GeoOrientedBoundingBox` | `Center` ([x y z]), `Dimension` ([dx dy dz]), `GeoOrientation` ([heading pitch roll] degrees, double array — NOT a class) |
 | `Metadata` | `Key`, `Value` |
 
@@ -139,7 +141,7 @@ ln.Predecessors(end+1) = ar;
 st = roadrunner.hdmap.SignType;
 st.ID = "StopSign";
 rap = roadrunner.hdmap.RelativeAssetPath;
-rap.AssetPath = "Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg";
+rap.AssetPath = "Assets/Signs/US/Stop_US.svg_rrx";
 st.AssetPath = rap;
 
 % Instance

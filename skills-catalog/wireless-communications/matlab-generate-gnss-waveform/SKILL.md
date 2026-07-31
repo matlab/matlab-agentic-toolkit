@@ -11,7 +11,7 @@ description: >
   Triggers on: GPS waveform, Galileo waveform, NavIC waveform, GNSS signal,
   satellite scenario, GNSS simulation, receiver test signal, baseband GNSS,
   L-band satellite signal, navigation signal generation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks

@@ -5,7 +5,7 @@ description: >
   validateAudioPlugin and generate deployable VST/AU code. Use when creating audio effect
   or generator plugins, writing classdef files inheriting from audioPlugin, or troubleshooting
   validateAudioPlugin failures.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -97,6 +97,17 @@ results = testnet(net,dsTest,metrics);
 % results = [accuracy, rmse] — one value per metric, in order
 ```
 
+## Performance: Accelerating the Custom Loss
+
+Since the multi-output loss is a function handle, it can be accelerated using `dlaccelerate`:
+
+```matlab
+accLossFcn = dlaccelerate(lossFcn);
+net = trainnet(dsTrain, net, accLossFcn, options);
+```
+
+See [dlaccelerate-trainnet-custom-loss.md](dlaccelerate-trainnet-custom-loss.md) for the verification and production workflow.
+
 ## Common Pitfalls
 
 | Symptom | Issue | Fix |

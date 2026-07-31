@@ -1,6 +1,6 @@
 # manifest.yaml — Tooling metadata for matlab-access-datafeed
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: product-specific
 version: "1.1"
 human-description: Connect to Bloomberg, FRED, and Haver Analytics to retrieve financial and economic data using the Datafeed Toolbox.

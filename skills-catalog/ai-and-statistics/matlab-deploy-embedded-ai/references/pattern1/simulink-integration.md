@@ -32,14 +32,16 @@ if exist([modelName '.slxc'], 'file'), delete([modelName '.slxc']); end
 if bdIsLoaded(modelName), close_system(modelName, 0); end
 
 % Now export
-exportNetworkToSimulink(net, 'ModelName', modelName);
+exportNetworkToSimulink(net, ModelName=modelName, ...
+    SaveNetworkInModelWorkspace=true);
 ```
 
 ### Basic Export
 
 ```matlab
 % Export trained dlnetwork to Simulink (use name-value pairs, not positional model name)
-mdlInfo = exportNetworkToSimulink(net, ModelName="myModel");
+mdlInfo = exportNetworkToSimulink(net, ModelName="myModel", ...
+    SaveNetworkInModelWorkspace=true);
 ```
 
 This creates a Simulink model with the network expanded into individual layer blocks
@@ -76,7 +78,8 @@ qNet = quantize(quantObj);
 
 % Export quantized network -- creates fixed-point Simulink blocks
 exportNetworkToSimulink(qNet, ModelName="model_quantized", ...
-    Stateful=true, InputDataType="single", SampleTime="1");
+    Stateful=true, InputDataType="single", SampleTime="1", ...
+    SaveNetworkInModelWorkspace=true);
 
 % Generate fixed-point C code
 set_param('model_quantized', 'SystemTargetFile', 'ert.tlc');
@@ -102,7 +105,8 @@ before export is no longer required for the Simulink path.
 % Project, then export directly — no unpack needed for the Simulink path
 projectedNet = compressNetworkUsingProjection(net, calibData);
 exportNetworkToSimulink(projectedNet, ModelName="model_projected", ...
-    Stateful=true, InputDataType="single", SampleTime="1");
+    Stateful=true, InputDataType="single", SampleTime="1", ...
+    SaveNetworkInModelWorkspace=true);
 ```
 
 For the **direct MATLAB Coder path**, `lstmProjectedLayer` and
@@ -118,7 +122,8 @@ For the float32 path (projected or pruned networks):
 
 ```matlab
 exportNetworkToSimulink(compressedNet, ModelName="model_float32", ...
-    Stateful=true, InputDataType="single", SampleTime="1");
+    Stateful=true, InputDataType="single", SampleTime="1", ...
+    SaveNetworkInModelWorkspace=true);
 ```
 
 ### Handling Placeholder Layers from exportNetworkToSimulink
@@ -210,7 +215,8 @@ mdlInfo = exportNetworkToSimulink(net, ...
     ModelName="mySeqModel", ...
     Stateful=true, ...
     InputDataType="single", ...
-    SampleTime="0.01");
+    SampleTime="0.01", ...
+    SaveNetworkInModelWorkspace=true);
 ```
 
 - `Stateful=true` makes the exported block maintain hidden state between time steps,

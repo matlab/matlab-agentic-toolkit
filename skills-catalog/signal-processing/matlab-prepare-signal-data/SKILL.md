@@ -1,137 +1,152 @@
 ---
 name: matlab-prepare-signal-data
 description: |
-  Use this skill when building a `signalDatastore` pipeline for ML training:
-  loading signals from .mat / .csv / .dat folders (and `.wav` when Audio
-  Toolbox is unavailable), deriving labels (filename, folder, in-file
-  column, ROI), splitting into train/val/test, framing long signals for
-  per-frame supervision, parallel processing across a parpool, or shaping
-  a datastore output for `trainnet`. Triggers include the function names
-  `signalDatastore`, `filenames2labels`, `folders2labels`, `splitlabels`,
-  `countlabels`, `framesig`, `framelbl`, `signalMask`, `catmask`, and
-  workflow phrases like "labels from filenames", "stratified split",
-  "ReadFcn for signalDatastore", "load mat/csv/wav for training".
-license: MathWorks BSD-3-Clause
+  Use this skill when conditioning, loading, preparing, or labeling signal
+  data for analysis or ML training. Covers: cleaning a single signal (fill
+  gaps, remove drift, deoutlier, denoise, resample/align a time base) BEFORE
+  analysis; building a `signalDatastore` pipeline; creating a `labeledSignalSet`
+  for Signal Labeler; deriving labels (filename, folder, in-file, ROI,
+  time-frequency ROI); stratified train/val/test splits; framing long signals;
+  parallel processing; and shaping datastore output for `trainnet`.
+
+  Triggers include "clean up this signal", "remove drift / detrend", "fill
+  gaps", "remove spikes / outliers", "denoise", "resample to a uniform rate",
+  "align channels", "labels from filenames", "stratified split", "prepare for
+  Signal Labeler", and function names like `fillgaps`, `fillmissing`,
+  `detrend`, `filloutliers`, `smoothdata`, `resample`, `synchronize`,
+  `signalDatastore`, `labeledSignalSet`, `filenames2labels`, `folders2labels`,
+  `splitlabels`, `framesig`, `framelbl`, `createDatastores`.
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
-# Prepare Signal Data for ML Training
+# Prepare Signal Data
 
-> **Look in Signal Processing Toolbox first.** The labeling, splitting,
-> framing, and partitioning helpers for `signalDatastore` live in Signal
-> Processing Toolbox — not in Stats & ML Toolbox or generic-MATLAB string
-> utilities.
+> **Look in Signal Processing Toolbox first.** The conditioning, labeling,
+> splitting, framing, and partitioning helpers here live in Signal Processing
+> Toolbox — not in Stats & ML Toolbox or generic-MATLAB string utilities.
+
+The arc: **condition** a raw signal (clean it) -> **load** a folder into a
+datastore -> **label** -> **split / frame** -> **hand off** to `trainnet`. Each
+stage is a workflow file; this page routes you to the right one.
 
 ## When to Use
 
-Loading or preparing signal / time-series data for ML training in MATLAB.
-Reach for this skill especially when you want:
-
-- labels derived from filenames or folder names
-- stratified train/val/test splits over a datastore
-- per-frame labels from ROI tables on long signals
-- parallel processing of signals across a parpool
-- a datastore shaped to feed `trainnet`
+- Cleaning a single signal before analysis: fill gaps, remove drift, deoutlier,
+  denoise, put it on a uniform time base, align multiple channels.
+- Loading / preparing signal data for ML training: datastores, labels from
+  filenames or folders, stratified splits, framing, parallel processing.
+- Structured labeling: `labeledSignalSet` for Signal Labeler, all label types.
 
 ## When NOT to Use
 
 - **Raw `.wav` audio classification with Audio Toolbox available.**
-  `audioDatastore` is the canonical path. If Audio Toolbox is not
-  available, this skill's custom-`ReadFcn` workflow handles `.wav`
-  via base-MATLAB `audioread` — see references/wf-custom-readfcn.md.
+  `audioDatastore` is the canonical path (this skill's custom-`ReadFcn`
+  workflow handles `.wav` only when Audio Toolbox is absent —
+  references/wf-custom-readfcn.md).
+- **Frequency-selective filter DESIGN** (band isolation, notch, custom FIR/IIR)
+  — see the `matlab-design-digital-filter` skill. This skill's conditioning is
+  about cleaning, not designing filters.
+- **Computing per-frame features** (RMS, crest factor, spectral / bandwidth,
+  time-frequency features) from an already-conditioned signal — see the
+  `matlab-extract-signal-features` skill. This skill's `framesig` / `framelbl`
+  are for manual per-window labeling / supervision, not for deriving a feature
+  table; the `signal*FeatureExtractor` objects window internally and emit the
+  table.
 
 ## Best practices
 
-- **Deliverable is a runnable `.m` script the user can save and re-run** —
-  not workspace state. The output of this skill is a reusable data-prep
-  pipeline the user can version and hand off.
+- **Deliverable is a runnable `.m` script** the user can save, version, and
+  re-run — not workspace state.
+- **Prefer the highest-level function that does the job.** `detrend` /
+  `smoothdata` / `fillmissing` / `resample` read cleanly and are easy for a
+  non-expert to follow. Drop to a lower-level / more-configurable path
+  (`designfilt` + `filtfilt`, a hand-built AR model, a named primitive) only
+  when you need control the high-level call cannot give, or when the user asks.
+  Readability first; escalate to low-level for necessity, not by default.
+  - The high-level call usually exposes the control you think you need. In
+    particular `smoothdata(x, "sgolay", fl)` takes the frame length `fl` as an
+    argument — it does NOT hide it — so prefer it over calling `sgolayfilt`
+    directly. Reach for `sgolayfilt` only for what the dispatcher genuinely
+    lacks (derivative output via `dn`, or an unusual polynomial order).
 
-## § 0 Common reflexes
+## 0. Common reflexes
 
-If your first instinct is one of these, the canonical replacement is one
-row away.
+If your first instinct is one of these, the canonical replacement is one row away.
 
 | Reflex | Canonical | Detail |
 |---|---|---|
+| Hand-design a highpass/`designfilt` to remove a smooth drift | `detrend(x, n)` — escalate `n` = 1 -> 2 -> 3 before reaching for a filter; polynomial detrend has unity passband gain | references/fn-detrend.md |
+| Invent a gap-filler (`regularizeNaNs`, `inpaintn` — not real) | `fillmissing` (interp) for short gaps; `fillgaps` (SPT, AR) for long gaps in oscillatory signals | references/wf-repair-missing.md |
+| Hand-roll `retime` + shift + `retime` + concat to align channels | `synchronize(A, B, ...)` — one call to a shared grid | references/wf-align-channels.md |
 | Custom `ReadFcn` for a `.csv` | `signalDatastore` default reader + `SignalVariableNames` | references/fn-signaldatastore.md |
-| `cvpartition` for a datastore split | `splitlabels` + `subset(ds, idx{k})` (cell-array indexing) | references/fn-splitlabels.md |
-| `regexp` / `extractBefore` / `fileparts` to derive labels from filenames | `filenames2labels(sds, Extract=...)` | references/fn-filenames2labels.md |
-| `regexp` / hand-rolled `fileparts(fileparts(...))` for labels from subfolders | `folders2labels(sds.Files)` — pass the datastore's file list | references/fn-folders2labels.md |
-| `parfor i = 1:numel(ds.Files)` constructing a fresh datastore per file | `partition(ds, N, k)` per worker | references/fn-partition.md, references/wf-parallel-process.md |
-| Manual framing loop with `(i-1)*hopSize+1` | `framesig(x, fl, OverlapLength=...)` | references/fn-framesig.md, references/wf-frame-and-label.md |
-| Manual ROI-to-frame label vote with `containers.Map` | `framelbl(rois, ConsolidationMethod=..., PriorityList=...)` | references/fn-framelbl.md, references/wf-frame-and-label.md |
-| `for` loop calling `load(file)` to extract labels from in-file variables | `signalDatastore(folder, SignalVariableNames=["x","label"])` — **the loop goes away**; both variables come back per `read(sds)` as a cell row | references/fn-signaldatastore.md |
+| `cvpartition` for a datastore split | `splitlabels` + `subset(ds, idx{k})` | references/fn-splitlabels.md |
+| `regexp` / `extractBefore` / `fileparts` for labels from filenames | `filenames2labels(sds, Extract=...)` | references/fn-filenames2labels.md |
+| `regexp` / nested `fileparts` for labels from subfolders | `folders2labels(sds.Files)` | references/fn-folders2labels.md |
+| Manual framing loop with `(i-1)*hop+1` | `framesig(x, fl, OverlapLength=...)` | references/wf-frame-and-label.md |
+| Manual ROI-to-frame vote with `containers.Map` | `framelbl(rois, ...)` | references/wf-frame-and-label.md |
+| `for` loop `load(file)` to read in-file label variables | `signalDatastore(folder, SignalVariableNames=["x","label"])` | references/fn-signaldatastore.md |
+| `signalMask` when you need Signal Labeler interop | `labeledSignalSet` with ROI labels (signalMask can't import) | references/fn-labeledsignalset.md |
+| `signalLabeler(lss)` (pass the set as an arg) | Launch bare `signalLabeler` (zero args), then Import -> From Workspace or From File | references/wf-label-and-export.md |
 
-## § 1 Workflows
+> **SPT-specialized functions exist — reach for them, don't reinvent.**
+> `fillgaps` (AR gap fill), `medfilt1` / `hampel` (impulse handling),
+> `sgolayfilt` / `smoothdata(...,"sgolay")` (feature-preserving smoothing) are
+> in Signal Processing Toolbox.
 
-Each workflow file is the **entry point**; it links the function-detail
-files you'll need at each step.
+## 1. Workflows
 
-| Workflow | Use when | Reference (entry → chain) |
+Each workflow file is the entry point and lists the functions it uses. Start here.
+
+| Workflow | Use when | Reference |
 |---|---|---|
-| **Load + label + split** | Building a datastore from a folder of files for training. | wf-load-and-split.md → fn-signaldatastore, fn-filenames2labels / fn-folders2labels, fn-countlabels, fn-splitlabels, fn-subset |
-| **Frame long signals + per-frame labels** | Signals are long; supervision is per-window. | wf-frame-and-label.md → fn-framesig, fn-framelbl, fn-signalmask-getmask |
-| **Parallel processing across a parpool** | Computing per-signal results across workers. | wf-parallel-process.md → fn-partition |
-| **Custom ReadFcn (only when needed)** | File format isn't `.mat` / `.csv`, or has a metadata prelude. | wf-custom-readfcn.md → fn-signaldatastore |
-| **Hand-off to `trainnet`** | Datastore is ready; next step is shaping for `trainnet` / `combine` / `arrayDatastore` (routes to `minibatchqueue` / `dlarray` for custom batching or GPU prefetching). | wf-handoff-to-dl.md |
+| **Repair missing samples** | NaN gaps / dropouts to fill. | references/wf-repair-missing.md |
+| **Detrend, smooth, deoutlier** | Drift, spikes, and/or broadband noise on one signal (smoothing/denoising lives here). | references/wf-detrend-smooth-deoutlier.md |
+| **Align multi-rate / offset channels** | Several channels onto a shared time base. | references/wf-align-channels.md |
+| **Put one channel on a uniform rate** | One channel -> uniform grid at a chosen rate: jittery timestamps to regularize, OR already uniform but the wrong rate to `resample`. | references/wf-uniform-rate.md |
+| **Wavelet denoising (escalation)** | Non-stationary/multi-scale noise a tuned `sgolayfilt` can't remove; `wdenoise` (Wavelet TB). | references/wf-denoise.md |
+| **Envelope extraction** | Amplitude outline (AM demod, peak hull) — not cleaning. | references/wf-envelope.md |
+| **Load + label + split** | Folder of files -> datastore for training. | references/wf-load-and-split.md |
+| **Frame long signals + per-frame labels** | Long signals, per-window supervision. | references/wf-frame-and-label.md |
+| **Label + export (all label types)** | Structured labels (attribute/ROI/point/TF-ROI), export to Signal Labeler / DL. | references/wf-label-and-export.md |
+| **Parallel processing across a parpool** | Per-signal work across workers. | references/wf-parallel-process.md |
+| **Custom ReadFcn (only when needed)** | Format isn't `.mat` / `.csv`, or has a metadata prelude. | references/wf-custom-readfcn.md |
+| **Hand-off to `trainnet`** | Datastore ready; shape for `trainnet` / `combine`. | references/wf-handoff-to-dl.md |
 
-## § 2 Functions
+> Each workflow file names the `fn-` reference pages for the functions it uses;
+> there is no separate function index — enter through the workflow that matches
+> your task, or the reflex table above.
 
-| Function | Used for | Reference |
-|---|---|---|
-| `signalDatastore` | Datastore constructor (.mat / .csv / custom). | references/fn-signaldatastore.md |
-| `filenames2labels` | Categorical labels from filename pattern. | references/fn-filenames2labels.md |
-| `folders2labels` | Categorical labels from containing-folder name. | references/fn-folders2labels.md |
-| `splitlabels` | Stratified train/val/test index sets. | references/fn-splitlabels.md |
-| `countlabels` | Per-class file count for balance checks. | references/fn-countlabels.md |
-| `subset` | Slice a datastore by index (single-process). | references/fn-subset.md |
-| `partition` | Slice a datastore across parpool workers. | references/fn-partition.md |
-| `framesig` | Frame a signal into windows with overlap. | references/fn-framesig.md |
-| `framelbl` | Collapse ROI rows into per-frame labels. | references/fn-framelbl.md |
-| `signalMask` / `catmask` / `binmask` | Per-sample masks from ROI tables. | references/fn-signalmask-getmask.md |
+## 2. Ordering when a signal needs several conditioning steps
 
-## § 3 Highest-frequency canonical patterns (inline)
+**The governing principle (this is the real rule):** order the steps so an
+earlier operation does not corrupt the input to a later one. Spikes bias
+least-squares fits and get smeared by filters/resamplers; an un-removed trend
+gets averaged into the signal by a smoother; most operations choke on `NaN`.
+Reason from that for the signal in front of you — do not follow a fixed chain
+blindly.
 
-### 3.1 CSV is first-class — no custom ReadFcn for tabular CSV
+**Default heuristic** (a good starting order, not a universal law):
 
-```matlab
-sds = signalDatastore(folder, ...
-    FileExtensions=".csv", ...
-    SignalVariableNames=["ch1","ch2"]);
-```
+**outliers -> detrend -> smooth**, with fill and align placed by the principle above.
 
-**Don't** wrap `readtable(..., 'SelectedVariableNames', ...)` in a custom
-`ReadFcn`. The default reader does this directly.
-Full table: references/fn-signaldatastore.md.
+- **outliers -> detrend -> smooth** is the verified core: remove spikes before
+  a polynomial `detrend` (a spike biases the fit) and before a smoother (a
+  smoother spreads the spike across its window); detrend before smooth so the
+  smoother isn't averaging across a trend.
+- **Fill** `NaN` before any step that can't handle missing data (detrend,
+  filters, most smoothers).
+- **Align / resample:** putting a signal on a new grid (`retime`/`synchronize`)
+  *creates* `NaN` at non-overlapping times, so fill after aligning. BUT if the
+  signal has spikes, deoutlier *before* resampling — `resample`'s anti-alias
+  filter will smear an un-removed spike. So align-vs-outliers order depends on
+  the signal; the principle decides, not a fixed sequence.
 
-### 3.2 Filename labels — position-independent extraction
-
-```matlab
-labels = filenames2labels(sds, Extract = "G" + digitsPattern);
-```
-
-**Don't** reach for `extractBefore("_")` / `regexp` — silent wrong labels
-when filename format varies.
-More patterns: references/fn-filenames2labels.md.
-
-### 3.3 Stratified split — splitlabels + subset
-
-```matlab
-splitIndices = splitlabels(labels, [0.7 0.15 0.15]);
-sdsTrain = subset(sds, splitIndices{1});
-sdsVal   = subset(sds, splitIndices{2});
-sdsTest  = subset(sds, splitIndices{3});
-% splitIndices{4} exists but is empty here (ratios sum to 1).
-```
-
-`splitlabels` returns an `(N+1)`-element **cell array** of index vectors. When `sum(ratios) == 1` (as above) the last cell is empty; when `sum(ratios) < 1` the last cell holds the leftover indices.
-
-**Don't** use `cvpartition` for datastore-backed splits — requires materializing
-labels first and doesn't compose with `subset`.
-Full contract: references/fn-splitlabels.md.
-
+Not every signal needs every step — identify which apply, order them by the
+principle, and each workflow file has an off-ramp if your problem is actually a
+different family.
 
 ----
 

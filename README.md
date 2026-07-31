@@ -87,7 +87,8 @@ After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; 
 |-------------|-------------|
 | [**MATLAB Core**](skills-catalog/README.md#matlab-core-matlab-core) | Create, debug, test, review, and manage MATLAB code and installations |
 | [**MATLAB App Building**](skills-catalog/README.md#matlab-app-building-matlab-app-building) | Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration |
-| [**MATLAB Data Import and Analysis**](skills-catalog/README.md#matlab-data-import-and-analysis-matlab-data-import-and-analysis) | Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations |
+| [**MATLAB Data Import and Analysis**](skills-catalog/README.md#matlab-data-import-and-analysis-matlab-data-import-and-analysis) | Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations |
+| [**MATLAB Environment and Settings**](skills-catalog/README.md#matlab-environment-and-settings-matlab-environment-and-settings) | Diff MATLAB settings between releases and migrate startup scripts to correct setting paths |
 | [**MATLAB External Language Interfaces**](skills-catalog/README.md#matlab-external-language-interfaces-matlab-external-language-interfaces) | Call Python&reg; libraries from MATLAB and upgrade MEX files to the interleaved complex API |
 | [**MATLAB Programming**](skills-catalog/README.md#matlab-programming-matlab-programming) | Write robust MATLAB functions with validated inputs |
 | [**MATLAB Software Development**](skills-catalog/README.md#matlab-software-development-matlab-software-development) | Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans |
@@ -99,33 +100,32 @@ After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; 
 | [**Aerospace**](skills-catalog/README.md#aerospace-aerospace) | Aerospace Toolbox&trade; |
 | [**AI and Statistics**](skills-catalog/README.md#ai-and-statistics-ai-and-statistics) | Deep Learning Toolbox&trade; and Statistics and Machine Learning Toolbox&trade; |
 | [**Automotive**](skills-catalog/README.md#automotive-automotive) | Automated Driving Toolbox&trade;, RoadRunner, and RoadRunner Scene Builder |
-| [**Cloud Solutions**](skills-catalog/README.md#cloud-solutions-cloud-solutions) | MATLAB Drive |
-| [**Code Generation**](skills-catalog/README.md#code-generation-code-generation) | Fixed-Point Designer&trade; |
+| [**Cloud Solutions**](skills-catalog/README.md#cloud-solutions-cloud-solutions) | MATLAB Drive&trade; |
+| [**Code Generation**](skills-catalog/README.md#code-generation-code-generation) | Embedded Coder&trade;, Fixed-Point Designer&trade;, GPU Coder&trade;, and MATLAB Coder&trade; |
 | [**Computational Biology**](skills-catalog/README.md#computational-biology-computational-biology) | SimBiology&trade; |
-| [**Computational Finance**](skills-catalog/README.md#computational-finance-computational-finance) | Datafeed Toolbox&trade; |
+| [**Computational Finance**](skills-catalog/README.md#computational-finance-computational-finance) | Datafeed Toolbox&trade; and Spreadsheet Link&trade; |
+| [**Control Systems**](skills-catalog/README.md#control-systems-control-systems) | Predictive Maintenance Toolbox&trade; |
 | [**Image Processing and Computer Vision**](skills-catalog/README.md#image-processing-and-computer-vision-image-processing-and-computer-vision) | Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar Toolbox&trade;, and Medical Imaging Toolbox&trade; |
-| [**Math and Optimization**](skills-catalog/README.md#math-and-optimization-math-and-optimization) | PDE Toolbox |
+| [**Math and Optimization**](skills-catalog/README.md#math-and-optimization-math-and-optimization) | Optimization Toolbox&trade; and PDE Toolbox&trade; |
 | [**Parallel Computing**](skills-catalog/README.md#parallel-computing-parallel-computing) | Parallel Computing Toolbox&trade; and MATLAB Parallel Server&trade; |
 | [**Radar**](skills-catalog/README.md#radar-radar) | Phased Array System Toolbox&trade;, Sensor Fusion and Tracking Toolbox&trade;, and Mapping Toolbox&trade; |
-| [**Reporting and Database Access**](skills-catalog/README.md#reporting-and-database-access-reporting-and-database-access) | Database Toolbox&trade; |
+| [**Reporting and Database Access**](skills-catalog/README.md#reporting-and-database-access-reporting-and-database-access) | Database Toolbox&trade;, MATLAB Report Generator&trade;, and Simulink Report Generator&trade; |
 | [**RF and Mixed Signal**](skills-catalog/README.md#rf-and-mixed-signal-rf-and-mixed-signal) | Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Toolbox&trade;, RF PCB Toolbox&trade;, and SerDes Toolbox&trade; |
 | [**Robotics and Autonomous Systems**](skills-catalog/README.md#robotics-and-autonomous-systems-robotics-and-autonomous-systems) | Navigation Toolbox&trade;, UAV Toolbox&trade;, and Robotics System Toolbox&trade; |
 | [**Signal Processing**](skills-catalog/README.md#signal-processing-signal-processing) | Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolbox&trade;, Signal Processing Toolbox&trade;, and Wavelet Toolbox&trade; |
 | [**Test and Measurement**](skills-catalog/README.md#test-and-measurement-test-and-measurement) | Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Industrial Communication Toolbox&trade;, MATLAB Support Package for Arduino Hardware&trade;, and Vehicle Network Toolbox&trade; |
-| [**Wireless Communications**](skills-catalog/README.md#wireless-communications-wireless-communications) | Communications Toolbox&trade;, 5G Toolbox&trade;, WLAN Toolbox&trade;, Bluetooth Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, and Wireless Testbench&trade; |
+| [**Wireless Communications**](skills-catalog/README.md#wireless-communications-wireless-communications) | Communications Toolbox&trade;, 5G Toolbox&trade;, WLAN Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, and Wireless Testbench&trade; |
 <!-- END SKILLS -->
 ---
 ## Update MATLAB Agentic Toolkit
 
-To update the toolkit, run this command in MATLAB.
+To update the toolkit, download the latest installer add-on by clicking [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx). Open the downloaded file with MATLAB, and run this command in MATLAB.
 
 ```matlab
 setupAgenticToolkit("update")
 ```
 
 This updates the skills, configurations, and MCP server binary for both the MATLAB and Simulink Agentic Toolkits.
-
-> **Note:** The installer add-on is updated separately. To get the latest installer, re-download [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx) and open it in MATLAB.
 
 ---
 ## Security Considerations

@@ -55,7 +55,7 @@ its value wrapped in a 1×1 cell**. The two halves of that contract:
   scalar. Don't override to `OutputType="same"`; you'll strip the cell
   wrap and `horzcat` will try to concatenate a numeric signal with a
   categorical label — `Unable to concatenate a double array and a
-  categorical array.` (Verified empirically on R2026b.)
+  categorical array.`
 - **Signal side: `transform(sigDs, @(p) {fn(p)})`** — the `{...}` around
   the function output is the cell wrap. Without it the read is a bare
   array and `horzcat` again fails with the same type-mismatch.

@@ -1,7 +1,7 @@
 ---
 name: matlab-testing
 description: Generate and run MATLAB unit tests using matlab.unittest and matlab.uitest. Parameterized tests, fixtures, mocking, coverage analysis, CI/CD with buildtool, app testing with gestures. Use when creating tests, writing test classes, running test suites, checking coverage, testing apps, or validating MATLAB code.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

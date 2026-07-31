@@ -70,53 +70,22 @@ frameLabels = framelbl(rois, 1024, OverlapLength=512, ...
 % frames(:, k) and frameLabels(k) are aligned.
 ```
 
-## Decision: `mode` vs `priority` — inspect the ROI table first
+## `ConsolidationMethod` — the default surprises you
 
-Don't pick `ConsolidationMethod` from the user's prompt phrasing alone
-("most prevalent" → `"mode"`). Inspect the ROI table for **containment**
-before committing:
-
-```matlab
-% Cheap structural check — do any ROIs fully nest inside others?
-% (Same label fully containing different label is the trap.)
-limits = rois.ROILimits;
-nested = false;
-for i = 1:height(rois)
-    for j = 1:height(rois)
-        if i ~= j && limits(j,1) >= limits(i,1) && limits(j,2) <= limits(i,2) ...
-                  && rois.Value(i) ~= rois.Value(j)
-            nested = true; break;
-        end
-    end
-    if nested, break; end
-end
-```
-
-- `nested == false` → `"mode"` is safe (most-prevalent vote).
-- `nested == true` → use `"priority"` with `PriorityList`. The inner label
-  (e.g. `"voiced"` inside `"speech"`) will lose every most-prevalent vote
-  otherwise.
-
-Domain heuristic: in audio/speech, `voiced ⊂ speech ⊂ recording`.
-In bioacoustics, `call ⊂ chorus`. If your domain has nested events,
-default to `"priority"` and surface the priority list.
-
-## Surface decisions as named arguments
-
-`ConsolidationMethod` and `PriorityList` are **decisions you must make**,
-not defaults to silently accept. Reading them as named args in your code
-makes the choice explicit at review time.
+The default is `"none"`, which returns an **`fl × numFrames` matrix of raw
+per-sample labels**, not the `1 × numFrames` row of one-label-per-frame a
+training pipeline usually wants. Pass an explicit `ConsolidationMethod` (and
+read it as a named arg so the choice is visible), e.g.:
 
 ```matlab
-% Explicit — the named arg cues the reader that this is a choice:
-frameLabels = framelbl(rois, 1024, OverlapLength=512, ...
-    ConsolidationMethod="mode");
-
-% Worse — choice buried; default is "none" (returns an fl × numFrames
-% matrix of raw per-sample labels, not a 1 × numFrames row of consolidated
-% labels), which is rarely what a training pipeline wants:
-frameLabels = framelbl(rois, 1024, OverlapLength=512);
+frameLabels = framelbl(rois, 1024, OverlapLength=512, ConsolidationMethod="mode");
 ```
+
+Choosing *which* method - `"mode"` (most-prevalent vote) vs `"priority"` (when
+labels nest), and the ROI-containment check that decides it - is the workflow
+decision: see wf-frame-and-label.md ("Decision point — ConsolidationMethod").
+The mechanism that forces `"priority"` when labels nest is the containment trap
+below.
 
 ## Anti-pattern — hand-rolled most-prevalent voting
 

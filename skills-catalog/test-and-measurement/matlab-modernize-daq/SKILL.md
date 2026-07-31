@@ -13,7 +13,7 @@ description: >
   ScansRequiredFcn, daq.createSession, addAnalogInputChannel, startBackground,
   queueOutputData, DataAvailable, evt.Data, evt.TimeStamps, wait(d), preload,
   discouraged, legacy, modernize, R2020a.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

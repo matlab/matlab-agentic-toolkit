@@ -105,20 +105,37 @@ jObj.Geometry = mp;
 | Use ONLY outer boundaries (count == 1) | Internal shared boundaries cause polygon to shrink at straight-through lanes |
 | Trace actual polyline geometry | Preserves straight edges as straight, curves as natural curves |
 | Greedy nearest-endpoint chaining | Orders segments into a connected perimeter without distortion |
-| Do NOT use `boundary()` or `convhull` | Point-cloud hulls produce artificial shapes that don't follow actual road geometry |
+| Prefer outer boundary chaining over `boundary()`/`convhull` | Point-cloud hulls produce artificial shapes that don't follow actual road geometry |
 | Do NOT use spline smoothing | Adds artificial curves where edges should be straight |
 | Endpoint chaining tolerance = 0.2m | Skip duplicate junction points when connecting adjacent segments |
+
+## Alternative: `boundary()` with Shrink Factor (Lanelet2 Conversion)
+
+For **Lanelet2 conversion** where junctions are inferred from `turn_direction` clustering, `boundary(pts(:,1), pts(:,2), 0.7)` is an acceptable alternative when outer boundary chaining is impractical (e.g., short junction lanes where boundaries don't form a clean perimeter). This produces good curved polygons for most intersections.
+
+**When to use convhull instead:** If `boundary(0.7)` creates concave indentations that visually exclude junction lanes (common for small 2-3 lane junctions with non-turn-direction lanes added), use `convhull` for those specific junctions while keeping `boundary(0.7)` for the rest.
+
+```matlab
+% Default: boundary(0.7) for curved polygons
+k = boundary(allJuncPts(:,1), allJuncPts(:,2), 0.7);
+chain = allJuncPts(k,:);
+
+% Specific junctions needing full coverage: convhull
+k = convhull(allJuncPts(:,1), allJuncPts(:,2));
+chain = allJuncPts(k,:);
+```
 
 ## Common Failures
 
 | Symptom | Root Cause | Fix |
 |---------|-----------|-----|
-| Polygon pinches at straight lanes | Used `boundary()` which shrinks at straight segments | Trace outer boundaries directly |
-| Straight edges cutting across curves | Used `convhull` on point cloud | Trace actual curved boundary polylines |
+| Polygon pinches at straight lanes | Used `boundary()` with high shrink | Reduce shrink or use convhull for that junction |
+| Straight edges cutting across curves | Used `convhull` globally | Use `boundary(0.7)` for most, convhull selectively |
 | Artificial curves at straight edges | Applied spline smoothing | Use raw boundary geometry — no smoothing |
 | Polygon inside/smaller than lanes | Included internal shared boundaries | Use only outer boundaries (count == 1) |
-| Giant polygon spanning 200m+ | Cluster threshold too large (30m) | Reduce to 10m for BFS clustering |
+| Giant polygon spanning 200m+ | Cluster threshold too large (30m) | Reduce to 8m for BFS clustering |
 | Disconnected polygon | Chaining tolerance too tight | Use 0.2m tolerance for endpoint matching |
+| Junction doesn't cover all lanes | Only used turn_direction lanes for polygon | Include non-turn lanes at junction nodes |
 
 ## Why Outer-Only Boundaries?
 

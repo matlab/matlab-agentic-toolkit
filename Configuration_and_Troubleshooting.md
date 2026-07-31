@@ -69,19 +69,17 @@ To manually install and configure the MCP server rather than using the automated
 | Gemini CLI | `~/.gemini/settings.json` | Start a new Gemini session after setup. |
 | Amp | `~/.config/amp/settings.json` | If you have `amp.mcpPermissions` rules that block MCP servers, add an allow rule for the MATLAB server. |
 
-### Disable Data Collection
+---
 
-MATLAB MCP Server collects anonymized usage data by default. To opt out, add `--disable-telemetry=true` to the arguments in your agent's MCP configuration file. For the file locations, see the table above. Each time you update MATLAB Agentic Toolkit, you must reapply this setting.
+## Disable Data Collection
 
-```json
-"matlab": {
-  "command": "~/.matlab/agentic-toolkits/bin/matlab-mcp-server",
-  "args": [
-    "--disable-telemetry=true"
-  ]
-}
+MATLAB MCP Server collects fully anonymized information about your usage of the server and sends it to MathWorks&reg;. This data collection helps MathWorks improve products and is on by default. To opt out of data collection, configure the toolkit with the `DisableTelemetry` option set to `true` by running this command in MATLAB:
+
+```matlab
+setupAgenticToolkit("configure", DisableTelemetry=true)
 ```
 
+This command opts every configured agent out of data collection. This setting is retained when you update to a new version the toolkit with `setupAgenticToolkit("update")`. If you reconfigure the toolkit for your agent(s) by running `setupAgenticToolkit("configure")`, include `DisableTelemetry=true` again to keep data collection disabled.
 
 ---
 
@@ -263,7 +261,7 @@ We are actively exploring more robust solutions to improve skill discovery and a
 ---
 
 ## Support and Contributions
-MathWorks&reg; encourages you to use this repository and provide feedback. Pull requests are not enabled on this repository. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact technical support](https://www.mathworks.com/support/contact_us.html). 
+MathWorks encourages you to use this repository and provide feedback. Pull requests are not enabled on this repository. To request technical support or submit an enhancement request, [create a GitHub issue](https://github.com/matlab/matlab-agentic-toolkit/issues) or [contact technical support](https://www.mathworks.com/support/contact_us.html). 
 
 ----
 

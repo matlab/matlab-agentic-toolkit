@@ -38,7 +38,7 @@ generateLearnerDataTypeFcn('predictClassifier', XRepresentative);
 % Step 2: Configure code generation with fixed-point conversion
 cfg = coder.config('lib');
 cfg.TargetLang = 'C';
-cfg.Hardware = coder.hardware('ARM Cortex-M');
+cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-M';
 
 % Step 3: Define input type
 inputType = coder.typeof(single(0), [1 numFeatures]);

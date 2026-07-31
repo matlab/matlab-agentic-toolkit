@@ -1,7 +1,7 @@
 ---
 name: matlab-process-large-images
 description: "Patterns for using blockedImage to process large images, harness parallel compute for image processing, and write custom adapters. Use when writing code that creates, processes, or visualizes blockedImage objects, when implementing images.blocked.Adapter subclasses, or when a user needs help with large image data. Always use this skill when working with TIFF,GeoTIFF, .svs, .ndpi, .czi or other WSI, satellite imagery or microscopy volume image formats."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

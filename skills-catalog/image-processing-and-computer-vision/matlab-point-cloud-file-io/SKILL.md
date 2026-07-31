@@ -1,7 +1,7 @@
 ---
 name: matlab-point-cloud-file-io
 description: "Read and write 3-D point cloud data using Lidar Toolbox file I/O. Covers PLY, PCD, LAS/LAZ, PCAP (Velodyne/Ouster/Hesai), E57, and IDC (Ibeo) formats. Use when loading point clouds from disk, saving to disk, choosing the correct reader or writer for a file format, extracting or preserving lidar point attributes, reading Ibeo IDC sensor recordings, or converting between formats."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

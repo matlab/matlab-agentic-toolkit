@@ -1,7 +1,7 @@
 ---
 name: matlab-assemble-pcb-layout
 description: "Build custom PCB structures with pcbComponent, shapes, Boolean ops, feeds, and multi-layer stackups for non-catalog geometries. TRIGGER: user asks to build, modify, or customize a pcbComponent — add/remove shapes, edit polygons, place feeds, add metal layers, cut slots, or create non-catalog RF structures. Also when modifying geometry of an existing catalog-designed component (e.g., adding pads, removing elements, editing vertices). Invoke BEFORE writing pcbComponent code — layer/shape/feed API is non-obvious. SKIP: designing catalog components like filters/couplers/txlines (use the specific matlab-design-pcb-* skill), material/stackup definition only (use matlab-manage-pcb-material), EM analysis (use matlab-analyze-em), importing PCB files (use matlab-read-pcb-layout)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-review-fi-code
 description: Reviews MATLAB fixed-point (fi) code for performance, code generation efficiency, and correctness. Identifies antipatterns and suggests idiomatic improvements. Use when reviewing fi, fimath, numerictype, or quantizenumeric code.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

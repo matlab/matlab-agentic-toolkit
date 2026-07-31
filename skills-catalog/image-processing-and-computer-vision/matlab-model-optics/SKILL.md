@@ -3,7 +3,7 @@ name: matlab-model-optics
 description: >
   Build, import, analyze, tolerate, and optimize optical systems using the Optical Design and Simulation Library.
   Use when the user asks about optical systems, ray tracing, geometric optics, Zemax import, optical coatings, tolerancing, or optical design optimization.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

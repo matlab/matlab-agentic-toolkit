@@ -9,7 +9,7 @@ description: >
   documentation, SystemDiagramFinder, SystemIO, ExecutionOrder, LookupTable, template style,
   page footer, TemplateSrc, report package, table variants, multiple HTML pages, PDF report
   generation, Word report, DOM API, FormalTable, BaseTable, Figure, FormalImage, Section.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

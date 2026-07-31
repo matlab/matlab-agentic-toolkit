@@ -1,7 +1,7 @@
 ---
 name: matlab-add-awgn
 description: "Read BEFORE writing any code that adds Additive White Gaussian Noise (AWGN) to signals and converts between SNR, Eb/No, Es/No, and per-subcarrier SNR for communications simulations, using awgn(), convertSNR(), berawgn(). The default MATLAB patterns for AWGN (e.g., 'measured' option, manual SNR formulas) produce subtly incorrect results. This skill specifies the correct calling conventions, required function usage, and critical anti-patterns that must be avoided."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

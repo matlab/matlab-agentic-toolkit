@@ -4,16 +4,19 @@ description: >
   Generate C/C++ or CUDA code from an AI model (PyTorch, LiteRT) using
   MATLAB Coder or GPU Coder. Use when the user wants to integrate an AI model
   into an application with code generation as the end goal — generating MEX,
-  CUDA MEX, static library, dynamic library, or executable. Currently covers
-  PyTorch ExportedProgram (.pt2) via loadPyTorchExportedProgram; LiteRT support
-  planned.
+  CUDA MEX, static library, dynamic library, or executable — or using the model
+  in Simulink for simulation and code generation. This skill currently documents
+  the PyTorch ExportedProgram (.pt2) workflow via loadPyTorchExportedProgram;
+  LiteRT is already supported by the product (loadLiteRTModel, R2026a+) but
+  detailed guidance has not yet been added to this skill.
   Keywords: PyTorch, torch, .pt2, ExportedProgram, loadPyTorchExportedProgram,
   invoke, codegen, MEX, CUDA, GPU, C, C++, deploy, AI model, deep learning model,
-  LiteRT, TFLite, TensorFlow Lite.
-license: MathWorks BSD-3-Clause
+  LiteRT, TFLite, TensorFlow Lite, Simulink, slbuild, PyTorch ExportedProgram block,
+  MATLAB Function block, dlosslib.
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Generate C/C++/CUDA Code from an AI Model
@@ -29,12 +32,13 @@ load, inspect, write entry-point, generate MEX, verify, then generate production
 - User wants MEX acceleration for an AI model
 - User wants to generate CUDA code or GPU-accelerated MEX from an AI model
 - User wants to deploy an AI model to hardware
+- User wants to use a PyTorch or LiteRT model in Simulink (simulation or code generation)
 - User wants to verify AI model numerics between the source framework and MATLAB
 
 ## When NOT to Use
 
 - **General MATLAB Coder usage** (codegen syntax, config tuning, writing codegen-ready code)
-- **Editable dlnetwork for Deep Learning Toolbox workflows** (quantization, compression, transfer learning) — use `importNetworkFromPyTorch` which returns a `dlnetwork` for PyTorch models
+- **Editable dlnetwork for Deep Learning Toolbox workflows** (quantization, compression, transfer learning) — use `importNetworkFromPyTorch` which returns a `dlnetwork` for PyTorch models. For deployment of an editable `dlnetwork` with model compression (INT8 quantization via `dlquantizer`, pruning, projection) or `exportNetworkToSimulink` workflows — use `matlab-deploy-embedded-ai` (Pattern 1).
 - **Training or fine-tuning** — this skill is for inference code generation only
 
 ## Supported Frameworks
@@ -87,6 +91,10 @@ cfg = coder.gpuConfig("mex");
 codegen -config cfg -args {coder.Constant("model_file"), input} entryPoint
 ```
 
+For CPU MEX SIMD acceleration (`SIMDAcceleration = 'Full'` for AVX2 on
+Intel/AMD), see `references/codegen-performance-options.md`. For the DNN-
+inference-specific MEX AVX2 ceiling, see `references/dnn-codegen-options.md`.
+
 ### 5. Verify MEX Output
 
 Compare MEX output against MATLAB reference using `matlab.unittest` with
@@ -106,6 +114,7 @@ Once MEX is verified, generate production code:
 
 ```matlab
 cfgLib = coder.config("lib");
+cfgLib.TargetLang = "C++";  % set to "C++" for C++ output; default is "C"
 codegen -config cfgLib -args {coder.Constant("model_file"), input} entryPoint
 ```
 
@@ -113,11 +122,33 @@ For DLL: `coder.config("dll")`. For executable: `coder.config("exe")`.
 
 **CUDA variants:** Replace `coder.config` with `coder.gpuConfig`.
 
-### 7. Deploy to Hardware (Optional — requires Embedded Coder)
+**Performance tuning:**
+- Generic knobs (SIMD instruction sets, reduction-loop vectorization,
+  multithreaded loops, MATLAB Coder ↔ Simulink Coder naming duality): see
+  `references/codegen-performance-options.md`.
+- DNN-inference-specific knobs (`DLTargetLibrary` / `DeepLearningConfig` to
+  disable third-party DL libraries, `LargeConstantGeneration` to serialize
+  weights to data files): see `references/dnn-codegen-options.md`.
+
+### 7. Use in Simulink
+
+For Simulink integration, use the dedicated `PyTorch ExportedProgram` block from
+`dlosslib` — set `ModelFilePath` to the `.pt2` file and it auto-detects
+input/output shapes. No entry-point function or `coder.Constant` needed.
+
+Pre/post-processing can be done with Simulink blocks around the dedicated block.
+If you need everything in a single block, use a MATLAB Function block with
+`loadPyTorchExportedProgram` + `invoke` (same pattern as the entry-point, but
+the model path is a string literal — no `coder.Constant`).
+
+Both paths support `slbuild` code generation (requires fixed-step solver + ERT
+or GRT target). See `references/simulink-workflow.md` for full details.
+
+### 8. Deploy to Hardware (Optional — requires Embedded Coder)
 
 For embedded deployment, use the same entry-point function with an Embedded Coder
 configuration. See the `matlab-deploy-embedded-code` skill for ERT config,
-hardware settings, PIL/SIL verification, and target-specific options. 
+hardware settings, PIL/SIL verification, and target-specific options.
 Ask the user to install the skill if it is not installed
 
 ## Key Functions
@@ -149,10 +180,26 @@ Ask the user to install the skill if it is not installed
   PyTorch model but no `.pt2` file yet, or hits `torch.export` `SerializeError` /
   kwarg-mismatch errors. Links to `pytorch-export-patterns.md` (per-source
   templates) and `pytorch-export-gotchas.md` (torch 2.11 serialization fixes).
+- `references/simulink-workflow.md` — Simulink integration: dedicated PyTorch
+  ExportedProgram block (Path A) vs MATLAB Function block (Path B), block mask
+  parameters, code generation config, and key differences from command-line codegen.
+- `references/codegen-performance-options.md` — GENERIC codegen tuning
+  (not AI-specific). SIMD instruction sets (`InstructionSetExtensions` for
+  lib/exe/slbuild, `SIMDAcceleration` for MEX), reduction-loop vectorization
+  (`OptimizeReductions`), OpenMP multi-threading (`EnableOpenMP` MATLAB Coder
+  / `MultiThreadedLoops` Simulink Coder), and the MATLAB Coder ↔ Simulink
+  Coder property naming table.
+- `references/dnn-codegen-options.md` — DNN-INFERENCE-SPECIFIC codegen
+  options: `DLTargetLibrary` / `DeepLearningConfig('none')` for the plain-C
+  DL path, `LargeConstantGeneration` for serializing large DNN weights to
+  data files, and MEX SIMD ceiling in a DNN-inference context. Read this
+  when the generic file's knobs need DNN-specific framing (e.g., "the MEX
+  SIMD cap matters because inference is the target").
 
 ## See Also
 
 - `matlab-deploy-embedded-code` — Embedded Coder configuration, PIL/SIL verification, hardware targets
+- `matlab-deploy-embedded-ai` — `dlnetwork`-based codegen with model compression (quantization, pruning, projection) and `exportNetworkToSimulink` workflows (Pattern 1). Use it when the source is an editable `dlnetwork` in MATLAB rather than a `.pt2` / `.tflite` file.
 
 ----
 

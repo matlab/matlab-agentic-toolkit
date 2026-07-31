@@ -83,11 +83,9 @@ longer needed.
 
 ```matlab
 % Calibration data: MUST be representative of training data (NOT random).
-% Use a subset of the actual training set or validation set.
-calibData = cell(numCalib, 1);
-for i = 1:numCalib
-    calibData{i} = single(XTrain{i});  % Real data, [features x time] layout
-end
+% Pass training or validation data directly. For large datasets (>200
+% observations), subset to speed up the PCA step.
+calibData = XTrain;
 
 % Single-call projection. MiniBatchSize=1 avoids padding across sequences
 % (padding is documented to hurt PCA quality); use SequenceLength="shortest"

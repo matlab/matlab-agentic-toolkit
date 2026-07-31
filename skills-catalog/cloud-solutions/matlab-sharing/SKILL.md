@@ -9,7 +9,7 @@ description: >
   files in MATLAB Online, generate an open-in-MATLAB-Online button or badge,
   or when an AI agent has generated MATLAB code locally and the user wants to
   share it or run it in MATLAB Online.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

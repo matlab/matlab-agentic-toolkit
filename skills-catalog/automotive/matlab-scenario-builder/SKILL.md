@@ -1,7 +1,7 @@
 ---
 name: matlab-scenario-builder
 description: "Generate driving scenes, scenarios, road surfaces, and 3D content from scenariobuilder.* sensor data (GPS, camera, lidar, actor tracks) using Scenario Builder for Automated Driving Toolbox. BUILD, EXPORT, or AUGMENT a virtual scenario/scene/map: ego or actor trajectories, trajectory smoothing, OpenCRG road-surface extraction, 3D asset generation, static-object placement, point-cloud georeferencing + elevation, lane-based ego localization, sensor-fusion tracking, scenario-event extraction (cut-ins, hard brakes, near-misses, ADAS disengagements), or export to RoadRunner, drivingScenario, OpenDRIVE, OpenCRG, OpenSCENARIO, or Unreal Engine. Also: log-to-scenario, scenario harvesting, accident/near-miss reconstruction, SOTIF (ISO 21448) and ISO 26262 scenario coverage, USGS-aerial-lidar augmentation, traffic-sign placement, vision-based vehicle classification for actor assets. NOT for raw-data import or multi-sensor sync/crop/offset/timestamp normalization — route those to matlab-driving-data-importer."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

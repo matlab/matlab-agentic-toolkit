@@ -10,7 +10,7 @@ description: >
   Use when asked to generate test waveforms, create packets with MAC frames,
   configure OFDMA resource units, build trigger-based uplink transmissions,
   target a specific transmit duration, or build multi-packet waveforms.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

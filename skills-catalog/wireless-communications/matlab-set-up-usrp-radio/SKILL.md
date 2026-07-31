@@ -9,7 +9,7 @@ description: >
   configuration, and basebandTransceiver verification. Also use when the user mentions
   USRP setup, radio not found, connection errors, dropped samples, or network
   configuration for SDR hardware.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks

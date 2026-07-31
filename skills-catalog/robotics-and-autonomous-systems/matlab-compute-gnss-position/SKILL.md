@@ -12,7 +12,7 @@ description: >
 metadata:
   author: MathWorks
   version: "1.0"
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 ---
 
 # Multi-Constellation GNSS Positioning

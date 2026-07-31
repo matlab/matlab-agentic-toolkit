@@ -10,7 +10,7 @@ description: >
   PyTorch or ONNX Runtime, and placeholder/custom layer implementation. Applies
   when user mentions any of these functions, file formats, or encounters import
   errors, unsupported operator warnings, 0 learnables, or uninitialized networks.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

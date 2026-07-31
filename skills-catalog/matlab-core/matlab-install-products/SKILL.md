@@ -1,7 +1,7 @@
 ---
 name: matlab-install-products
 description: "Deterministic workflow to download MATLAB Package Manager (mpm) and install MathWorks products from the OS command line with consistent, repeatable behavior. Use when installing MATLAB, Simulink, toolboxes, or support packages via command line, or setting up scripted installations for CI/CD, containers, or fleet provisioning."
-license: "MathWorks BSD-3-Clause"
+license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
   version: "1.3"

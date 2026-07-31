@@ -50,6 +50,8 @@ ch = canChannel("MathWorks", "Virtual 1", 2);
 - Cannot create arrays of CAN channel objects — each must be its own variable
 - Failing to `clear`/`stop` old channel objects locks the hardware
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

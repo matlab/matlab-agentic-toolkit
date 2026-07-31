@@ -1,8 +1,8 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: product-specific
-version: "1.1"
+version: "1.2"
 human-description: Train, evaluate, and export neural networks to Simulink using the recommended APIs. Migrate legacy neural network training code to modern replacements.
 matlab-release: ">=R2024a"
 required-tools:

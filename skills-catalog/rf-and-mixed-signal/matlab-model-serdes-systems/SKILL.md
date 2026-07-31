@@ -9,7 +9,7 @@ description: >
   IBIS-AMI models for Tx, Rx, Redriver, or Retimer by exporting to Simulink and compiling
   .ami/.ibs/.dll/.so files. Covers the full arc from initial design exploration and parameter
   optimization to compliance testing and compiled model validation, including custom datapath blocks for nonstandard equalization.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

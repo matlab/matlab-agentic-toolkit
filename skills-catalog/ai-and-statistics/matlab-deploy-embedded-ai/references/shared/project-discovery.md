@@ -51,7 +51,6 @@ After gathering information, cross-reference with Environment Discovery results:
 **Codegen Gate:**
 - If user wants C code → verify MATLAB Coder is installed
 - If user wants optimized embedded C → verify Embedded Coder (warn if missing)
-- If user wants HDL → verify HDL Coder + Deep Learning HDL Toolbox
 
 **Compression Gate:**
 - If user needs compression → verify Deep Learning Toolbox Model Compression Library

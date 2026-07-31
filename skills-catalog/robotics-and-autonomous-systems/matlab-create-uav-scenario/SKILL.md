@@ -7,7 +7,7 @@ description: >
   uavSensor adaptor pattern for GPS/IMU, and the setup/advance simulation loop.
   Triggers on: uavScenario, UAV simulation, UAV simulator, multirotor simulation,
   quadrotor scenario, terrain import, building import, GPS sensor simulation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

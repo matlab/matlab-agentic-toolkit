@@ -8,7 +8,7 @@ description: >
   ImportError, "Unable to resolve the name 'py.*'"). REQUIRED when
   setting up Python environments for MATLAB, creating virtual
   environments, or installing Python packages for use with MATLAB.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

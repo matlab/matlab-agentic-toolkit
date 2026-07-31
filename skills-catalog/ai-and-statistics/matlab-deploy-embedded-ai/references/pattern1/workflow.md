@@ -42,7 +42,7 @@ MATLAB and Simulink.
 - **Load trained/imported/rebuilt models in Deep Network Designer** for user inspection
 - **Walk the user through the compression-decision question flow** (load `compression-decision.md`) at the start of Phase 5 to choose the right combination of pruning, projection, and quantization based on hardware target, deployment goal, and retraining tolerance
 - **Propose test count** for numerical equivalency tests and get user agreement before running
-- **Open code generation report** when code generation is complete
+- **Ask the user** if they want to open the code generation report after code generation completes
 
 ### NEVER
 - Use banned legacy functions (see top-level SKILL.md)
@@ -116,8 +116,10 @@ Defer to the `matlab-train-network` skill for training guidance.
 
 #### Path B: External Model Import and Native Rebuild
 
-Load [`import-weight-extraction.md`](import-weight-extraction.md).
-- Import PyTorch/ONNX/TensorFlow model
+Use `/matlab-import-external-ai-model` for the import step (handles model
+preparation in Python, import arguments, troubleshooting, and numeric validation).
+
+Then load [`native-rebuild-preparation.md`](native-rebuild-preparation.md).
 - Extract weights from imported network
 
 Then load [`native-rebuild-patterns.md`](native-rebuild-patterns.md).
@@ -196,7 +198,7 @@ Load [`codegen-embedded.md`](codegen-embedded.md).
 - Generate MEX first for desktop validation
 - **Run numerical equivalency tests** comparing MEX/generated code outputs to Simulink and MATLAB compressed model outputs. This validates the full pipeline: original model → MATLAB → compressed → Simulink → C code.
 - Generate C code for target hardware
-- **Open the code generation report** (`web(reportPath)`) so the user can inspect generated code, warnings, and metrics
+- **Ask the user** if they want to open the code generation report to inspect generated code, warnings, and metrics
 - Present deployment summary and checklist
 
 ---

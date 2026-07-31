@@ -35,8 +35,8 @@ end
 #### Step 3: BFS Cluster by Centroid Proximity
 
 ```matlab
-CLUSTER_THRESH = 10;       % meters
-MIN_JUNCTION_LANES = 3;    % discard fragments
+CLUSTER_THRESH = 8;        % meters (8m prevents merging separate intersections)
+MIN_JUNCTION_LANES = 2;    % 2 catches small T-intersections; 3 misses them
 visited = false(1, numel(juncLaneIdx));
 juncClusters = {};
 for k = 1:numel(juncLaneIdx)
@@ -55,6 +55,28 @@ for k = 1:numel(juncLaneIdx)
         juncClusters{end+1} = cluster;
     end
 end
+```
+
+#### Step 3b: Post-Filter by Centroid Distance
+
+Verify each cluster member is within 12m of the cluster centroid. This prevents BFS transitive chaining from merging distant lanes:
+
+```matlab
+filteredClusters = {};
+for c = 1:numel(juncClusters)
+    clIdx = juncClusters{c};
+    centroid = mean(juncCentroids(clIdx, 1:2), 1);
+    keep = [];
+    for idx = clIdx
+        if norm(juncCentroids(idx,1:2) - centroid) < 12
+            keep(end+1) = idx;
+        end
+    end
+    if numel(keep) >= MIN_JUNCTION_LANES
+        filteredClusters{end+1} = keep;
+    end
+end
+juncClusters = filteredClusters;
 ```
 
 #### Step 4: Build Junction Polygon
@@ -93,12 +115,33 @@ Then apply the **endpoint chaining algorithm** from `junctionPolygon.md` to orde
 
 | Parameter | Value | Rationale |
 |-----------|-------|-----------|
-| `CLUSTER_THRESH` | 10m | Separates distinct intersections. 30m merges adjacent. 15m still chains through intermediate lanes. |
-| `MIN_JUNCTION_LANES` | 3 | Minimum lanes to form a junction. Single/pair fragments are discarded. |
+| `CLUSTER_THRESH` | 8m | Separates distinct intersections. 10m can chain nearby T-intersections. 15m merges adjacent. |
+| `MIN_JUNCTION_LANES` | 2 | Minimum lanes to form a junction. Catches small T-intersections with only 2 turn lanes. |
+| Centroid filter | 12m | Post-filter: remove members > 12m from cluster centroid to prevent transitive chaining. |
 
 #### WARNING: Do NOT use union-find for clustering
 
-Union-find with shared-predecessor/successor criteria causes **transitive chaining** that merges distant intersections. Example: 80 lanes spanning 200m × 183m collapsed into one polygon. Always use spatial proximity BFS (10m).
+Union-find with shared-predecessor/successor criteria causes **transitive chaining** that merges distant intersections. Example: 80 lanes spanning 200m × 183m collapsed into one polygon. Always use spatial proximity BFS (8m).
+
+#### Fallback: Uncovered Fan-In/Fan-Out Nodes
+
+After primary clustering, detect topology nodes where multiple lanes converge/diverge but no junction exists:
+
+```matlab
+% Find nodes with (>1 lanes ending) AND (>1 lanes starting) AND no junction coverage
+for each topology node:
+    if numel(endsHere) >= 2 && numel(startsHere) >= 2
+        totalConns = numel(endsHere) + numel(startsHere);
+        if totalConns >= 4 && no involved lane is in junctionLaneIDSet
+            % Create fallback junction from turn_direction lanes at this node
+        end
+    end
+end
+```
+
+#### Adding Non-Turn Lanes to Existing Junctions
+
+Some lanes at junction nodes lack `turn_direction` tags but are clearly junction lanes (short connectors, straight-through at intersections). After primary clustering, manually add these to the closest cluster. This improves polygon coverage and build results.
 
 #### Fallback Topology Method (if no turn_direction tags exist)
 

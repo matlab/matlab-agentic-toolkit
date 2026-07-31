@@ -1,7 +1,7 @@
 ---
 name: matlab-analyze-pcb-pdn
 description: "PDN DC voltage/current analysis, IR drop, design rule checking, and multi-net batch analysis on imported PCB layouts. TRIGGER: user asks about power integrity, PDN analysis, IR drop, voltage distribution, current density, power nets, or design rule checking on a PCB. Invoke BEFORE writing code — the PDN API chain is specialized and non-obvious. SKIP: importing a PCB file (use matlab-read-pcb-layout), EM field/S-parameter extraction (use matlab-analyze-em), material/stackup setup only (use matlab-manage-pcb-material), transmission line design (use matlab-design-pcb-txline)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

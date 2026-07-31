@@ -9,7 +9,7 @@ description: >
   specific camera, and applies Image Processing Toolbox enhancement functions. Use when
   a user wants to improve camera image quality, troubleshoot dark/blurry/noisy/grainy/
   overexposed/washed out/color cast images, or optimize camera settings.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

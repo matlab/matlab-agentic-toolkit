@@ -1,7 +1,7 @@
 ---
 name: matlab-review-code
 description: Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. Uses check_matlab_code and matlab_coding_guidelines. Use when reviewing code, checking style, finding code smells, assessing quality, or preparing code for handoff or publication.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

@@ -68,6 +68,8 @@ configBusSpeed(ch, 20, 5, 1, 2, 1, 2, 1, 3, 1);
 - All nodes on the bus must agree on speed settings
 - SJW controls resynchronization width — keeps clock drift between nodes in check
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

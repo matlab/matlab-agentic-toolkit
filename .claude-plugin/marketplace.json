@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "aerospace",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "description": "Aerospace Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -23,7 +23,7 @@
     },
     {
       "name": "ai-and-statistics",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Deep Learning Toolbox and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -42,7 +42,7 @@
     },
     {
       "name": "automotive",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "description": "Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder.",
       "author": {
         "name": "MathWorks"
@@ -67,7 +67,7 @@
     },
     {
       "name": "cloud-solutions",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "MATLAB Drive.",
       "author": {
         "name": "MathWorks"
@@ -84,15 +84,20 @@
     },
     {
       "name": "code-generation",
-      "version": "0.2.0",
-      "description": "Fixed-Point Designer.",
+      "version": "0.3.0",
+      "description": "Embedded Coder, Fixed-Point Designer, GPU Coder, and MATLAB Coder.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
         "code-generation",
-        "fixed-point"
+        "fixed-point",
+        "embedded-coder",
+        "gpu-coder",
+        "matlab-coder",
+        "ai-model",
+        "pytorch-code-generation"
       ],
       "source": "./skills-catalog/code-generation",
       "category": "development",
@@ -101,7 +106,7 @@
     },
     {
       "name": "computational-biology",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "description": "SimBiology.",
       "author": {
         "name": "MathWorks"
@@ -118,15 +123,17 @@
     },
     {
       "name": "computational-finance",
-      "version": "0.1.1",
-      "description": "Datafeed Toolbox.",
+      "version": "0.2.0",
+      "description": "Datafeed Toolbox and Spreadsheet Link.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
         "finance",
-        "datafeed"
+        "datafeed",
+        "spreadsheet-link",
+        "excel"
       ],
       "source": "./skills-catalog/computational-finance",
       "category": "development",
@@ -134,8 +141,25 @@
       "skills": "./"
     },
     {
+      "name": "control-systems",
+      "version": "0.1.0",
+      "description": "Predictive Maintenance Toolbox.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "predictive-maintenance",
+        "condition-monitoring"
+      ],
+      "source": "./skills-catalog/control-systems",
+      "category": "development",
+      "strict": false,
+      "skills": "./"
+    },
+    {
       "name": "image-processing-and-computer-vision",
-      "version": "0.6.0",
+      "version": "0.7.0",
       "description": "Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -154,13 +178,14 @@
     },
     {
       "name": "math-and-optimization",
-      "version": "0.2.0",
-      "description": "PDE Toolbox.",
+      "version": "0.2.1",
+      "description": "Optimization Toolbox and PDE Toolbox.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
+        "optimization",
         "pde",
         "finite-element"
       ],
@@ -171,7 +196,7 @@
     },
     {
       "name": "matlab-app-building",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -189,7 +214,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -208,8 +233,8 @@
     },
     {
       "name": "matlab-data-import-and-analysis",
-      "version": "0.2.0",
-      "description": "Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
+      "version": "0.3.0",
+      "description": "Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
       "author": {
         "name": "MathWorks"
       },
@@ -224,8 +249,26 @@
       "skills": "./"
     },
     {
-      "name": "matlab-external-language-interfaces",
+      "name": "matlab-environment-and-settings",
       "version": "0.1.0",
+      "description": "Diff MATLAB settings between releases and migrate startup scripts to correct setting paths.",
+      "author": {
+        "name": "MathWorks"
+      },
+      "keywords": [
+        "matlab",
+        "environment",
+        "settings",
+        "configuration"
+      ],
+      "source": "./skills-catalog/matlab-environment-and-settings",
+      "category": "development",
+      "strict": false,
+      "skills": "./"
+    },
+    {
+      "name": "matlab-external-language-interfaces",
+      "version": "0.1.1",
       "description": "Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API.",
       "author": {
         "name": "MathWorks"
@@ -245,7 +288,7 @@
     },
     {
       "name": "matlab-programming",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Write robust MATLAB functions with validated inputs.",
       "author": {
         "name": "MathWorks"
@@ -262,7 +305,7 @@
     },
     {
       "name": "matlab-software-development",
-      "version": "0.5.0",
+      "version": "0.5.1",
       "description": "Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans.",
       "author": {
         "name": "MathWorks"
@@ -283,7 +326,7 @@
     },
     {
       "name": "parallel-computing",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Parallel Computing Toolbox and MATLAB Parallel Server.",
       "author": {
         "name": "MathWorks"
@@ -301,7 +344,7 @@
     },
     {
       "name": "radar",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Phased Array System Toolbox, Sensor Fusion and Tracking Toolbox, and Mapping Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -318,15 +361,16 @@
     },
     {
       "name": "reporting-and-database-access",
-      "version": "0.4.0",
-      "description": "Database Toolbox.",
+      "version": "0.4.1",
+      "description": "Database Toolbox, MATLAB Report Generator, and Simulink Report Generator.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
         "database",
-        "reporting"
+        "reporting",
+        "report-generator"
       ],
       "source": "./skills-catalog/reporting-and-database-access",
       "category": "development",
@@ -335,7 +379,7 @@
     },
     {
       "name": "rf-and-mixed-signal",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -352,7 +396,7 @@
     },
     {
       "name": "robotics-and-autonomous-systems",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -371,7 +415,7 @@
     },
     {
       "name": "signal-processing",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -390,7 +434,7 @@
     },
     {
       "name": "test-and-measurement",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.",
       "author": {
         "name": "MathWorks"
@@ -420,7 +464,7 @@
     },
     {
       "name": "wireless-communications",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, and Wireless Testbench.",
       "author": {
         "name": "MathWorks"

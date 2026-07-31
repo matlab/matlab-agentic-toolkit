@@ -5,7 +5,7 @@ description: >
   Covers Bloomberg (market data via bloomberg/blp/bloombergHypermedia), FRED (Federal Reserve
   economic data via fredrs), and Haver Analytics (economic data via haver/haverdirect/haverview).
   Use when connecting to any of these data providers from MATLAB.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

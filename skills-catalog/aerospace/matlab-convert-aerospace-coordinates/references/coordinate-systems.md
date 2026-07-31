@@ -81,6 +81,25 @@
 - **Z-axis:** Points down
 - **Use for:** Short-range simulations, autopilot design, local navigation
 
+### Keplerian Orbital Elements
+
+- **Not a coordinate frame** — a parameterization of an orbit's shape and orientation
+- **Six elements:** semimajor axis (a), eccentricity (ecc), inclination (incl), RAAN, argument of periapsis (argp), true anomaly (nu)
+- **Equivalent to ECI state vector** — `[rijk, vijk]` ↔ `[a, ecc, incl, RAAN, argp, nu]`
+- **Angles in degrees** for `ijk2keplerian` / `keplerian2ijk`
+- **Position/velocity in meters and m/s** (3×1 column vectors)
+- **CentralBody name-value:** supports Earth (default), Moon, Mars, Jupiter, etc.
+- **Special cases:** circular orbits (ecc≈0) use `truelon` or `arglat`; equatorial orbits (incl≈0) use `lonper`
+- **Use for:** Orbit characterization, mission planning, TLE interpretation
+
+### Sidereal Time
+
+- **Greenwich Mean Sidereal Time (GMST):** angle between vernal equinox and Greenwich meridian (degrees)
+- **Greenwich Apparent Sidereal Time (GAST):** GMST corrected for nutation (seconds)
+- **Input:** UTC as Julian date (use `juliandate` to convert)
+- **Optional inputs:** dUT1 (UT1-UTC offset, seconds), dAT (TAI-UTC leap seconds)
+- **Use for:** ECI↔ECEF transformations, ground track computation, satellite visibility
+
 ## Decision Guide: Choosing the Right Frame
 
 | I want to... | Use this frame | Key function |
@@ -88,6 +107,9 @@
 | Express a GPS position | LLA | — |
 | Compute distance between two Earth positions | ECEF | `lla2ecef` |
 | Track a satellite orbit | ECI | `lla2eci`, `ecef2eci` |
+| Characterize an orbit from state vector | Keplerian | `ijk2keplerian` |
+| Compute position from orbital elements | ECI | `keplerian2ijk` |
+| Determine Earth orientation at a time | — | `siderealTime` |
 | Express local velocity/heading | NED | `dcmecef2ned` |
 | Apply aerodynamic forces | Wind | `dcmbody2wind` |
 | Analyze longitudinal stability | Stability | `dcmbody2stability` |

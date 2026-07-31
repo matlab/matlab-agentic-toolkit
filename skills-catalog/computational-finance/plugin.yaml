@@ -1,6 +1,8 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Datafeed Toolbox.
+description: Datafeed Toolbox and Spreadsheet Link.
 keywords:
   - matlab
   - finance
   - datafeed
+  - spreadsheet-link
+  - excel

@@ -1,15 +1,17 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
-human-description: Build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off.
+version: "1.1"
+human-description: Condition raw signals (fill gaps, detrend, deoutlier, denoise, resample/align) and build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off.
 matlab-release: ">=R2024a"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Signal Processing Toolbox
+optional-products:
+  - Wavelet Toolbox
 required-tools:
   - evaluate_matlab_code
   - check_matlab_code
   - run_matlab_file
 required-skills: []
-required-products:
-  - Signal Processing Toolbox
-toolkit: matlab-agentic-toolkit

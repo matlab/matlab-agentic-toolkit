@@ -1,8 +1,8 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Generate C/C++ or CUDA code from PyTorch ExportedProgram models using loadPyTorchExportedProgram and codegen.
 matlab-release: ">=R2026a"
 required-tools: []

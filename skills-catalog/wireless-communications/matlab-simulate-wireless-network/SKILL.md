@@ -9,7 +9,7 @@ description: >
   files with pcapWriter or technology-specific PCAP writers,
   registering event callbacks on wireless nodes, accessing event data fields,
   or combining multiple capture/visualization tools in a simulation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks

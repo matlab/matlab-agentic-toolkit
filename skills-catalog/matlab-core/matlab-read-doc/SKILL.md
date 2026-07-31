@@ -2,7 +2,7 @@
 name: matlab-read-doc
 keywords: docs documentation mathworks webread fetch lookup api reference function
 description: "Guides the agent to reference official MathWorks Documentation and Help. Determine correct function syntax and workflows from user guides when deeper context is needed. Minimize iterations and repetitive trial and error.  Use this skill to: Identify correct syntax and configuration details. Retrieve relevant, version-specific (or release-specific) information from official documentation. Consult user guides when conceptual or workflow context is needed. Apply best practices."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-publish-toolbox
 description: "Version-stamp, re-package, and distribute the .mltbx toolbox. Sets version in ToolboxOptions, re-runs packageToolbox, and guides distribution. Requires explicit user confirmation."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

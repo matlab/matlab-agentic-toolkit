@@ -2,6 +2,10 @@
 
 Maps standard Lanelet2 `sign_type` codes to RoadRunner asset paths.
 
+**CRITICAL:** All sign assets use `.svg_rrx` extension (NOT `.svg`). The old `Sign_<code>.svg` naming is obsolete. Use descriptive naming: `<Description>_<Region>.svg_rrx`.
+
+**Region detection:** Determine the region from `rrMap.GeoReference` using the bounding-box algorithm in `roadrunner-asset-mapping` skill's `references/signs.md`. Apply region-appropriate assets.
+
 ## Function Pattern
 
 ```matlab
@@ -16,32 +20,36 @@ function [assetPath, defaultDim, objectType] = mapSignCode(signCode)
 |---|---|---|---|
 | Contains `traffic_light` or `signal` | `Assets/Props/Signals/Signal_3Light_Post01.fbx` | [0.26 0.32 0.58] | `signal` |
 
-### US MUTCD Signs
+### US Signs
 | Code(s) | Asset Path | Type |
 |---|---|---|
-| `us_r1_1`, `stop`, `us_stop` | `Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg` | `sign` |
-| `us_r1_2`, `yield`, `us_yield` | `Assets/Signs/US/Regulatory Signs/Sign_R1-2.svg` | `sign` |
-| `us_r2_1`, or `us_` + contains `speed` | `Assets/Signs/US/Regulatory Signs/Sign_R2-1.svg` | `sign` |
-| `us_r3_1`, `us_no_right_turn` | `Assets/Signs/US/Regulatory Signs/Sign_R3-1.svg` | `sign` |
-| `us_r3_2`, `us_no_left_turn` | `Assets/Signs/US/Regulatory Signs/Sign_R3-2.svg` | `sign` |
-| `us_r3_4`, `us_no_u_turn` | `Assets/Signs/US/Regulatory Signs/Sign_R3-4.svg` | `sign` |
-| `us_r6_1`, `us_one_way` | `Assets/Signs/US/Regulatory Signs/Sign_R6-1.svg` | `sign` |
-| `us_r5_1`, `us_do_not_enter` | `Assets/Signs/US/Regulatory Signs/Sign_R5-1.svg` | `sign` |
+| `us_r1_1`, `stop`, `us_stop` | `Assets/Signs/US/Stop_US.svg_rrx` | `sign` |
+| `us_r1_2`, `yield`, `us_yield` | `Assets/Signs/US/Yield_US.svg_rrx` | `sign` |
+| `us_r2_1`, or `us_` + contains `speed` | `Assets/Signs/US/Regulatory Signs/MaxSpeedLimit_<N>_US.svg_rrx` | `sign` |
+| `us_r3_4`, `us_no_u_turn` | `Assets/Signs/US/NoUTurns_US.svg_rrx` | `sign` |
+| Unresolved US code | `Assets/Signs/US/White_Blank_US.svg_rrx` | `sign` |
 
 ### German StVO Signs
-| Code pattern | Asset Path (fallback) | Type |
+| Code pattern | Asset Path | Type |
 |---|---|---|
-| `de206` or `de_stop` | `Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg` | `sign` |
-| `de205` or `de_yield` | `Assets/Signs/US/Regulatory Signs/Sign_R1-2.svg` | `sign` |
-| starts with `de274` | `Assets/Signs/US/Regulatory Signs/Sign_R2-1.svg` | `sign` |
-| starts with `de267` | `Assets/Signs/US/Regulatory Signs/Sign_R5-1.svg` | `sign` |
+| `de206` or `de_stop` | `Assets/Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx` | `sign` |
+| `de205` or `de_yield` | `Assets/Signs/Germany/Regulatory Signs/Yield_DE.svg_rrx` | `sign` |
+| starts with `de274` + value N | `Assets/Signs/Germany/Regulatory Signs/MaxSpeedLimit_<N>_DE.svg_rrx` | `sign` |
+| Unresolved German code | `Assets/Signs/Germany/Warning Signs/Danger_DE.svg_rrx` | `sign` |
 
-### Generic / Autoware Conventions (fallback)
-| Code contains | Asset Path | Type |
+### Japanese Signs
+| Code pattern | Asset Path | Type |
 |---|---|---|
-| `stop` or `stop_sign` | `Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg` | `sign` |
-| `yield` or `give_way` | `Assets/Signs/US/Regulatory Signs/Sign_R1-2.svg` | `sign` |
-| `speed` | `Assets/Signs/US/Regulatory Signs/Sign_R2-1.svg` | `sign` |
+| `jp_stop`, `stop` (Japan region) | `Assets/Signs/Japan/Regulatory Signs/Stop_JP_01.svg_rrx` | `sign` |
+| `jp_speed` or contains `speed` (Japan) | `Assets/Signs/Japan/Regulatory Signs/MaxSpeedLimit_<N>_JP.svg_rrx` | `sign` |
+| Unresolved Japanese code | `Assets/Signs/Japan/Regulatory Signs/SlowDown_JP_01.svg_rrx` | `sign` |
+
+### Generic / Autoware Conventions (fallback — uses region detection)
+| Code contains | Asset Path (region-resolved) | Type |
+|---|---|---|
+| `stop` or `stop_sign` | Region-appropriate stop sign (see above) | `sign` |
+| `yield` or `give_way` | Region-appropriate yield sign (see above) | `sign` |
+| `speed` + value N | Region-appropriate `MaxSpeedLimit_<N>_<CC>.svg_rrx` | `sign` |
 
 ### Defaults
 - Default sign dimensions: `[0 0.50 0.50]` (flat, 0.5m × 0.5m)

@@ -1,7 +1,7 @@
 ---
 name: matlab-use-machine-learning-apps
 description: "Use when the user wants to train, compare, or export machine learning models using Classification Learner or Regression Learner — including opening the app, loading data, training models, evaluating metrics, comparing results, visualizing plots, testing on held-out data, exploring model interpretability, and exporting trained models. Programmatic access to Classification Learner and Regression Learner apps via AppController."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

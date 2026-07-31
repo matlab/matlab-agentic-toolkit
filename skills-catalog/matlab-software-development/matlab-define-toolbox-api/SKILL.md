@@ -1,7 +1,7 @@
 ---
 name: matlab-define-toolbox-api
 description: "Scan a folder, triage files into include/exclude, identify the public API, and produce a toolboxSpecification.m Interface Spec — all in one pass. Use when turning loose code into a toolbox."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

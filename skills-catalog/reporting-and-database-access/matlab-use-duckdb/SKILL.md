@@ -1,7 +1,7 @@
 ---
 name: matlab-use-duckdb
 description: "Use DuckDB from MATLAB via Database Toolbox (R2026a+) as a non-math operations engine on large tabular files (CSV/Parquet/JSON) and as a zero-config embedded database. Use when connecting to DuckDB, querying CSV, Parquet, and JSON files directly with SQL, reducing or profiling large data before MATLAB analysis, creating portable development databases, or installing DuckDB extensions. Triggers on: DuckDB, duckdb(), large CSV/Parquet/JSON, file too large for readtable, filter/aggregate at source, deduplicate, reduce before analysis, profile large file, persistent file import, analytical engine, SQL on CSV, SQL on Parquet, SQL on JSON, query CSV with SQL, query Parquet with SQL, run SQL on files, SQL queries on files, query files directly, SQL without database, in-process SQL."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.2"

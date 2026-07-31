@@ -8,12 +8,15 @@ description: >
   to process multiple tabular files. Covers the decision between datastore +
   tall, datastore + transform, and parallel execution. Also use when a user or
   agent has working in-memory code (readtable, parquetread) that runs out of
-  memory and needs a migration path. Do NOT use for MAT, XML, JSON, HTML files
-  or Word documents.
-license: MathWorks BSD-3-Clause
+  memory and needs a migration path. Also covers building custom datastore
+  classes for proprietary or non-standard formats — use when the task requires
+  subclassing matlab.io.Datastore, implementing a custom reader, building an
+  extensible datastore, or integrating a new file format with tall arrays or
+  parallel computing. Do NOT use for MAT files (use matfile instead).
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Choose Big Data Solution
@@ -32,15 +35,15 @@ options.
 - User or agent has multiple tabular files to process independently (per-file)
 - User or agent asks how to scale up an existing workflow on tabular file data
 - User or agent asks about datastores, tall arrays, or mapreduce
+- User or agent needs to build a custom datastore class for a proprietary or non-standard format
+- User or agent has large XML, JSON, HTML, or Word document files — `readtable` supports these formats but the built-in datastores do not. Scaling these requires a custom datastore (see "Formats Without a Built-in Datastore" and "Custom Datastores" sections below)
 
 ## When NOT to Use
 
-- Single file that fits in memory (file-size-to-RAM ratio < 0.5) — see Pre-Flight Check
+- Single file that fits in memory (file-size-to-RAM ratio < 0.5) — see Pre-Flight Check and `matlab-import-export-data` skill
 - User or agent is working with MAT files — `matfile` provides partial I/O for large `.mat` files, different workflow
 - User or agent is working with databases (SQL, ODBC) — use Database Toolbox. See the `matlab-read-database` and `matlab-use-duckdb` skills in the `reporting-and-database-access` category
 - User or agent needs GPU acceleration — different domain
-- User or agent is building a custom datastore class — see `doc matlab.io.Datastore`
-- User or agent has large XML, JSON, HTML, or Word document files — `readtable` supports these formats but the datastores covered by this skill do not. Scaling these requires a custom datastore (see "Unsupported Formats" section below)
 - Deep learning training workflows — datastore is correct for data loading, but use `minibatchqueue` for batching (not tall or transform)
 
 ## Pre-Flight Check
@@ -78,12 +81,14 @@ Is the data described as "large" or causing OOM?
 │   │               Parquet            → parquetDatastore
 │   │               Excel (.xlsx/.xls) → spreadsheetDatastore
 │   │               MDF (.mf4/.mdf)    → mdfDatastore (requires Vehicle Network Toolbox)
+│   │               Other formats      → Custom Datastore
 │   │
 │   └── Is the goal to process each unit INDEPENDENTLY?
 │       │
 │       ├── One read = one FILE
 │       │     CSV/delimited text → tabularTextDatastore
 │       │     Excel (.xlsx/.xls) → spreadsheetDatastore
+│       │     Other formats      → Custom Datastore or fileDatastore
 │       │
 │       └── One read = one ROW GROUP
 │             Parquet → parquetDatastore
@@ -127,8 +132,9 @@ ds = tabularTextDatastore("data/*.csv");
 tt = tall(ds);
 
 % For example, compute statistics with the tall array and gather results.
-% Tall handles chunking automatically
-result = groupsummary(tt, "GroupVar", {"mean", "std", "min", "max"});
+% Tall handles chunking automatically. Specify DataVars to avoid errors
+% on non-numeric columns.
+result = groupsummary(tt, "GroupVar", {"mean", "std"}, "NumericVar");
 result = gather(result);
 ```
 
@@ -138,9 +144,17 @@ result = gather(result);
 
 **DuckDB alternative (R2026a+):** When the goal is to filter, aggregate,
 deduplicate, or sample a large file down to a small in-memory result, a
-single DuckDB query may be faster than datastore + tall for these
-operations. DuckDB queries CSV/Parquet/JSON files directly without loading
-them. Requires Database Toolbox. See the `matlab-use-duckdb` skill in the
+single DuckDB query may be faster than datastore + tall. DuckDB queries
+CSV/Parquet/JSON files directly without loading them into memory. Requires
+Database Toolbox.
+
+```matlab
+conn = duckdb();
+result = fetch(conn, "SELECT * FROM read_csv_auto('large.csv') WHERE Region = 'West'");
+close(conn);
+```
+
+For complex DuckDB workflows, see the `matlab-use-duckdb` skill in the
 `reporting-and-database-access` category.
 
 **Migrating from readtable (OOM on large files):**
@@ -208,6 +222,7 @@ so each `read` returns exactly one sheet's data.
   need to return the same number of rows as its input (e.g., computing the mean
   of each variable produces a single row per read)
 - `readall` on the transformed datastore collects all per-file results
+- Use `"omitmissing"` for missing-data flags (R2023a+). On R2022b and earlier, use `"omitnan"` instead.
 
 **Do NOT use tall arrays for per-file processing.** Tall arrays treat all files
 as one continuous dataset — they have no concept of file boundaries.
@@ -308,10 +323,10 @@ Parallel Server installed and licensed.
 
 | Function | Purpose | When to Use |
 |----------|---------|-------------|
-| `tabularTextDatastore` | Chunked access to CSV/text files | Large CSV/text files |
-| `parquetDatastore` | Chunked access to Parquet files | Large Parquet files |
-| `spreadsheetDatastore` | Chunked access to Excel files | Large .xlsx/.xls files |
-| `mdfDatastore` | Chunked access to MDF files | Large .mf4/.mdf files (requires Vehicle Network Toolbox) |
+| `tabularTextDatastore` | Multiple reads per file for CSV/text | Large CSV/text files |
+| `parquetDatastore` | Multiple reads per file for Parquet | Large Parquet files |
+| `spreadsheetDatastore` | Multiple reads per file for Excel | Large .xlsx/.xls files |
+| `mdfDatastore` | Multiple reads per file for MDF | Large .mf4/.mdf files (requires Vehicle Network Toolbox) |
 | `tall` | Lazy evaluation over a datastore | Continuous dataset processing |
 | `gather` | Execute deferred tall computations | Collect results into memory |
 | `transform` | Apply function to each datastore read | Per-file (text) or per-row-group (Parquet) processing |
@@ -319,9 +334,9 @@ Parallel Server installed and licensed.
 | `parpool` | Open parallel worker pool | Speed up tall computations |
 | `mapreducer` | Connect to Hadoop/Spark cluster | Hadoop/Spark environments only |
 
-## Unsupported Formats (JSON, XML, HTML, Word)
+## Formats Without a Built-in Datastore
 
-The datastores covered by this skill (`tabularTextDatastore`, `parquetDatastore`,
+Built-in datastores (such as `tabularTextDatastore`, `parquetDatastore`,
 `spreadsheetDatastore`, `mdfDatastore`) do NOT support JSON, XML, HTML, or Word
 documents. If the user or agent has an OOM error with `readtable` on one of these formats,
 do NOT recommend converting to Parquet/CSV first — `readtable` itself would OOM
@@ -332,15 +347,43 @@ during the conversion, creating a circular dependency.
 in `fileDatastore` does not help because the read function still loads the
 entire file into memory.
 
-Instead, recommend building a **custom datastore** with a chunked read function
-that processes the file in manageable pieces without loading it entirely into
-memory (e.g., reading N lines of XML at a time, or parsing JSON arrays
-incrementally). A `fileDatastore` with such a chunked read function is one
-option; implementing the full `matlab.io.Datastore` interface is another. Point
-the user to `doc matlab.io.Datastore` for the interface specification.
+Instead, recommend building a **custom datastore** that performs multiple
+reads per file (chunked reading), processing it in manageable pieces without
+loading it entirely into memory (e.g., reading N lines of XML at a time, or
+parsing JSON arrays incrementally). A `fileDatastore` with such a read
+function is one option; implementing the full `matlab.io.Datastore` interface
+is another. See the "Custom Datastores" section below for implementation guidance.
 
 A custom datastore can then be used with `tall` or `transform` just like the
 built-in datastores.
+
+## Custom Datastores
+
+If a file format is not supported by one of the built-in datastores, build a
+custom datastore by subclassing `matlab.io.Datastore`. This applies to:
+
+- Proprietary binary formats
+- Non-standard text formats (custom log files, sensor dumps)
+- Formats requiring multiple reads per file (large XML, JSON, HTML)
+- Any format needing custom iteration, partitioning, or stateful reads
+
+**Before building a custom datastore**, check whether `fileDatastore` with a
+custom `ReadFcn` is sufficient (one file = one read, each file fits in memory,
+no state needed). Set `UniformRead=true` at construction so `readall` returns
+a concatenated table (read-only after construction). For partial reads within
+a file, `fileDatastore` with `ReadMode="partialfile"` supports chunked
+iteration (see `references/custom-datastore/implementation.md` for the
+required 3-output ReadFcn signature). Only build a full custom datastore class
+when those simpler patterns are insufficient.
+
+**For full implementation guidance**, read `references/custom-datastore/implementation.md`.
+It covers:
+- Decision flowchart (fileDatastore vs custom class)
+- Requirement gathering (mixins, FileSet vs BlockedFileSet)
+- Complete code patterns (FileSet and BlockedFileSet templates)
+- Common mistakes and conventions
+- Testing guidelines (`references/custom-datastore/testing-guidelines.md`)
+- Mixin API reference (`references/custom-datastore/mixin-decision-tree.md`)
 
 ----
 

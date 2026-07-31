@@ -6,7 +6,7 @@ description: >
   or hyperparameters, asks to compare configurations, or describes a problem suitable for experimentation.
   DO NOT TRIGGER when: user is debugging an existing experiment, wants to run/resume trials,
   or already has a working experiment set up.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

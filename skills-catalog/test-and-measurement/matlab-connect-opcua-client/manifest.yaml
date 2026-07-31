@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
 version: "2.0"
 human-description: Discover OPC UA servers and create secure client connections in MATLAB.

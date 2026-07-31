@@ -1,7 +1,7 @@
 ---
 name: matlab-design-pcb-passive
 description: "Spiral inductors, interdigital capacitors, baluns, resonators, phase shifters for impedance matching, DC blocking, and bias tees. TRIGGER: user asks to design or create a spiral inductor, interdigital capacitor, balun, resonator, phase shifter, or other passive RF component. Invoke BEFORE writing code — class names and property patterns are non-obvious. SKIP: filter design (use matlab-design-pcb-filter), coupler/splitter design (use matlab-design-pcb-coupler), transmission line design (use matlab-design-pcb-txline), EM analysis (use matlab-analyze-em), material setup only (use matlab-manage-pcb-material)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

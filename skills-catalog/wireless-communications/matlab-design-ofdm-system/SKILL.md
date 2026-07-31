@@ -1,7 +1,7 @@
 ---
 name: matlab-design-ofdm-system
 description: "Read BEFORE writing any code that builds or simulates OFDM systems. The default MATLAB patterns for OFDM (e.g., direct ifft/fft, awgn with 0 dBW power, missing symOffset) produce subtly incorrect results — always use ofdmmod/ofdmdemod instead of direct IFFT/FFT. This skill specifies the correct calling conventions for ofdmmod, ofdmdemod, ofdmChannelResponse, ofdmEqualize, and critical anti-patterns that must be avoided. Use when building OFDM transmitters or receivers, allocating subcarriers and guard bands, inserting pilots, computing SNR for OFDM, configuring fading channels (Rayleigh/Rician), estimating and equalizing channels, implementing timing and frequency synchronization, adding LDPC coding, designing resource grids, or setting up OFDM link simulations."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

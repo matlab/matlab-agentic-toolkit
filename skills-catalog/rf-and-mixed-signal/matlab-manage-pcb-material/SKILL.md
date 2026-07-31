@@ -1,7 +1,7 @@
 ---
 name: matlab-manage-pcb-material
 description: "Dielectric substrates, metal conductors, multi-layer stackups, and loss models (FR4, Rogers, Teflon) for RF PCB simulation. TRIGGER: user asks to set up a substrate, define dielectric properties, create a stackup, select a PCB material (FR4, Rogers, Teflon, etc.), or configure metal conductors. Invoke BEFORE writing dielectric() or metal() code — the API for named vs custom materials differs significantly. SKIP: PCB layout assembly (use matlab-assemble-pcb-layout), transmission line design (use matlab-design-pcb-txline), EM analysis (use matlab-analyze-em), importing a PCB file (use matlab-read-pcb-layout)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

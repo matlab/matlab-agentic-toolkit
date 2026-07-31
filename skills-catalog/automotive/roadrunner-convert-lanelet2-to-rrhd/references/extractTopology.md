@@ -6,47 +6,80 @@ Determines predecessor/successor relationships between lanelets using boundary e
 
 Two lanelets are sequential if their boundary ways share endpoint nodes. This captures ~96% of lane connectivity including intersection connections that proximity methods miss.
 
-**Critical: Account for opposing boundary directions.** Left and right boundaries of a lanelet may run in opposite directions (common at intersections). The "last node" of a reversed boundary is at the lane START, not end.
+**Critical: Account for opposing boundary directions.** Left and right boundaries of a lanelet may run in opposite directions (common in bidirectional roads where a center boundary is shared between opposing lanes). The "last node" of a reversed boundary is at the lane START, not end.
 
-### Detecting Opposing Boundaries
+### Detecting Backward-Right Boundaries
+
+Use the dot product of left and right boundary directions with a threshold of -0.3 (not 0):
 
 ```matlab
-leftGeom = geom(leftWayID);
-rightGeom = geom(rightWayID);
-leftDir = leftGeom(end,:) - leftGeom(1,:);
-rightDir = rightGeom(end,:) - rightGeom(1,:);
-isRightReversed = dot(leftDir, rightDir) < 0;
+lPts = geomMap(ll.leftWayID);
+rPts = geomMap(ll.rightWayID);
+lDir = lPts(end,:) - lPts(1,:);
+rDir = rPts(end,:) - rPts(1,:);
+dp = dot(lDir(1:2)/(norm(lDir(1:2))+1e-10), rDir(1:2)/(norm(rDir(1:2))+1e-10));
+isRightBackward = (dp < -0.3);
 ```
 
-### Computing Effective Start/End Nodes
-
-Use left boundary as canonical direction reference:
+When `dp >= -0.3`, boundaries go in the same direction (normal case). When `dp < -0.3`, use **proximity** to determine which direction the right boundary travels relative to the lane:
 
 ```matlab
-% Left boundary: always canonical
-effectiveStartLeft = wayFirstNode(leftWayID);
-effectiveEndLeft = wayLastNode(leftWayID);
-
-% Right boundary: flip if opposing
-if isRightReversed
-    effectiveStartRight = wayLastNode(rightWayID);   % last = lane start
-    effectiveEndRight = wayFirstNode(rightWayID);    % first = lane end
+if dp >= -0.3
+    % Normal case: right boundary goes in travel direction
+    rightStartNode = rightWay.nodeRefs{1};
+    rightEndNode = rightWay.nodeRefs{end};
 else
-    effectiveStartRight = wayFirstNode(rightWayID);
-    effectiveEndRight = wayLastNode(rightWayID);
+    % Opposing boundaries: check proximity to determine travel direction
+    d_ls_re = norm(lPts(1,1:2) - rPts(end,1:2));  % left start to right end
+    d_ls_rs = norm(lPts(1,1:2) - rPts(1,1:2));    % left start to right start
+    if d_ls_re < d_ls_rs
+        % Right boundary is BACKWARD: effective start = last node, end = first
+        rightStartNode = rightWay.nodeRefs{end};
+        rightEndNode = rightWay.nodeRefs{1};
+    else
+        rightStartNode = rightWay.nodeRefs{1};
+        rightEndNode = rightWay.nodeRefs{end};
+    end
 end
 ```
 
-### Connection Logic
+### Building Endpoint Maps
+
+Build `endToLanelet` and `startToLanelet` maps using effective right boundary endpoints:
 
 ```matlab
-% A → B if A's effective end matches B's effective start (either side)
-if strcmp(effectiveEndLeft_A, effectiveStartLeft_B) || ...
-   strcmp(effectiveEndRight_A, effectiveStartRight_B)
-    topo(A).successors(end+1) = lanelets(B).id;
-    topo(B).predecessors(end+1) = lanelets(A).id;
+endToLanelet = containers.Map('KeyType','char','ValueType','any');
+startToLanelet = containers.Map('KeyType','char','ValueType','any');
+% For each lanelet: add to endToLanelet(rightEndNode) and startToLanelet(rightStartNode)
+```
+
+### Opposing-Direction Filter (MANDATORY)
+
+After connecting lanes via shared endpoint nodes, filter out false connections between opposing-direction lanes. Use **EFFECTIVE travel direction** (not raw right boundary direction):
+
+```matlab
+% Compute effective travel direction for predecessor
+predDpLR = dot(predLDir(1:2)/norm(...), predRDir(1:2)/norm(...));
+if predDpLR >= -0.3
+    predTravelDir = predRDir(1:2);      % normal: right = travel
+else
+    predTravelDir = -predRDir(1:2);     % backward right: reverse
+end
+
+% Same for successor...
+dpTravel = dot(predTravelDir/norm(...), succTravelDir/norm(...));
+if dpTravel < -0.3
+    continue;  % Skip opposing-direction connection
 end
 ```
+
+**Why effective direction?** For backward-right lanes, the raw right boundary direction is OPPOSITE to travel. Using it directly in the filter would incorrectly flag valid same-direction connections as "opposing."
+
+### Left-Gap Filtering (MANDATORY — removes false successors)
+
+After building pred/succ connections, apply the left-gap topology filter to remove false connections caused by shared boundary endpoint nodes. See `roadrunner-rrhd-authoring` skill's [references/leftGapFilter.md](../../roadrunner-rrhd-authoring/references/leftGapFilter.md) for the full algorithm and code.
+
+**Summary:** For each lane with multiple successors/predecessors, compute left boundary gap. If any connection has gap < 3m and others > 3m, remove the far ones. Applies bidirectionally. Typically removes ~34 false connections on the reference 184-lane map.
 
 ### Why Not Simple Node Matching?
 

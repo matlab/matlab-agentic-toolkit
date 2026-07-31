@@ -26,7 +26,7 @@ splitIndices = splitlabels(___, Name=Value)              % filters / table colum
 (e.g. `[0.7 0.15 0.15]`), vector of integers (e.g. `[500 300]`), or
 scalar in (0,1) for a single-cut.
 
-> **There is no `'stratified'` literal flag.** R2026b only accepts
+> **There is no `'stratified'` literal flag.** `splitlabels` only accepts
 > `'randomized'`. The default form (no flag) IS stratified — class
 > proportions are preserved exactly in each bin. The `'randomized'` flag
 > is also stratified but does an additional per-class shuffle so

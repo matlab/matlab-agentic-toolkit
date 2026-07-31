@@ -54,7 +54,7 @@ cfg.BuildConfiguration = 'Faster Runs';
 cfg.PurelyIntegerCode = false;          % Need float for DNN
 
 %% 8. Stack constraints for MCU
-cfg.StackUsageMax = 4096;  % 4 KB stack typical for Cortex-M
+cfg.StackUsageMax = 4096;  % Ask user; default 4096 for Cortex-M if unknown
 ```
 
 ## DeepLearningConfig Target Libraries
@@ -80,7 +80,7 @@ cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-M';
 cfg.HardwareImplementation.ProdBitPerFloat = 32;
 cfg.HardwareImplementation.ProdBitPerDouble = 64;
 cfg.EnableOpenMP = false;       % Single-core -- OpenMP adds overhead
-cfg.StackUsageMax = 4096;       % 4 KB stack typical for MCU
+cfg.StackUsageMax = 4096;       % Size from target's SRAM budget; check codegen report
 % cfg.SupportNonFinite = false; % Only set if model guaranteed no NaN/Inf
 cfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 ```

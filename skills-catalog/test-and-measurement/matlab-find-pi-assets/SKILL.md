@@ -7,7 +7,7 @@ description: >
   element/attribute hierarchy (R2026a+). Use when working with PI AF servers, PI Data Archive
   tags, asset hierarchies, element templates, attribute lookup, or historical data from
   OSIsoft PI systems.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

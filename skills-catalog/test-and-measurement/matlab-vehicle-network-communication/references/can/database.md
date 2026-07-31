@@ -104,6 +104,8 @@ stop(ch1);
 stop(ch2);
 ```
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

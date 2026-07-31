@@ -267,6 +267,12 @@ All code inside MATLAB Function blocks must be **codegen-compatible**:
 - `repmat` is supported for broadcast patterns
 - Unroll loops with known iteration counts -- no dynamic indexing
 - All output dimensions must be determinable at compile time
+- Use `coder.nullcopy` to pre-allocate output variables that will be fully assigned
+  before being read — avoids unnecessary zero-initialization overhead:
+  ```matlab
+  Y = coder.nullcopy(single(zeros(embedDim, numTokens)));
+  % ... fill Y completely ...
+  ```
 
 ## Storing Weights in Model Workspace
 

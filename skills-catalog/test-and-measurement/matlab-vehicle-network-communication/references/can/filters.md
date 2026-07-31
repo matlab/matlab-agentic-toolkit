@@ -81,6 +81,8 @@ filterAllowOnly(ch, [0x100 0x200], 'Standard');
 filterAllowOnly(ch, [0x18FEF100], 'Extended');
 ```
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

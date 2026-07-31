@@ -11,7 +11,7 @@ description: >
   kinematics, joint configuration, end-effector pose, gripper), or working with
   rigidBodyTree, loadrobot, importrobot, URDF, DH parameters, addVisual,
   addCollision.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

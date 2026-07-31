@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
 version: "1.0"
 human-description: Simulate statistical radar detections for surveillance and tracking radar scenarios.

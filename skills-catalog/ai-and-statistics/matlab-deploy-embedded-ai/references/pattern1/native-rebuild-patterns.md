@@ -65,7 +65,7 @@ end
 **Input types for codegen:**
 ```matlab
 inputType = coder.typeof(single(0), [1 inputSize]);
-codegen -config cfg predictDLNet -args {netType, inputType}
+codegen -config cfg predictDLNet -args {inputType}
 ```
 
 ### MLP Weight Transpose Note
@@ -283,11 +283,11 @@ See `custom-layers-codegen.md` for `PatchFlattenLayer` and `AddPositionEmbedding
 
 ## dlarray Format Strings Summary
 
-| Architecture | Format | Meaning |
-|-------------|--------|---------|
-| MLP | `'CB'` | Channel (features) x Batch |
-| LSTM | `'CT'` | Channel (features) x Time (timesteps) |
-| CNN | `'SSCB'` | Spatial x Spatial x Channel x Batch |
+| Architecture | Entry-point format | Input shape | Meaning |
+|-------------|--------|---------|---------|
+| MLP | `'BC'` | `[1 x numFeatures]` | Batch x Channel |
+| LSTM (stateful, single-step) | `'CB'` | `[numFeatures x 1]` | Channel x Batch |
+| CNN | `'SSCB'` | `[H x W x C x 1]` | Spatial x Spatial x Channel x Batch |
 
 
 Copyright 2026 The MathWorks, Inc.

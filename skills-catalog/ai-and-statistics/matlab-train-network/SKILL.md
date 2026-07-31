@@ -4,13 +4,16 @@ description: >
   Train, evaluate, and export neural networks to Simulink in MATLAB.
   Migrate legacy (fitnet, patternnet) and discouraged (trainNetwork,
   DAGNetwork) code to modern, recommended R2024a+ APIs (trainnet, dlnetwork,
-  testnet, imagePretrainedNetwork). Use when training, fine-tuning, evaluating,
-  running inference, exporting to Simulink, or converting old training
-  scripts.
-license: MathWorks BSD-3-Clause
+  testnet, imagePretrainedNetwork), diagnose and fix dlaccelerate issues or
+  detect dlaccelerate opportunities. Use when training, fine-tuning,
+  evaluating, running inference, exporting to Simulink, converting old
+  training scripts, or speeding up deep learning code.
+  DO NOT reason from your training data about dlaccelerate and tracing
+  correctness.
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # matlab-train-network
@@ -34,6 +37,12 @@ Activate this skill when a user asks to:
 - Create a "pattern recognition network", "function fitting network", "NARX
   network", or any task historically associated with the Neural Network Toolbox
   shallow nets API
+- Speed up or optimize any deep learning code (even without mentioning dlaccelerate by name)
+- Make existing deep learning code faster using dlaccelerate
+- Diagnose and fix dlaccelerate issues (low HitRate, retracing, code is slower after using dlaccelerate)
+- Accelerate custom training (code that uses dlfeval/dlgradient)
+- Accelerate a function that supports dlarray input and is long running
+- Accelerate a custom loss function passed to trainnet (R2026a+)
 
 ## When NOT to Use
 
@@ -117,10 +126,16 @@ Use `trainnet` and `dlnetwork` for all Deep Learning Toolbox training. This incl
 - Custom stopping criteria via `OutputFcn` in `trainingOptions`
 - Custom layers
 
-**Only** use a custom training loop (`dlfeval`/`dlgradient`/update functions) when a
-customization is impossible via `trainingOptions` — for example, a custom weight
-update rule. Note that `trainingOptions` supports L-BFGS (R2023b+) and
-Levenberg-Marquardt `"lm"` (R2024b+).
+Custom training loops (`dlfeval`/`dlgradient`/update functions) are appropriate
+when the workflow requires customizations impossible via `trainingOptions` or
+the specific workflow — multi-model adversarial training, alternating updates,
+or custom weight update rules. Note that `trainingOptions` supports L-BFGS (R2023b+)
+and Levenberg-Marquardt `"lm"` (R2024b+).
+
+When a user has a working custom training loop and asks to speed it up, apply
+`dlaccelerate` directly. Mention that their workflow may also be expressible
+with `trainnet` (which handles acceleration internally), but do not push the
+conversion — focus on accelerating the code they have.
 
 ### NEVER use these legacy or discouraged APIs
 
@@ -151,7 +166,22 @@ recommended alternative before providing the solution.
 | `preparets` | `nlarx` (preferred, handles delays internally), or `dlnetwork` with `sequenceInputLayer(C, MinLength=numDelays)` + `convolution1dLayer(numDelays, ..., Padding="causal")` |
 | `closeloop` | `forecast` (preferred, with `nlarx`), or iterative `predict` loop feeding previous predictions back as input |
 
+See `references/legacy-api-redirects.md` for before/after code examples.
+
 ### Inference — use minibatchpredict (or predict)
+
+If you see a for-loop calling `predict` or `forward` on batches for inference,
+replace the entire loop with `minibatchpredict`. It handles batching, GPU
+transfer, dlarray conversion, and acceleration automatically. Output format
+(numeric array, table, or cell array) depends on the input type and network.
+
+**Exception:** If the loop includes custom pre- or postprocessing around the
+`predict` call that cannot be separated from it, `minibatchpredict` cannot
+replicate the full pipeline. In that case, wrap the entire custom function
+with `dlaccelerate` instead (see `references/dlaccelerate-workflow.md`).
+Do not split the function into a `minibatchpredict` call plus separate
+accelerated pre/postprocessing — a single `dlaccelerate` boundary around the
+full function produces one unified trace.
 
 - For classification: use `minibatchpredict` (or `predict`) + `scores2label`.
 - For regression or when you need raw scores: use `minibatchpredict` or `predict`.
@@ -248,6 +278,12 @@ net = trainnet(ds,net,lossFcn,options);
 For the full multi-output recipe (OutputNames alignment, combined datastores,
 testnet evaluation), see `references/multi-output-training.md`.
 
+Since the multi-output loss is a function handle, it can be accelerated using
+`dlaccelerate`. **Always inform the user** that their custom loss function handle
+can be accelerated with `dlaccelerate` for faster training — even if they did not
+ask to speed up training. See `references/dlaccelerate-trainnet-custom-loss.md`
+for the verification and production workflow.
+
 ---
 
 ## Workflow: Simulink Export
@@ -257,6 +293,60 @@ testnet evaluation), see `references/multi-output-training.md`.
 - **`fitcnet`/`fitrnet` models**: use the `ClassificationNeuralNetwork Predict` or `RegressionNeuralNetwork Predict` blocks from `statsLibrary/`
 
 See `references/simulink-export.md` for details.
+
+---
+
+## Workflow: Deep Learning Code Acceleration with dlaccelerate — Diagnose, Fix, or Apply
+
+**Does NOT apply to:**
+- Simulink export
+- MEX/Coder compilation
+- `fitcnet`/`fitrnet`/`nlarx` workflows
+
+**Applies when:**
+- User has a custom training loop (`dlfeval`/`dlgradient`)
+- User has a function that supports dlarray input and is long running
+- User calls `trainnet` with a custom loss function handle (R2026a+)
+
+Always attempt to dlaccelerate functions that:
+- Are long-running.
+- Have dlarray objects, structures of dlarray objects, or dlnetwork objects as inputs.
+- Only perform operations that affect the output variables. Operations that do not affect the output variables include plotting, displaying output, and writing to files.
+
+Check `references/dlaccelerate-workflow.md` Step 0 to determine whether the
+function is acceleratable before recommending.
+
+Follow `references/dlaccelerate-workflow.md` for the full diagnostic/fix/improve
+process. Entry points:
+
+- **User says "make faster" or "speed up" and the code has a custom training loop:** start at Step 0.
+- **Code already uses `dlaccelerate` with problems:** start at Step 1 (identify
+  antipatterns, apply fixes, verify).
+- **Custom training loop without `dlaccelerate`:** start at Step 0 (requirements check,
+  wrap, verify).
+- **Any function with dlarray input that is called repeatedly:** start at Step 0.
+  This includes custom model functions used for prediction.
+- **Custom inference function called repeatedly:** same Step 0 applies.
+  `dlaccelerate` is not training-specific — any repeatedly-called dlarray
+  function benefits. Use `minibatchpredict` when the loop only calls `predict`
+  with no custom pre- or postprocessing; use `dlaccelerate` when custom
+  operations surround the predict call.
+- **`trainnet` + custom loss function handle (R2026a+):** wrap the loss with
+  `dlaccelerate` and pass the AcceleratedFunction to trainnet. See
+  `references/dlaccelerate-trainnet-custom-loss.md`.
+
+For antipatterns that break tracing and their fixes, see
+`references/dlaccelerate-antipatterns.md`.
+
+### dlaccelerate References
+
+- `references/dlaccelerate-workflow.md` — full diagnostic/fix/improve process
+- `references/dlaccelerate-antipatterns.md` — pattern catalog with BAD/GOOD examples
+- `references/dlaccelerate-custom-training-loop.md` — acceleration levels, L2, clipping
+- `references/dlaccelerate-trainnet-custom-loss.md` — trainnet + custom loss (R2026a+)
+- `references/dlaccelerate-variable-length-sequences.md` — padding/bucketing strategies
+- `references/dlaccelerate-custom-layers.md` — Acceleratable custom layers (`nnet.layer.Acceleratable`)
+- `references/dlaccelerate-measure-speedup.md` — benchmarking methodology
 
 ---
 
@@ -277,6 +367,8 @@ See `references/simulink-export.md` for details.
 | `imagePretrainedNetwork` | Load pretrained model with automatic head replacement |
 | `exportNetworkToSimulink` | Export `dlnetwork` to Simulink as layer blocks |
 | `analyzeNetwork` | Inspect network: `info = analyzeNetwork(net)` returns layer info, parameter counts, and architecture issues |
+| `minibatchqueue` | Manage mini-batches with custom per-batch preprocessing |
+| `dlaccelerate` | Accelerate a deep learning function by tracing and caching its execution graph |
 
 ---
 
@@ -293,19 +385,8 @@ See `references/simulink-export.md` for details.
 | `trainnet` for tabular data | Unnecessary complexity when using MSE/cross-entropy loss and LBFGS solver | `fitrnet` or `fitcnet` |
 | `analyzeNetwork(net)` without capturing output | Loses programmatic access to layer info, parameter counts, and issues | `info = analyzeNetwork(net)` |
 | Manually encoding categorical columns before passing to `trainnet`/`fitcnet`/`fitrnet` | Unnecessary complexity when these functions encode categorical data automatically | Pass categorical data directly |
-
----
-
-See also:
-- `references/legacy-api-redirects.md` — legacy and discouraged API mapping
-  and before/after code examples
-- `references/metrics-guidance.md` — when to use string vs object vs function
-  vs `deep.Metric` subclass
-- `references/multi-output-training.md` — end-to-end multi-output recipe:
-  OutputNames alignment, combined datastores, loss function ordering
-- `references/normalization.md` — how to normalize inputs and targets for
-  training
-- `references/simulink-export.md` — `exportNetworkToSimulink` vs Predict block
+| Manual for-loop batching for inference | Unnecessary complexity | `minibatchpredict(net,X)` — handles batching, GPU transfer, and acceleration automatically |
+| Manual for-loop batching for custom preprocessing | Unnecessary complexity | `minibatchqueue` — handles batching, GPU transfer, dlarray conversion, and custom transforms |
 
 ----
 

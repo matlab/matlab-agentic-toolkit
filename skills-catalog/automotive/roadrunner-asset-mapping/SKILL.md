@@ -4,11 +4,11 @@ description: >
   RoadRunner asset path lookup tables for map format conversions in MATLAB. Maps lane markings,
   signs, signals, barriers, objects, and lane types to RoadRunner asset paths. Use when converting
   map formats to RRHD, resolving asset paths, or assigning visual assets to HD Map objects.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 user-invocable: false
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # RoadRunner Asset Mapping
@@ -33,10 +33,11 @@ Consolidated lookup tables for mapping source map format elements to RoadRunner 
 ## Key Rules
 
 - **All asset paths start with `Assets/`** — always prefix when constructing `RelativeAssetPath` objects.
-- **Extension matters.** `.rrlms` = lane marking style, `.rrcws` = crosswalk style, `.rrpms` = polygon marking style. Using wrong extension causes "Asset file is missing" on import.
-- **Region detection from geoReference.** Use lat/lon to determine Japan/Germany/US for sign paths.
-- **Sign naming convention.** All signs use `Sign_<code>.svg` format based on national regulatory numbering.
-- **Japan speed signs have a space.** `Sign_323 (30).svg` — note space before parenthesis.
+- **Extension matters.** `.rrlms` = lane marking style, `.rrcws` = crosswalk style, `.rrpms` = polygon marking style, `.svg_rrx` = sign. Using wrong extension causes "Asset file is missing" on import.
+- **Signs use `.svg_rrx` extension** (NOT `.svg`). The `.svg` paths in XML configs are internal references only.
+- **Sign naming: descriptive English names** with region suffix (e.g., `Stop_JP_01.svg_rrx`, `MaxSpeedLimit_30_DE.svg_rrx`). The old `Sign_<code>.svg` naming is obsolete.
+- **Region detection from geoReference.** Use lat/lon to determine Japan/Germany/US for sign and marking paths.
+- **Runtime asset discovery is MANDATORY for signs.** Asset names vary by version — always verify file exists before assigning.
 
 ## Source Data
 
@@ -63,13 +64,25 @@ See [references/laneMarkings.md](references/laneMarkings.md) for full mapping ta
 
 See [references/signs.md](references/signs.md) for full mapping table.
 
+**CRITICAL: Asset File Extension**
+- RoadRunner sign assets use **`.svg_rrx`** extension on disk (NOT `.svg`)
+- The `.svg` paths in project XML configs are internal references only
+- **Always use `.svg_rrx` in `RelativeAssetPath` objects** — using `.svg` causes "Could not find asset" errors
+
+**MANDATORY: Runtime Asset Discovery**
+- Sign asset names vary by RoadRunner version and installed asset libraries
+- **Always verify at runtime** that the target asset exists before assigning it
+- Use `dir(fullfile(projFolder, 'Assets', 'Signs', region, category, '*.svg_rrx'))` to discover available signs
+
 **Key patterns:**
 - US signs: `Assets/Signs/US/Regulatory Signs/` or `Assets/Signs/US/Warning Signs/`
 - German signs: `Assets/Signs/Germany/Regulatory Signs/`
 - Japan signs: `Assets/Signs/Japan/Regulatory Signs/` or `Assets/Signs/Japan/Warning Signs/`
-- Speed limit signs use regulatory numbering: `Sign_R2-1(30).svg` (US), `Sign_274(30).svg` (DE), `Sign_323 (30).svg` (JP)
-- Fallbacks: `Sign_R2-1(Blank).svg` (US), `Sign_101.svg` (DE warning), `Sign_215.svg` (JP warning)
 - Sign geometry uses `GeoOrientedBoundingBox` (Center + Dimension + GeoOrientation)
+
+**Naming convention:** Signs use **descriptive English names** with region suffix:
+- Pattern: `<Description>_<Region>.svg_rrx` (e.g., `Stop_JP_01.svg_rrx`, `MaxSpeedLimit_30_JP.svg_rrx`)
+- The old `Sign_<code>.svg` naming is **obsolete** — files do NOT exist on disk
 
 **Region detection from geoReference:**
 ```matlab
@@ -83,15 +96,14 @@ else
 end
 ```
 
-**Region-specific sign paths (verified R2026a):**
+**Region-specific sign paths (verified R2026a with RoadRunner_Asset_Library):**
 
 | Sign | Japan | US | Germany |
 |---|---|---|---|
-| Stop | `Assets/Signs/Japan/Regulatory Signs/Sign_330-A.svg` | `Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg` | `Assets/Signs/Germany/Regulatory Signs/Sign_206.svg` |
-| Speed N | `Assets/Signs/Japan/Regulatory Signs/Sign_323 (<N>).svg` | `Assets/Signs/US/Regulatory Signs/Sign_R2-1(<N>).svg` | `Assets/Signs/Germany/Regulatory Signs/Sign_274(<N>).svg` |
-| Fallback | `Assets/Signs/Japan/Warning Signs/Sign_215.svg` | `Assets/Signs/US/Regulatory Signs/Sign_R2-1(Blank).svg` | `Assets/Signs/Germany/Warning Signs/Sign_101.svg` |
-
-**Naming convention:** All signs use `Sign_<code>.svg` format based on national regulatory numbering (MUTCD for US, StVO for Germany, Japanese road sign numbers). Note: Japan speed signs have a space before the parenthesis: `Sign_323 (30).svg`.
+| Stop | `Signs/Japan/Regulatory Signs/Stop_JP_01.svg_rrx` | `Signs/US/Stop_US.svg_rrx` | `Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx` |
+| Yield | — | `Signs/US/Yield_US.svg_rrx` | `Signs/Germany/Regulatory Signs/Yield_DE.svg_rrx` |
+| Speed N | `Signs/Japan/Regulatory Signs/MaxSpeedLimit_<N>_JP.svg_rrx` | `Signs/US/Regulatory Signs/MaxSpeedLimit_<N>_US.svg_rrx` | `Signs/Germany/Regulatory Signs/MaxSpeedLimit_<N>_DE.svg_rrx` |
+| Fallback | `Signs/Japan/Regulatory Signs/SlowDown_JP_01.svg_rrx` | `Signs/US/White_Blank_US.svg_rrx` | `Signs/Germany/Warning Signs/Danger_DE.svg_rrx` |
 
 ## Signals (Traffic Lights)
 
@@ -100,7 +112,7 @@ end
 | 3-light vertical (post) | `Props/Signals/Signal_3Light_Post01.fbx` |
 | 3-light vertical (bare) | `Props/Signals/Signal_3Light_Bare01.fbx_rrx` |
 
-**Authoring vs Import limitation:** You CAN author `SignalType` objects in MATLAB, add them to `rrMap.Signals`, and write the map to `.rrhd` — signal data IS written to the file. However, RoadRunner does NOT import signals from `.rrhd` maps. Signal data in the file is silently ignored on import. Show the asset paths and authoring code, but warn the user that signals will not appear in the RoadRunner scene after import.
+**Authoring vs Import limitation:** You CAN author `SignalType` objects (add to `rrMap.SignalTypes`) and `Signal` instances (add to `rrMap.Signals`) in MATLAB and write the map to `.rrhd` — signal data IS written to the file and survives read/write cycles. However, RoadRunner **silently ignores** signals when importing `.rrhd` maps — signals will not appear in the RoadRunner scene after import. Show the asset paths and authoring code, but warn the user about this import limitation.
 
 ## Barriers & Extrusions
 
@@ -129,14 +141,37 @@ See [references/laneTypes.md](references/laneTypes.md) for full mapping table.
 - `.rrcws` = crosswalk style (only for actual crosswalks)
 - `.rrlms` = lane marking style (stop lines, bike markings, zig-zag)
 - `.rrpms` = polygon marking style (striped regions, chevrons)
+- `.rrcws_rrx` / `.rrlms_rrx` = region-specific variants (Japan, Germany, etc.)
+
+**Base assets (universal):**
 
 | Type | Asset Path | Extension |
 |---|---|---|
-| Simple crosswalk | `Assets/Markings/SimpleCrosswalk.rrcws` | `.rrcws` |
-| Continental crosswalk | `Assets/Markings/ContinentalCrosswalk.rrcws` | `.rrcws` |
-| Ladder crosswalk | `Assets/Markings/LadderCrosswalk.rrcws` | `.rrcws` |
-| Stop line | `Assets/Markings/StopLine.rrlms` | `.rrlms` |
-| Striped region | `Assets/Markings/StripedRegion.rrpms` | `.rrpms` |
+| Simple crosswalk | `Markings/SimpleCrosswalk.rrcws` | `.rrcws` |
+| Continental crosswalk | `Markings/ContinentalCrosswalk.rrcws` | `.rrcws` |
+| Ladder crosswalk | `Markings/LadderCrosswalk.rrcws` | `.rrcws` |
+| Stop line | `Markings/StopLine.rrlms` | `.rrlms` |
+| Striped region | `Markings/StripedRegion.rrpms` | `.rrpms` |
+
+**Japan-specific markings (`.rrlms_rrx` / `.rrcws_rrx`):**
+
+| Type | Asset Path |
+|---|---|
+| Stop line | `Markings/Japan/StopLine_JP.rrlms_rrx` |
+| Crosswalk | `Markings/Japan/SimpleCrosswalk_JP.rrcws_rrx` |
+| Solid single white | `Markings/Japan/SolidSingleWhite_JP.rrlms_rrx` |
+| Dashed single white | `Markings/Japan/DashedSingleWhite_JP.rrlms_rrx` |
+| Solid double white | `Markings/Japan/SolidDoubleWhite_JP.rrlms_rrx` |
+| Solid double yellow | `Markings/Japan/SolidDoubleYellow_JP.rrlms_rrx` |
+
+**Germany-specific markings:**
+
+| Type | Asset Path |
+|---|---|
+| Stop line | `Markings/Germany/StopLine_DE.rrlms_rrx` |
+| Crosswalk | `Markings/Germany/SimpleCrosswalk_DE.rrcws_rrx` |
+
+**Region selection:** Use base (non-regional) assets as default. Use regional variants when the map's geoReference indicates a specific region AND the regional asset exists in the project.
 
 ## Stencils (Road Surface Markings)
 
@@ -161,8 +196,8 @@ These are the project-wide defaults (from `DefaultAssets.xml`):
 | Name | Path |
 |---|---|
 | Island Curb Material | `Assets/Materials/Concrete1.rrmtl` |
-| Blank Sign | `Assets/Signs/US/Sign_BlankWhite.rrsign` |
-| Blank Warning Sign | `Assets/Signs/US/Yellow_Blank_US.svg` |
+| Blank Sign | `Assets/Signs/US/White_Blank_US.svg_rrx` |
+| Blank Warning Sign | `Assets/Signs/US/Yellow_Blank_US.svg_rrx` |
 | Surface Material | `Assets/Materials/Grass1.rrmtl` |
 | Crosswalk | `Assets/Markings/SimpleCrosswalk.rrcws` |
 | Stop Line | `Assets/Markings/StopLine.rrlms` |
@@ -191,12 +226,14 @@ All asset paths are prefixed with `Assets/` when used in RRHD `RelativeAssetPath
 
 ## Conventions
 
-- All marking assets: `Assets/Markings/<Name>.<ext>` — extension determines type
-- All sign assets: `Assets/Signs/<Region>/<Category>/Sign_<code>.svg`
-- All extrusion assets: `Assets/Extrusions/<Name>.rrext`
-- All prop assets: `Assets/Props/<Category>/<Name>.fbx`
+- All marking assets: `Assets/Markings/<Name>.<ext>` — extension determines type (`.rrlms`, `.rrcws`, `.rrpms`)
+- Regional marking variants: `Assets/Markings/<Region>/<Name>_<CC>.<ext>_rrx` (e.g., `_JP.rrlms_rrx`)
+- All sign assets: `Assets/Signs/<Region>/<Category>/<Description>_<CC>.svg_rrx` (NOT `.svg`)
+- All extrusion assets: `Assets/Extrusions/<Name>.rrext` (or `.rrext.rrmeta`)
+- All prop assets: `Assets/Props/<Category>/<Name>.fbx` (or `.fbx_rrx`)
 - Use `RelativeAssetPath(AssetPath="...")` for RRHD construction (Name=Value syntax)
 - Default road center: `SolidDoubleYellow.rrlms`; default outer boundary: `SolidSingleWhite.rrlms`
+- **Always verify asset exists at runtime** before assigning — paths vary by version and installed libraries
 
 ----
 

@@ -1,7 +1,7 @@
 ---
 name: matlab-write-pcb-layout
 description: "Export pcbComponent designs to Gerber files with RF connectors and fab service formatting for PCB manufacturing. TRIGGER: user asks to export a PCB design to Gerber, generate manufacturing files, or write out a pcbComponent for fabrication. Invoke BEFORE writing export code — gerberWrite signature (pcbComponent, connectors, filename) is non-obvious. SKIP: importing/reading PCB files (use matlab-read-pcb-layout), building PCB geometry (use matlab-assemble-pcb-layout), EM analysis (use matlab-analyze-em), material/stackup setup (use matlab-manage-pcb-material)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

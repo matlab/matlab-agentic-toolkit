@@ -386,23 +386,33 @@ else
     region = "US";
 end
 
-% --- Sign asset resolution (verified R2026a project assets) ---
+% --- Sign asset resolution (CRITICAL: use .svg_rrx extension, descriptive names) ---
+% See roadrunner-asset-mapping skill's references/signs.md for full lookup table.
+% Sign assets use descriptive English names: <Description>_<Region>.svg_rrx
 signAssetMap = containers.Map;
 switch region
     case "Japan"
-        signAssetMap('stop_sign') = "Assets/Signs/Japan/Regulatory Signs/Sign_330-A.svg";
-        signAssetMap('stop') = "Assets/Signs/Japan/Regulatory Signs/Sign_330-A.svg";
-        signAssetMap('default') = "Assets/Signs/Japan/Warning Signs/Sign_215.svg";
+        signAssetMap('stop_sign') = "Assets/Signs/Japan/Regulatory Signs/Stop_JP_01.svg_rrx";
+        signAssetMap('stop') = "Assets/Signs/Japan/Regulatory Signs/Stop_JP_01.svg_rrx";
+        signAssetMap('no_entry') = "Assets/Signs/Japan/Regulatory Signs/NoEntryForVehicles_JP.svg_rrx";
+        signAssetMap('no_parking') = "Assets/Signs/Japan/Regulatory Signs/NoParking_JP.svg_rrx";
+        signAssetMap('no_stopping') = "Assets/Signs/Japan/Regulatory Signs/NoStopping_JP.svg_rrx";
+        signAssetMap('one_way') = "Assets/Signs/Japan/Regulatory Signs/OneWay_JP_01.svg_rrx";
+        signAssetMap('no_overtaking') = "Assets/Signs/Japan/Regulatory Signs/NoOvertaking_JP.svg_rrx";
+        signAssetMap('no_u_turn') = "Assets/Signs/Japan/Regulatory Signs/NoUTurns_JP.svg_rrx";
+        signAssetMap('default') = "Assets/Signs/Japan/Regulatory Signs/SlowDown_JP_01.svg_rrx";
     case "Germany"
-        signAssetMap('stop_sign') = "Assets/Signs/Germany/Regulatory Signs/Sign_206.svg";
-        signAssetMap('stop') = "Assets/Signs/Germany/Regulatory Signs/Sign_206.svg";
-        signAssetMap('de205') = "Assets/Signs/Germany/Regulatory Signs/Sign_205.svg";
-        signAssetMap('de301') = "Assets/Signs/Germany/Regulatory Signs/Sign_301.svg";
-        signAssetMap('default') = "Assets/Signs/Germany/Warning Signs/Sign_101.svg";
+        signAssetMap('stop_sign') = "Assets/Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx";
+        signAssetMap('stop') = "Assets/Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx";
+        signAssetMap('de205') = "Assets/Signs/Germany/Regulatory Signs/Yield_DE.svg_rrx";
+        signAssetMap('de206') = "Assets/Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx";
+        signAssetMap('default') = "Assets/Signs/Germany/Warning Signs/Danger_DE.svg_rrx";
     otherwise
-        signAssetMap('stop_sign') = "Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg";
-        signAssetMap('stop') = "Assets/Signs/US/Regulatory Signs/Sign_R1-1.svg";
-        signAssetMap('default') = "Assets/Signs/US/Regulatory Signs/Sign_R2-1(Blank).svg";
+        signAssetMap('stop_sign') = "Assets/Signs/US/Stop_US.svg_rrx";
+        signAssetMap('stop') = "Assets/Signs/US/Stop_US.svg_rrx";
+        signAssetMap('yield') = "Assets/Signs/US/Yield_US.svg_rrx";
+        signAssetMap('no_u_turn') = "Assets/Signs/US/NoUTurns_US.svg_rrx";
+        signAssetMap('default') = "Assets/Signs/US/White_Blank_US.svg_rrx";
 end
 
 % --- Build Signs from traffic_sign WAYS (direct geometry) ---
@@ -423,14 +433,24 @@ for i = 1:numel(trafficSignWays)
     % Resolve asset path
     if signAssetMap.isKey(signCode)
         assetPath = signAssetMap(signCode);
-    elseif contains(signCode, '274')  % German speed limit
+    elseif contains(signCode, 'speed') || contains(signCode, '274')
+        % Speed limit sign — extract numeric value
         nums = regexp(signCode, '\d+', 'match');
         if numel(nums) > 1
-            N = nums{2};  % de274_30 → 30
+            N = nums{end};  % last number is speed value
+        elseif numel(nums) == 1
+            N = nums{1};
         else
             N = '30';
         end
-        assetPath = sprintf("Assets/Signs/Germany/Regulatory Signs/Sign_274(%s).svg", N);
+        switch region
+            case "Japan"
+                assetPath = sprintf("Assets/Signs/Japan/Regulatory Signs/MaxSpeedLimit_%s_JP.svg_rrx", N);
+            case "Germany"
+                assetPath = sprintf("Assets/Signs/Germany/Regulatory Signs/MaxSpeedLimit_%s_DE.svg_rrx", N);
+            otherwise
+                assetPath = sprintf("Assets/Signs/US/Regulatory Signs/MaxSpeedLimit_%s_US.svg_rrx", N);
+        end
     else
         assetPath = signAssetMap('default');
     end

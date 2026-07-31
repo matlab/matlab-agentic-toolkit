@@ -1,7 +1,7 @@
 ---
 name: matlab-discover-hardware
 description: "Discovers connected MATLAB-supported hardware devices, searches by capability, and checks required support packages and add-ons. Use when the user asks what hardware is connected, finds a device that supports a capability (e.g., CAN, analog input), or checks if required support packages or add-ons are installed."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

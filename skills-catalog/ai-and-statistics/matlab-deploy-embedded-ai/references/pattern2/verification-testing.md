@@ -221,7 +221,9 @@ For PIL (on-target):
 % PIL verification: compile, download, and run on target hardware
 pilCfg = coder.config('lib', 'ecoder', true);
 pilCfg.VerificationMode = 'PIL';
-pilCfg.Hardware = coder.hardware('ARM Cortex-M');
+pilCfg.Hardware = coder.hardware('STM32F7xx Based');  % Use concrete board name
+pilCfg.Hardware.PILInterface = "Serial";              % Transport to target
+pilCfg.Hardware.PILCOMPort = "COM4";                  % Adjust to actual port
 pilCfg.DeepLearningConfig = coder.DeepLearningConfig('none');
 codegen -config pilCfg predict_fn -args {inputType}
 
@@ -231,6 +233,11 @@ for i = 1:numTests
     y_pil = predict_fn_pil(x);
 end
 ```
+
+**PIL hardware name:** Must be a concrete board name recognized by the installed support
+package (e.g., `'STM32F7xx Based'`, `'Raspberry Pi'`, `'NVIDIA Jetson'`). Generic family
+strings like `'ARM Cortex-M'` are NOT valid `coder.hardware` names — they will error.
+Ask the user which board they are targeting.
 
 **SIL/PIL vs custom C harness:** SIL/PIL is the recommended primary approach because
 it automates compilation, execution, and numerical comparison. Use the custom C
@@ -296,10 +303,10 @@ rounding, but should always stay below 1e-3.
 
 ## Code Generation Report
 
-After all verification stages pass, **open the code generation report**:
+After all verification stages pass, **ask the user** if they want to open the code generation report:
 
 ```matlab
-% Open the code generation report
+% Open the code generation report (after user confirms)
 reportPath = fullfile('codegen', 'lib', 'predict_fn', 'html', 'report.mldatx');
 if isfile(reportPath)
     open(reportPath);
@@ -311,8 +318,8 @@ else
 end
 ```
 
-Announce: "The code generation report is now open. Please review the generated code,
-warnings, and resource metrics. Let me know if you have questions."
+Ask: "Code generation is complete. Would you like me to open the code generation report
+so you can review the generated code, warnings, and resource metrics?"
 
 ## Verification Summary Report
 

@@ -12,7 +12,7 @@ authors:
   - name: "The MathWorks, Inc."
     entity: organization
 date-released: 2026-04-09
-license: MathWorks BSD-3-Clause
+license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 url: "https://github.com/matlab/matlab-agentic-toolkit"
 repository-code: "https://github.com/matlab/matlab-agentic-toolkit"
 keywords:

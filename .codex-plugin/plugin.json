@@ -5,7 +5,7 @@
   "author": {
     "name": "MathWorks"
   },
-  "license": "MathWorks BSD-3-Clause",
+  "license": "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md",
   "keywords": ["matlab", "mcp", "testing", "debugging", "code-review", "live-scripts", "app-builder"],
   "skills": "./skills-catalog/",
   "interface": {

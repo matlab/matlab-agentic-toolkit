@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+# manifest.yaml — matlab-transmit-capture-usrp
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Transmit and capture RF waveforms using Wireless Testbench with NI USRP radios.
+matlab-release: ">=R2026a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Wireless Testbench
+toolkit: matlab-agentic-toolkit

@@ -1,7 +1,7 @@
 ---
 name: matlab-display-volume
 description: Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. Use when displaying 3-D images or isosurfaces with volshow, creating volume viewers with viewer3d, adding Regions of Interest (ROI) or annotations, overlaying masks or segmentations, streaming volumetric data, or building apps with volume display.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

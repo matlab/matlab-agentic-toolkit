@@ -1,7 +1,7 @@
 ---
 name: matlab-analyze-ams-waveform
 description: "Analyze AMS waveform data using Mixed-Signal Blockset utilities: phase noise measurement, clock jitter, anti-aliased resampling, timing measurements, lock time, INL/DNL, ADC/DAC calibration, HSpice import. Use when analyzing time-domain voltage from PLL/VCO/clock simulations, measuring phase noise from variable-step solver output, computing jitter, or resampling non-uniform data."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -75,6 +75,8 @@ msgs = receive(ch, Inf);
 stop(ch);
 ```
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

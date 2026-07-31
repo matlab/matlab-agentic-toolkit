@@ -1,7 +1,7 @@
 ---
 name: matlab-simulate-simbiology-model
 description: "Simulate SimBiology models — ODE, stochastic (SSA), scenarios, and sensitivity analysis. Use when asked to run, simulate, predict, explore what-if, or identify influential parameters."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.2"

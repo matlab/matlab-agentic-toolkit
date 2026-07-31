@@ -1,7 +1,7 @@
 ---
 name: matlab-integrate-pcb-circuit
 description: "Cascade PCB components, add lumped elements, export Touchstone, and bridge to eye diagram or antenna array workflows. TRIGGER: user asks to cascade or connect multiple RF PCB components, add lumped R/L/C, export S-parameters to Touchstone, or combine PCB elements into a circuit. Invoke BEFORE writing pcbcascade or circuit code — cascade rules and port matching are non-obvious. SKIP: designing individual components (use the specific matlab-design-pcb-* skill), EM analysis of a single component (use matlab-analyze-em), material/stackup setup only (use matlab-manage-pcb-material), optimization (use matlab-optimize-pcb-design)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

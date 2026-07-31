@@ -1,12 +1,14 @@
 # Copyright 2026 The MathWorks, Inc.
 # manifest.yaml — Tooling metadata for matlab-build-app
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "2.0"
-human-description: Build MATLAB apps with guided path selection, layout archetypes, and structured implementation plans.
+version: "2.1"
+human-description: Build MATLAB apps with guided architecture selection (UIFigure or UIHTML), layout archetypes, and structured implementation plans. For UIFigure apps, optionally serialize to App Designer format (.mlapp or plain-text).
 matlab-release: ">=R2025a"
-required-tools: []
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
 required-skills:
   - matlab-build-chart
   - matlab-theming

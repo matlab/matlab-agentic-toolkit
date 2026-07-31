@@ -7,10 +7,10 @@ description: >
   hardware-specific code generation settings. Covers ERT-based configurations,
   processor-in-the-loop testing, memory constraints, and the MEX→SIL→PIL verification
   progression.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Deploy Embedded Code
@@ -104,12 +104,39 @@ cfg.InstructionSetExtensions = 'Neon v7';  % ARM Cortex-A (128-bit, 4x float32)
 | Intel x86-64 | `'SSE'`, `'SSE4.1'`, `'AVX'`, `'AVX2'`, `'AVX512F'` | Match target CPU |
 | ARM Cortex-M | Do not set — use `CodeReplacementLibrary` instead | Different mechanism |
 
+**Code replacement library (CRL)** — routes supported ops to compiler-vendor
+optimized implementations (NEON on ARM, etc.). Complementary to
+`InstructionSetExtensions` on ARM Cortex-A:
+
+```matlab
+cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-A';
+cfg.CodeReplacementLibrary = 'GCC ARM Cortex-A';
+```
+
+For Cortex-M, select the CRL matching your compiler (e.g. `'ARM Cortex-M'` for
+generic; vendor-specific CRLs are shipped with the corresponding support
+package). Cortex-M does not use `InstructionSetExtensions`.
+
 **OpenMP multi-threading** — enables parallel loops in generated code:
 
 ```matlab
 cfg.EnableOpenMP = true;   % multi-core targets (Cortex-A, x86)
 cfg.EnableOpenMP = false;  % single-core targets (Cortex-M) — no OS/threading support, won't compile
 ```
+
+**MATLAB Coder vs Simulink Coder naming.** Several properties above have
+different names when configuring the same option via `set_param` on a
+Simulink model:
+
+| MATLAB Coder (`cfg.X = ...`) | Simulink Coder (`set_param`) | Notes |
+|---|---|---|
+| `EnableOpenMP` | `MultiThreadedLoops` | Valid on both `grt.tlc` and `ert.tlc`; both take an OpenMP-capable compiler. |
+| `StackUsageMax` | `MaxStackSize` | Same numeric semantics on both sides. |
+| `DeepLearningConfig = coder.DeepLearningConfig("none")` | `DLTargetLibrary = "none"` (codegen) + `SimDLTargetLibrary = "none"` (simulation) | Simulink side takes a plain string, not a config object. Set BOTH parameters — `DLTargetLibrary` only affects `slbuild`; simulation uses the separate `SimDLTargetLibrary`. |
+
+This skill's examples are all MATLAB Coder (`cfg.X = ...`); for the Simulink
+side and for AI-model-specific perf knobs (reduction-loop vectorization,
+MEX SIMD), see `matlab-deploy-ai-model/references/codegen-performance-options.md`.
 
 ### 5. Set Up PIL Verification
 
@@ -174,7 +201,9 @@ codegen -config cfgSil -args {inputArgs} myEntryPoint
 | `EnableDynamicMemoryAllocation` | `true` (default), `false` | Master switch for heap |
 | `DynamicMemoryAllocationThreshold` | numeric (bytes), default 65536 | Arrays above this use heap |
 | `LargeConstantGeneration` | `"KeepInSourceFiles"`, `"WriteOnlyDNNConstantsToDataFiles"` | Where to put large constants |
-| `StackUsageMax` | numeric (bytes) | Stack limit for generated code |
+| `StackUsageMax` | numeric (bytes) | Stack limit for generated code (Simulink: `MaxStackSize`) |
+| `EnableOpenMP` | boolean | OpenMP multi-threading (Simulink: `MultiThreadedLoops`) |
+| `CodeReplacementLibrary` | `"GCC ARM Cortex-A"`, `"ARM Cortex-M"`, … | Vendor-optimized op replacements |
 | `TargetLang` | `"C"`, `"C++"` | Output language |
 
 ## Common Mistakes

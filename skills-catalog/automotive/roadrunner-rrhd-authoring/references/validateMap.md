@@ -1,8 +1,7 @@
 # Skill: validateMap
 
-**Package:** `rrhd_authoring.validate`
-**Function:** `report = rrhd_authoring.validate.validateMap(rrMap)`
-**Source:** `+rrhd_authoring/+validate/validateMap.m`
+**Function:** `report = validateRRHD(rrMap)`
+**Source:** `scripts/validateRRHD.m`
 
 ## Description
 Validates a `roadrunnerHDMap` for structural correctness. Checks:
@@ -28,7 +27,7 @@ Validates a `roadrunnerHDMap` for structural correctness. Checks:
 
 ## Example
 ```matlab
-report = rrhd_authoring.validate.validateMap(rrMap);
+report = validateRRHD(rrMap);
 if ~report.isValid
     disp(report.errors);
 end

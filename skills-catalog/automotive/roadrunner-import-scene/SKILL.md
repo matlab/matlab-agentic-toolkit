@@ -1,123 +1,52 @@
 ---
 name: roadrunner-import-scene
 description: >
-  Connect to RoadRunner and import HD Map or OpenDRIVE files into a new scene using MATLAB.
+  Import HD Map or OpenDRIVE files into a RoadRunner scene using MATLAB.
   Use when loading driving scenes in RoadRunner or RoadRunner Scene Builder, importing RRHD,
   OpenDRIVE, or other RoadRunner-supported formats for simulation, or verifying
-  Lanelet2-to-RRHD conversion results visually.
-license: MathWorks BSD-3-Clause
+  Lanelet2-to-RRHD conversion results visually. Requires rrApp handle from roadrunner-core.
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # RoadRunner Scene Import
 
-Connect to a running RoadRunner application and import map files into a new scene for visualization and verification.
+Import map files into a RoadRunner scene for visualization, verification, and building.
 
 ## When to Use
 
 - Importing a `.rrhd` file into RoadRunner for visual verification
 - Importing an OpenDRIVE `.xodr` file into RoadRunner
-- Connecting to a running RoadRunner instance from MATLAB
-- Auto-launching RoadRunner when no instance is running
 - Verifying converted maps after Lanelet2-to-RRHD or other conversions
+- Configuring build options (asphalt surfaces, bridge detection, junction preservation)
 
 ## When NOT to Use
 
+- Launching RoadRunner or managing projects — use `roadrunner-core`
 - Building RRHD map content — use `roadrunner-rrhd-authoring`
 - Converting Lanelet2 to RRHD — use `roadrunner-convert-lanelet2-to-rrhd`
 - Looking up asset paths — use `roadrunner-asset-mapping`
-- RoadRunner is not installed or no valid project folder exists
 
 ## Key Rules
 
-- **Always write to .m files.** Never put multi-line MATLAB code directly in `evaluate_matlab_code`. Write to a `.m` file, run with `run_matlab_file`, edit on error.
-- **Only ONE RoadRunner instance per session.** Try `roadrunner.connect()` first; only launch if none exists.
+- **Always write to .m files** when executing code. Never put multi-line MATLAB code directly in `evaluate_matlab_code`. Write to a `.m` file, run with `run_matlab_file`, edit on error. Exception: if the user asks to "show the pattern" or says "do not execute", show code inline without writing files.
+- **Requires `rrApp` from `roadrunner-core`.** Do not launch or connect to RoadRunner in this skill. If `rrApp` does not exist, invoke `roadrunner-core` first.
 - **Always copy file to project folder.** Use `status(rrApp).Project.Filename` and `copyfile()` explicitly in every import workflow — never omit or hide behind a variable.
 - **Always set `bridgeOpts.IsEnabled = true` explicitly.** Never rely on constructor defaults for bridge auto-detection.
-- **Run enforcement gates before `importScene`.** Connection, file location, and extension checks are mandatory.
+- **Run enforcement gates before `importScene`.** File location, extension, and build-option checks are mandatory.
 - **Load before Build by default.** Use `ImportStep="Load"` unless user explicitly requests a full build.
+- **NEVER hardcode `DetectAsphaltSurfaces = true` for converted maps.** Always inspect the RRHD for closed-loop topology first. Closed-loop networks (most Lanelet2 conversions) MUST use `DetectAsphaltSurfaces = false` — asphalt detection fills the interior of loops.
+- **ALWAYS preserve junctions when they exist.** If `tempMap.Junctions` is non-empty, you MUST set `overlapOpts.IsEnabled = true`, `overlapOpts.PreserveJunctionLanes = true`, and `overlapOpts.PreserveJunctionShape = true`. Never rely on RoadRunner's auto-detection to re-infer junctions — it discards authored geometry.
 
 ## Prerequisites
 
-- **RoadRunner** must be installed (R2025a or later) at a standard location under `C:/Program Files/`
-- A **RoadRunner Project folder** must exist (the skill uses the Sample Project by default)
-- If RoadRunner is already open, the skill reuses that instance
-- If RoadRunner is NOT open, the skill **auto-launches it** — no manual steps required
+- A valid `rrApp` handle must exist (produced by `roadrunner-core` skill)
+- A RoadRunner project must be open
+- If `rrApp` does not exist, invoke `roadrunner-core` first to launch and connect
 
-## Connection Strategy
-
-Always try `roadrunner.connect()` first to reuse an existing instance. **If no instance is running, launch one automatically** — never ask the user to open RoadRunner manually.
-
-**IMPORTANT: Only ONE RoadRunner instance per session.** If the conversion pipeline already called `roadrunnerHDMap` (which may launch a background instance), retry `roadrunner.connect()` with a pause before launching a new one. Never call `roadrunner(InstallationFolder=...)` without first confirming no instance exists.
-
-```matlab
-% Try connecting (with retry for recently-launched instances)
-rrApp = [];
-for attempt = 1:3
-    try
-        rrApp = roadrunner.connect();
-        fprintf('Connected to existing RoadRunner instance.\n');
-        break;
-    catch
-        if attempt < 3
-            pause(2);  % Wait for background instance to become ready
-        end
-    end
-end
-
-if isempty(rrApp)
-    % No instance running — find installation and launch
-    installPaths = { ...
-        "C:/Program Files/RoadRunner R2026a/bin/win64", ...
-        "C:/Program Files/RoadRunner R2025b/bin/win64", ...
-        "C:/Program Files/RoadRunner R2025a/bin/win64"};
-
-    installFolder = "";
-    for i = 1:numel(installPaths)
-        if isfolder(installPaths{i})
-            installFolder = installPaths{i};
-            break;
-        end
-    end
-    if installFolder == ""
-        error('RoadRunner:NotFound', ...
-            'No RoadRunner installation found under C:/Program Files/.');
-    end
-
-    % Launch ONE instance
-    rrApp = roadrunner(InstallationFolder=installFolder);
-    fprintf('Launched RoadRunner from %s\n', installFolder);
-
-    % Open or create a project (caller provides projectFolder, or use default)
-    if ~exist('projectFolder', 'var') || projectFolder == ""
-        projectFolder = fullfile(getenv("USERPROFILE"), "RoadRunner Projects", "ImportProject");
-    end
-    if isfolder(projectFolder)
-        openProject(rrApp, projectFolder);
-    else
-        newProject(rrApp, projectFolder);
-    end
-    fprintf('Project: %s\n', projectFolder);
-end
-```
-
-### Connect with Custom Port
-
-```matlab
-rrApp = roadrunner.connect(apiPort);        % default: 35707
-rrApp = roadrunner.connect(apiPort, cosimPort); % default cosim: 35706
-```
-
-### Namespace Conflict Note
-
-If you get `The class roadrunner has no Constant property or Static method 'hdmap'` after connecting, this means the `roadrunner` function is shadowed by the live `rrApp` variable. Clear and reinitialize:
-```matlab
-clear rrApp;
-rrMap = roadrunnerHDMap;  % reload namespace
-rrApp = roadrunner.connect();  % reconnect
-```
+**Connection, launching, and project lifecycle are owned by `roadrunner-core`.** This skill assumes `rrApp` is already available.
 
 ## Import Workflow
 
@@ -154,22 +83,58 @@ importOpts.ImportStep = "Load";
 importScene(rrApp, destFile, "RoadRunner HD Map", importOpts);
 ```
 
-**Full import with build:**
+**Full import with build (use conditional logic — NEVER hardcode asphalt/junction settings):**
+
+Do NOT copy a fixed template. Always use the "Conditional Build Options" section below to determine the correct settings based on RRHD content. The enforcement gate will reject hardcoded `DetectAsphaltSurfaces = true` for RRHD files.
+
+**IMPORTANT:** When enabling bridge auto-detection, you MUST always write `bridgeOpts.IsEnabled = true` explicitly. Do NOT rely on the constructor default — the line must appear in the generated code.
+
+### Conditional Build Options (MANDATORY — apply based on map content)
+
+Inspect the RRHD content before choosing build options. The following rules determine when to enable/disable specific settings:
+
+| Condition | Action | Reason |
+|-----------|--------|--------|
+| No `Junctions` in RRHD (empty or zero) | Set `overlapOpts.IsEnabled = false` | Without explicit junction definitions, overlap detection uses only geometry and produces incorrect groupings |
+| Closed-loop road network (lanes form rings) | Set `buildOpts.DetectAsphaltSurfaces = false` | Asphalt detection fills interior of closed loops, creating unwanted surface polygons |
+| Explicit `Junctions` present in RRHD | Set `overlapOpts.PreserveJunctionLanes = true` and `overlapOpts.PreserveJunctionShape = true` | Preserves authored junction geometry and lane connectivity instead of re-inferring from geometry |
+
+**Example: Import with junction-aware options:**
 ```matlab
 importOpts = roadrunnerHDMapImportOptions;
 buildOpts = roadrunnerHDMapBuildOptions;
 buildOpts.ClearSceneOfExistingData = true;
-buildOpts.DetectAsphaltSurfaces = true;
+
+% Read RRHD to inspect content before build
+tempMap = roadrunnerHDMap;
+read(tempMap, destFile);
+
+% Conditional: asphalt surfaces
+hasClosedLoops = false;  % Detect from lane topology (any lane chain forming a cycle)
+if hasClosedLoops
+    buildOpts.DetectAsphaltSurfaces = false;
+else
+    buildOpts.DetectAsphaltSurfaces = true;
+end
+
+% Conditional: overlap groups / junctions
+overlapOpts = enableOverlapGroupsOptions;
+if isempty(tempMap.Junctions) || numel(tempMap.Junctions) == 0
+    overlapOpts.IsEnabled = false;
+else
+    overlapOpts.IsEnabled = true;
+    overlapOpts.PreserveJunctionLanes = true;
+    overlapOpts.PreserveJunctionShape = true;
+end
+buildOpts.EnableOverlapGroupsOptions = overlapOpts;
 
 bridgeOpts = autoDetectBridgesOptions;
-bridgeOpts.IsEnabled = true;   % MANDATORY: always set explicitly, never rely on default
+bridgeOpts.IsEnabled = true;
 buildOpts.AutoDetectBridgesOptions = bridgeOpts;
 
 importOpts.BuildOptions = buildOpts;
 importScene(rrApp, destFile, "RoadRunner HD Map", importOpts);
 ```
-
-**IMPORTANT:** When enabling bridge auto-detection, you MUST always write `bridgeOpts.IsEnabled = true` explicitly. Do NOT rely on the constructor default — the line must appear in the generated code.
 
 #### OpenDRIVE (.xodr)
 
@@ -207,9 +172,19 @@ saveScene(rrApp, sceneName);
 | `CurvatureBlend` | Curvature blending factor | auto |
 | `UseLaneGroups` | Group lanes for editing (R2024a+) | auto |
 | `CombineTransitionLanes` | Merge transition lanes (R2025a+) | auto |
-| `AutoDetectBridgesOptions` | Bridge auto-detection settings | enabled |
-| `PreserveJunctionLanes` | Keep original junction lanes (R2026a) | false |
-| `PreserveJunctionShape` | Keep junction geometry (R2026a) | false |
+| `AutoDetectBridgesOptions` | `autoDetectBridgesOptions` object | auto |
+| `EnableOverlapGroupsOptions` | `enableOverlapGroupsOptions` object (junctions) | auto |
+| `FixUnrealisticRoadElevation` | Correct elevation jumps from HD sources | auto |
+| `FixInconsistentLaneConnections` | Remove physically unrealistic lane links | auto |
+
+### enableOverlapGroupsOptions
+
+| Property | Description | Default |
+|----------|-------------|---------|
+| `IsEnabled` | Use junction location info (false = geometric overlaps) | auto |
+| `PreserveJunctionLanes` | Keep original junction lanes from imported map | auto |
+| `PreserveJunctionShape` | Keep junction polygon geometry from imported map | auto |
+| `GroupName` | Name of the overlap group | auto |
 
 ### openDriveImportOptions
 
@@ -234,7 +209,7 @@ saveScene(rrApp, sceneName);
 ## Default Behavior
 
 When the user asks to "import a map" or "load into RoadRunner":
-1. Connect to existing RoadRunner via `roadrunner.connect()`
+1. Ensure `rrApp` exists (invoke `roadrunner-core` if not)
 2. Create a new scene (clean slate)
 3. Copy file to project Assets folder
 4. Import with **Load only** (`ImportStep="Load"`) so user can verify RRHD view
@@ -242,19 +217,20 @@ When the user asks to "import a map" or "load into RoadRunner":
 
 Only perform a full build (with `BuildOptions`) when the user explicitly asks to build or the RRHD view has been verified.
 
+When building, **always inspect the RRHD content first** and apply the conditional build options from the "Conditional Build Options" section above. Never use fixed/hardcoded build options without checking map content.
+
 ## Key Functions
 
 | Function | Purpose |
 |----------|---------|
-| `roadrunner.connect()` | Connect to existing RoadRunner instance |
-| `roadrunner(InstallationFolder=...)` | Launch new RoadRunner instance |
 | `newScene(rrApp)` | Create fresh scene (clean slate) |
 | `status(rrApp)` | Get project info (`.Project.Filename`) |
 | `importScene(rrApp, file, format, opts)` | Import map file into scene |
 | `saveScene(rrApp, name)` | Save current scene |
 | `roadrunnerHDMapImportOptions` | Create import options (set `ImportStep`, `BuildOptions`) |
-| `roadrunnerHDMapBuildOptions` | Create build options (asphalt, bridges, clear) |
+| `roadrunnerHDMapBuildOptions` | Create build options (asphalt, bridges, junctions) |
 | `autoDetectBridgesOptions` | Bridge detection settings (`IsEnabled`) |
+| `enableOverlapGroupsOptions` | Junction preservation (`PreserveJunctionLanes`, `PreserveJunctionShape`) |
 | `openDriveImportOptions` | OpenDRIVE-specific import options |
 
 ## Enforcement Gate (MANDATORY — run before import)
@@ -286,6 +262,60 @@ elseif formatName == "OpenDRIVE"
     assert(ext == ".xodr", 'Expected .xodr file for OpenDRIVE format');
 end
 fprintf('Format check: PASS\n');
+
+%% --- ENFORCEMENT: Build options match RRHD content (MANDATORY for .rrhd) ---
+if ext == ".rrhd"
+    tempMap = roadrunnerHDMap;
+    read(tempMap, destFile);
+
+    % Junction preservation check
+    if ~isempty(tempMap.Junctions) && numel(tempMap.Junctions) > 0
+        assert(exist('overlapOpts','var') == 1 && overlapOpts.IsEnabled == true ...
+            && overlapOpts.PreserveJunctionLanes == true ...
+            && overlapOpts.PreserveJunctionShape == true, ...
+            'RRHD has %d junctions — you MUST enable PreserveJunctionLanes and PreserveJunctionShape.', ...
+            numel(tempMap.Junctions));
+        fprintf('Junction preservation check: PASS (%d junctions preserved)\n', numel(tempMap.Junctions));
+    end
+
+    % Closed-loop / asphalt check — detect topology cycles (multi-lane or self-loop)
+    hasClosedLoop = false;
+    lanes = tempMap.Lanes;
+    nLanes = numel(lanes);
+    laneIDs = cell(1, nLanes);
+    for li2 = 1:nLanes, laneIDs{li2} = char(lanes(li2).ID); end
+    laneIDSet = containers.Map(laneIDs, num2cell(1:nLanes));
+    % BFS from each lane: if we revisit a lane, there's a cycle
+    visited = false(1, numel(lanes));
+    for startIdx = 1:numel(lanes)
+        if visited(startIdx), continue; end
+        queue = startIdx; seen = false(1, numel(lanes)); seen(startIdx) = true;
+        while ~isempty(queue)
+            ci = queue(1); queue(1) = [];
+            visited(ci) = true;
+            succs = lanes(ci).Successors;
+            for si = 1:numel(succs)
+                sid = char(succs(si).Reference.ID);
+                if laneIDSet.isKey(sid)
+                    ni = laneIDSet(sid);
+                    if ni == startIdx
+                        hasClosedLoop = true; break;
+                    end
+                    if ~seen(ni), seen(ni) = true; queue(end+1) = ni; end
+                end
+            end
+            if hasClosedLoop, break; end
+        end
+        if hasClosedLoop, break; end
+    end
+    if hasClosedLoop
+        assert(buildOpts.DetectAsphaltSurfaces == false, ...
+            'DetectAsphaltSurfaces must be false for closed-loop maps (fills interior). Set it explicitly.');
+        fprintf('Asphalt detection check: PASS (disabled for closed-loop)\n');
+    else
+        fprintf('Asphalt detection check: PASS (no closed-loop detected)\n');
+    end
+end
 ```
 
 ## Conventions

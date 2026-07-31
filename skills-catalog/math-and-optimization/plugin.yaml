@@ -1,6 +1,7 @@
 # Copyright 2026 The MathWorks, Inc.
-description: PDE Toolbox.
+description: Optimization Toolbox and PDE Toolbox.
 keywords:
   - matlab
+  - optimization
   - pde
   - finite-element

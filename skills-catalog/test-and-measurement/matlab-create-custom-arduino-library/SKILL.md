@@ -9,7 +9,7 @@ description: >
   Covers: custom addon creation, third-party Arduino library integration, LibraryBase
   class, C++ header files, DependentLibraries, arduinoioaddons namespace, I2C/SPI/GPIO
   peripheral wrappers.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

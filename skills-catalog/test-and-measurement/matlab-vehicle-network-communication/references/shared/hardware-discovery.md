@@ -30,6 +30,8 @@ Returns a table with columns: `Vendor`, `Device`, `Channel`, `DeviceModel`, `Pro
 - `canChannelList` discovers all available devices across all installed vendors
 - Use `ProtocolMode` column to verify CAN FD support before creating FD channels
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

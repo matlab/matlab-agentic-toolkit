@@ -13,7 +13,7 @@ description: >
   Also trigger on any question about whether code or a function works
   on a thread pool. For non-pool MATLAB performance work (vectorisation,
   preallocation, profiling), defer to matlab-optimize-performance.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2020a"
 metadata:
   author: MathWorks

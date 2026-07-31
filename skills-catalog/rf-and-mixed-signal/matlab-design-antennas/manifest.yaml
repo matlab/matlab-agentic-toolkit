@@ -1,0 +1,18 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Design antennas, arrays, and PCB antennas using MATLAB Antenna Toolbox. Covers catalog antenna design, custom antenna construction, PCB antenna design, finite and infinite arrays, AI-accelerated design exploration, and optimization.
+matlab-release: ">=R2024b"
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+  - check_matlab_code
+required-skills: []
+required-products:
+  - Antenna Toolbox
+  - RF Toolbox
+  - Signal Processing Toolbox
+  - Statistics and Machine Learning Toolbox
+toolkit: matlab-agentic-toolkit

@@ -6,7 +6,7 @@ description: >
   (when about tracing), or mentions "spans", "distributed tracing", or "OTel tracing"
   in the context of MATLAB functions. Covers span creation, parent-child context
   propagation, error handling, attributes, events, and semantic conventions.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

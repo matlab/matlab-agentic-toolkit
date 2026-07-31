@@ -2,7 +2,7 @@
 name: matlab-simulate-bluetooth-network
 description: >
     Simulate Bluetooth system-level networks using the Bluetooth Toolbox. Use this skill for any Bluetooth topology: BLE ACL (Asynchronous Connection-Less) data connections, CIS (Connected Isochronous Stream) and LE Audio for stereo speakers or hearing aids, BLE GAP (Generic Access Profile) connection establishment with advertising and scanning, Classic BR/EDR piconets with ACL data and SCO (Synchronous Connection-Oriented) voice links, and BLE+BR/EDR coexistence with adaptive frequency hopping. Covers bluetoothLENode, bluetoothNode, bluetoothLEConnectionConfig, bluetoothLECISConfig, bluetoothLEGAPConfig, bluetoothConnectionConfig, configureConnection, kpi (), updateChannelList, and all Bluetooth statistics.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks

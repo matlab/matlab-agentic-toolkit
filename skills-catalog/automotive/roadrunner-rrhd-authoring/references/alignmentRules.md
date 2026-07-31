@@ -1,5 +1,7 @@
 # Alignment Rules — Lanes, Boundaries, and Travel Direction
 
+**Reference implementation:** `scripts/detectAlignment.m`
+
 Defines the geometry alignment conventions that prevent **green surface (grass/terrain)** rendering bugs in RoadRunner.
 
 ## Core Concept: Digitization Direction
@@ -79,6 +81,38 @@ end
 ```
 
 **Why multi-sample?** The overall direction vector `geom(end,:) - geom(1,:)` fails catastrophically on half-oval segments where the chord cuts across the curve interior. Local tangent at each sample point always correctly identifies the geometric left/right regardless of overall curvature.
+
+#### Simplified Algorithm for Map Conversion (Lanelet2-proven)
+
+For converting maps where left/right boundary assignment is already known (e.g., Lanelet2 lanelets define which way is left vs right), a simpler approach works reliably:
+
+```matlab
+lDir = leftPts(end,:) - leftPts(1,:);
+rDir = rightPts(end,:) - rightPts(1,:);
+dp = dot(lDir(1:2)/(norm(lDir(1:2))+1e-10), rDir(1:2)/(norm(rDir(1:2))+1e-10));
+
+if dp >= -0.3
+    % Normal: both boundaries go same direction
+    rightAlign = "Forward";
+    leftAlign = "Forward";
+else
+    % Opposing boundaries: use proximity to determine which is backward
+    d_ls_re = norm(leftPts(1,1:2) - rightPts(end,1:2));  % left start to right end
+    d_ls_rs = norm(leftPts(1,1:2) - rightPts(1,1:2));    % left start to right start
+    if d_ls_re < d_ls_rs
+        % left_start near right_end → right is Backward
+        rightAlign = "Backward";
+        leftAlign = "Forward";
+    else
+        rightAlign = "Forward";
+        leftAlign = "Backward";
+    end
+end
+```
+
+**Key insight:** The -0.3 threshold (not 0) handles lanes with slight boundary curvature that produce small negative dot products but are NOT truly opposing. True opposing boundaries (shared center lines between lanes going opposite directions) typically have dp < -0.7.
+
+This approach is simpler than multi-sample verification because the source data guarantees correct left/right assignment. It has been validated on 184-lane Japanese urban maps with 46 backward-right boundaries.
 
 #### Legacy Algorithm (d_starts/d_cross)
 

@@ -1,7 +1,7 @@
 ---
 name: matlab-read-database
 description: "Reads data from relational databases using MATLAB Database Toolbox pushdown capabilities. Use when importing data from JDBC/ODBC databases, filtering rows, selecting columns, excluding duplicates, joining database tables, using sqlread, fetch, sqlinnerjoin, sqlouterjoin, databaseImportOptions, or rowfilter."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,0 +1,13 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Normalize images to [0,1] with proper validation for float-class, bit-depth mismatch, and indexed image edge cases.
+matlab-release: ">=R2021a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products: []
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

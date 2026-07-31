@@ -12,7 +12,7 @@ description: >
   uigauge, uilamp, alarm banner, gray-field, ISA-101, OPC UA dashboard,
   setpoint, write safeguards, alarm visualization, OSIsoft PI, AVEVA PI,
   PI Server, PI Data Archive, PI AF, PI Asset Framework, piclient, afclient.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

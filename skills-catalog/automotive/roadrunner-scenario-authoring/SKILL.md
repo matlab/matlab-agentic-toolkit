@@ -7,7 +7,7 @@ description: >
   follow scenarios, or any programmatic scenario creation in RoadRunner.
   Triggers on: roadrunnerAPI, scenario authoring, add actor, create route,
   phase logic, cut-in scenario, pedestrian crossing, scenario from MATLAB.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

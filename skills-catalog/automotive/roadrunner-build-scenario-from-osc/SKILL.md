@@ -11,7 +11,7 @@ description: >
   reconstruction. Handles position translation (LanePosition and RoadPosition
   to world coordinates), construct mapping, relative references, trajectory/route
   handling, parameter expressions, catalog references, and phase logic topology.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-write-performance-tests
 description: "Writes MATLAB performance tests using the matlab.perftest.TestCase framework. Use when asked to write, create, or add performance tests for MATLAB code, benchmark functions, measure execution time with statistical rigor, or use runperf."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-create-buildfile
 description: "Generate a MATLAB buildfile.m with tasks for static analysis, testing, coverage reporting, and packaging. Use after matlab-create-project when the project structure is in place and you need repeatable build automation."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

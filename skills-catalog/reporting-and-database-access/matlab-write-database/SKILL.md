@@ -1,10 +1,10 @@
 ---
 name: matlab-write-database
 description: "Writes data from MATLAB to relational databases and performs database operations. Use when writing data with sqlwrite, updating rows with sqlupdate, executing SQL with execute, running stored procedures, managing transactions with commit/rollback, creating tables, or using SQL prepared statements."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # MATLAB Database Export Architect

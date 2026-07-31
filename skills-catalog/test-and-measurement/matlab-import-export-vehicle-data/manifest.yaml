@@ -1,0 +1,18 @@
+# Copyright 2026 The MathWorks, Inc.
+
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.2"
+human-description: Import, decode, and export vehicle network data from/to log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types, CAN/CAN FD/LIN decode pipelines, and MDF/BLF writing workflows.
+matlab-release: ">=R2023a"
+required-tools:
+  - evaluate_matlab_code
+  - detect_matlab_toolboxes
+  - check_matlab_code
+  - run_matlab_file
+  - run_matlab_test_file
+required-skills: []
+required-products:
+  - Vehicle Network Toolbox
+toolkit: matlab-agentic-toolkit

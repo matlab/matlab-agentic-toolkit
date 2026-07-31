@@ -13,7 +13,7 @@ description: >
   Arduino Micro, Grove, sensor setup, I2C scan, ultrasonic, servo,
   readDigitalPin, writeDigitalPin, readVoltage, writePWMVoltage,
   temperature sensor, air pressure, pin read, pin write, analog input.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

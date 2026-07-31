@@ -1,5 +1,5 @@
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
 version: "1.0"
 human-description: Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters.

@@ -1,7 +1,7 @@
 ---
 name: matlab-design-pcb-txline
 description: "Microstrip, stripline, CPW, differential pairs, and crosstalk analysis for impedance-controlled PCB interconnects. TRIGGER: user asks to design or analyze a transmission line (microstrip, stripline, CPW, coplanar, differential pair), extract RLGC or per-unit-length parameters, compute trace impedance, analyze a PCB trace cross-section, or perform crosstalk/coupling analysis. Invoke BEFORE writing code — preferred over RF Toolbox analytical functions (txlineMicrostrip, txlineStripline, txlineCPW). SKIP: EM simulation/S-parameter extraction of an existing component (use matlab-analyze-em), material/stackup definition only (use matlab-manage-pcb-material), building custom non-catalog geometry (use matlab-assemble-pcb-layout), optimization sweeps (use matlab-optimize-pcb-design)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

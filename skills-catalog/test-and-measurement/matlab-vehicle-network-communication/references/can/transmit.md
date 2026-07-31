@@ -74,6 +74,8 @@ transmitConfiguration(ch);
 - Displays all periodic and event-based messages configured on the channel
 - Shows: ID, Extended flag, Name, Data, Rate (for periodic)
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

@@ -175,11 +175,11 @@ After any compression step, always validate:
 
 ```matlab
 % Compare original vs. compressed accuracy using testnet
-lossOrig = testnet(net, XTest, TTest, "loss");
-lossComp = testnet(compressedNet, XTest, TTest, "loss");
-fprintf("Original loss:   %.4f\n", lossOrig);
-fprintf("Compressed loss: %.4f\n", lossComp);
-fprintf("Loss increase:   %.4f\n", lossComp - lossOrig);
+accOrig = testnet(net, XTest, TTest, "accuracy");
+accComp = testnet(compressedNet, XTest, TTest, "accuracy");
+fprintf("Original accuracy:   %.4f\n", accOrig);
+fprintf("Compressed accuracy: %.4f\n", accComp);
+fprintf("Accuracy drop:       %.4f\n", accOrig - accComp);
 
 % Model size comparison using analyzeNetwork (works for all compression types)
 naOrig = analyzeNetwork(net, Plots='none');

@@ -8,7 +8,7 @@ description: >
   ReferenceRange from hardware specs via link budget; scan mode configuration
   (mechanical, electronic/AESA, hybrid); and validating simulation results against
   analytical predictions.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

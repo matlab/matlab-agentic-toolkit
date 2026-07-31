@@ -76,6 +76,18 @@ For short signals or one-shot calls, conversion overhead *can* outweigh the spee
 | `array2table(gpuResult)` errors | varies | `array2table` does not accept gpuArray. Use `table(gpuVar1, gpuVar2, ...)` to build tables containing gpuArray columns. |
 | A specific function errors on gpuArray input | varies | Call `gather` on that variable only. Do not blanket-gather all outputs — many functions accept gpuArrays. If unsure whether a function supports gpuArray, try it and check for an error rather than preemptively gathering. |
 
+## When each extractor gained `gpuArray` support
+
+`gpuArray` input to `extract` requires Parallel Computing Toolbox and is only available from the release listed below. On an earlier release the extractor object may exist but passing a `gpuArray` errors — check the release before enabling the GPU path.
+
+| Extractor | Object introduced | `gpuArray` support since |
+|---|---|---|
+| `signalTimeFeatureExtractor` | R2021a | R2023a |
+| `signalFrequencyFeatureExtractor` | R2021b | R2023a |
+| `signalTimeFrequencyFeatureExtractor` | R2024a | **R2024b** |
+
+Note the one-release gap for `signalTimeFrequencyFeatureExtractor`: the object shipped in R2024a but did not accept `gpuArray` input until R2024b. Do not offer the GPU path for time-frequency extraction on R2024a.
+
 ## Per-extractor GPU support (verified R2025b, NVIDIA RTX A5000)
 
 | Extractor | Transform | GPU supported | Speedup (30s @ 48 kHz) |

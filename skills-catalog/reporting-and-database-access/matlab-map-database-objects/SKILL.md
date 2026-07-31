@@ -1,7 +1,7 @@
 ---
 name: matlab-map-database-objects
 description: "Generates MATLAB Object Relational Mapping (ORM) code using Database Toolbox. Use when mapping MATLAB classes to database tables, reading/writing objects with ormread/ormwrite/ormupdate, defining Mappable classes, converting classes to SQL with orm2sql, or using object-oriented database workflows."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

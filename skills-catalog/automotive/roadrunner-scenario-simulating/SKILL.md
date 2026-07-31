@@ -9,7 +9,7 @@ description: >
   ActorSimulation getAttribute/setAttribute, addObserver, SensorSimulation,
   Simulink co-sim blocks, and publishActorBehavior.
   NOT for project setup, scene building, scenario authoring, or trajectory export.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-optimize-pcb-design
 description: "Optimize RF PCB dimensions for bandwidth, return loss, or area via patternsearch and surrogateopt with constraints. TRIGGER: user asks to optimize an RF PCB component for performance (bandwidth, return loss, insertion loss, area) or apply constraints to a design. Invoke BEFORE writing optimization code — RF PCB Toolbox has a built-in optimize() function that differs from generic fmincon/ga approaches. SKIP: designing a component from scratch without an optimization objective (use the specific matlab-design-pcb-* skill), EM analysis without optimization (use matlab-analyze-em), material/stackup setup only (use matlab-manage-pcb-material)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

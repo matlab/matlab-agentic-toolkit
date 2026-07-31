@@ -15,7 +15,7 @@ description: >
   setSecurityModel, opc.ua.trustServerCertificate,
   opc.ua.exportClientCertificate, Industrial Communication Toolbox,
   OPC UA server connection, OPC UA server discovery.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "2.0"

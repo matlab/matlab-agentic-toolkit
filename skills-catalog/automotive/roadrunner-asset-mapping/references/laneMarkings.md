@@ -53,6 +53,52 @@ These boundary types map to extrusions, not lane markings:
 | `barrier` / `BARRIER_JERSEY` | `Extrusions/JerseyBarrier.rrext` |
 | `FENCE` | `Extrusions/Fence.rrext` |
 
+## Regional Marking Variants (R2026a with RoadRunner_Asset_Library)
+
+Regional variants use `_<region>` suffix and `.rrlms_rrx` or `.rrcws_rrx` extension. Use when the map's geoReference indicates a specific region.
+
+### Japan (`Markings/Japan/`)
+
+| Marking | Asset Path |
+|---|---|
+| Solid single white | `Markings/Japan/SolidSingleWhite_JP.rrlms_rrx` |
+| Dashed single white | `Markings/Japan/DashedSingleWhite_JP.rrlms_rrx` |
+| Solid double white | `Markings/Japan/SolidDoubleWhite_JP.rrlms_rrx` |
+| Dashed double white | `Markings/Japan/DashedDoubleWhite_JP.rrlms_rrx` |
+| Solid single yellow | `Markings/Japan/SolidSingleYellow_JP.rrlms_rrx` |
+| Solid double yellow | `Markings/Japan/SolidDoubleYellow_JP.rrlms_rrx` |
+| Dashed single yellow | `Markings/Japan/DashedSingleYellow_JP.rrlms_rrx` |
+| Stop line | `Markings/Japan/StopLine_JP.rrlms_rrx` |
+| Simple crosswalk | `Markings/Japan/SimpleCrosswalk_JP.rrcws_rrx` |
+
+### Germany (`Markings/Germany/`)
+
+| Marking | Asset Path |
+|---|---|
+| Solid single white | `Markings/Germany/SolidSingleWhite_DE.rrlms_rrx` |
+| Dashed single white | `Markings/Germany/DashedSingleWhite_DE.rrlms_rrx` |
+| Solid double white | `Markings/Germany/SolidDoubleWhite_DE.rrlms_rrx` |
+| Stop line | `Markings/Germany/StopLine_DE.rrlms_rrx` |
+| Simple crosswalk | `Markings/Germany/SimpleCrosswalk_DE.rrcws_rrx` |
+
+### Region Selection Logic
+
+```matlab
+function assetPath = resolveRegionalMarking(baseMarking, region)
+    % baseMarking: e.g. "SolidSingleWhite"
+    % region: "Japan", "Germany", "US", etc.
+    switch region
+        case "Japan"
+            assetPath = "Assets/Markings/Japan/" + baseMarking + "_JP.rrlms_rrx";
+        case "Germany"
+            assetPath = "Assets/Markings/Germany/" + baseMarking + "_DE.rrlms_rrx";
+        otherwise
+            assetPath = "Assets/Markings/" + baseMarking + ".rrlms";
+    end
+    % IMPORTANT: Verify file exists at runtime before using
+end
+```
+
 ## MATLAB Construction Pattern
 
 ```matlab

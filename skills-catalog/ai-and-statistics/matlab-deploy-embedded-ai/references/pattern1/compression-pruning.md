@@ -33,21 +33,24 @@ worth flagging because they affect the recipe:
 
 - `LearnablesReductionGoal` — target proportion of parameters to remove. Drives
   the trade-off between flash savings and accuracy.
-- `ValidationThreshold` — stops the iterative pruning loop as soon as the
-  validation metric drops below the threshold. Use this when accuracy is the
-  primary constraint (see the "Maximize accuracy" recipe in [`compression-decision.md`](compression-decision.md)).
+- `ValidationThreshold` — stops the iterative pruning loop when the validation
+  metric at the end of a fine-tuning cycle drops below the threshold. Use this
+  when accuracy is the primary constraint (see the "Maximize accuracy" recipe in [`compression-decision.md`](compression-decision.md)).
 
 **Notes:**
-- Requires the Deep Learning Toolbox Model Compression Library (support package).
-  `compressNetworkUsingTaylorPruning` is the high-level R2026a API; older builds
-  of the support package shipped only the lower-level `taylorPrunableNetwork`
-  workflow (score → updateScore → updatePrunables → trainnet loop). If
+- Requires the Deep Learning Toolbox Model Compression Library (support package). If
   `which compressNetworkUsingTaylorPruning` returns "not found" on a system
   with the support package installed, the SPKG is on a stale build — ask the
   user to update the support package via Add-On Explorer.
+- **Which API to use:**
+  - `compressNetworkUsingTaylorPruning` — use when the network can be trained
+    with `trainnet` (single-network training, including custom loss functions).
+    Output is a standard `dlnetwork` — no conversion step needed. The function
+    iteratively scores filters, removes lowest-scoring, and fine-tunes.
+  - `taylorPrunableNetwork` / `updateScore` / `updatePrunables` — use when
+    training requires a custom training loop (e.g., GANs, multi-network
+    encoder-decoder setups). Output is a `taylorPrunableNetwork` object.
 - Operates on convolutional layers only; for FC/LSTM/GRU reduction (or for additional conv-layer reduction), use projection
-- Output is a standard `dlnetwork` — no conversion step needed
-- The function iteratively scores filters, removes lowest-scoring, and fine-tunes
 
 
 Copyright 2026 The MathWorks, Inc.

@@ -1,7 +1,7 @@
 ---
 name: matlab-create-live-script
 description: Create, edit, and run plain-text MATLAB live scripts (.m files) with rich text formatting, LaTeX equations, section breaks, and inline figures. Use when generating tutorials, analysis notebooks, reports, documentation, or educational content, when modifying existing live scripts, or when converting existing binary .mlx files to .m for version control. Requires R2025a+.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "2.2"

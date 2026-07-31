@@ -34,8 +34,8 @@ model = loadPyTorchExportedProgram(modelFileName, ExecutionMode=mode)
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `invoke` | `out = invoke(model, input)` | Run forward inference |
-| `inputSpecifications` | `specs = model.inputSpecifications` | Return input specs table (name, size, type) |
-| `outputSpecifications` | `specs = model.outputSpecifications` | Return output specs table (name, size, type) |
+| `inputSpecifications` | `specs = model.inputSpecifications` | Return input specs struct (Name, Size, Type) |
+| `outputSpecifications` | `specs = model.outputSpecifications` | Return output specs struct (Name, Size, Type) |
 | `summary` | `summary(model)` | Display input/output specifications to command window |
 
 ### invoke
@@ -53,13 +53,13 @@ output = invoke(model, input);
 
 ### inputSpecifications / outputSpecifications
 
-Returns a table with columns:
+Returns a struct with fields:
 
-| Column | Description |
-|--------|-------------|
-| Name | Tensor name from the PyTorch model |
-| Size | Numeric array of dimensions |
-| DataType | MATLAB data type string (e.g., `"single"`) |
+| Field | Type | Description |
+|-------|------|-------------|
+| Name | cell array of char vectors | Tensor names from the PyTorch model |
+| Size | cell array of numeric arrays | Dimensions of each tensor |
+| Type | cell array of char vectors | MATLAB data type (e.g., `'single'`) |
 
 Example:
 
@@ -67,7 +67,7 @@ Example:
 model = loadPyTorchExportedProgram("resnet18.pt2");
 inSpecs = model.inputSpecifications;
 % inSpecs.Size{1} might be [1 3 224 224]
-% inSpecs.DataType{1} might be "single"
+% inSpecs.Type{1} might be 'single'
 ```
 
 ## Requirements

@@ -1,7 +1,7 @@
 ---
 name: matlab-model-via
 description: "Via modeling: pads, antipads, ground return vias, GRV placement, and signal integrity for high-speed layer transitions. TRIGGER: user asks to model a via, design a via transition, place ground return vias, analyze via performance, or check signal integrity through layer transitions. Invoke BEFORE writing code — only viaSingleEnded exists (no viaDifferential), and the location format is non-obvious. SKIP: general signal integrity without vias (use matlab-analyze-em), transmission line design (use matlab-design-pcb-txline), PDN analysis (use matlab-analyze-pcb-pdn), material/stackup setup only (use matlab-manage-pcb-material)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-optimize-performance
 description: "Read BEFORE optimizing any MATLAB code for speed. Without this workflow, agents commonly optimize the wrong target, fabricate speedup claims without measurement, or introduce regressions. Guides the 7-step workflow: baseline, profile, identify, optimize, measure, verify, report."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

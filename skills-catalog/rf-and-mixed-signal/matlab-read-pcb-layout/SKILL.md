@@ -1,7 +1,7 @@
 ---
 name: matlab-read-pcb-layout
 description: "Import Gerber, ODB++, Allegro .brd, .mcm files for PCB boards and IC packages. Inspect nets, layers, shapes, and stackups. TRIGGER: user asks to import, read, or open a PCB layout file. Gerber files use gerberRead or PCBReader; ODB++, Allegro .brd, .mcm, and native formats use pcbFileRead. Also when inspecting nets, layers, components, or stackups from an imported board. Invoke BEFORE writing import code — the query API (cadnet, cadnetList, componentList) is specialized. SKIP: EM analysis or S-parameter extraction (use matlab-analyze-em), PDN/IR-drop analysis (use matlab-analyze-pcb-pdn), building custom geometry (use matlab-assemble-pcb-layout), material/stackup definition only (use matlab-manage-pcb-material)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

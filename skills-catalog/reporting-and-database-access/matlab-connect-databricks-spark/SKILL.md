@@ -7,7 +7,7 @@ description: >
   Unity Catalog tables, filtering DataFrames server-side, or converting results to MATLAB
   tables. Triggers on: Databricks Connect, Spark from MATLAB, getDatabricksSession,
   .databrickscfg, large table server-side filtering.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

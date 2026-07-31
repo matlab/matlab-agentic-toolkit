@@ -1,7 +1,7 @@
 ---
 name: roadrunner-core
 description: "Foundation skill for all RoadRunner workflows: MATLAB path setup, connection, project/scene/scenario lifecycle, world settings, handle management, status, and close. Use when connecting to RoadRunner, managing projects/scenes/scenarios, setting world origin, checking status, closing RoadRunner, or when any downstream RoadRunner skill needs initialization."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -25,18 +25,28 @@ Build MATLAB apps programmatically using UI components, layouts, callbacks, and 
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-build-app` | Build MATLAB apps with guided path selection, layout archetypes, and structured implementation plans. |
+| `matlab-build-app` | Build MATLAB apps with guided architecture selection (UIFigure or UIHTML), layout archetypes, and structured implementation plans. For UIFigure apps, optionally serialize to App Designer format (.mlapp or plain-text). |
 | `matlab-build-chart` | Create and customize MATLAB charts with correct axes handling, modern layout, annotations, interactivity, and animation patterns. |
 | `matlab-theming` | Apply color palettes, brand theming, dark mode, and conditional styling to MATLAB charts and uifigure apps. |
 
 ### MATLAB Data Import and Analysis ([`matlab-data-import-and-analysis`](./matlab-data-import-and-analysis/))
 
-Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations
+Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-analyze-data` | Analyze data in MATLAB using tables, timetables, numeric arrays, and gridded data — filtering, aggregation, smoothing, cleaning, and time-series operations. |
 | `matlab-choose-bigdata-solution` | Choose the right MATLAB tool for processing large tabular data that may not fit in memory. |
+| `matlab-import-export-data` | Import and export tabular, structured, and binary data with cross-tool fidelity. |
+| `matlab-secure-credentials` | Store, retrieve, and pass credentials securely in MATLAB using the built-in MATLAB vault. |
+
+### MATLAB Environment and Settings ([`matlab-environment-and-settings`](./matlab-environment-and-settings/))
+
+Diff MATLAB settings between releases and migrate startup scripts to correct setting paths
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-migrate-settings` | Diff MATLAB settings between releases and update startup scripts to use the correct setting paths. |
 
 ### MATLAB External Language Interfaces ([`matlab-external-language-interfaces`](./matlab-external-language-interfaces/))
 
@@ -84,7 +94,7 @@ Supports Aerospace Toolbox&trade;
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-compute-aerospace-environment` | Compute aerospace environment properties (atmosphere, gravity, wind, magnetic field, geoid, space weather, ephemeris, Earth orientation) using Aerospace Toolbox functions. |
-| `matlab-convert-aerospace-coordinates` | Convert between aerospace coordinate frames, rotation representations, time systems, and unit systems using Aerospace Toolbox. |
+| `matlab-convert-aerospace-coordinates` | Convert aerospace coordinate frames, rotations, time, and units. |
 
 ### AI and Statistics ([`ai-and-statistics`](./ai-and-statistics/))
 
@@ -92,6 +102,7 @@ Supports Deep Learning Toolbox&trade; and Statistics and Machine Learning Toolbo
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
 | `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
 | `matlab-import-external-ai-model` | Import PyTorch, ONNX, and Keras deep learning models into MATLAB and verify numerical correctness. |
@@ -127,12 +138,14 @@ Supports MATLAB Drive&trade;
 
 ### Code Generation ([`code-generation`](./code-generation/))
 
-Supports Fixed-Point Designer&trade;
+Supports Embedded Coder&trade;, Fixed-Point Designer&trade;, GPU Coder&trade;, and MATLAB Coder&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-deploy-ai-model` | Generate C/C++ or CUDA code from PyTorch ExportedProgram models using loadPyTorchExportedProgram and codegen. |
 | `matlab-deploy-embedded-code` | Deploy MATLAB-generated code to embedded hardware with PIL verification. |
+| `matlab-generate-code` | Generate, verify, and accelerate C/C++ or CUDA code from MATLAB using MATLAB Coder, Embedded Coder, or GPU Coder. |
+| `matlab-optimize-gpu-codegen` | Optimize MATLAB functions for GPU Coder to generate faster CUDA code. |
 | `matlab-review-fi-code` | Review MATLAB fixed-point (fi) code for performance, code generation efficiency, and correctness. |
 
 ### Computational Biology ([`computational-biology`](./computational-biology/))
@@ -147,11 +160,22 @@ Supports SimBiology&trade;
 
 ### Computational Finance ([`computational-finance`](./computational-finance/))
 
-Supports Datafeed Toolbox&trade;
+Supports Datafeed Toolbox&trade; and Spreadsheet Link&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-access-datafeed` | Connect to Bloomberg&reg;, FRED&reg;, and Haver Analytics&reg; to retrieve financial and economic data using the Datafeed Toolbox. |
+| `matlab-access-from-excel` | Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link. |
+
+### Control Systems ([`control-systems`](./control-systems/))
+
+Supports Predictive Maintenance Toolbox&trade;
+
+| Skill | What it teaches your agent |
+|-------|---------------------------|
+| `matlab-extract-battery-features` | Extract battery features from cycling test data for degradation and health analysis. |
+| `matlab-extract-rotating-machinery-features` | Extract features from rotating machinery vibration data for condition monitoring and fault detection. |
+| `matlab-identify-linear-system` | Identify linear dynamic models from measurement data using System Identification Toolbox&trade;. |
 
 ### Image Processing and Computer Vision ([`image-processing-and-computer-vision`](./image-processing-and-computer-vision/))
 
@@ -163,6 +187,7 @@ Supports Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar 
 | `matlab-display-volume` | Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. |
 | `matlab-integrate-pytorch-vision` | Create MATLAB interfaces to Python image processing and computer vision models from GitHub repositories or pip packages using MPyReq. |
 | `matlab-model-optics` | Build, import, analyze, optimize, and tolerance optical systems and coatings using the Optical Design and Simulation Library. |
+| `matlab-normalize-image` | Normalize images to [0,1] with proper validation for float-class, bit-depth mismatch, and indexed image edge cases. |
 | `matlab-ocr` | Build OCR pipelines in MATLAB using the ocr() function. |
 | `matlab-point-cloud-file-io` | Read and write 3-D point cloud data in PLY, PCD, LAS/LAZ, PCAP, E57, and IDC formats. |
 | `matlab-point-cloud-registration` | Register and align 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms. |
@@ -171,7 +196,7 @@ Supports Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar 
 
 ### Math and Optimization ([`math-and-optimization`](./math-and-optimization/))
 
-Supports PDE Toolbox&trade;
+Supports Optimization Toolbox&trade; and PDE Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -197,12 +222,12 @@ Supports Phased Array System Toolbox&trade;, Sensor Fusion and Tracking Toolbox&
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Design and analyze radar and sonar waveforms using Phased Array System Toolbox. |
-| `matlab-import-tracking-data` | Import ground truth trajectory data for use with Sensor Fusion and Tracking Toolbox. |
+| `matlab-import-tracking-data` | Import raw tracking data (CSV, XLSX, TXT, or MATLAB tables) into objectDetection arrays and objectTrack arrays used by Sensor Fusion and Tracking Toolbox. |
 | `matlab-simulate-radar-detections` | Simulate statistical radar detections for surveillance and tracking radar scenarios. |
 
 ### Reporting and Database Access ([`reporting-and-database-access`](./reporting-and-database-access/))
 
-Supports Database Toolbox&trade;
+Supports Database Toolbox&trade;, MATLAB Report Generator&trade;, and Simulink Report Generator&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -221,34 +246,23 @@ Supports Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Toolbox&trade;
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-analyze-ams-waveform` | Measure phase noise, jitter, and timing from AMS simulation waveforms using Mixed-Signal Blockset. |
+| `matlab-analyze-antenna-structures` | Design and analyze electrically large antenna structures — reflectors, reflectarrays, installed antennas on platforms, and radar cross section. |
 | `matlab-analyze-em` | Compute S-parameters, insertion loss, fields, and currents for RF PCB performance validation. |
-| `matlab-analyze-installed-antenna` | Analyze antennas installed on electrically large conducting platforms such as vehicles and aircraft. |
 | `matlab-analyze-pcb-pdn` | Analyze PDN DC voltage and current distribution, IR drop, and design rule checking on PCB layouts. |
-| `matlab-analyze-rcs` | Compute and visualize monostatic and bistatic radar cross section of antennas and platforms. |
-| `matlab-analyze-rf-propagation` | Analyze RF propagation and plan wireless sites using coverage maps, ray tracing, and path loss models. |
 | `matlab-assemble-pcb-layout` | Build custom PCB structures with pcbComponent, shapes, Boolean operations, feeds, and multi-layer stackups. |
-| `matlab-create-ai-antenna` | Explore antenna design space and reconstruct 3D radiation patterns using AI surrogate models. |
-| `matlab-create-custom-antenna` | Build custom antennas from geometric primitives using Antenna Toolbox customAntenna. |
-| `matlab-create-measured-antenna` | Create measuredAntenna objects from simulated or measured data for site planning and satellite links. |
-| `matlab-design-antenna` | Design and analyze antennas at a target frequency using MATLAB Antenna Toolbox. |
-| `matlab-design-antenna-matching-network` | Design impedance matching networks for antennas using RF Toolbox matchingnetwork. |
-| `matlab-design-array` | Design and analyze finite and infinite antenna arrays with beam steering, tapering, and scan impedance. |
-| `matlab-design-pcb-antenna` | Design multi-layer PCB antennas with custom metal patterns, feeds, and Gerber export using pcbStack. |
+| `matlab-design-antennas` | Design antennas, arrays, and PCB antennas using MATLAB Antenna Toolbox. Covers catalog antenna design, custom antenna construction, PCB antenna design, finite and infinite arrays, AI-accelerated design exploration, and optimization. |
 | `matlab-design-pcb-coupler` | Design Wilkinson, branchline, ratrace, and directional couplers, corporate dividers, and Rotman lenses. |
 | `matlab-design-pcb-filter` | Design bandpass, lowpass, and bandstop RF filters using hairpin, coupled-line, combline, stub, and SIW topologies. |
 | `matlab-design-pcb-passive` | Design spiral inductors, interdigital capacitors, baluns, resonators, and phase shifters for RF circuits. |
 | `matlab-design-pcb-txline` | Design microstrip, stripline, CPW, and differential pair transmission lines with impedance control and crosstalk analysis. |
-| `matlab-design-reflectarray` | Design reflectarray antennas and reconfigurable intelligent surfaces with phase-controlled unit cells. |
-| `matlab-design-reflector-antenna` | Design and analyze parabolic, Cassegrain, Gregorian, and corner reflector antennas. |
-| `matlab-estimate-sar` | Estimate Specific Absorption Rate from antennas near or inside biological tissue. |
 | `matlab-export-session-script` | Export conversation MATLAB code to a clean, runnable .m script. |
+| `matlab-integrate-antennas` | Integrate antennas into RF systems using MATLAB Antenna Toolbox and RF Toolbox. Covers impedance matching network design, measured antenna creation, RF propagation and site planning, and SAR estimation. |
 | `matlab-integrate-pcb-circuit` | Cascade PCB components, add lumped elements, and export Touchstone files for multi-component RF circuits. |
 | `matlab-manage-pcb-material` | Define dielectric substrates, metal conductors, multi-layer stackups, and loss models for RF PCB simulation. |
 | `matlab-model-ams-systems` | Model PLL frequency synthesizers from IC datasheets or system specs using Mixed-Signal Blockset. Extracts parameters, selects architecture, assembles Simulink model, designs loop filter, validates phase noise. |
 | `matlab-model-rf` | Design, analyze, and simulate RF systems in MATLAB using RF Toolbox and RF Blockset&trade; -- from S-parameter I/O through full Circuit Envelope time-domain simulation. |
 | `matlab-model-serdes-systems` | Model, simulate, and optimize Serializer/Deserializer (SerDes) systems — serial and parallel links — using MATLAB SerDes Toolbox. |
 | `matlab-model-via` | Model vias with pads, antipads, and ground return vias for high-speed PCB layer transitions. |
-| `matlab-optimize-antenna` | Optimize antenna and array designs using SADEA and TR-SADEA surrogate-assisted algorithms. |
 | `matlab-optimize-pcb-design` | Optimize RF PCB component dimensions for bandwidth, return loss, or area using patternsearch and surrogateopt. |
 | `matlab-read-pcb-layout` | Import Gerber, ODB++, and Allegro .brd files and inspect nets, layers, shapes, and stackups. |
 | `matlab-write-pcb-layout` | Export pcbComponent designs to Gerber files for PCB manufacturing. |
@@ -272,14 +286,15 @@ Supports Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-analyze-signal-cwt` | Analyze signals using the Continuous Wavelet Transform. |
+| `matlab-analyze-time-frequency` | Analyze time-frequency content using CWT, STFT, synchrosqueezing, and wavelet coherence. |
 | `matlab-configure-scope-object` | Configure properties of scope-related Simulink blocks or MATLAB objects |
 | `matlab-design-adaptive-filter` | Design and implement adaptive filters using System objects. |
 | `matlab-design-digital-filter` | Design and validate digital filters in MATLAB. |
 | `matlab-dsphdl-ddc-design` | Design HDL-optimized Digital Down Converters using dsphdl System objects. |
 | `matlab-extract-signal-features` | Extract per-frame time, frequency, and time-frequency features from 1D signals. |
 | `matlab-play-record-audio` | Play and record audio in MATLAB using audiostreamer. |
-| `matlab-prepare-signal-data` | Build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off. |
+| `matlab-prepare-signal-data` | Condition raw signals (fill gaps, detrend, deoutlier, denoise, resample/align) and build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off. |
+| `matlab-process-streaming-audio` | Design and run real-time audio processing chains using Audio Toolbox streaming objects. |
 | `matlab-write-audio-plugin` | Author Audio Toolbox plugins that compile to VST/AU via validateAudioPlugin and generateAudioPlugin. |
 
 ### Test and Measurement ([`test-and-measurement`](./test-and-measurement/))
@@ -291,15 +306,16 @@ Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Indu
 | `matlab-build-industrial-hmi` | Build industrial-grade SCADA/HMI dashboards in MATLAB App Designer following ISA-101 conventions. |
 | `matlab-call-nidaqmx` | Translate NI-DAQmx C functions into correct calldaqlib MATLAB calls. |
 | `matlab-connect-arduino` | Discover, configure, and connect to Arduino&reg; boards from MATLAB via USB. |
+| `matlab-connect-ble` | Discover and connect to Bluetooth Low Energy peripheral devices from MATLAB. |
 | `matlab-connect-opcua-client` | Discover OPC UA servers and create secure client connections in MATLAB. |
 | `matlab-create-custom-arduino-library` | Create custom Arduino add-on libraries to access unsupported sensors and peripherals from MATLAB. |
 | `matlab-discover-hardware` | Discover, inspect, and set up MATLAB-supported hardware devices via helper functions. |
 | `matlab-enhance-camera-image` | Diagnose and enhance image quality from cameras connected via Image Acquisition Toolbox. |
 | `matlab-find-pi-assets` | Find and query PI Data Archive tags and Asset Framework elements using piclient and afclient. |
-| `matlab-import-vehicle-data` | Import and decode vehicle network data from log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types and CAN/CAN FD/LIN decode pipelines. |
+| `matlab-import-export-vehicle-data` | Import, decode, and export vehicle network data from/to log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types, CAN/CAN FD/LIN decode pipelines, and MDF/BLF writing workflows. |
 | `matlab-modernize-daq` | Port legacy session-based Data Acquisition Toolbox code to the modern DataAcquisition interface. |
 | `matlab-use-cameras` | Connect to and acquire images from cameras using Image Acquisition Toolbox videoinput interface. |
-| `matlab-vehicle-network-communication` | Set up and manage CAN/CAN FD vehicle network communication in MATLAB using Vehicle Network Toolbox across all supported hardware vendors. |
+| `matlab-vehicle-network-communication` | Set up, troubleshoot, and analyze CAN/CAN FD vehicle network communication in MATLAB using Vehicle Network Toolbox across all supported hardware vendors. |
 
 ### Wireless Communications ([`wireless-communications`](./wireless-communications/))
 
@@ -316,6 +332,7 @@ Supports Communications Toolbox&trade;, 5G Toolbox&trade;, WLAN Toolbox&trade;, 
 | `matlab-set-up-usrp-radio` | Set up and verify NI USRP radios for use with Wireless Testbench. |
 | `matlab-simulate-bluetooth-network` | Simulate Bluetooth system-level networks including BLE, Classic BR/EDR, and LE Audio. |
 | `matlab-simulate-wireless-network` | Set up and run wireless network simulations using wirelessNetworkSimulator. |
+| `matlab-transmit-capture-usrp` | Transmit and capture RF waveforms using Wireless Testbench with NI USRP radios. |
 
 <!-- END SKILLS -->
 

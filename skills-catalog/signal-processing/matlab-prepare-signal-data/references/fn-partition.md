@@ -53,7 +53,7 @@ parfor k = 1:N
     workerOut = [];
     while hasdata(workerDs)
         s = read(workerDs);
-        workerOut(end+1) = rms(s); %#ok<AGROW>
+        workerOut(end+1) = rms(s); %#ok<SAGROW>
     end
     results{k} = workerOut;
 end
@@ -73,7 +73,7 @@ partition abstraction (no shared metadata, no batched reads).
 parfor i = 1:numel(sds.Files)
     workerSds = signalDatastore(sds.Files{i});  % fresh per file
     s = read(workerSds);
-    results(i) = rms(s); %#ok<AGROW>
+    results(i) = rms(s); %#ok<SAGROW>
 end
 
 % Good — one datastore per worker, sharded:

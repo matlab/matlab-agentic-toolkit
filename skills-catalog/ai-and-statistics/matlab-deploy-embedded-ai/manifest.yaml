@@ -1,7 +1,7 @@
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "2.0"
+version: "2.1"
 human-description: Deploy AI models to embedded hardware using MATLAB and Simulink.
 matlab-release: ">=R2026a"
 required-tools:

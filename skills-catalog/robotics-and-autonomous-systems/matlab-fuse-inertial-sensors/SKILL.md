@@ -8,7 +8,7 @@ description: >
   Use when fusing IMU/AHRS/INS/GPS+IMU data, estimating orientation or pose,
   or choosing a filter. Do NOT use for vision-only SLAM, Simulink fusion, or
   IMU simulation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: R2022a+
 metadata:
   author: MathWorks

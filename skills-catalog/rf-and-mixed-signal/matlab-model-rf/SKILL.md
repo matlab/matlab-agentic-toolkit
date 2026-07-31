@@ -10,7 +10,7 @@ description: >
   seriesRLC, shuntRLC, lcladder, txline, circuit, setports, clone, matchingnetwork, stabilityk,
   stabilitymu, powergain, gammams, gammaml, mixerIMT, OpenIF, rational, rationalfit, stepresp,
   txlineWRLGC, rf.Amplifier, rf.Mixer, rf.Filter, rf.Sparameter, rfsystem, RF Blockset.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

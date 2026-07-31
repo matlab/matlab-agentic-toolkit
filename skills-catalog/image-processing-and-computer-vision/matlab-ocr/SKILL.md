@@ -8,7 +8,7 @@ description: >
   multi-language OCR, and custom model training. Use when: OCR, text recognition,
   extract text from image, character recognition, document scanning, meter reading,
   gauge reading, receipt scanning, digitize text from photo.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"
@@ -331,3 +331,8 @@ Use `Model="japanese"` (or `"french-fast"` for quantized). Requires OCR Language
 
 **When OCR fails**, return to Step 1 and re-inspect the binarized output. Do not loop on unsolvable cases (cursive handwriting, CAPTCHAs, <30px text, curved/arc text) — tell the user early. See [reference/limitations.md](reference/limitations.md).
 
+----
+
+Copyright 2026 The MathWorks, Inc.
+
+----

@@ -11,10 +11,10 @@ description: >
   parallel.defaultProfile, MJS / Generic / HPC Server / MJSComputeCloud
   clusters, .mlsettings files, or profile validation. Does NOT cover job
   submission, parpool, or parfor.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Discover MATLAB Clusters

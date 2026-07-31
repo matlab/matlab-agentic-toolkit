@@ -1,7 +1,7 @@
 ---
 name: matlab-model-ams-systems
 description: "Model a Phase-Locked Loop (PLL) IC from its datasheet or system specs using Mixed-Signal Blockset. Without this skill, agents universally select the wrong solver and produce non-functional PLL models — 100% of unguided attempts fail. Covers Integer-N, Fractional-N, Dual Modulus architectures, loop filter design, lock time optimization, VCO phase noise configuration, and msbPllArchitectures/msbPllFoundation block assembly. Use when: PLL modeling, frequency synthesizer design, phase noise simulation, lock time analysis, charge pump design, loop filter tuning, datasheet-to-model, Mixed-Signal Blockset PLL, msbPllArchitectures."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

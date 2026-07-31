@@ -1,18 +1,20 @@
 ---
 name: matlab-build-app
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "2.0"
+  version: "2.1"
 description: >
   Build MATLAB apps from requirements to working code. Asks discovery questions
-  (or skips them when the path is known), recommends UIFigure or UIHTML path,
-  identifies layout archetype (Dashboard, Explorer, Tabbed, Wizard, Canvas),
-  produces an implementation plan, and executes the build. Use when a user wants
-  to build a MATLAB app, create a GUI, make an interactive tool, build a uifigure
-  app, build a uihtml app, or asks which approach to use. Also use when user
-  describes spatial layout needs: dashboard, control panel, sidebar, tabs, wizard,
-  stepper, canvas, workspace.
+  (or skips them when the path is known), recommends UIFigure or UIHTML
+  architecture, identifies layout archetype (Dashboard, Explorer, Tabbed, Wizard,
+  Canvas), produces an implementation plan, and executes the build. For UIFigure
+  apps, optionally serializes as App Designer (.mlapp or plain-text .m + .xml).
+  Use when a user wants to build a MATLAB app, create a GUI, make an interactive
+  tool, build a uifigure app, build a uihtml app, build an App Designer app,
+  build a .mlapp app, build a plain-text App Designer app, or asks which approach
+  to use. Also use when user describes spatial layout needs: dashboard, control
+  panel, sidebar, tabs, wizard, stepper, canvas, workspace.
 allowed-tools:
   - Read
   - Write
@@ -22,9 +24,9 @@ allowed-tools:
   - Glob
 ---
 
-# MATLAB App Builder
+# MATLAB Build App
 
-Determine the best implementation path for a MATLAB application, produce an implementation plan grounded in internal references, and execute the build.
+Determine the best architecture for a MATLAB application, produce an implementation plan grounded in internal references, and execute the build. For UIFigure apps, optionally serialize into an App Designer format.
 
 ## When to Use This Skill
 
@@ -32,14 +34,15 @@ Use this skill when:
 - User wants to build a MATLAB app, GUI, or interactive tool
 - User asks "how should I build this app?" or "which approach should I use?"
 - User describes an application — with or without specifying an implementation path
-- User mentions: MATLAB app, GUI, uifigure, uihtml, interactive tool, dashboard, visualization app
+- User mentions: MATLAB app, GUI, uifigure, uihtml, interactive tool, dashboard, visualization app, App Designer, .mlapp, plain-text app
 - User describes spatial layout needs: dashboard, control panel, sidebar, tabs, wizard, stepper, canvas, workspace
 - User has already chosen a path (e.g., "build me a uihtml app") — handle directly
 
 ## When Not to Use
 
 - The request is purely about MATLAB computation with no UI component
-- The user is asking about an existing app they want to modify (not build from scratch)
+- The user is asking about an existing app they want to modify → read `references/editing-guide.md`
+- The user wants to convert between App Designer formats (e.g., .mlapp to plain-text or vice versa) → tell them to use File > Save As in App Designer. Do NOT attempt the conversion programmatically.
 
 ## Critical Rules
 
@@ -48,12 +51,14 @@ Use this skill when:
 - MUST produce an implementation plan grounded in internal references before writing any code
 - MUST write the plan to a file (`<app-name>-plan.md`) in the working directory
 - NEVER recommend a path without understanding the user's constraints (unless path was pre-specified)
+- NEVER apply dark mode, custom colors, or visual themes unless the user explicitly requests them
 - ALWAYS present the recommendation as guidance, not a mandate — the user decides
 - MUST choose archetype based on the user's primary task, not aesthetics
 - NEVER treat two archetypes as equals within one app — one is always the primary container
 - UIFigure app: MUST use `uigridlayout` for all structural layout — never `Position`-based sizing
 - UIHTML/web app: MUST use CSS Grid or Flexbox for chrome — no absolute positioning for structural panels
 - The chrome (header, sidebar, tabs, step indicator) MUST remain spatially stable
+- App Designer serialization: MUST read `references/app-designer/agent-guide-shared.md` (covers ownership models, editing discipline, property rules, quoting) plus the format-specific guide (`agent-guide-mlapp.md` or `agent-guide-plaintext.md`) before building. Those docs are the single source of truth; do not attempt to edit app files without reading them first.
 
 ## Workflow
 
@@ -63,16 +68,25 @@ User request arrives
         ├── Path NOT specified → Full Discovery
         │       │
         │       ▼
-        │   Ask discovery questions (2-4 questions, conversational)
+        │   Ask Q1-Q4 (purpose, lifespan, polish, team skills)
         │       │
         │       ▼
-        │   Present path recommendation with trade-offs
+        │   Identify layout archetype
         │       │
         │       ▼
-        │   User confirms path (or redirects)
+        │   Recommend UIFigure vs UIHTML based on Q1-Q4
         │       │
         │       ▼
-        │   Identify layout archetype (if not already clear)
+        │   *** STOP: Present recommendation and WAIT for user confirmation ***
+        │   (Do NOT produce a plan or read references until user says yes)
+        │       │
+        │       ▼
+        │   Ask Q5 (FINAL): Serialization format? (UIFigure apps only)
+        │       │
+        │       ├── App Designer → release check, present format choice,
+        │       │       continue with UIFigure references + add serialization step
+        │       │
+        │       └── Standalone programmatic → no extra step
         │       │
         │       ▼
         │   Produce Implementation Plan → write to <app-name>-plan.md
@@ -83,19 +97,28 @@ User request arrives
         │       ▼
         │   Begin building (read references per the plan)
         │
-        └── Path IS specified (e.g., "build me a uihtml app")
+        └── Path IS specified
                 │
-                ├── Requirements sufficient + archetype clear
-                │       → Skip to: Produce Implementation Plan
+                ├── Serialization explicit (e.g., ".mlapp app", "plain-text app")
+                │       → Skip Q5, proceed with stated format
+                │       → Ask only missing requirements + archetype if unclear
+                │       → Produce Implementation Plan
                 │
-                └── Requirements thin or archetype unclear
-                        → Ask only missing requirements + archetype question
-                        → Then: Produce Implementation Plan
+                ├── Architecture explicit but serialization not stated
+                │   (e.g., "build me a uifigure app")
+                │       → Still ask Q5 (serialization) before planning
+                │       → Ask missing requirements + archetype if unclear
+                │       → Produce Implementation Plan
+                │
+                └── UIHTML or standalone programmatic explicit
+                        → Skip Q5 entirely (not applicable)
+                        → Ask missing requirements + archetype if unclear
+                        → Produce Implementation Plan
 ```
 
 ## Discovery Questions
 
-Ask these conversationally — not as a rigid checklist. Stop as soon as the path is clear. Typically 2-4 questions suffice.
+Ask these conversationally — not as a rigid checklist. Gather requirements and layout intent first; ask the serialization question **last**, once you understand what the app needs to do.
 
 ### Core Questions
 
@@ -123,6 +146,14 @@ Only ask for maintained apps.
 - MATLAB-only team → UIFigure app
 - Web-comfortable team → UIHTML app
 
+**5. (FINAL) How should this app be saved?**
+> Do you want this app to open and edit inside App Designer, or do you prefer a standalone programmatic file (no App Designer dependency)?
+
+This is a **serialization** question, not an architecture question. The app's structure (components, layout, callbacks) is designed using UIFigure knowledge regardless of the answer. Q5 only determines how that design is persisted to disk.
+
+- **App Designer** → `.mlapp` or plain-text `.m` + `.xml`. Check release (plain-text needs R2026b+). If Q3 indicated custom visuals, note that App Designer constrains visual customization vs UIHTML and confirm.
+- **Standalone programmatic** → programmatic `.m` code, no App Designer dependency. MVVM may warrant multiple files; that is decided at build time.
+
 ### Follow-up Probes (only if path isn't clear)
 
 - **Interaction style:** Real-time feedback needed? → slight UIFigure lean
@@ -131,7 +162,11 @@ Only ask for maintained apps.
 
 ## Path Decision Logic
 
+Two stages: first determine architecture (Q1-Q4), then determine serialization format (Q5).
+
 ```
+Stage A — Architecture (from Q1-Q4):
+
 Ephemeral app? → Strong default to UIHTML app
 
 Maintained app? → Weigh signals:
@@ -151,17 +186,36 @@ Strong UIHTML signals:
 
 UIFigure + uihtml accent:
   Mostly standard app but needs one custom visualization panel.
+
+Stage B — Serialization format (Q5, UIFigure apps only):
+
+Q5 = Standalone → programmatic code (no App Designer). Done.
+
+Q5 = App Designer → adds a serialization layer ON TOP of Stage A.
+  UIFigure references still apply in full. Serialization is IN ADDITION TO,
+  not instead of, the normal UIFigure build.
+  → Check release, present format choice (plain text vs .mlapp).
+  → If Stage A indicated UIHTML for custom visuals, surface the trade-off:
+    App Designer constrains custom visuals — confirm before committing.
 ```
 
-**Weighting:** 1. Lifespan  2. Team skills  3. Visual requirements
+**Weighting:** 1. Architecture (Q1-Q4)  2. Serialization (Q5, applies only to UIFigure)
 
 ## Paths at a Glance
 
-| Path | Key strength |
+| Architecture | Key strength |
 |------|--------------|
 | **UIFigure app** | Single language, any MATLAB dev can maintain |
 | **UIHTML app** | Full visual control, rich interactivity |
 | **UIFigure + accent** | Best of both when you need one custom visual |
+
+For UIFigure apps, three serialization formats:
+
+| Format | Trade-off |
+|------|--------------|
+| Programmatic `.m` | Standalone, no App Designer dependency |
+| App Designer `.mlapp` | Binary, works on any release, opens in App Designer |
+| App Designer plain text `.m` + `.xml` | Source-controllable, AI-editable, R2026b+ |
 
 ## Layout Archetype
 
@@ -186,7 +240,8 @@ After confirming path and archetype, produce a plan and write it to `<app-name>-
 ```
 **Implementation Plan: [App Name]**
 
-**Path:** [UIFigure app / UIHTML app / UIFigure + accent]
+**Architecture:** [UIFigure app / UIHTML app / UIFigure + accent]
+**Serialization:** [Programmatic .m / App Designer .mlapp / App Designer plain text]
 **Layout:** [Archetype] — [one sentence describing spatial structure]
 
 **Structure:**
@@ -276,6 +331,40 @@ After plan approval, read the relevant internal references to execute the build.
 | Dark mode | `references/uihtml/dark-mode.md` |
 | External color schemes | `references/uihtml/external-color-schemes.md` |
 
+### App Designer Serialization (UIFigure apps only)
+
+**Important:** App Designer serialization is an additional step AFTER the normal UIFigure build. You MUST also read the UIFigure path references above (components, grid-layout, callbacks, containers, layout-patterns) to design the app's structure. The serialization references below cover only how to persist that design to disk.
+
+Both formats use the same `AppDesignerAgentInterface` API via the bundled `scripts/` tool; only the file extension passed to `create()`/`open()` differs.
+
+**Read first (both formats):**
+
+| When building... | Read |
+|-----------------|------|
+| Verbs, build sequence, editing, `save()`/`validate()`/`finalize()`, `inspect()` | `references/app-designer/agent-guide-shared.md` |
+
+**Plain-text (`.m` + `.xml`):**
+
+| When building... | Read |
+|-----------------|------|
+| Ownership model, `.xml` authoring, flow, gotchas | `references/app-designer/agent-guide-plaintext.md` |
+| classdef structure & block ordering rules | `references/app-designer/plaintext/classdef-template.md` |
+| XML structure and which properties to set | `references/app-designer/plaintext/xml-template.md` |
+| Per-component property names, types, defaults | `references/app-designer/plaintext/property-reference.md` |
+| Authoritative XML schema | `references/app-designer/plaintext/matlabAppSchema.xsd` |
+
+**Binary `.mlapp`:**
+
+| When building... | Read |
+|-----------------|------|
+| Build flow, native property values, `save()`/`finalize()` | `references/app-designer/agent-guide-mlapp.md` |
+
+### Editing an Existing App
+
+| When editing... | Read |
+|----------------|------|
+| Any existing app (determines format, routes to approach) | `references/editing-guide.md` |
+
 ### Archetype References
 
 | Archetype | File |
@@ -293,16 +382,32 @@ After plan approval, read the relevant internal references to execute the build.
 
 ## After Plan Approval
 
+### All UIFigure apps (regardless of serialization format)
+
 1. Read the archetype reference for the spatial skeleton
 2. If MVVM warranted (Explorer, Wizard, Canvas, or complex apps): read the architecture reference
-3. Read the builder/bridge reference to establish layout
+3. Read the UIFigure guide to establish layout (grid, components, containers)
 4. Layer in path-specific references per the implementation sequence
-5. For visual polish: read styling reference (UIHTML) or invoke `matlab-theming` (UIFigure)
-6. For charts: read charting references (UIHTML) or invoke `matlab-build-chart` (UIFigure)
+5. For visual polish: invoke `matlab-theming` (UIFigure) or read styling references (UIHTML accent)
+6. For charts: invoke `matlab-build-chart` (UIFigure) or read charting references (UIHTML accent)
+7. **If App Designer serialization:** read the app-designer reference docs (shared guide + format-specific guide), then use the `AppDesignerAgentInterface` API to persist the app. The docs contain the complete build flow, property rules, and editing discipline.
+
+### UIHTML path
+
+1. Read the archetype reference for the spatial skeleton
+2. If MVVM warranted: read the JS MVVM architecture reference
+3. Read the bridge guide to establish the MATLAB-JS connection
+4. Layer in path-specific references per the implementation sequence
+5. For visual polish: read styling/CSS references
+6. For charts: read charting references
+
+### Format Fallback
+
+If the plain text path produces errors that cannot be resolved (e.g., version mismatch, unsupported component), fall back to the `.mlapp` path — the same verbs drive both formats; re-create the handle with a `.mlapp` extension. Only fall back to fully programmatic UIFigure code as a last resort.
 
 ## Recommendation Template
 
-**Recommended path: [UIFigure app / UIHTML app / UIFigure + accent]**
+**Recommended architecture: [UIFigure app / UIHTML app / UIFigure + accent]**
 
 Based on what you've described:
 - [Key signal 1]
@@ -312,6 +417,8 @@ Based on what you've described:
 **What this means:** [1-2 sentences on development experience]
 
 **Trade-off:** [Main thing they'd give up vs the other path]
+
+**Serialization (if App Designer):** I'd recommend [.mlapp / plain text] because [reason]. This doesn't change the app's structure, just how it's saved.
 
 Want to proceed with this approach, or would you prefer the other path?
 

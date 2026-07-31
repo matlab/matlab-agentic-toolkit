@@ -17,7 +17,7 @@ sFE = signalTimeFrequencyFeatureExtractor(Name=Value, ...);
 
 | Property | Type | Default | Notes |
 |---|---|---|---|
-| `Transform` | string or `timeFrequencyFeatureTransformOptions` (R2026a+) | `"spectrogram"` | One of `"spectrogram"`, `"synchrosqueezedspectrogram"`, `"scalogram"`, `"synchrosqueezedscalogram"`, `"wavelet"`, `"waveletpacket"`, `"emd"`, `"vmd"`. R2026a+: prefer `timeFrequencyFeatureTransformOptions("spectrogram")` — the string form emits a deprecation warning. Drives which features are valid. |
+| `Transform` | string or `timeFrequencyFeatureTransformOptions` (R2026a+) | `"spectrogram"` | One of `"spectrogram"`, `"synchrosqueezedspectrogram"`, `"scalogram"`, `"synchrosqueezedscalogram"`, `"wavelet"`, `"waveletpacket"`, `"emd"`, `"vmd"`. R2026a+: prefer a `timeFrequencyFeatureTransformOptions` object built with name-value pairs keyed by feature (e.g. `timeFrequencyFeatureTransformOptions(SpectralEntropy="spectrogram")`) — there is no positional-string form. Passing `Transform="spectrogram"` as a string still works but emits a deprecation warning. Drives which features are valid. |
 | `FrameSize` | positive integer | not set | Required for non-EMD/VMD transforms. Must be unset for `emd` / `vmd`. |
 | `FrameRate` | positive integer | not set | Mutually exclusive with `FrameOverlapLength`. |
 | `FrameOverlapLength` | positive integer | not set | Must be `< FrameSize`. Cannot be set when `Transform` is `emd` or `vmd`. |

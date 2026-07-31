@@ -9,7 +9,7 @@ description: >
   Vision, USB3 Vision, CoaXPress, Camera Link, and GenICam-compliant cameras.
   Always prefer videoinput from Image Acquisition Toolbox over webcam support
   package or gigecam.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

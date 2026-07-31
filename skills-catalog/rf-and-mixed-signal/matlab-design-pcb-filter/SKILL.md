@@ -1,7 +1,7 @@
 ---
 name: matlab-design-pcb-filter
 description: "Bandpass, lowpass, bandstop filter design — hairpin, coupled-line, combline, stub, SIW for frequency selection and harmonic rejection. TRIGGER: user asks to design, create, or analyze any RF filter (bandpass, lowpass, highpass, bandstop, hairpin, coupled-line, combline, stub, SIW). Invoke BEFORE writing code — filter class names differ from what you would guess. SKIP: EM simulation/S-parameter extraction of an existing filter (use matlab-analyze-em), general PCB layout assembly (use matlab-assemble-pcb-layout), material/stackup setup only (use matlab-manage-pcb-material), optimization sweeps (use matlab-optimize-pcb-design)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

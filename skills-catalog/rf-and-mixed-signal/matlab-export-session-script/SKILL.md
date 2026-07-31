@@ -1,7 +1,7 @@
 ---
 name: matlab-export-session-script
 description: "Export conversation MATLAB code to a clean, runnable .m script. Use when asked to save or export session work. TRIGGER: user asks to save, export, or generate a script from the current session's MATLAB code. Also when asked for a reproducible script or clean version of what was run."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -50,6 +50,8 @@ Error: Expected DATALENGTH to be an array with all of the values <= 8.
 ```
 Fix: use `canFDMessage` or add `ProtocolMode="CAN FD"`.
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

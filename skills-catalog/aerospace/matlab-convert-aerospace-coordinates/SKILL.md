@@ -10,10 +10,10 @@ description: >
   working with rotation representations (Euler angles, DCM, quaternion,
   Rodrigues vector). Also use when the user asks about aerospace coordinate
   systems, reference frames, or rotation conventions.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Aerospace Fundamentals
@@ -91,6 +91,9 @@ All conversion functions use the same signature: `output = convXXX(value, fromUn
 | `flat2lla` | Flat Earth | LLA | R2011a |
 | `geod2geoc` | Geodetic latitude | Geocentric latitude | R2006b |
 | `geoc2geod` | Geocentric latitude | Geodetic latitude | R2006b |
+| `ijk2keplerian` | ECI position/velocity | Keplerian elements | R2019a |
+| `keplerian2ijk` | Keplerian elements | ECI position/velocity | R2019a |
+| `siderealTime` | UTC Julian date | GMST (deg) / GAST (s) | R2021a |
 | `dcmeci2ecef` | — | ECI-to-ECEF DCM | R2013b |
 | `dcmecef2ned` | — | ECEF-to-NED DCM | R2006b |
 | `dcm2latlon` | ECEF-to-NED DCM | Lat/Lon | R2006b |
@@ -209,6 +212,34 @@ posECI = lla2eci(lla, utc);
 
 % Back to LLA
 lla_check = eci2lla(posECI, utc);
+```
+
+### Keplerian Elements ↔ ECI (IJK)
+
+```matlab
+% Convert ECI position/velocity to Keplerian orbital elements
+rijk = [-2981784; 5207055; 3161595];   % ECI position (m), 3x1
+vijk = [-3384; -4887; 4843];           % ECI velocity (m/s), 3x1
+[a, ecc, incl, RAAN, argp, nu] = ijk2keplerian(rijk, vijk);
+% a=m, angles in degrees
+
+% Convert Keplerian elements back to ECI position/velocity
+[rijk_back, vijk_back] = keplerian2ijk(a, ecc, incl, RAAN, argp, nu);
+
+% For a different central body (e.g., Mars)
+[a_mars, ecc_mars, incl_mars, RAAN_mars, argp_mars, nu_mars] = ...
+    ijk2keplerian(rijk, vijk, CentralBody="Mars");
+```
+
+### Sidereal Time
+
+```matlab
+% Compute Greenwich Mean Sidereal Time (GMST) and Apparent (GAST)
+utcJD = juliandate(2019, 1, 4, 12, 0, 0);  % UTC as Julian date
+dUT1 = 0;    % UT1-UTC offset (seconds)
+dAT  = 37;   % TAI-UTC offset (leap seconds)
+[thGMST, thGAST] = siderealTime(utcJD, dUT1, dAT);
+% thGMST in degrees, thGAST in seconds
 ```
 
 ### Flat Earth Approximation

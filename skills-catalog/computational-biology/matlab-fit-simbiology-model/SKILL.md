@@ -1,7 +1,7 @@
 ---
 name: matlab-fit-simbiology-model
 description: "Fit SimBiology model parameters to data — fitproblem, population NLME, virtual patients, and NCA. Use when asked to fit, estimate, calibrate, or compute PK metrics."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

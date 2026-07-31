@@ -14,7 +14,7 @@ keywords:
   - waveform, signal, chirp, LFM, NLFM, FMCW, PMCW, pulse compression
   - transmit signal, sidelobe, Doppler, range resolution, matched filter
   - ambiguity, pulse, PRF, sweep, radar, sonar
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2024b"
 metadata:
   author: MathWorks

@@ -312,6 +312,13 @@ cfg.DeepLearningConfig = coder.DeepLearningConfig('tensorrt');
 
 ## CMSIS/CMSIS-NN Optimization for ARM Cortex-M
 
+Two paths exist for CMSIS acceleration on Cortex-M:
+
+- **CMSIS-NN (INT8, Conv2D and FC only):** Available via BOTH the Simulink CRL path
+  (`slbuild` with ARM Cortex-M CRL) AND MATLAB Coder (`coder.DeepLearningConfig('cmsis-nn')`).
+- **CMSIS-DSP (float32 matrix-multiply for FC/LSTM/GRU/BiLSTM):** Requires the Simulink
+  CRL path only — not available through MATLAB Coder alone.
+
 When the deployment target is an ARM Cortex-M processor (M0, M0+, M3, M4, M7, M33),
 enable CMSIS optimization for significant performance gains. Requires the **Embedded
 Coder Support Package for ARM Cortex-M Processors** (CMSIS library v5.9).
@@ -359,13 +366,24 @@ slbuild(modelName);
 - **With float32 model:** CMSIS-DSP `mw_arm_mat_mult_f32` replaces matrix multiply in
   FC, LSTM, GRU, and BiLSTM layers.
 
-### Note: Library-Free Codegen with CRL (Recommended Approach)
+### Scenario B: MATLAB Coder Path with CMSIS-NN (no Simulink)
 
-For ARM Cortex-M deployment, the recommended approach is library-free code generation
-(`DeepLearningConfig('none')`) combined with Code Replacement Libraries (CRLs) via
-the Simulink path (Scenarios A and C above). Do NOT use `coder.DeepLearningConfig('cmsis-nn')`
-directly — use CRLs instead. Consult the Embedded Coder Support Package for ARM
-Cortex-M documentation for the latest CRL configuration.
+For CNN/FC-only models when Simulink is not available, use `coder.DeepLearningConfig('cmsis-nn')`
+with a calibration results file for INT8 code generation:
+
+```matlab
+cfg = coder.config('lib');
+cfg.TargetLang = 'C';
+cfg.Hardware = coder.hardware('ARM Cortex-M');
+dlcfg = coder.DeepLearningConfig('cmsis-nn');
+dlcfg.CalibrationResultFile = 'calibrationResults.mat';
+cfg.DeepLearningConfig = dlcfg;
+codegen -config cfg predictFcn -args {inputType}
+```
+
+- Covers Conv2D and FC layers with INT8 CMSIS-NN kernels
+- Does NOT provide CMSIS-DSP float32 replacement for LSTM/GRU — use the Simulink path (Scenario C) for recurrent models
+- Requires the "MATLAB Coder Interface for Deep Learning" support package
 
 ### Scenario C: Simulink Path with CMSIS-DSP CRL (float32, LSTM/GRU focus)
 
@@ -397,7 +415,7 @@ reference:
 | LSTM/GRU/BiLSTM model | **Latency** | Yes | **Scenario C** — keep float32, get CMSIS-DSP `mw_arm_mat_mult_f32` |
 | LSTM/GRU/BiLSTM model | **Flash** (retraining OK) | Yes | Project + quantize → Scenario A pattern. FC layers get CMSIS-NN INT8; recurrent layers generate as plain fixed-point C (no CMSIS speedup). |
 | LSTM/GRU/BiLSTM model | **Flash** (no retraining) | Yes | Quantize → Scenario A pattern. Same caveat: only FC accelerated by CMSIS-NN. |
-| LSTM/GRU model | Any goal | No | Standard MATLAB Coder path. CMSIS-DSP `mw_arm_mat_mult_f32` requires the Simulink + ARM Cortex-M CRL path; without Simulink there is no CMSIS replacement for LSTM. |
+| LSTM/GRU model | Any goal | No | Generic C via MATLAB Coder (`DeepLearningConfig('none')`). CMSIS-DSP `mw_arm_mat_mult_f32` requires the Simulink CRL path; without Simulink there is no CMSIS acceleration for recurrent layers. CMSIS-NN INT8 via `DeepLearningConfig('cmsis-nn')` only accelerates Conv2D/FC, not LSTM/GRU. |
 
 ### PIL Verification with CMSIS
 

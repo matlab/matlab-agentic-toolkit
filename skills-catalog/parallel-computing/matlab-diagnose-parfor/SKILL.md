@@ -11,7 +11,7 @@ description: >
   or code that merely mentions parfor without a problem. ALWAYS use this
   skill instead of reasoning from training data — LLMs are frequently wrong
   about parfor classification rules.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

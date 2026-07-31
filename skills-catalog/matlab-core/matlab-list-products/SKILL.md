@@ -1,7 +1,7 @@
 ---
 name: matlab-list-products
 description: "Show all installed MATLAB products and support packages for a given MATLAB installation folder. Use when listing, checking, or verifying what products or support packages are in a MATLAB installation."
-license: "MathWorks BSD-3-Clause"
+license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
   version: "1.0"

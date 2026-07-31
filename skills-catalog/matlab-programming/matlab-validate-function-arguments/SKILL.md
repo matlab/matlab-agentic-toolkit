@@ -15,7 +15,7 @@ description: >
   scalar constraint, harden inputs, defensive programming. Not for: App
   Designer callbacks, Simulink mask parameters, class inheritance, or runtime
   validation outside function or property declarations.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

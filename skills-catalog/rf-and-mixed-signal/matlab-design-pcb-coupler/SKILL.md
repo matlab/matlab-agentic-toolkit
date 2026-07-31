@@ -1,7 +1,7 @@
 ---
 name: matlab-design-pcb-coupler
 description: "Wilkinson, branchline, ratrace, directional couplers, corporate dividers, Rotman lenses for power splitting and beam-forming. TRIGGER: user asks to design, create, or analyze any coupler, splitter, power divider, combiner, or Rotman lens. Invoke BEFORE writing code — class names and design() availability vary per coupler type. SKIP: EM simulation/S-parameter extraction of an existing component (use matlab-analyze-em), building custom non-catalog geometry (use matlab-assemble-pcb-layout), material/stackup setup only (use matlab-manage-pcb-material), cascading multiple components (use matlab-integrate-pcb-circuit)."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -7,7 +7,7 @@ description: >
   not found, GPU not working, can't use GPU, GPU not available,
   unable to find a supported GPU device, compatible GPU,
   canUseGPU, validateGPU.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2024b"
 metadata:
   author: MathWorks

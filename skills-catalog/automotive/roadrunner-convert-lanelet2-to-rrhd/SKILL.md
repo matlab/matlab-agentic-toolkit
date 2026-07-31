@@ -4,10 +4,10 @@ description: >
   Convert Lanelet2 maps (.osm) to RoadRunner HD Map (.rrhd) format using MATLAB. Use when
   converting Lanelet2 maps into RoadRunner Scene Builder, building driving scenes from
   open-source map data, or transforming road network definitions for simulation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Lanelet2 to RRHD Converter
@@ -30,7 +30,7 @@ Converts Lanelet2 `.osm` files to RoadRunner HD Map `.rrhd` format.
 
 ## Key Rules
 
-- **Always write to .m files.** Never put multi-line MATLAB code directly in `evaluate_matlab_code`. Write to a `.m` file, run with `run_matlab_file`, edit on error.
+- **Always write to .m files** when executing code. Never put multi-line MATLAB code directly in `evaluate_matlab_code`. Write to a `.m` file, run with `run_matlab_file`, edit on error. Exception: if the user asks to "show the pattern" or says "do not execute", show code inline without writing files.
 - **ALL pipeline steps are mandatory.** Do NOT stop after writing lanes/boundaries — junctions, curve markings, barriers, signs, and speed limits must all be built.
 - **Boundary geometry is IMMUTABLE.** Never flip, resample, project, or modify boundary points.
 - **One boundary object per way.** Deduplicate via `wayToBndID` map.
@@ -56,7 +56,9 @@ Generate MATLAB code that performs the conversion pipeline described below. Run 
 | `roadrunner-rrhd-authoring` | Step 9 (Build RRHD Objects) | Provides `roadrunner.hdmap.*` class/property reference and construction patterns |
 | `roadrunner-asset-mapping` | Step 8 (Extract Semantics) | Resolves marking subtypes, sign codes, and barrier types to RoadRunner asset paths |
 
-These skills are loaded on demand — read their references when generating RRHD construction code or resolving asset paths. This skill provides the Lanelet2-specific parsing and bridging logic.
+These skills are loaded on demand — read their references when generating RRHD construction code or resolving asset paths.
+
+**Skill boundary:** This skill owns everything Lanelet2-specific (OSM parsing, node-ref topology, turn_direction clustering, opposing-boundary detection). For RRHD object construction patterns (alignment algorithm, center line synthesis, junction polygon, API reference), defer to `roadrunner-rrhd-authoring`.
 
 ## Coordinate System
 
@@ -127,7 +129,7 @@ These rules are NON-NEGOTIABLE. Every conversion MUST follow them:
 
 2. **One boundary object per way.** Deduplicate via `wayToBndID` map. Multiple lanes reference the same boundary with different alignments.
 
-3. **Alignment via proximity + multi-sample spatial verification.** Use the robust algorithm in `roadrunner-rrhd-authoring/references/alignmentRules.md`: (1) compare boundary start/end distance to lane start for direction, (2) verify with local tangent at multiple sample points. NEVER rely on a single overall direction dot product — it fails on curved segments.
+3. **Alignment via left/right dot product + proximity test.** Compute `dp = dot(leftDir, rightDir)` (normalized overall direction — this is correct for the threshold check). If `dp >= -0.3`: both boundaries are Forward. If `dp < -0.3`: boundaries are opposing — use proximity (`d_ls_re = norm(leftStart - rightEnd)` vs `d_ls_rs = norm(leftStart - rightStart)`) to determine which is Backward. If `d_ls_re < d_ls_rs`, right is Backward, left is Forward. (Note: the "NEVER use overall direction" warning in Step 9 applies to the multi-sample spatial *verification* step, not this dp threshold check.)
 
 4. **Center line density: 1 point per meter minimum.** Use `nPts = max(10, round(avgBoundaryLength), nLeftPts, nRightPts)`. Too few points causes pchip interpolation deviation from true midpoint.
 
@@ -300,7 +302,10 @@ Split using perpendicular cross-section projection at ALL joints (including clos
 
 Use **boundary endpoint node matching** as primary method, with geometry proximity (1.0m threshold) as fallback. See [references/extractTopology.md](references/extractTopology.md).
 
-**Critical:** Account for opposing boundary directions when matching nodes.
+**Critical rules:**
+- Account for opposing boundary directions when matching nodes (use dp threshold of -0.3, proximity test for backward-right lanes)
+- Apply **opposing-direction filter** using EFFECTIVE travel direction (reverse raw direction for backward-right lanes)
+- Apply **left-gap filtering** to remove false successors where left boundary gap > 3m when a better alternative exists
 
 ### Step 7: Detect Junctions
 
@@ -310,9 +315,11 @@ See [references/extractJunctions.md](references/extractJunctions.md) for the ful
 **Fallback:** Lane is junction if (predecessor has >1 successors) OR (successor has >1 predecessors).
 
 **Critical rules:**
-- **BFS clustering with 10m threshold** — NOT union-find (causes transitive chaining across distant intersections)
-- **Trace outer boundary polylines** for polygon — NOT `boundary()`, `convhull`, or spline smoothing
-- **Min 3 lanes** per cluster to avoid false positives
+- **BFS clustering with 8m threshold** — NOT union-find (causes transitive chaining across distant intersections). Post-filter: verify each member is within 12m of cluster centroid.
+- **`boundary(pts,0.7)` for polygon shape** — produces good curved polygons. Use `convhull` selectively for junctions where `boundary()` concavity excludes lanes.
+- **Min 2 lanes** per cluster (catches small T-intersections that 3-lane threshold misses)
+- **Fallback: uncovered fan-in/fan-out nodes** — after primary clustering, detect nodes with >=2 lanes ending AND >=2 lanes starting but no junction coverage. Add junction from turn_direction lanes at those nodes.
+- **Add non-turn lanes** to existing junctions when they pass through junction topology nodes (improves polygon coverage)
 - **Strip markings** from all junction lane boundaries (don't assign ParametricAttributes)
 - **Graceful fallback:** If detection is unreliable, skip junctions entirely — use `UseLaneGroups=true` in build options during import
 
@@ -378,6 +385,8 @@ See [references/buildRRHD.md](references/buildRRHD.md) for complete construction
 
 **Height conflict resolution (MANDATORY):** Overlapping unconnected lanes at same Z cause grass artifacts. Bump narrower lane by +0.05m per Z-level using graph coloring. See `roadrunner-rrhd-authoring` skill's [scripts/resolveHeightConflicts.m](../roadrunner-rrhd-authoring/scripts/resolveHeightConflicts.m).
 
+**Boundary deduplication (MANDATORY):** Opposing lanes in Lanelet2 reference different way IDs that may contain the same geometry reversed. The per-way `wayToBndID` deduplication only catches same-way reuse — geometry-based deduplication catches reversed duplicates. See `roadrunner-rrhd-authoring` skill's [references/deduplicateBoundaries.md](../roadrunner-rrhd-authoring/references/deduplicateBoundaries.md) for the algorithm.
+
 ### Step 11: Assemble & Write
 
 Assign all arrays to `rrMap` (Lanes, LaneBoundaries, LaneMarkings, SpeedLimits, Junctions, CurveMarkingTypes, CurveMarkings, BarrierTypes, Barriers, SignTypes, Signs) and set `rrMap.GeoReference = geoRef` (1x2 `[lat, lon]`). Call `write(rrMap, outputFile)`. See [references/buildRRHD.md](references/buildRRHD.md).
@@ -413,8 +422,8 @@ Print unmapped element counts (buildings, vegetation, signals — not importable
 - Store original OSM way node coordinates exactly as parsed — never modify boundary geometry
 - Use `containers.Map` for all indexed lookups (nodes, ways, relations, geometry)
 - All geometry is Nx3 with Z from `ele` tag (default 0)
-- Use proximity-based BFS clustering for junctions (10m threshold), never union-find
-- Trace outer boundary polylines for junction polygons — never `boundary()` or `convhull`
+- Use proximity-based BFS clustering for junctions (8m threshold + 12m centroid filter), never union-find
+- Use `boundary(pts,0.7)` for junction polygons; `convhull` selectively for small junctions needing full coverage
 - Print discovery summary after parsing — never silently drop unmapped elements
 - Use `tiledlayout`/`nexttile` for multi-panel figures (not `subplot`)
 

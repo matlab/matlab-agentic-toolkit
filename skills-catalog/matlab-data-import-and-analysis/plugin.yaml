@@ -1,5 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Analyze tabular data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.
+description: Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.
 keywords:
   - matlab
   - data-import

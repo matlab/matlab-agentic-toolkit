@@ -1,7 +1,7 @@
 ---
 name: matlab-dsphdl-ddc-design
 description: Use when designing a Digital Down Converter (DDC) using dsphdl System objects. Triggers on requests involving DDC design, frequency down-conversion for FPGA/ASIC, NCO + mixer + decimation filter chains, fractional/non-integer sample rate conversion, or HDL-optimized receiver front-end signal processing.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

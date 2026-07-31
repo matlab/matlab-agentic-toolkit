@@ -1,7 +1,7 @@
 ---
 name: matlab-exclude-files
 description: "Analyze a toolbox folder and generate a toolbox.ignore file — detects files that should not ship to end users based on what actually exists in the folder. Only suggests patterns for files found. Advisory: presents suggestions with reasons before writing."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,7 +1,7 @@
 ---
 name: matlab-assess-toolbox
 description: "Assess toolbox readiness and suggest improvements — validates help text, tests, coverage, code issues, dependencies, and function signatures. Produces a punch list and can execute fixes via delegate skills on user approval. Use before packaging or when asked to improve a toolbox."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

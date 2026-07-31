@@ -1,6 +1,11 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Fixed-Point Designer.
+description: Embedded Coder, Fixed-Point Designer, GPU Coder, and MATLAB Coder.
 keywords:
   - matlab
   - code-generation
   - fixed-point
+  - embedded-coder
+  - gpu-coder
+  - matlab-coder
+  - ai-model
+  - pytorch-code-generation

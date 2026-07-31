@@ -2,69 +2,71 @@
 
 Maps traffic sign types to RoadRunner asset paths across all source formats.
 
-## US MUTCD Signs (North America)
+## CRITICAL: Asset File Extension
 
-Signs use MUTCD regulatory numbering: `Sign_R<section>-<number>.svg`
+RoadRunner project sign assets use `.svg_rrx` extension on disk (NOT `.svg`). The `.svg` paths in project XML configs are internal references only. **Always use `.svg_rrx` in `RelativeAssetPath` objects.** Using `.svg` causes "Could not find asset" errors on import.
 
-| Sign Type | MUTCD Code | Asset Path |
-|---|---|---|
-| STOP | R1-1 | `Signs/US/Regulatory Signs/Sign_R1-1.svg` |
-| YIELD | R1-2 | `Signs/US/Regulatory Signs/Sign_R1-2.svg` |
-| SPEED_LIMIT | R2-1(N) | `Signs/US/Regulatory Signs/Sign_R2-1(<N>).svg` |
-| SPEED_LIMIT (blank) | R2-1(Blank) | `Signs/US/Regulatory Signs/Sign_R2-1(Blank).svg` |
-| SPEED_LIMIT (template) | — | `Signs/US/Regulatory Signs/Sign_SpeedLimit.svg` |
-| NO_STOPPING | — | `Signs/US/Regulatory Signs/Sign_NoStopping.svg` |
-| Blank (white) | — | `Signs/US/Sign_BlankWhite.rrsign` |
-| Blank (yellow panel) | — | `Signs/US/Sign_BlankYellowPanel.svg` |
+## MANDATORY: Runtime Asset Discovery
 
-**Speed limit values available:** 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80
+Sign asset names and paths vary by RoadRunner version and installed asset libraries. **Always verify at runtime** that the target asset exists in the project before assigning it:
 
-**Pattern:** `Signs/US/Regulatory Signs/Sign_R2-1(<value>).svg`
+```matlab
+% Discover available sign assets for a region
+projFolder = '<project path>';
+signDir = fullfile(projFolder, 'Assets', 'Signs', region, 'Regulatory Signs');
+availableSigns = dir(fullfile(signDir, '*.svg_rrx'));
+signNames = {availableSigns.name};
+% Match sign codes to available assets using contains() or regexp
+```
 
-## German StVO Signs (OpenDRIVE)
+## Naming Convention
 
-Signs use StVO numbering: `Sign_<code>.svg`
+Sign assets use **descriptive English names** with a region suffix, NOT numeric regulatory codes:
+- Pattern: `<Description>_<Region>.svg_rrx` (e.g., `Stop_JP_01.svg_rrx`, `MaxSpeedLimit_30_JP.svg_rrx`)
+- The old `Sign_<code>.svg` naming (e.g., `Sign_330-A.svg`) is **obsolete** and files do NOT exist on disk
 
-| StVO Code | Value | Asset Path |
-|---|---|---|
-| 206 (Stop) | — | `Signs/Germany/Regulatory Signs/Sign_206.svg` |
-| 205 (Yield) | — | `Signs/Germany/Regulatory Signs/Sign_205.svg` |
-| 274 (Speed) | 10 | `Signs/Germany/Regulatory Signs/Sign_274(10).svg` |
-| 274 (Speed) | 20 | `Signs/Germany/Regulatory Signs/Sign_274(20).svg` |
-| 274 (Speed) | 30 | `Signs/Germany/Regulatory Signs/Sign_274(30).svg` |
-| 274 (Speed) | 40 | `Signs/Germany/Regulatory Signs/Sign_274(40).svg` |
-| 274 (Speed) | 50 | `Signs/Germany/Regulatory Signs/Sign_274(50).svg` |
-| 274 (Speed) | 60 | `Signs/Germany/Regulatory Signs/Sign_274(60).svg` |
-| 274 (Speed) | 70 | `Signs/Germany/Regulatory Signs/Sign_274(70).svg` |
-| 274 (Speed) | 80 | `Signs/Germany/Regulatory Signs/Sign_274(80).svg` |
-| 274 (Speed) | 100 | `Signs/Germany/Regulatory Signs/Sign_274(100).svg` |
-| 274 (Speed) | 110 | `Signs/Germany/Regulatory Signs/Sign_274(110).svg` |
-| 274 (Speed) | 120 | `Signs/Germany/Regulatory Signs/Sign_274(120).svg` |
-| 274 (Speed) | 130 | `Signs/Germany/Regulatory Signs/Sign_274(130).svg` |
-| Warning (fallback) | — | `Signs/Germany/Warning Signs/Sign_101.svg` |
+## US Signs (North America)
 
-**Pattern:** `Signs/Germany/Regulatory Signs/Sign_274(<value>).svg`
+| Sign Type | Asset Path |
+|---|---|
+| STOP | `Signs/US/Stop_US.svg_rrx` |
+| YIELD | `Signs/US/Yield_US.svg_rrx` |
+| NO_U_TURN | `Signs/US/NoUTurns_US.svg_rrx` |
+| ROUNDABOUT | `Signs/US/Roundabout_US.svg_rrx` |
+| Blank (white) | `Signs/US/White_Blank_US.svg_rrx` |
+| Blank (yellow) | `Signs/US/Yellow_Blank_US.svg_rrx` |
+
+**Speed limit pattern:** `Signs/US/Regulatory Signs/MaxSpeedLimit_<N>_US.svg_rrx`
+
+## German StVO Signs
+
+| Sign Type | Asset Path |
+|---|---|
+| Stop (206) | `Signs/Germany/Regulatory Signs/Stop_DE.svg_rrx` |
+| Yield (205) | `Signs/Germany/Regulatory Signs/Yield_DE.svg_rrx` |
+| Speed limit (274) | `Signs/Germany/Regulatory Signs/MaxSpeedLimit_<N>_DE.svg_rrx` |
+| Warning (fallback) | `Signs/Germany/Warning Signs/Danger_DE.svg_rrx` |
+
+**Speed limit pattern:** `Signs/Germany/Regulatory Signs/MaxSpeedLimit_<N>_DE.svg_rrx`
 
 ## Japanese Signs (Lanelet2 maps in Japan)
 
-Signs use Japanese regulatory numbering: `Sign_<code>.svg`
-
-| Sign Type | Code | Asset Path |
-|---|---|---|
-| STOP | 330-A | `Signs/Japan/Regulatory Signs/Sign_330-A.svg` |
-| STOP (variant) | 330-B | `Signs/Japan/Regulatory Signs/Sign_330-B.svg` |
-| SPEED_LIMIT | 323 (N) | `Signs/Japan/Regulatory Signs/Sign_323 (<N>).svg` |
-| NO_ENTRY | 302 | `Signs/Japan/Regulatory Signs/Sign_302.svg` |
-| NO_PARKING | 316 | `Signs/Japan/Regulatory Signs/Sign_316.svg` |
-| NO_STOPPING | 318 | `Signs/Japan/Regulatory Signs/Sign_318.svg` |
-| ONE_WAY | 325 | `Signs/Japan/Regulatory Signs/Sign_325.svg` |
-| NO_OVERTAKING | 314 | `Signs/Japan/Regulatory Signs/Sign_314.svg` |
-| NO_U_TURN | 312 | `Signs/Japan/Regulatory Signs/Sign_312.svg` |
-| Warning (fallback) | 215 | `Signs/Japan/Warning Signs/Sign_215.svg` |
+| Sign Type | Asset Path |
+|---|---|
+| STOP | `Signs/Japan/Regulatory Signs/Stop_JP_01.svg_rrx` |
+| STOP (variant) | `Signs/Japan/Regulatory Signs/Stop_JP_02.svg_rrx` |
+| SPEED_LIMIT | `Signs/Japan/Regulatory Signs/MaxSpeedLimit_<N>_JP.svg_rrx` |
+| NO_ENTRY | `Signs/Japan/Regulatory Signs/NoEntryForVehicles_JP.svg_rrx` |
+| NO_PARKING | `Signs/Japan/Regulatory Signs/NoParking_JP.svg_rrx` |
+| NO_STOPPING | `Signs/Japan/Regulatory Signs/NoStopping_JP.svg_rrx` |
+| ONE_WAY | `Signs/Japan/Regulatory Signs/OneWay_JP_01.svg_rrx` |
+| NO_OVERTAKING | `Signs/Japan/Regulatory Signs/NoOvertaking_JP.svg_rrx` |
+| NO_U_TURN | `Signs/Japan/Regulatory Signs/NoUTurns_JP.svg_rrx` |
+| SLOW_DOWN (fallback) | `Signs/Japan/Regulatory Signs/SlowDown_JP_01.svg_rrx` |
 
 **Speed limit values available:** 10, 20, 30, 40, 50, 60, 70, 80, 90, 100
 
-**Pattern:** `Signs/Japan/Regulatory Signs/Sign_323 (<value>).svg` (note: space before parenthesis)
+**Pattern:** `Signs/Japan/Regulatory Signs/MaxSpeedLimit_<N>_JP.svg_rrx`
 
 ## Region Detection from GeoReference
 
@@ -101,23 +103,21 @@ end
 
 | Type | Asset Path |
 |---|---|
-| White blank (US) | `Signs/US/Sign_BlankWhite.rrsign` |
-| Yellow panel (US) | `Signs/US/Sign_BlankYellowPanel.svg` |
-| Speed blank (US) | `Signs/US/Regulatory Signs/Sign_R2-1(Blank).svg` |
-| Warning (Germany) | `Signs/Germany/Warning Signs/Sign_101.svg` |
-| Warning (Japan) | `Signs/Japan/Warning Signs/Sign_215.svg` |
+| White blank (US) | `Signs/US/White_Blank_US.svg_rrx` |
+| Yellow blank (US) | `Signs/US/Yellow_Blank_US.svg_rrx` |
+| Slow down (Japan) | `Signs/Japan/Regulatory Signs/SlowDown_JP_01.svg_rrx` |
+| Danger (Germany) | `Signs/Germany/Warning Signs/Danger_DE.svg_rrx` |
 
 ## Lanelet2 Sign Code Mapping
 
 | Lanelet2 `sign_type` / way `subtype` | Resolved Asset |
 |---|---|
-| `stop`, `stop_sign`, `us_stop`, `de206` | Stop sign (region-appropriate) |
-| `yield`, `give_way`, `us_yield`, `de205` | Yield sign |
-| `us_r1_1` | `Signs/US/Regulatory Signs/Sign_R1-1.svg` |
-| `us_r1_2` | `Signs/US/Regulatory Signs/Sign_R1-2.svg` |
-| `us_r2_1` or contains `speed` | `Signs/US/Regulatory Signs/Sign_R2-1.svg` |
+| `stop`, `stop_sign`, `us_stop`, `de206` | Stop sign (region-appropriate `.svg_rrx`) |
+| `yield`, `give_way`, `us_yield`, `de205` | Yield sign (region-appropriate `.svg_rrx`) |
+| contains `speed` + value N | `MaxSpeedLimit_<N>_<region>.svg_rrx` |
 | `de274` + value | German speed limit sign |
-| `traffic_light` | → Signal (not sign) |
+| `unknown`, unresolved | Region-specific fallback (never skip) |
+| `traffic_light` | → Signal (not sign — not importable via RRHD) |
 
 ## OpenDRIVE Signal Resolution
 
@@ -132,7 +132,7 @@ OpenDRIVE uses `<signal type="274" country="DE" value="30"/>`:
 st = roadrunner.hdmap.SignType;
 st.ID = "SpeedLimit_30";
 rap = roadrunner.hdmap.RelativeAssetPath;
-rap.AssetPath = "Assets/Signs/US/Regulatory Signs/Sign_R2-1(30).svg";
+rap.AssetPath = "Assets/Signs/Japan/Regulatory Signs/MaxSpeedLimit_30_JP.svg_rrx";
 st.AssetPath = rap;
 
 sg = roadrunner.hdmap.Sign;

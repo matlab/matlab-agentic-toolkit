@@ -1,6 +1,6 @@
-# Pattern 2: Direct C/C++ Code Generation from PyTorch and LiteRT Models
+# Pattern 2: Direct C/C++/CUDA Code Generation from PyTorch and LiteRT Models
 
-Generate embedded C/C++ directly from PyTorch and LiteRT models using MATLAB Coder
+Generate C/C++ directly from PyTorch and LiteRT models using MATLAB Coder
 with the MATLAB Coder Support Package for PyTorch and LiteRT Models. The model is
 loaded as a `PyTorchExportedProgram` or `LiteRTModel` and represented as portable
 intermediate operations that MATLAB Coder compiles to C/C++ without converting to
@@ -8,7 +8,7 @@ Deep Learning Toolbox layers.
 
 ## When to Use
 
-- User has a PyTorch (.pt2) or LiteRT (.tflite) model that already fits target memory
+- User has a PyTorch (.pt2) or LiteRT (.tflite) model that does not need compression
 - User does NOT need compression (quantization, projection, pruning)
 - User does NOT need weight inspection or modification
 - User wants the shorter path from trained model to C code
@@ -33,7 +33,6 @@ Deep Learning Toolbox layers**. The loaded object is NOT a `dlnetwork`.
 
 - MATLAB R2026+ with **MATLAB Coder Support Package for PyTorch and LiteRT Models**
 - MATLAB Coder (+ Embedded Coder for ARM targets)
-- Python environment with `torch == 2.8.0` configured in MATLAB via `pyenv('Version', '<path to python executable>')`
 - PyTorch model exported as `.pt2` via `torch.export`
 
 ## Quick-Start Workflow

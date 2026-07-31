@@ -40,6 +40,8 @@ clear ch;    % releases from workspace, also stops if running
 
 No need to call both — `clear` alone is sufficient. Use explicit `stop` when you want to keep the variable but take the channel offline.
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

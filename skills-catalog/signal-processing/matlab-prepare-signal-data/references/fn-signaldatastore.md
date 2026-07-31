@@ -195,14 +195,13 @@ sds = signalDatastore(folder, FileExtensions=".csv", ...
     SignalVariableNames=["ch1","ch2"]);
 ```
 
-## Decision tree before reaching for `ReadFcn`
+## Before reaching for `ReadFcn`
 
-1. Is the file `.mat` or `.csv`? Default reader probably works.
-   (`.wav` needs `audioDatastore` or a custom `ReadFcn` — it's not in the
-   default-reader scope.)
-2. Multi-column or named variables? `SignalVariableNames`.
-3. Sample rate in a column or variable? `SampleRateVariableName`.
-4. Only then: custom `ReadFcn`.
+Tabular `.mat`/`.csv` almost never needs a custom reader - the default reader
+plus `SignalVariableNames` / `SampleRateVariableName` covers it. The full
+decision tree (default reader vs NV-pair vs custom `ReadFcn`, and where
+`.wav` / non-tabular formats go) is the workflow decision: see
+wf-custom-readfcn.md.
 
 ## Custom `ReadFcn` (only when needed)
 

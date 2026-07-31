@@ -62,20 +62,6 @@ exist('loadPyTorchExportedProgram', 'file')
 ```
 Install via Add-On Explorer (Home > Add-Ons > Get Add-Ons).
 
-### Error: Python environment not configured
-
-**Cause:** MATLAB can't find Python with torch installed.
-
-**Fix:**
-```matlab
-% Windows: pyenv('Version', 'C:\Users\<user>\AppData\Local\Programs\Python\Python311\python.exe')
-% macOS/Linux: pyenv('Version', '/usr/local/bin/python3')
-pyenv('Version', '<path to python executable>')
-pyenv  % Verify -- should show the Python path and version
-```
-
-The Python environment must have `torch >= 2.0` installed.
-
 ### Error: Failed to load .pt2 file
 
 **Cause:** The .pt2 file was created with an incompatible torch version, or the export was incomplete.
@@ -229,9 +215,6 @@ x = x + y
 % Check if support package is installed
 exist('loadPyTorchExportedProgram', 'file')
 
-% Check Python environment
-pyenv
-
 % Verify .pt2 loads
 net = loadPyTorchExportedProgram('model.pt2');
 out = invoke(net, single(randn(inputShape)));
@@ -246,7 +229,7 @@ codegen -config cfg predict_fn -args {inputType}
 | Symptom | Most Likely Cause | Fix |
 |---------|------------------|-----|
 | `loadPyTorchExportedProgram` not found | Support package not installed | Install via Add-On Explorer |
-| Python error during load | pyenv not configured | `pyenv('Version', '<path to python executable>')` |
+| Python error during load | Support package Python env issue | Reinstall support package from Add-On Explorer |
 | Codegen fails with library error | DeepLearningConfig not set | Set to `'none'` |
 | Codegen fails on unsupported op | Operation not yet supported | Restructure model or update MATLAB |
 | C output is wrong | Column-major vs row-major | Transpose input in C harness |

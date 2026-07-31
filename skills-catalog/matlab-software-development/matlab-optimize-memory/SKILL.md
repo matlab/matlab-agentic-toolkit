@@ -1,7 +1,7 @@
 ---
 name: matlab-optimize-memory
 description: "Guides the 7-step MATLAB memory optimization workflow: baseline, profile, identify, optimize, measure, verify, report. Use when asked to reduce MATLAB memory usage, find memory bottlenecks, fix out-of-memory errors, or optimize memory-intensive code."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

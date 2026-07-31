@@ -1,7 +1,7 @@
 ---
 name: matlab-debugging
 description: Diagnose MATLAB errors and unexpected behavior. Breakpoints, workspace inspection, try-catch diagnostics, and common error patterns. Use when debugging functions, tracing errors, inspecting variables, or diagnosing runtime failures.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "2.0"

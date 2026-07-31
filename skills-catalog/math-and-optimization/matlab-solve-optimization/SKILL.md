@@ -7,7 +7,7 @@ description: >-
   optimoptions), or validating results (exitflag, convergence, constraint
   violations). Covers problem-based and solver-based approaches, solver tuning,
   and solution verification.
-license: "MathWorks BSD-3-Clause"
+license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
   version: "1.0"

@@ -7,7 +7,7 @@ description: >
   Triggers on: ncapScenario, euroAssessment, getScenario, getScenarioDescriptor, generateVariants,
   ScenarioDescriptor, ScenarioDescriptorPlot, ncapScore, ncapReport, exportReport, configureVUT,
   assessmentTable, Euro NCAP, CCRs, CCRm, CCRb, CCFtap, CCCscp, CPNA, CPFA, CBNA, variant generation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

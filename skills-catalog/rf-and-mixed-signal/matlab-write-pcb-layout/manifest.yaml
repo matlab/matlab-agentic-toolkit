@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: product-specific
 version: "1.0"
 human-description: Export pcbComponent designs to Gerber files for PCB manufacturing.

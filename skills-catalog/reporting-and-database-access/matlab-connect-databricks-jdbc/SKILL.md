@@ -1,7 +1,7 @@
 ---
 name: matlab-connect-databricks-jdbc
 description: "Connects MATLAB to Databricks using JDBC drivers via Database Toolbox. Use when creating a JDBC connection to a Databricks cluster or SQL Warehouse, configuring Databricks authentication (PAT, OauthU2M, OauthM2M), selecting between Simba and OSS JDBC drivers, using databricks.JDBCConnection, StandaloneJDBCConnection, databricks.SQLWarehouse.connect(), or optimizing Databricks write performance."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

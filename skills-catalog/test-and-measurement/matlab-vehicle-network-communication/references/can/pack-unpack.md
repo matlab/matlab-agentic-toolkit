@@ -77,6 +77,8 @@ start(ch);
 pack(msg, int16(value), 0, 16, 'LittleEndian');
 ```
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

@@ -1,7 +1,7 @@
 ---
 name: matlab-play-record-audio
 description: Reference for MATLAB audiostreamer (Audio Toolbox R2025a+). Without this skill, agents consistently default to legacy audioDeviceWriter/audioDeviceReader or base MATLAB sound(), producing less capable code. Use when writing code for audio playback, recording, full-duplex device I/O, real-time audio measurements, or audio I/O processing with callbacks. Also use when debugging audiostreamer errors, dropouts, or latency issues, or migrating from audioDeviceReader, audioDeviceWriter, audioPlayerRecorder, or audioplayer/audiorecorder.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

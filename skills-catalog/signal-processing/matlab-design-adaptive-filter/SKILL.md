@@ -9,7 +9,7 @@ description: >
   dsp.BlockLMSFilter, dsp.AdaptiveLatticeFilter, dsp.FastTransversalFilter, maxstep(),
   and algorithm selection for adaptive filtering problems. Replaces deprecated
   adaptfilt.* objects (removed R2020a).
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2024b"
 metadata:
   author: MathWorks

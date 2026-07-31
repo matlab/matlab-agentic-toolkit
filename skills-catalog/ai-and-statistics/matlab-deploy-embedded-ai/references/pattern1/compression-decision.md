@@ -18,7 +18,7 @@ the available code-replacement libraries.
 | Option | Pathway | What's supported (R2026a) |
 |---|---|---|
 | **ARM Cortex-M with Simulink** | `exportNetworkToSimulink` → `slbuild` with ARM Cortex-M CRL | CMSIS-NN INT8 block replacement: **Conv2D and FC only** (`arm_convolve_wrapper_s8`, `arm_fully_connected_s8`). CMSIS-DSP float32 matrix-multiply replacement (`mw_arm_mat_mult_f32`): FC, LSTM, GRU, BiLSTM. **No INT8 CMSIS kernel for LSTM/GRU** — those generate as plain fixed-point C when quantized. |
-| **ARM Cortex-M without Simulink** | MATLAB Coder + `coder.DeepLearningConfig('cmsis-nn')` | INT8 via CMSIS-NN for FC; LSTM supported but computed in float32. ~1.3x speedup typical (vs ~2.8x for the Simulink path). |
+| **ARM Cortex-M without Simulink** | MATLAB Coder + `coder.DeepLearningConfig('cmsis-nn')` | CMSIS-NN INT8 for Conv2D and FC via MATLAB Coder (no Simulink needed). **No CMSIS-DSP float32 replacement** — LSTM/GRU get generic C only. Use the Simulink path for CMSIS-DSP acceleration on recurrent layers. |
 | **ARM Cortex-A** | MATLAB Coder + ARM Compute Library | Conv2D, FC, LSTM, GRU, BiLSTM all supported. Broader layer coverage than Cortex-M. |
 | **Generic CPU / no acceleration library** | MATLAB Coder, generic C/C++ | All codegen-compatible layers supported, but no kernel-level acceleration. |
 | **x86 (desktop/server)** | MATLAB Coder + `coder.DeepLearningConfig('mkldnn')` | Intel MKL-DNN/oneDNN acceleration for all major DL layers. Compression less critical — targets typically have ample memory. |
@@ -85,7 +85,8 @@ recipe should always be presented as a recommendation the user can override.
 | Cortex-M + Simulink | Latency | Yes | No (CNN/FC only) | Quantize → export → `slbuild` (CMSIS-NN INT8, ~2.8x speedup) |
 | Cortex-M + Simulink | Integer-only | Any | Any | Quantize → export → `slbuild` (FC INT8, LSTM fixed-point) |
 | Cortex-M + Simulink | Max accuracy | Any | Any | Try pruning with `ValidationThreshold` and/or post-training quantization with held-out validation; fall back to float32 export only if accuracy degrades beyond budget |
-| Cortex-M, no Simulink | Latency | Any | No | Calibrate (no `quantize()`) → `coder.DeepLearningConfig('cmsis-nn')` → `codegen` (~1.3x) |
+| Cortex-M, no Simulink (CNN/FC) | Flash or latency | Any | No | Calibrate → `codegen` with `coder.DeepLearningConfig('cmsis-nn')` (INT8 CMSIS-NN for Conv2D/FC) |
+| Cortex-M, no Simulink (LSTM/GRU) | Any goal | Any | No | Generic C `codegen` only — no CMSIS-DSP without Simulink. Use Simulink path for LSTM/GRU acceleration. |
 | Cortex-A | Flash | Yes | Any | Project → quantize → MATLAB Coder + ARM Compute Library |
 | Generic CPU | Flash | Yes | Any | Project → quantize → MATLAB Coder |
 

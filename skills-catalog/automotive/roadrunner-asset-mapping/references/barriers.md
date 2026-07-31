@@ -2,7 +2,32 @@
 
 Maps barrier/guardrail/fence types to RoadRunner extrusion assets.
 
-## Unified Barrier Table
+## Available Extrusion Assets (R2026a with RoadRunner_Asset_Library)
+
+All extrusion assets in `Assets/Extrusions/`:
+
+| Asset File | Description |
+|---|---|
+| `BridgeRailing.rrext` | Bridge railing |
+| `ConstantSlopeBarrier.rrext` | Constant-slope concrete barrier |
+| `FShapeBarrier.rrext` | F-shape concrete barrier |
+| `Fence.rrext` | Standard fence |
+| `GuardRail.rrext` | Standard guard rail |
+| `GuardRail02.rrext` | Guard rail variant 2 |
+| `HighwayBorderwall01.rrext` | Highway border wall (variant 1) |
+| `HighwayBorderwall02.rrext` | Highway border wall (variant 2) |
+| `HighwayBorderwall03.rrext` | Highway border wall (variant 3) |
+| `HighwayFence01.rrext` | Highway chain-link fence |
+| `JerseyBarrier.rrext` | Jersey barrier |
+| `LargeFence01.rrext` | Large fence |
+| `MetalFencePost01.rrext` | Metal fence with posts |
+| `StandardRailroad01.rrext` | Railroad track (variant 1) |
+| `StandardRailroad02.rrext` | Railroad track (variant 2) |
+| `StoneRockyWall.rrext` | Stone/rock wall |
+| `WoodenFence01.rrext` | Wooden fence (variant 1) |
+| `WoodenFence02.rrext` | Wooden fence (variant 2) |
+
+## Unified Barrier Table (Source Format → Asset)
 
 | Source Type | Source Format | Asset Path |
 |---|---|---|
@@ -17,6 +42,7 @@ Maps barrier/guardrail/fence types to RoadRunner extrusion assets.
 | `WALL_SHORT` | HERE | `Extrusions/HighwayBorderwall03.rrext` |
 | `railing` | Lanelet2 | `Extrusions/BridgeRailing.rrext` |
 | `concrete_barrier` | OpenDRIVE (name) | `Extrusions/FShapeBarrier.rrext` |
+| `curbstone` | Lanelet2 | `Extrusions/ConstantSlopeBarrier.rrext` |
 
 ## Additional Barrier-like Props (OpenDRIVE objects)
 

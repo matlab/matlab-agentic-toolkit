@@ -1,0 +1,17 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Store, retrieve, and pass credentials securely in MATLAB using the built-in MATLAB vault.
+# Core vault lifecycle (setSecret/getSecret/isSecret/listSecrets/removeSecret,
+# setSecretMetadata/getSecretMetadata) is R2024a. Version-gated additions:
+# secretID needs R2025a; importSecrets needs R2026a (both disclosed in the
+# SKILL.md Key Functions "Available From" column).
+matlab-release: ">=R2024a"
+toolkit: matlab-agentic-toolkit
+required-products: []
+optional-products:
+  - Database Toolbox
+required-tools: []
+required-skills: []

@@ -1,10 +1,5 @@
-# Skill: synthesizeCenterLine
+# Center Line Synthesis Algorithm
 
-**Package:** `rrhd_authoring.utils`
-**Function:** `centerPts = rrhd_authoring.utils.synthesizeCenterLine(leftPts, rightPts)`
-**Source:** `+rrhd_authoring/+utils/synthesizeCenterLine.m`
-
-## Description
 Computes a center line from left and right boundary geometry using **arc-length parameterization** with orthogonal endpoint enforcement. Correctly handles boundaries with different point counts and curvature distributions. Must NOT use uniform `linspace` — arc-length is required.
 
 ## Inputs
@@ -112,7 +107,7 @@ end
 ```matlab
 leftPts  = [0 1 0; 50 1.5 0; 100 1 0];
 rightPts = [0 -1 0; 30 -1.2 0; 60 -1.5 0; 100 -1 0];
-center = rrhd_authoring.utils.synthesizeCenterLine(leftPts, rightPts);
+% Apply Steps 1-4 above to compute centerPts from leftPts, rightPts
 ```
 
 ----

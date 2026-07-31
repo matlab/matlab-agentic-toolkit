@@ -10,7 +10,7 @@ description: >
   subcarrier spacing (SCS), modulation (QPSK, QAM), numerology, FR1, FR2,
   TDD, FDD, and multi-bandwidth-part setups. Use for signal generation, RF
   instrument playback, or IQ baseband synthesis. Requires 5G Toolbox.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2024b"
 metadata:
   author: MathWorks

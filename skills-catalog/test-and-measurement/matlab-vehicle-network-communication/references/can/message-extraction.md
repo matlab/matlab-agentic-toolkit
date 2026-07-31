@@ -117,6 +117,8 @@ pause(5);          % actual measurement window
 data = receive(ch, Inf);
 ```
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

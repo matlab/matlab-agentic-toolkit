@@ -4,7 +4,7 @@ description: >
   Design and validate digital filters in MATLAB. Use when cleaning up noisy signals,
   removing interference, filtering signals, designing FIR/IIR filters
   (lowpass/highpass/bandpass/bandstop/notch), or comparing filters in Filter Analyzer.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

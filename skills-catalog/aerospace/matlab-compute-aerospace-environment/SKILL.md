@@ -10,7 +10,7 @@ description: >
   components, geoid undulation, solar flux indices, planet positions, or Earth
   orientation parameters for aerospace vehicle analysis, spacecraft environment
   modeling, or navigation corrections.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

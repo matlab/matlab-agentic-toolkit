@@ -14,10 +14,10 @@ description: >
   acceleration via canUseGPU and gpuArray. Does not cover filter design,
   audio-specific feature extraction (use audioFeatureExtractor in Audio
   Toolbox instead), batch dataset orchestration, or 2D / image features.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Extract Signal Features
@@ -77,6 +77,8 @@ For the time-frequency extractor, the `Transform` property gates which features 
 | `generateMATLABFunction` | Emit a codegen-compatible MATLAB function from an extractor | Signal Processing Toolbox | R2021a |
 | `canUseGPU`, `gather` | GPU availability check and data transfer (core MATLAB, no toolbox) | MATLAB | R2020b |
 | `gpuArray` | Move array to GPU memory | Parallel Computing Toolbox | R2012a |
+
+**`gpuArray` input to `extract` is available per extractor from:** `signalTimeFeatureExtractor` R2023a, `signalFrequencyFeatureExtractor` R2023a, `signalTimeFrequencyFeatureExtractor` **R2024b** (one release after the object itself). Requires Parallel Computing Toolbox. See [`references/gpu-patterns.md`](references/gpu-patterns.md) for per-transform limitations.
 
 `generateMATLABFunction` exists for codegen workflows. Mention it when relevant; full codegen guidance is out of scope for this skill.
 
@@ -143,8 +145,12 @@ function featureTable = extractTFFeaturesExample(x, fs)
         fs (1, 1) double {mustBePositive}
     end
 
-    % R2026a+ (preferred): use timeFrequencyFeatureTransformOptions
-    tfOpts = timeFrequencyFeatureTransformOptions("spectrogram");
+    % R2026a+ (preferred): use timeFrequencyFeatureTransformOptions.
+    % Constructor is name-value only, keyed by FEATURE name -> transform.
+    % There is no positional-string form: timeFrequencyFeatureTransformOptions("spectrogram") errors.
+    tfOpts = timeFrequencyFeatureTransformOptions( ...
+        SpectralEntropy="spectrogram", ...
+        InstantaneousFrequency="spectrogram");
     sFE = signalTimeFrequencyFeatureExtractor( ...
         Transform=tfOpts, ...
         SampleRate=fs, ...

@@ -3,14 +3,15 @@
 # Copyright 2026 The MathWorks, Inc.
 
 schema-version: 1
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.1"
-human-description: Convert between aerospace coordinate frames, rotation representations, time systems, and unit systems using Aerospace Toolbox.
+version: "1.2"
+human-description: Convert aerospace coordinate frames, rotations, time, and units.
 matlab-release: ">=R2022a"
 required-tools:
   - evaluate_matlab_code
 required-skills: []
 required-products:
   - Aerospace Toolbox
+optional-products: []
 toolkit: matlab-agentic-toolkit

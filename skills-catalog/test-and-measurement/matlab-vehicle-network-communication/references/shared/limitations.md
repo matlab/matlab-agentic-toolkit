@@ -44,6 +44,8 @@
 - Only one object can hold InitializationAccess per physical channel
 - CAN requires at least one other node to acknowledge transmissions
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

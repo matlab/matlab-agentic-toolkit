@@ -8,7 +8,7 @@ description: |
   overwrites existing files.
   Use when asked: "create a project", "set up a MATLAB project", "initialize
   project", "make this a MATLAB project", "configure project".
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

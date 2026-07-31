@@ -1,0 +1,14 @@
+# manifest.yaml — Tooling metadata for matlab-migrate-settings
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Diff MATLAB settings between releases and update startup scripts to use the correct setting paths.
+matlab-release: ">=R2023b"
+required-products: []
+optional-products: []
+required-tools: [evaluate_matlab_code]
+required-skills: []
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

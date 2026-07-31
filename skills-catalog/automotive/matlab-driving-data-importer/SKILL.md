@@ -1,7 +1,7 @@
 ---
 name: matlab-driving-data-importer
 description: "Import recorded driving sensor data (GPS, camera, lidar, actor tracks, lanes) into scenariobuilder.* objects (GPSData, CameraData, LidarData, ActorTrackData, Trajectory, laneData) and run preprocessing — synchronize, offset correction, crop, normalizeTimestamps, convertTimestamps. Also: compute actor tracks from lidar when no annotations exist, attach camera/lidar mounting + intrinsics, export to MAT/workspace/timetable/script. Use for raw driving dataset files (KITTI, nuScenes, Waymo, Pandaset, ROS/ROS2 bags, .mat, .csv, .mp4) or driving/vehicle/sensor logs that need wrapping. drivingLogAnalyzer (DLA) is OPT-IN ONLY — invoke only on explicit user request ('DLA', 'open in DLA', 'inspect/explore/analyze the recording') or reported sensor problem (sync drift, timestamp mismatch, overlay misalignment). NEVER auto-launch DLA after wrapping (Rule 0). For 'build scenario / export to RoadRunner / drivingScenario / OpenSCENARIO / Unreal / simulate', hand off to matlab-scenario-builder."
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"

@@ -1,10 +1,10 @@
 ---
 name: matlab-vehicle-network-communication
-description: Use when setting up vehicle network communication in MATLAB using Vehicle Network Toolbox. Covers CAN/CAN FD (fully implemented), with architecture for J1939, XCP, and future protocols. Handles hardware discovery, channel creation, bus configuration, message exchange, signal encoding/decoding, and analysis across all supported vendors (Vector, Kvaser, PEAK-System, NI, SocketCAN, MathWorks Virtual).
-license: MathWorks BSD-3-Clause
+description: Use when setting up vehicle network communication in MATLAB using Vehicle Network Toolbox. Covers CAN/CAN FD (fully implemented), with architecture for J1939, XCP, and future protocols. Handles hardware discovery, channel creation, bus configuration, message exchange, signal encoding/decoding, and analysis across all supported vendors. (Vector, Kvaser, PEAK-System, NI, SocketCAN, MathWorks Virtual).
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # MATLAB Vehicle Network Communication
@@ -100,6 +100,14 @@ See [references/shared/channel-lifecycle.md](references/shared/channel-lifecycle
 
 ## CAN / CAN FD
 
+### Troubleshooting Gate
+
+**If the user reports a CAN/CAN FD problem** — "not working", "trouble", "error", "can't connect", "no messages", hardware not detected, or any communication failure — you MUST do one of the following:
+
+1. **Domain-knowledge question** ("why does X cause Y", "what's the maximum stub length for CAN FD", "explain bit rate switching") — answer from [references/can/troubleshooting/l1-domain-knowledge.md](references/can/troubleshooting/l1-domain-knowledge.md) without running diagnostics.
+
+2. **Actionable problem requiring diagnosis** — **Load** [references/can/troubleshooting/diagnostic-workflow.md](references/can/troubleshooting/diagnostic-workflow.md) BEFORE responding. **Follow** its Entry-Point Routing to select the correct starting step. **Do NOT diagnose from this file.** The tables, pitfalls, and patterns below are reference material for healthy operation — they are NOT a diagnostic procedure. Improvising from them produces wall-of-text responses with multiple guesses instead of structured one-question-at-a-time triage.
+
 ### Core Workflow
 
 ```dot
@@ -126,6 +134,22 @@ digraph can_workflow {
     operate -> cleanup;
 }
 ```
+
+### Post-Transmit Verification (MANDATORY)
+
+After ANY transmit, verify the bus accepted the frame before reporting success:
+
+```matlab
+pause(0.5);
+fprintf('TEC=%d REC=%d BusStatus=%s\n', ch.TransmitErrorCount, ch.ReceiveErrorCount, ch.BusStatus);
+```
+
+| Result | Action |
+|--------|--------|
+| TEC=0, REC=0, ErrorActive | Healthy — report success |
+| TEC>0 OR REC>0 OR not ErrorActive | Unhealthy — report counters to user, route to [diagnostic workflow Step 0.5](references/can/troubleshooting/diagnostic-workflow.md). Follow diagnostic Interaction Rules (one question at a time). |
+
+**Never claim "sent successfully" from `transmit` returning without error.** It is non-blocking and returns immediately regardless of bus state. When routing to diagnostics, do NOT list multiple possible causes — let Step 0.5 identify the root cause and ask one targeted question.
 
 ### CAN Classic vs CAN FD Decision
 
@@ -221,6 +245,7 @@ pack(msg, value, 0, 16, 'LittleEndian');  % this auto-transmits!
 | Stale channel object | "lacks initialization access" | `clear` the variable or `stop` prior channel |
 | `canMessage` for FD payload | "DATALENGTH must be <= 8" | Use `canFDMessage` or add `ProtocolMode="CAN FD"` |
 | No acknowledging node | Transmit retries continuously | Ensure another node/channel is started on the bus |
+| Claiming success without checking counters | User believes data sent; bus is ErrorPassive | ALWAYS check TEC/REC/BusStatus after transmit |
 | Bus speed mismatch | Transmit succeeds, receive empty | All nodes must share same speed |
 | `configBusSpeed` after `start` | Error | Must configure while channel is offline |
 | Reusing variable | Error on creation | `clear` variable before creating new channel |
@@ -241,6 +266,12 @@ Detailed API documentation (load on demand):
 - [references/can/pack-unpack.md](references/can/pack-unpack.md) — `pack`, `unpack`, signal extraction, byte-order
 - [references/can/message-extraction.md](references/can/message-extraction.md) — `extractAll`, `extractRecent`, `extractTime`, `discard`
 
+### CAN Troubleshooting
+
+See **Troubleshooting Gate** at the top of this section. Also route to diagnostics when the agent observes unhealthy bus state (TEC/REC > 0, BusStatus not ErrorActive) during any operation — including after transmit verification.
+- [references/can/troubleshooting/diagnostic-workflow.md](references/can/troubleshooting/diagnostic-workflow.md) — Full diagnostic procedure (Phase 0 automation, L1 physical, L2 traffic analysis)
+- [references/can/troubleshooting/script-interfaces.md](references/can/troubleshooting/script-interfaces.md) — Function signatures, arguments, and outputs for all diagnostic/analysis scripts
+
 ---
 
 ## Shared References
@@ -249,6 +280,8 @@ Detailed API documentation (load on demand):
 - [references/shared/channel-lifecycle.md](references/shared/channel-lifecycle.md) — `start`, `stop`, `onCleanup`, channel release
 - [references/shared/limitations.md](references/shared/limitations.md) — Vendor/platform-specific constraints
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

@@ -12,7 +12,7 @@ description: >
   Trigger contexts: low-level DAQ, escape hatch, retriggerable acquisition,
   shared timebase, export signal, connect terminals, external sample clock,
   trigger configuration, NI driver, C function translation.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 compatibility: ">=R2026a"
 metadata:
   author: MathWorks

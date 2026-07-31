@@ -1,7 +1,7 @@
 ---
 name: matlab-display-image
 description: Display images and annotations for image processing, computer vision, and visual inspection. Use when displaying images with imageshow, creating image viewers with viewer2d, adding Regions of Interest (ROI) or annotations, overlaying masks or segmentations, streaming video frames, or building apps with image display.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.1"

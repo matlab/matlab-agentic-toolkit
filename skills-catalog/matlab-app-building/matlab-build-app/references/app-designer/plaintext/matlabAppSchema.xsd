@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Copyright 2026 The MathWorks, Inc. -->
+<xs:schema
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified"
+    attributeFormDefault="unqualified">
+
+    <!-- ========================================================= -->
+    <!-- Simple types: MATLAB value formats -->
+    <!-- ========================================================= -->
+
+    <xs:simpleType name="MatlabReleaseType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="R[0-9]{4}[ab](\.[0-9]+)?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SemVerType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+(\.[0-9]+){0,2}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PositionType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\[\s*-?[0-9]+(\.[0-9]+)?(\s+-?[0-9]+(\.[0-9]+)?){3}\s*\]"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="NumericArrayType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\[\s*-?[0-9]+(\.[0-9]+)?(\s+-?[0-9]+(\.[0-9]+)?)*\s*\]"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ColorType">
+        <xs:union>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="\[\s*[0-9]+(\.[0-9]+)?(\s+[0-9]+(\.[0-9]+)?){2}\s*\]"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="'#[0-9a-fA-F]{6}'"/>
+                </xs:restriction>
+            </xs:simpleType>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:pattern value="'(red|green|blue|cyan|magenta|yellow|black|white|none)'"/>
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:union>
+    </xs:simpleType>
+
+    <xs:simpleType name="MatlabOnOffType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(on|off)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FontWeightType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(normal|bold)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="FontAngleType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(normal|italic)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="HorizontalAlignmentType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(left|center|right)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="VerticalAlignmentType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(top|center|bottom)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="OrientationType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(horizontal|vertical)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MatlabCharLiteralType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'[^']*'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MatlabCellArrayType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="\{.*\}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MatlabCallbackType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[a-zA-Z][a-zA-Z0-9_]*"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="PositiveNumericType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[0-9]+(\.[0-9]+)?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="NumericType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="-?[0-9]+(\.[0-9]+)?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="MatlabBooleanType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="true|false|0|1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="IconAlignmentType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(left|right|center|top|bottom|leftmargin|rightmargin)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="BorderTypeType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="'(line|none)'"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ========================================================= -->
+    <!-- Complex types for property elements with sub-elements -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="LayoutPropertyType">
+        <xs:all>
+            <xs:element name="Column" type="xs:string" minOccurs="0"/>
+            <xs:element name="Row" type="xs:string" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="ObjectPropertyType" mixed="true">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- Root -->
+    <!-- ========================================================= -->
+
+    <xs:element name="MATLABApp" type="MATLABAppType"/>
+
+    <xs:complexType name="MATLABAppType">
+        <xs:all>
+            <xs:element ref="UIFigure" minOccurs="1"/>
+            <xs:element name="ComponentGroups" type="ComponentGroupsType" minOccurs="0"/>
+            <xs:element name="RunConfiguration" type="OpenContainerType" minOccurs="0"/>
+            <xs:element name="AppDetails" type="AppDetailsType" minOccurs="0"/>
+            <xs:element name="InternalData" type="OpenContainerType" minOccurs="0"/>
+            <xs:element name="Thumbnail" type="ThumbnailType" minOccurs="0"/>
+        </xs:all>
+
+        <xs:attribute name="schemaVersion" type="SemVerType" use="required"/>
+        <xs:attribute name="release" type="MatlabReleaseType" use="optional"/>
+        <xs:attribute name="minRelease" type="MatlabReleaseType" use="optional"/>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- Open container (for extensible sections) -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="OpenContainerType">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </xs:sequence>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- ComponentGroups -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="ComponentGroupsType">
+        <xs:sequence>
+            <xs:element name="Group" type="GroupType" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="GroupType">
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="Member" type="xs:string"/>
+            <xs:element name="Group" type="GroupType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- AppDetails -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="AppDetailsType">
+        <xs:all>
+            <xs:element name="Name" type="xs:string" minOccurs="0"/>
+            <xs:element name="Summary" type="xs:string" minOccurs="0"/>
+            <xs:element name="Description" type="xs:string" minOccurs="0"/>
+            <xs:element name="Author" type="xs:string" minOccurs="0"/>
+            <xs:element name="Version" type="xs:string" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- Thumbnail -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="ThumbnailType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="autoCapture" type="xs:boolean" use="optional"/>
+                <xs:anyAttribute processContents="lax"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- Component type (open content, validates name attribute) -->
+    <!-- ========================================================= -->
+
+    <xs:complexType name="ComponentType">
+        <xs:sequence>
+            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="lax"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="label" type="xs:string" use="optional"/>
+        <xs:anyAttribute processContents="lax"/>
+    </xs:complexType>
+
+    <!-- ========================================================= -->
+    <!-- Known component declarations -->
+    <!-- ========================================================= -->
+
+    <xs:element name="UIFigure" type="ComponentType"/>
+
+    <!-- Containers -->
+    <xs:element name="Panel" type="ComponentType"/>
+    <xs:element name="Tab" type="ComponentType"/>
+    <xs:element name="TabGroup" type="ComponentType"/>
+    <xs:element name="Menu" type="ComponentType"/>
+    <xs:element name="GridLayout" type="ComponentType"/>
+    <xs:element name="Tree" type="ComponentType"/>
+    <xs:element name="CheckBoxTree" type="ComponentType"/>
+    <xs:element name="Toolbar" type="ComponentType"/>
+    <xs:element name="ButtonGroup" type="ComponentType"/>
+
+    <!-- Non-containers -->
+    <xs:element name="Button" type="ComponentType"/>
+    <xs:element name="Label" type="ComponentType"/>
+    <xs:element name="TreeNode" type="ComponentType"/>
+    <xs:element name="DropDown" type="ComponentType"/>
+    <xs:element name="StateButton" type="ComponentType"/>
+    <xs:element name="TextArea" type="ComponentType"/>
+    <xs:element name="Spinner" type="ComponentType"/>
+    <xs:element name="Table" type="ComponentType"/>
+    <xs:element name="UIAxes" type="ComponentType"/>
+    <xs:element name="CheckBox" type="ComponentType"/>
+    <xs:element name="Switch" type="ComponentType"/>
+    <xs:element name="EditField" type="ComponentType"/>
+    <xs:element name="NumericEditField" type="ComponentType"/>
+    <xs:element name="PushTool" type="ComponentType"/>
+    <xs:element name="ToggleTool" type="ComponentType"/>
+    <xs:element name="RadioButton" type="ComponentType"/>
+    <xs:element name="Slider" type="ComponentType"/>
+    <xs:element name="Gauge" type="ComponentType"/>
+    <xs:element name="DiscreteKnob" type="ComponentType"/>
+    <xs:element name="ColorPicker" type="ComponentType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Geometry -->
+    <!-- ========================================================= -->
+
+    <xs:element name="Position" type="PositionType"/>
+    <xs:element name="Padding" type="PositionType"/>
+    <xs:element name="Layout" type="LayoutPropertyType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Font -->
+    <!-- ========================================================= -->
+
+    <xs:element name="FontName" type="MatlabCharLiteralType"/>
+    <xs:element name="FontSize" type="PositiveNumericType"/>
+    <xs:element name="FontWeight" type="FontWeightType"/>
+    <xs:element name="FontAngle" type="FontAngleType"/>
+    <xs:element name="FontColor" type="ColorType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Color -->
+    <!-- ========================================================= -->
+
+    <xs:element name="BackgroundColor" type="ColorType"/>
+    <xs:element name="ForegroundColor" type="ColorType"/>
+    <xs:element name="BorderColor" type="ColorType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Alignment and layout -->
+    <!-- ========================================================= -->
+
+    <xs:element name="HorizontalAlignment" type="HorizontalAlignmentType"/>
+    <xs:element name="VerticalAlignment" type="VerticalAlignmentType"/>
+    <xs:element name="Orientation" type="OrientationType"/>
+    <xs:element name="IconAlignment" type="IconAlignmentType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: On/Off toggles -->
+    <!-- ========================================================= -->
+
+    <xs:element name="Visible" type="MatlabOnOffType"/>
+    <xs:element name="Enable" type="MatlabOnOffType"/>
+    <xs:element name="Scrollable" type="MatlabOnOffType"/>
+    <xs:element name="Editable" type="MatlabOnOffType"/>
+    <xs:element name="WordWrap" type="MatlabOnOffType"/>
+    <xs:element name="AutoResizeChildren" type="MatlabOnOffType"/>
+    <xs:element name="RowStriping" type="MatlabOnOffType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Text and display -->
+    <!-- ========================================================= -->
+
+    <xs:element name="Text" type="xs:string"/>
+    <xs:element name="Tooltip" type="xs:string"/>
+    <xs:element name="Placeholder" type="MatlabCharLiteralType"/>
+    <xs:element name="Icon" type="MatlabCharLiteralType"/>
+    <xs:element name="ValueDisplayFormat" type="MatlabCharLiteralType"/>
+    <xs:element name="Title" type="ObjectPropertyType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Values and data -->
+    <!-- ========================================================= -->
+
+    <xs:element name="Value" type="xs:string"/>
+    <xs:element name="Items" type="MatlabCellArrayType"/>
+    <xs:element name="ItemsData" type="xs:string"/>
+    <xs:element name="Limits" type="NumericArrayType"/>
+    <xs:element name="Step" type="PositiveNumericType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Grid sizing -->
+    <!-- ========================================================= -->
+
+    <xs:element name="ColumnWidth" type="MatlabCellArrayType"/>
+    <xs:element name="RowHeight" type="MatlabCellArrayType"/>
+    <xs:element name="ColumnSpacing" type="NumericType"/>
+    <xs:element name="RowSpacing" type="NumericType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Table -->
+    <!-- ========================================================= -->
+
+    <xs:element name="ColumnName" type="xs:string"/>
+    <xs:element name="ColumnSortable" type="MatlabBooleanType"/>
+    <xs:element name="RowName" type="xs:string"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Border (Panel) -->
+    <!-- ========================================================= -->
+
+    <xs:element name="BorderType" type="BorderTypeType"/>
+    <xs:element name="BorderWidth" type="PositiveNumericType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Callbacks -->
+    <!-- ========================================================= -->
+
+    <xs:element name="ButtonPushedFcn" type="MatlabCallbackType"/>
+    <xs:element name="ValueChangedFcn" type="MatlabCallbackType"/>
+    <xs:element name="ValueChangingFcn" type="MatlabCallbackType"/>
+    <xs:element name="SizeChangedFcn" type="MatlabCallbackType"/>
+    <xs:element name="SelectionChangedFcn" type="MatlabCallbackType"/>
+    <xs:element name="CellSelectionCallback" type="MatlabCallbackType"/>
+    <xs:element name="CellEditCallback" type="MatlabCallbackType"/>
+    <xs:element name="DropDownOpeningFcn" type="MatlabCallbackType"/>
+    <xs:element name="ClickedFcn" type="MatlabCallbackType"/>
+    <xs:element name="StartupFcn" type="MatlabCallbackType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: UIAxes sub-properties -->
+    <!-- ========================================================= -->
+
+    <xs:element name="XLabel" type="ObjectPropertyType"/>
+    <xs:element name="YLabel" type="ObjectPropertyType"/>
+    <xs:element name="ZLabel" type="ObjectPropertyType"/>
+    <xs:element name="String" type="MatlabCharLiteralType"/>
+
+    <!-- ========================================================= -->
+    <!-- Property elements: Slider-specific -->
+    <!-- ========================================================= -->
+
+    <xs:element name="MajorTicks" type="NumericArrayType"/>
+    <xs:element name="MinorTicks" type="NumericArrayType"/>
+
+    <!-- ========================================================= -->
+    <!-- Structural elements (used inside components) -->
+    <!-- ========================================================= -->
+
+    <xs:element name="Children" type="OpenContainerType"/>
+
+</xs:schema>

@@ -1,7 +1,7 @@
 ---
 name: matlab-point-cloud-registration
 description: Register 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms. Use when registering or aligning 3-D point clouds, choosing a registration algorithm, tuning registration parameters, preprocessing point clouds for registration or combining point clouds after registration.
-license: MathWorks BSD-3-Clause
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
   version: "1.0"
