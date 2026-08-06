@@ -98,7 +98,7 @@ After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; 
 | Skill Group | Supported Products |
 |-------------|--------------------|
 | [**Aerospace**](skills-catalog/README.md#aerospace-aerospace) | Aerospace Toolbox&trade; |
-| [**AI and Statistics**](skills-catalog/README.md#ai-and-statistics-ai-and-statistics) | Deep Learning Toolbox&trade; and Statistics and Machine Learning Toolbox&trade; |
+| [**AI and Statistics**](skills-catalog/README.md#ai-and-statistics-ai-and-statistics) | Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, and Statistics and Machine Learning Toolbox&trade; |
 | [**Automotive**](skills-catalog/README.md#automotive-automotive) | Automated Driving Toolbox&trade;, RoadRunner, and RoadRunner Scene Builder |
 | [**Cloud Solutions**](skills-catalog/README.md#cloud-solutions-cloud-solutions) | MATLAB Drive&trade; |
 | [**Code Generation**](skills-catalog/README.md#code-generation-code-generation) | Embedded Coder&trade;, Fixed-Point Designer&trade;, GPU Coder&trade;, and MATLAB Coder&trade; |

@@ -1,7 +1,8 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Deep Learning Toolbox and Statistics and Machine Learning Toolbox.
+description: Curve Fitting Toolbox, Deep Learning Toolbox, and Statistics and Machine Learning Toolbox.
 keywords:
   - matlab
+  - curve-fitting
   - deep-learning
   - statistics
   - machine-learning

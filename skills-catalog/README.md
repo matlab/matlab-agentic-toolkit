@@ -98,13 +98,14 @@ Supports Aerospace Toolbox&trade;
 
 ### AI and Statistics ([`ai-and-statistics`](./ai-and-statistics/))
 
-Supports Deep Learning Toolbox&trade; and Statistics and Machine Learning Toolbox&trade;
+Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, and Statistics and Machine Learning Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
 | `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
+| `matlab-fit-curve` | Fit curves and surfaces interactively using the Curve Fitter app. |
 | `matlab-import-external-ai-model` | Import PyTorch, ONNX, and Keras deep learning models into MATLAB and verify numerical correctness. |
 | `matlab-train-network` | Train, evaluate, and export neural networks to Simulink using the recommended APIs. Migrate legacy neural network training code to modern replacements. |
 | `matlab-use-machine-learning-apps` | Train, compare, and export machine learning models using Classification Learner and Regression Learner apps. |

@@ -23,13 +23,14 @@
     },
     {
       "name": "ai-and-statistics",
-      "version": "0.5.0",
-      "description": "Deep Learning Toolbox and Statistics and Machine Learning Toolbox.",
+      "version": "0.6.0",
+      "description": "Curve Fitting Toolbox, Deep Learning Toolbox, and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
+        "curve-fitting",
         "deep-learning",
         "statistics",
         "machine-learning",
