@@ -15,10 +15,9 @@ keywords:
   - transmit signal, sidelobe, Doppler, range resolution, matched filter
   - ambiguity, pulse, PRF, sweep, radar, sonar
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
-compatibility: ">=R2024b"
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Radar Waveform Design
@@ -30,7 +29,9 @@ follow correct function-to-object pairings, and avoid common mistakes.
 ## When to Use
 
 **Primary keywords** (any of these alone can trigger the skill):
-waveform, signal, chirp, LFM, NLFM, FMCW, PMCW, pulse compression, transmit signal
+waveform, signal, chirp, LFM, NLFM, FMCW, PMCW, pulse compression,
+transmit signal, M-sequence, MLS, PN code, spread spectrum, phase code,
+joint radar-communication, dual-function waveform
 
 **Sensing-context words** (confirm sensing domain when paired with primary keywords):
 target, jammer, jamming, pulse, pulses, spectrum, sidelobe, Doppler, range resolution, detection, clutter, matched filter, ambiguity, sweep, PRF, PRI
@@ -81,22 +82,49 @@ part can still be addressed.
 4. **Analyze** — Use appropriate analysis function (ambgfun, pambgfun, sidelobelevel)
 5. **Suggest interactive exploration** — Recommend `radarWaveformGenerator` app
 
-**Analysis approach:** Use `ambgfun` zero-Doppler cut to study the matched filter
-response (mainlobe width, sidelobe structure). Measure PSL with `sidelobelevel`
-on that cut. Only construct a `phased.MatchedFilter` object when the user
-explicitly needs coefficients for downstream signal processing.
+### Construction Rule (non-negotiable)
+
+Always generate signals using toolbox System objects and functions — never
+manually construct `exp(1j*...)` or write custom LFSR/sequence generators.
+If `mlseq`, `legendreseq`, `phased.LinearFMWaveform`, or another toolbox
+function can produce what you need, use it. Manual construction is only
+acceptable when no toolbox equivalent exists for the specific operation
+(e.g., applying element-wise phase modulation to an existing waveform vector).
+For hybrid waveforms (e.g., LFM + communication encoding), generate the base
+with the appropriate object, apply the modification, then wrap the result with
+`PhaseCodedWaveform` using `Code='Custom'`. If no built-in object fits (e.g.,
+exact DFT-bin nulls, non-contiguous bands), escalate to custom IQ synthesis but
+keep toolbox functions for parameter derivation, wrapping, and analysis. Always
+state which parts are toolbox-based and which are custom.
+
+### Analysis Rule (non-negotiable)
+
+Never use `xcorr` for radar waveform autocorrelation or matched filter
+response visualization. Instead:
+
+- **Matched filter response / autocorrelation:** Use `ambgfun` with
+  `'Cut','Doppler'` (zero-Doppler cut = response vs delay).
+- **PSL measurement:** Use `sidelobelevel` on the dB-converted cut.
+- **Doppler tolerance:** Use `ambgfun` with `'Cut','Delay'` (zero-delay
+  cut = response vs Doppler).
+- **Downstream signal processing:** Use `phased.MatchedFilter` when you
+  need the actual filtered signal (range processing, bit recovery, etc.).
 
 ### Agent Reasoning Policy
 
 - Follow the clarification flow above — do not skip to code without sufficient context.
+- **User names a waveform family** → treat as a constraint; configure and analyze it. Only override if requirements are impossible with that family.
+- **User gives only performance constraints** → choose the simplest family that satisfies them and explain why.
 - Performance requirements given → derive parameters before selecting objects.
 - Waveform family given (e.g., "NLFM") → ask about the goal (sidelobes, spectral shaping, Doppler tolerance, hardware).
-- Exploration/learning → help directly with given parameters; do not require application context.
+- Exploration/learning → help directly with given parameters. **Still use toolbox objects** — generate base waveforms via System objects, use `mlseq`/`legendreseq`/`apaseq` for sequences, wrap custom results in `PhaseCodedWaveform` with Custom code. Do not write manual signal construction. Suggest `radarWaveformGenerator` for interactive exploration.
 - Application context only (no numeric requirements) → recommend the waveform family/object and explain why. If the domain has well-known defaults (e.g., automotive radar at 77 GHz), state assumptions and proceed. Otherwise ask the application dimensions. Do NOT silently invent parameters without stating them.
 - Conflicting requirements → surface the conflict before proposing a waveform.
 - "Best waveform" → explain it depends on resolution, ambiguity, sidelobes, Doppler, hardware, and processing.
 - User states MATLAB release → check function availability; note `radarWaveformGenerator` requires R2026a.
 - **No debugging loops.** If code errors or results don't match expectations, retry at most once with a targeted fix. If the second attempt fails, stop and report what went wrong, what you tried, and ask the user whether to adjust requirements, relax constraints, or provide additional information. Do not iterate beyond 2 attempts.
+- **Write complete scripts, not incremental snippets.** Do not develop code through many small `evaluate_matlab_code` calls. Instead, design the full script, save it to a .m file, and run it once with `run_matlab_file`. To save the file: use the `Write` tool if available, otherwise use `evaluate_matlab_code` with MATLAB's `writelines` or `fopen`/`fprintf`/`fclose`. Never use Bash heredocs for MATLAB code — single quotes and format strings (`%d`, `\n`) break shell quoting. If you are uncertain about an API or parameter and find yourself wanting to "try things" in MATLAB, that is a signal to stop and ask the user for clarification rather than exploring interactively. Reserve `evaluate_matlab_code` for at most: (1) one setup/cleanup call, (2) saving and running the script, and (3) one retry if needed.
+- **PSL trade-off checkpoint.** When PSL target is between -30 and -45 dB: calculate TBP. If TBP < 500, present the trade-off BEFORE generating code: (a) NLFM — no SNR loss but PSL limited by stationary-phase approximation at this TBP; (b) LFM + time-domain windowed matched filter — guarantees target PSL at any TBP but costs ~3-4 dB SNR; (c) increase TBP to enable NLFM. Let the user choose before proceeding.
 
 ### Requirements to Clarify
 
@@ -113,22 +141,15 @@ Once the application dimensions are known, check for these specific gaps:
 
 ### Requirement-to-Recommendation Heuristics
 
-- If the user prioritizes Doppler tolerance over perfectly decoupled range–Doppler, prefer LFM-style solutions.
-- If the user prioritizes low sidelobes without receiver SNR loss, consider NLFM.
-- If the user needs spectral notching (avoiding interference bands), use `shapespectrum` on an existing waveform. If they need a custom frequency profile for sidelobe control, use `nlfmspec2freq` + `CustomFMWaveform`.
-- If the user's hardware cannot support large instantaneous bandwidth, consider stretch processing or stepped FM.
-- If the user needs to bring external IQ data into toolbox processing, use the Custom IQ pattern (`PhaseCodedWaveform` with `Code='Custom'`).
-- If the user needs periodic/CW-style analysis, direct them toward `pambgfun` rather than `ambgfun`.
+- Doppler tolerance priority → LFM-style solutions
+- Low sidelobes without SNR loss → NLFM (sufficient TBP required)
+- Spectral notching → amplitude-only bandstop for structured waveforms; `shapespectrum` only for PRO-FM. See `references/spectral-notching.md`
+- Custom frequency profile for sidelobes → `nlfmspec2freq` + `CustomFMWaveform`
+- Hardware BW limited → stretch processing or stepped FM
+- External IQ → Custom IQ pattern (`PhaseCodedWaveform` with `Code='Custom'`)
+- CW/periodic analysis → `pambgfun` (not `ambgfun`)
 
-### Waveform Family Summary
-
-| Family | Strength | Tradeoff |
-|---|---|---|
-| LFM | Doppler tolerant | Range–Doppler coupled (ridge ambiguity) |
-| NLFM | Low sidelobes, no SNR loss | Mainlobe broadens (amount depends on taper), less Doppler tolerant than LFM |
-| Phase-coded | Thumbtack ambiguity | Doppler sensitive, code-dependent PSL |
-| FMCW | Continuous, range+speed | Periodic analysis required (`pambgfun`) |
-| Stepped FM | High resolution, low instantaneous BW | Requires coherent integration across steps |
+See `references/waveform-objects.md` for the family summary table (strengths/tradeoffs).
 
 ## Waveform Selection Decision Tree
 
@@ -153,7 +174,11 @@ Is the waveform continuous (CW)?
     ├── Nonlinear FM (custom shape) → phased.CustomFMWaveform
     │   (use with nlfmspec2freq for stationary-phase design)
     ├── Phase-coded → phased.PhaseCodedWaveform
-    └── Stepped frequency → phased.SteppedFMWaveform
+    ├── Stepped frequency → phased.SteppedFMWaveform
+    └── Hybrid (base waveform + additional modulation)
+        → Generate base with appropriate FM/pulse object
+        → Apply secondary modulation to the IQ vector
+        → Wrap result with PhaseCodedWaveform (Code='Custom')
 ```
 
 ## Key Functions
@@ -170,6 +195,7 @@ Is the waveform continuous (CW)?
 | `mlseq` | Generate maximum-length sequences | R2024a |
 | `apaseq` | Generate almost-perfect autocorrelation sequences; pass length N | R2024a |
 | `pnkcode` | Generate polyphase P(n,k) code of length N: `pnkcode(N, n, k)` — best for deep PSL | R2024a |
+| `getMatchedFilter` | Return matched filter coefficients; returns a **matrix** (one column per step) for SteppedFMWaveform — filter each pulse with its corresponding column | — |
 | `bandwidth` | Return waveform bandwidth (Hz); available on all pulsed objects except SteppedFMWaveform | — |
 | `ambgfun` | Compute ambiguity function (any waveform, including pulse trains) | — |
 | `pambgfun` | Compute periodic ambiguity function (CW/periodic waveforms) | — |
@@ -207,25 +233,10 @@ resolution strategy is a system-level concern — see Escalation / Boundary Cond
 - `PulseWidth <= 1/PRF` (pulse fits within PRI)
 - `SampleRate / PRF` is integer (integer samples per PRI)
 - For phase-coded: `SampleRate * ChipWidth` is integer
+- Sample rate: `fs = ceil(8*bw / prf) * prf` guarantees integer samples/PRI + oversampling
 
-**Choosing a valid sample rate:** `rangeres2bw` often returns a non-round value
-(e.g., `c/(2*rangeRes)` ≈ 9.993 MHz). Naively multiplying by an oversampling
-factor gives a sample rate that may not divide evenly by PRF. Fix:
-
-```matlab
-fs = ceil(8*bw / prf) * prf;  % round up to next PRF-compatible sample rate
-```
-
-This guarantees `fs/prf` is integer while meeting the oversampling requirement.
-
-When using tapering (windowed matched filter or NLFM), mainlobe broadens. To
-still meet the range resolution requirement, compensate the bandwidth using the
-`'RangeBroadening'` parameter. The broadening factor depends on the taper shape
-(e.g., Taylor ~1.3×, heavier tapers more):
-
-```matlab
-bwComp = rangeres2bw(rangeRes, 'RangeBroadening', broadeningFactor);
-```
+**Mainlobe broadening compensation:** When using tapering (windowed MF or NLFM):
+`bwComp = rangeres2bw(rangeRes, 'RangeBroadening', broadeningFactor)` (Taylor ~1.3×).
 
 ### NLFM Design via Stationary Phase
 
@@ -285,37 +296,39 @@ wav = phased.PhaseCodedWaveform( ...
 inferred from the `CustomCode` vector length. Setting `NumChips` explicitly
 produces a warning and may cause unexpected behavior.
 
-**PMCW (Phase-Modulated Continuous Wave):** PMCW is phase-coded radar with 100%
-duty cycle — the code fills the entire PRI with no dead time. Always configure
-PMCW as `PRF = 1/PulseWidth` (i.e., `PRF = 1/(numel(code) * ChipWidth)` so the
-pulse width equals the full code duration). If the user says "PMCW" or
-"phase-modulated continuous wave", this means CW — do not create a low-duty-cycle
-pulsed waveform. Even if the user also says "pulse repetition period" or "PRI",
-the signal is still continuous; PRI in PMCW context refers to the code repetition
-interval, not a pulsed transmission with dead time.
+**PMCW (Phase-Modulated Continuous Wave):** PMCW = phase-coded CW with 100%
+duty cycle. Configure as `PRF = 1/(numel(code) * ChipWidth)`. If the user says
+"PMCW", treat as CW — PRI in PMCW context means code repetition interval, not
+pulsed transmission with dead time.
 
-### Custom IQ as Waveform Object
+### Custom IQ as Waveform Object (external data OR constructed hybrids)
 
-Use `phased.PhaseCodedWaveform` with `Code='Custom'` to wrap arbitrary complex
-IQ data into the toolbox ecosystem. Despite the name, `CustomCode` accepts any
-complex-valued vector — not just phase values. Do not set `NumChips` when
+Use `phased.PhaseCodedWaveform` with `Code='Custom'` to wrap ANY complex IQ
+vector into the toolbox ecosystem — whether captured from hardware, loaded from
+a file, or constructed by combining/modifying other waveforms (e.g., LFM with
+embedded communication phase modulation). Despite the name, `CustomCode` accepts
+any complex-valued vector — not just phase values. Do not set `NumChips` when
 using Custom code — it is inferred from the vector length.
 
 ```matlab
-% Wrap hardware-captured IQ into toolbox
-customIQ = loadIQFromHardware();  % complex vector, length N
-wav = phased.PhaseCodedWaveform( ...
-    'Code', 'Custom', ...
-    'CustomCode', customIQ, ...
-    'ChipWidth', 1/fs, ...
-    'SampleRate', fs);
+% Example: LFM + communication phase encoding as a toolbox object
+wfLFM = phased.LinearFMWaveform('SampleRate', fs, 'PulseWidth', pw, ...
+    'SweepBandwidth', bw, 'PRF', prf);
+xLfm = wfLFM();
+xHybrid = xLfm(1:nPulse) .* exp(1j * commPhaseVector);
 
-% Now use with matched filter
-mfCoeffs = getMatchedFilter(wav);
-mf = phased.MatchedFilter('Coefficients', mfCoeffs);
+wfHybrid = phased.PhaseCodedWaveform( ...
+    'Code', 'Custom', ...
+    'CustomCode', xHybrid, ...
+    'ChipWidth', 1/fs, ...
+    'SampleRate', fs, ...
+    'PRF', prf);
+
+% Now usable with toolbox processing
+mfCoeffs = getMatchedFilter(wfHybrid);
 ```
 
-**When NOT to wrap:** If you only need ambiguity analysis on captured IQ, pass it
+**When NOT to wrap:** If you only need ambiguity analysis on IQ, pass it
 directly to `ambgfun(iq, fs, prf)` — no object needed. Use the wrapper only when
 you need toolbox integration (matched filter, range processing, etc.).
 
@@ -323,25 +336,27 @@ you need toolbox integration (matched filter, range processing, etc.).
 
 Three approaches, depending on context:
 
-**1. Windowed matched filter (simplest, works with any waveform):**
+**1. Time-domain windowed matched filter (reliable, works with any waveform):**
 
-`SpectrumWindow` options that accept `SidelobeAttenuation`: `'Taylor'`, `'Chebyshev'`.
-`'Hamming'` works but has no tunable attenuation. `'Kaiser'` ignores
-`SidelobeAttenuation` (warning issued) — apply Kaiser manually if needed.
-
-The windowed matched filter achieves the specified PSL at any TBP (unlike NLFM
-which is TBP-limited), but costs SNR (loss increases with target SLL). Use
-`SampleRate >= 8 * bandwidth` for accurate PSL measurement. If the measured PSL
-doesn't match the window specification, verify: (1) input to `sidelobelevel` is
-in dB, (2) sample rate is adequate — do not cycle through different windows.
+Apply a window directly to the matched filter coefficients. This reliably
+achieves the target PSL at any TBP, at the cost of mismatch loss (~3 dB for
+-35 dB target, ~4 dB for -40 dB). Use `SampleRate >= 8 * bandwidth` for
+accurate PSL measurement.
 
 ```matlab
-wav = phased.LinearFMWaveform('PulseWidth', 10e-6, 'SweepBandwidth', 5e6);
-mf = phased.MatchedFilter( ...
-    'Coefficients', getMatchedFilter(wav), ...
-    'SpectrumWindow', 'Taylor', ...
-    'SidelobeAttenuation', 40);
+wav = phased.LinearFMWaveform('PulseWidth', 10e-6, 'SweepBandwidth', 5e6, ...
+    'SampleRate', 40e6, 'PRF', 1e4);
+mfCoeffs = getMatchedFilter(wav);
+N = numel(mfCoeffs);
+tWin = taylorwin(N, 4, -40);  % target -40 dB PSL
+mf = phased.MatchedFilter('Coefficients', mfCoeffs .* tWin);
 ```
+
+**Note on `SpectrumWindow` property:** The `SpectrumWindow` property of
+`phased.MatchedFilter` applies spectral weighting in the frequency domain.
+Testing indicates it achieves only ~50% of the specified attenuation in dB
+(e.g., Taylor-40 spec → ~-20 dB actual PSL). Use time-domain coefficient
+windowing when precise PSL control is required.
 
 **2. NLFM (inherent low sidelobes, no SNR loss):**
 
@@ -352,7 +367,7 @@ on the spectral taper shape). Requires sufficient TBP to approach target PSL.
 **3. Phase codes with good autocorrelation:**
 
 Use `pnkcode` for deep PSL (< -30 dB) at moderate lengths. `legendreseq` only
-achieves ~-20 dB PSL. See `references/phase-code-reference.md` for selection.
+achieves ~-17 dB PSL. See `references/phase-code-reference.md` for selection.
 
 ### Ambiguity Function Analysis
 
@@ -377,8 +392,18 @@ not just the pulse portion — pulse-only will error:
 sig = wf();          % full PRI — pass this to ambgfun
 ```
 
-See `references/analysis-functions.md` for cut conventions, Doppler loss
-measurement, and detailed usage examples.
+**Cut direction (counterintuitive naming):** The `'Cut'` parameter specifies
+which variable is HELD CONSTANT, not which axis is returned:
+
+| Cut parameter | Held constant | Returns | Use for |
+|---|---|---|---|
+| `'Cut','Doppler'` | Doppler = CutValue (Hz) | `[afmag, delay]` | Range sidelobes (matched filter response) |
+| `'Cut','Delay'` | Delay = CutValue (s) | `[afmag, doppler]` | Doppler tolerance (velocity sensitivity) |
+
+Cuts return **2 outputs only** — do not request 3 outputs with cuts.
+
+See `references/analysis-functions.md` for detailed usage examples and
+plotting guidelines.
 
 ### Stepped FM Processing
 
@@ -391,21 +416,12 @@ bandwidth and achieve the fine range resolution. The effective bandwidth is
 ### Stretch Processing (Wideband LFM)
 
 When approximate target range is known, use stretch processing instead of matched
-filtering to avoid wideband ADC requirements. Only available for `LinearFMWaveform`.
+filtering to avoid wideband ADC. Only available for `LinearFMWaveform`.
 
 ```matlab
 wav = phased.LinearFMWaveform('PulseWidth', 10e-6, 'SweepBandwidth', 100e6);
-refRange = 5000;   % approximate target range (m)
-rngSpan = 200;     % range window of interest (m)
-strproc = getStretchProcessor(wav, refRange, rngSpan);
-```
-
-The returned `phased.StretchProcessor` object mixes the received signal with a
-reference chirp. The beat frequency is narrowband → low-bandwidth ADC suffices.
-Use `stretchfreq2rng` to convert detected beat frequencies back to range:
-
-```matlab
-slope = bw / pw;  % sweep slope (Hz/s), NOT bandwidth
+strproc = getStretchProcessor(wav, 5000, 200);  % refRange, rngSpan
+slope = bw / pw;  % sweep slope for range conversion
 rng = stretchfreq2rng(beatFreq, slope, refRange);
 ```
 
@@ -416,35 +432,51 @@ rng = stretchfreq2rng(beatFreq, slope, refRange);
 `[0, 1, 0]`. Do NOT use `[1, 0, 0]` — that gives quadratic frequency (not LFM).
 See `references/waveform-objects.md` for coefficient examples.
 
+### Receiver Architecture
+
+Waveform-only PSL claims are incomplete — always state the receiver assumption:
+
+| Receiver | PSL behavior | SNR cost |
+|----------|-------------|----------|
+| Pure matched filter | Waveform-determined PSL | 0 dB (optimal) |
+| Time-domain windowed MF | Achieves target PSL reliably | ~3-4 dB mismatch loss |
+| Full-band MF after Tx notch | Narrow notch: controlled by window; wide: floor from gap | Negligible for narrow notch |
+| NLFM (self-matched) | TBP-limited PSL, no Rx loss | 0 dB |
+
+### Verification Outputs
+
+Every waveform design script should report:
+
+- Derived bandwidth and range resolution
+- PRF, max unambiguous range, max two-way Doppler
+- PSL (via `sidelobelevel`) and whether it meets the requirement
+- Any SNR/mismatch loss from receive weighting
+- Transmit spectrum plot (with mask if applicable)
+- Zero-Doppler cut with target PSL reference line
+
 ## Troubleshooting Patterns
 
-If the user reports:
+- Custom code warnings → don't set `NumChips` (inferred from vector)
+- Poor PSL → check `SampleRate >= 8*bandwidth` and dB input to `sidelobelevel`
+- PRF/sample rate errors → ensure `SampleRate/PRF` is integer
+- `ambgfun` size error → pass full PRI from `wf()`, not just pulse portion
+- Wrong Doppler → use `2*speed2dop` for two-way radar Doppler
+- Phase-coded construction error → ensure `SampleRate*ChipWidth` is integer
 
-- Unexpected warnings with Custom code → check that `NumChips` is not set (inferred from vector)
-- Poor measured PSL → check `SampleRate >= 8 * bandwidth` and that `sidelobelevel` input is in dB
-- Errors around PRF/sample rate → check that `SampleRate / PRF` is integer; use `fs = ceil(8*bw / prf) * prf`
-- `ambgfun` "input X should contain at least Fs/PRF samples" → pass full PRI from `wf()`, not just the pulse portion
-- Unexpected Doppler results → check one-way vs two-way Doppler (`2 * speed2dop`)
-- Poor stepped-FM range resolution → verify coherent step processing, not a single matched filter
-- Construction error on phase-coded waveform → check that `SampleRate * ChipWidth` is integer
-
-For the full common mistakes catalog, see `references/common-mistakes.md`.
+See `references/common-mistakes.md` for the full catalog.
 
 ## Multi-Step Reasoning Examples
 
-These show how to chain multiple skill sections for non-obvious design decisions:
-
-- **"I need 5 m range resolution but my ADC only handles 20 MHz"** → `rangeres2bw` gives ~30 MHz (exceeds ADC) → cannot use standard matched filter → recommend stretch processing (if approximate range known) or stepped FM (if not). Both avoid wideband ADC.
-
-- **"I want a CW waveform with low sidelobes"** → no dedicated NLFM-CW object → use `CustomFMWaveform` with `PRF = 1/PulseWidth` for 100% duty → design frequency profile via `nlfmspec2freq` + Taylor window → analyze with `pambgfun` (not `ambgfun`).
-
-- **"I need deep PSL and good Doppler tolerance"** → phase-coded gives thumbtack but PSL limited by code type and length; NLFM achieves low PSL without SNR loss but is less Doppler tolerant than LFM and requires high TBP; LFM + windowed matched filter preserves Doppler tolerance while achieving target PSL (with some SNR loss) → recommend LFM with windowed MF when Doppler tolerance is the priority.
+- **"Resolution > ADC bandwidth"** → stretch processing (range known) or stepped FM (not)
+- **"CW NLFM"** → `CustomFMWaveform` + `PRF=1/PulseWidth` + `nlfmspec2freq` → `pambgfun`
+- **"Deep PSL + Doppler tolerance"** → LFM + time-domain windowed MF (~3-4 dB SNR cost)
 
 ## Conventions
 
-- Prefer toolbox System objects over manual signal construction
+- Always use toolbox System objects and functions — never manual `exp(1j*...)` or custom sequence generators (see Construction Rule)
 - Always recommend `radarWaveformGenerator` for interactive waveform exploration (requires R2026a)
 - For phase-coded waveforms: clarify binary vs polyphase constraints before recommending a code (see `references/phase-code-reference.md`)
+- When a sidelobe target is specified, add a `yline(targetPSL, 'r--')` on the zero-Doppler cut for visual pass/fail verification
 
 ## References
 
@@ -452,9 +484,8 @@ These show how to chain multiple skill sections for non-obvious design decisions
 - `references/phase-code-reference.md` — Code types, binary vs polyphase, NumChips constraints
 - `references/analysis-functions.md` — ambgfun, pambgfun, sidelobelevel usage details
 - `references/common-mistakes.md` — Full catalog of common mistakes with corrections
+- `references/spectral-notching.md` — Spectral notching for interference avoidance, shapespectrum API
 
 ----
-
 Copyright 2026 The MathWorks, Inc.
-
 ----

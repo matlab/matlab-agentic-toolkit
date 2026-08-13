@@ -11,6 +11,6 @@ required-tools:
   - run_matlab_file
 required-skills:
   - matlab-build-chart
-  - matlab-theming
+  - matlab-apply-theme
 required-products: []
 toolkit: matlab-agentic-toolkit

@@ -248,8 +248,8 @@ Agents have limited context. When you install many skill groups, some skills may
 1. Install only the skill groups you need: This is the recommended solution. Use the MATLAB-based installer (`setupAgenticToolkit("install")`) to select specific skill groups relevant to your work. Fewer installed skills means the agent can more reliably identify and trigger the right one.
 
 2. Manually trigger skills by name: If you know which skill you need, trigger it directly.
-   - In Claude Code, use the slash command (e.g., `/matlab-testing`).
-   - In other agents, ask explicitly: "Use the matlab-testing skill to...".
+   - In Claude Code, use the slash command (e.g., `/matlab-write-test`).
+   - In other agents, ask explicitly: "Use the matlab-write-test skill to...".
 
 3. Remove skill groups you don't use: If you installed all groups via the agent-based setup, remove the ones you don't need.
    - Claude Code: `claude plugin remove <group-name>@matlab-agentic-toolkit`.

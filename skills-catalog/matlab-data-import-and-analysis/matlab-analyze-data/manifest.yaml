@@ -2,7 +2,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.2"
+version: "1.3"
 human-description: Analyze data in MATLAB using tables, timetables, numeric arrays, and gridded data — filtering, aggregation, smoothing, cleaning, and time-series operations.
 matlab-release: ">=R2023a"
 required-tools:

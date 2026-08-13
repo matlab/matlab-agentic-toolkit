@@ -10,11 +10,13 @@ description: >
   coder.perfCompare, %#codegen, writing codegen-ready MATLAB, code generation readiness,
   coder.varsize, coder.unroll, coder.noImplicitExpansionInFunction, coder.ceval,
   coder.inline, coder.extrinsic, coder.const, coder.classSignature, class codegen
-  limitations, temporal types codegen, DMA-off, stack-only.
+  limitations, temporal types codegen, DMA-off, stack-only,
+  host-target InstructionSetExtensions, SIMDAcceleration, OptimizeReductions,
+  host SIMD tuning, host OpenMP, codegen performance.
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Generate Code with MATLAB Coder
@@ -44,7 +46,7 @@ Umbrella skill for the MATLAB Coder workflow: generate code, verify it, refine t
 - **Generating code from an AI model** (PyTorch `.pt2` / LiteRT `.tflite` via `loadPyTorchExportedProgram` / `loadLiteRTModel`) → use **matlab-deploy-ai-model**. Return here for the underlying `coder.*` directives, config tuning, and screener/verification.
 - **Deploying to physical embedded hardware** (on-target PIL, ERT hardware configs, board selection — STM32 / Raspberry Pi / ARM Cortex) → use **matlab-deploy-embedded-code**. This skill covers host-side codegen, SIL, and config tuning up to hardware targeting.
 - **Speeding up interpreted MATLAB by rewriting the M-code** (vectorization, preallocation, caching) → use **matlab-optimize-performance**. This skill's acceleration path assumes you want to compile to MEX/C, not restructure the algorithm.
-- **General MATLAB test authoring** (parameterized tests, fixtures, mocking, coverage, CI/CD, App Designer) → use **matlab-testing**. This skill covers only codegen-equivalence tests (`coder.runTest`, `matlabtest.coder.TestCase`).
+- **General MATLAB test authoring** (parameterized tests, fixtures, mocking, coverage, CI/CD, App Designer) → use **matlab-write-test**. This skill covers only codegen-equivalence tests (`coder.runTest`, `matlabtest.coder.TestCase`).
 - **Modernizing deprecated APIs for currency/maintainability** when code generation is not the goal → use **matlab-modernize-code**. This skill rewrites source only to satisfy codegen constraints, with explicit authorization.
 
 ## Routing — load the matching reference file on demand
@@ -58,7 +60,7 @@ Pick the workflow that matches the user's intent and read the corresponding `ref
 | Using MATLAB classes in codegen; class limitations; `coder.classSignature`; handle vs value class restrictions | `references/write-class-limitations.md` |
 | Generate C/C++/CUDA code (MEX, lib, dll, exe), specify input types, fix `coder.screener` issues | `references/generate-code.md` |
 | Verify generated code matches MATLAB; write `coder.runTest` / `matlabtest.coder.TestCase` tests; SIL setup | `references/verify-code.md` |
-| Tune a working config for a deployment goal (embedded / speed / readability / size / safety) | `references/refine-config.md` |
+| Tune a working config for a deployment goal (embedded / speed / readability / size / safety); SIMD values (SIMDAcceleration, InstructionSetExtensions), OpenMP, OptimizeReductions | `references/refine-config.md` |
 | Profile generated MEX, measure `coder.timeit` / `coder.perfCompare`, find hotspots | `references/accelerate-mex.md` |
 | Look up a config property's name, availability, or non-obvious behavior | `references/config-properties.md` |
 

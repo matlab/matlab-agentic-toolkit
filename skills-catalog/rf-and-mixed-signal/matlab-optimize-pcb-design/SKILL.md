@@ -29,7 +29,7 @@ metadata:
 
 ## Typical Workflow
 
-1. **Before:** A design skill (`matlab-design-pcb-filter`, `matlab-design-pcb-txline`, etc.) — create the initial component; `matlab-analyze-em` — baseline S-parameters
+1. **Before:** A design skill (`matlab-design-pcb-filter`, `matlab-design-pcb-transmission-line`, etc.) — create the initial component; `matlab-analyze-em` — baseline S-parameters
 2. **This skill:** Define objective, bounds, constraints; run `optimize()`
 3. **After:** `matlab-analyze-em` — validate optimized design → `matlab-integrate-pcb-circuit` — cascade into system → `matlab-write-pcb-layout` — export Gerber
 

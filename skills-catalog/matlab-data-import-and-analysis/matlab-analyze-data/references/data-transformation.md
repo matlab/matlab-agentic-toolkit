@@ -83,12 +83,32 @@ T2 = varfun(@(x) x ./ max(x), T, InputVariables=["Score1" "Score2"]);
 
 `varfun` applies a function to entire variables; `rowfun` applies a function across variables for each row. For grouped statistics, prefer `groupsummary` over `varfun` with `GroupingVariables`.
 
-## Use `convertvars` for type conversion
+## Use `convertvars` for type conversion and in-place transforms
+
+The name suggests type conversion, but `convertvars(t, vars, dataType)` applies **any function** to the selected variables in place. Both `vars` (the 2nd argument) and `dataType` (the 3rd) accept **function handles**, so you can select variables by any predicate and transform them in one call.
+
 ```matlab
+% Type conversion (the third argument, dataType, is a data type)
 T = convertvars(T,"Status","categorical");            % string to categorical
 T = convertvars(T,vartype("cellstr"),"string");       % all cellstr vars to string
 T = convertvars(T,["X" "Y" "Z"],"double");            % convert specific vars
+
+% Select and transform with function handles:
+% vars selects variables by any predicate, dataType applies a function in place.
+T = convertvars(T,@(x) isstring(x) || iscellstr(x),@lower);  % lowercase every text variable
 ```
+
+The second argument, `vars`, is the variable selector. It accepts a function handle testing any predicate - not only a union of types like "string or cellstr", but the variable's contents too. `vartype` selects by a single type and does not accept a list of types, so a handle covers cases `vartype` cannot express. `vars` also accepts names, `vartype`, numeric positions, and logical arrays.
+
+The third argument, `dataType`, applies the transform. As a function handle it is the idiomatic way to apply a function that does not accept tables directly (e.g. `lower`/`upper`, `strip`, `erase`, `rescale`) to several variables at once, where the alternative is a brace-indexing round-trip (`T{:,sel} = f(T{:,sel})`) or a for-loop. When a function already accepts tables through a `DataVariables` argument (e.g. `fillmissing`, `normalize`), prefer that form instead.
+
+**When NOT to use `convertvars`:**
+- **Single known variable — use direct dot-assignment, not `convertvars`.** For a single named variable, write `T.Var = f(T.Var)`. Do NOT wrap it in `convertvars(T,"Var",@f)` — that is more code for the same behavior and obscures intent. Reach for `convertvars` only when selecting variables by a predicate or applying the same function to several variables at once.
+  ```matlab
+  T.Notes = lower(T.Notes);                          % Correct
+  T = convertvars(T,"Notes",@lower);                  % Avoid — overkill for one variable
+  ```
+- **Height-changing transforms.** `convertvars` requires the transformed variable to preserve the table's row count. Do not use it for operations that change height (filtering, deduplication, dropping missing rows). Use table-level operations instead, e.g. `T = rmmissing(T, DataVariables="Value")`, `T(T.Value < 0, :) = []`, or `T = unique(T)`.
 
 Check current types with `T.Properties.VariableTypes` - this is also writeable, so you can convert types directly:
 ```matlab

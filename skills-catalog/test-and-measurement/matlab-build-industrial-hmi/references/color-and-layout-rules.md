@@ -8,6 +8,7 @@ The single load-bearing principle: **color means exception**. The dashboard is m
 |------|-----|-----|-------|
 | Page background | `[0.78 0.78 0.78]` | `#C7C7C7` | The screen baseline. 80%+ of pixels should be this. |
 | Panel / card background | `[0.86 0.86 0.86]` | `#DBDBDB` | Slightly lighter than page; defines visual groups without lines. |
+| Command button / control face | `[0.86 0.86 0.86]` | `#DBDBDB` | Buttons, spinners, switches — neutral chrome. **Never** green Start / red Stop; differentiate by label. See "Command buttons and controls are neutral". |
 | Normal-state widget | `[0.5 0.5 0.5]` | `#808080` | Gauge normal band, lamp idle, badge default. |
 | Primary text / numerics | `[0.10 0.10 0.10]` | `#1A1A1A` | High-contrast on gray background. |
 | Secondary text / labels | `[0.30 0.30 0.30]` | `#4D4D4D` | Range labels, units, metadata. |
@@ -24,6 +25,17 @@ The single load-bearing principle: **color means exception**. The dashboard is m
 - **Alarm color belongs to the source widget**, not a separate alarm widget. Color the gauge band, the table row, the trend trace highlight — not a popup.
 - **At most 5 saturated-color elements on screen at once.** If more nodes go critical simultaneously, the banner counts as one and the source widgets share attention.
 - **Connection state is BLUE.** Green is reserved for "operator must verify yes this is actively OK" — a process state, not a comms state.
+
+## Command buttons and controls are neutral
+
+Push buttons (Start, Stop, Reset, E-Stop), spinners, switches, and dropdowns are **chrome, not state** — they are present on the screen at all times regardless of what the process is doing, so they carry **no** alarm or status meaning and must stay neutral widget gray (leave the default button face, or `[0.86 0.86 0.86]`).
+
+- **Never a green Start / red Stop.** This is the single most common reflexive violation (traffic-light / play-button priors). Green `[0 0.6 0]` and red `[0.85 0 0]` are the two *exception* colors — spending them on always-visible buttons means when a value actually goes critical, the real red alarm no longer stands out against a screen that already has a red button. It also mis-signals: a red Stop button reads as "Stop is in an alarm state," which is meaningless.
+- **Differentiate controls by their label**, position, and grouping — `START` / `STOP` / `E-STOP` text — not by color.
+- **Run/stopped state is a separate indicator.** If the operator needs to see whether the pump is running, show it on a `uilamp` + label or a status badge next to the control, not by coloring the button. The button says *what pressing it does*; the lamp says *what the equipment is doing*.
+- **E-Stop is the one allowed exception to a colored control**, and only as a physical-affordance convention: a red E-Stop *may* use red because it mirrors the physical mushroom button operators are trained on. Even then, prefer a distinct shape/size and a confirm-both-engage-and-release dialog (see `write-safeguards-reference.md`) over relying on the color. If in doubt, keep it gray.
+
+This applies identically whether the app is built programmatically or serialized to a real App Designer file via `matlab-build-app` — see `app-designer-handoff.md` for the verb recipe.
 
 ## Dark-theme defense
 

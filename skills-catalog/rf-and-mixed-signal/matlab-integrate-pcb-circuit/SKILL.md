@@ -282,7 +282,7 @@ show(pcbant1);
 
 ## pcb2D Cross-Section and Crosstalk
 
-For `pcb2D` cross-section analysis, `trace2D` setup, RLGC extraction, `slice()`, and crosstalk with coupled traces, see `matlab-design-pcb-txline`.
+For `pcb2D` cross-section analysis, `trace2D` setup, RLGC extraction, `slice()`, and crosstalk with coupled traces, see `matlab-design-pcb-transmission-line`.
 
 ## Exporting S-Parameters to Touchstone Files
 

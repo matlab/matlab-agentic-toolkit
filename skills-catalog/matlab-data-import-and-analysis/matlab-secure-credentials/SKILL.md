@@ -37,7 +37,7 @@ any authenticated service.
 - Writing the connection/query/transfer logic itself when no credential is involved
   (e.g. a public API, a local file), or cleaning/transforming/aggregating data once it is
   in a table or timetable — use the relevant data-import skill (e.g. `matlab-analyze-data`,
-  `matlab-read-database`).
+  `matlab-use-database`).
 - Integrating a third-party secret manager (HashiCorp Vault, AWS Secrets Manager,
   Azure Key Vault) — out of scope.
 - OS-level or non-MATLAB key management.

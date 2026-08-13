@@ -41,7 +41,7 @@ Use this skill when:
 ## When NOT to Use This Skill
 
 - Building a full app (use `matlab-build-app` — it invokes this skill for chart sub-steps)
-- Applying dark mode, brand colors, or custom color themes (use `matlab-theming`)
+- Applying dark mode, brand colors, or custom color themes (use `matlab-apply-theme`)
 - Working with Simulink scopes or Simscape plots
 - Creating App Designer charts via the drag-and-drop GUI
 
@@ -278,7 +278,7 @@ These intents have no dedicated reference file. Use built-in MATLAB API knowledg
 
 ### External Skills (invoked, not read)
 
-- `matlab-theming` — when the chart needs dark mode, brand colors, or custom palettes
+- `matlab-apply-theme` — when the chart needs dark mode, brand colors, or custom palettes
 
 ----
 

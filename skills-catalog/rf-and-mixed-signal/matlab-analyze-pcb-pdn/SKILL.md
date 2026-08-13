@@ -1,6 +1,6 @@
 ---
 name: matlab-analyze-pcb-pdn
-description: "PDN DC voltage/current analysis, IR drop, design rule checking, and multi-net batch analysis on imported PCB layouts. TRIGGER: user asks about power integrity, PDN analysis, IR drop, voltage distribution, current density, power nets, or design rule checking on a PCB. Invoke BEFORE writing code — the PDN API chain is specialized and non-obvious. SKIP: importing a PCB file (use matlab-read-pcb-layout), EM field/S-parameter extraction (use matlab-analyze-em), material/stackup setup only (use matlab-manage-pcb-material), transmission line design (use matlab-design-pcb-txline)."
+description: "PDN DC voltage/current analysis, IR drop, design rule checking, and multi-net batch analysis on imported PCB layouts. TRIGGER: user asks about power integrity, PDN analysis, IR drop, voltage distribution, current density, power nets, or design rule checking on a PCB. Invoke BEFORE writing code — the PDN API chain is specialized and non-obvious. SKIP: importing a PCB file (use matlab-read-pcb-layout), EM field/S-parameter extraction (use matlab-analyze-em), material/stackup setup only (use matlab-manage-pcb-material), transmission line design (use matlab-design-pcb-transmission-line)."
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
@@ -22,7 +22,7 @@ metadata:
 
 - Importing PCB layouts (Gerber, ODB++, Allegro) — use `matlab-read-pcb-layout`
 - Analyzing S-parameters, fields, or EM performance — use `matlab-analyze-em`
-- Analyzing crosstalk between signal traces — use `matlab-design-pcb-txline`
+- Analyzing crosstalk between signal traces — use `matlab-design-pcb-transmission-line`
 - Defining dielectric or conductor materials — use `matlab-manage-pcb-material`
 - Modeling via structures — use `matlab-model-via`
 

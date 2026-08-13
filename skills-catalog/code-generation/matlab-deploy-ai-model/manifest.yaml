@@ -2,8 +2,8 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.1"
-human-description: Generate C/C++ or CUDA code from PyTorch ExportedProgram models using loadPyTorchExportedProgram and codegen.
+version: "1.2"
+human-description: Generate C/C++ or CUDA code from PyTorch ExportedProgram (.pt2) or LiteRT (.tflite) models using loadPyTorchExportedProgram, loadLiteRTModel, and codegen. Includes Simulink integration workflows.
 matlab-release: ">=R2026a"
 required-tools: []
 required-skills: []

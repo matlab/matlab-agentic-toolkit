@@ -1,0 +1,17 @@
+# Copyright 2026 The MathWorks, Inc.
+# manifest.yaml — Tooling metadata for debugging
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "3.0"
+human-description: Diagnose MATLAB errors and unexpected behavior.
+matlab-release: ">=R2021a"
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+  - check_matlab_code
+  - run_matlab_test_file
+  - detect_matlab_toolboxes
+required-skills: []
+required-products: []
+toolkit: matlab-agentic-toolkit

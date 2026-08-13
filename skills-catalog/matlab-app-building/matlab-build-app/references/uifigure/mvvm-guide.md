@@ -289,7 +289,7 @@ Run tests with `runtests('testMainViewModel')` — no figure window needed.
 |------|-------------------|
 | **UIFigure app** | View uses `guide.md` layout patterns. Model is pure MATLAB. |
 | **UIHTML app** | ViewModel sends bridge events via `sendEventToHTMLSource` instead of updating a MATLAB View. JS View subscribes to bridge events. See `references/uihtml/bridge-guide.md`. |
-| **Styling** | View applies `matlab-theming` patterns to components. ViewModel is style-agnostic. |
+| **Styling** | View applies `matlab-apply-theme` patterns to components. ViewModel is style-agnostic. |
 | **Coding** | Model and ViewModel use `arguments` blocks for validation and structured error handling. |
 
 ## Implementation Checklist

@@ -19,7 +19,7 @@ metadata:
 
 ## When NOT to Use
 
-- Designing transmission lines — use `matlab-design-pcb-txline`
+- Designing transmission lines — use `matlab-design-pcb-transmission-line`
 - Designing filters — use `matlab-design-pcb-filter`
 - Designing passive components (inductors, capacitors, baluns) — use `matlab-design-pcb-passive`
 - Cascading couplers with other components — use `matlab-integrate-pcb-circuit`

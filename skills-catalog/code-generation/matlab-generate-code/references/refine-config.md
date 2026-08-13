@@ -75,12 +75,23 @@ cfg.InlineBetweenUserAndMathWorksFunctions = 'Speed';
 cfg.EnableMemcpy = true;
 cfg.EnableOpenMP = true;
 cfg.EnableAutoParallelization = true;
-cfg.OptimizeReductions = true;
+cfg.OptimizeReductions = true;              % requires InstructionSetExtensions ~= "None" (or SIMDAcceleration ~= "None" for MEX)
 cfg.RuntimeChecks = false;                  % lib/dll/exe only — not on MexCodeConfig
 cfg.UseBuiltinFFTWLibrary = true;           % lib/dll/exe only — speeds up fft if used
 ```
 
 `RuntimeChecks` and `UseBuiltinFFTWLibrary` are properties of `coder.CodeConfig` / `coder.EmbeddedCodeConfig` only; do not set them on `coder.MexCodeConfig`. Confirm with `isprop(cfg, 'PropName')` before assigning.
+
+**`InstructionSetExtensions`** — emits SIMD intrinsics (`_mm_add_ps`, etc.) for `coder.config("lib"|"exe"|"dll")` targets. NOT available on `coder.MexCodeConfig` — assigning it on a MEX config throws an unrecognized-property error; use `SIMDAcceleration` for MEX instead.
+
+Full value list: `"SSE"`, `"SSE2"`, `"SSE4.1"`, `"AVX"`, `"AVX2"`, `"FMA"`, `"AVX512F"`, `"None"`. Levels are cumulative — selecting `"AVX2"` also enables `AVX`, `SSE4.1`, `SSE2`, `SSE`. Set `ProdHWDeviceType` first so only valid values are accepted. If the compiler cannot emit the required flags (custom toolchain), set to `"None"`.
+
+```matlab
+cfg = coder.config("lib");
+cfg.HardwareImplementation.ProdHWDeviceType = "Intel->x86-64 (Linux 64)";
+cfg.InstructionSetExtensions = "AVX2";
+codegen -config cfg -args {inputArg} entryPoint
+```
 
 For MEX speed specifically:
 
@@ -91,6 +102,16 @@ cfg.IntegrityChecks = false;            % see safety note below
 cfg.ResponsivenessChecks = false;
 cfg.ExtrinsicCalls = false;
 ```
+
+**`SIMDAcceleration`** — the MEX-only SIMD property on `coder.MexCodeConfig`. Value table:
+
+| Value | Instruction set |
+|-------|----------------|
+| `"None"` | No SIMD |
+| `"Portable"` (default) | SSE2 |
+| `"Full"` | AVX2 |
+
+Intel/AMD only; other platforms get scalar (non-SIMD) code regardless. MATLAB Coder checks the host CPU and compiler and uses compatible intrinsics up to the requested level. Use `SIMDAcceleration` whenever the target is a MEX; use `InstructionSetExtensions` for lib/dll/exe targets.
 
 **IntegrityChecks safety:** Before disabling, first generate and run the MEX with `IntegrityChecks = true` (the default). Exercise it with all expected runtime inputs and confirm no bounds or dimension errors occur. Only then set `IntegrityChecks = false` — without checks, out-of-bounds access crashes MATLAB with no diagnostic.
 

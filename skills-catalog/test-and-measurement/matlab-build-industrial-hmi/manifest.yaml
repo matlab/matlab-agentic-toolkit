@@ -2,9 +2,9 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
-human-description: Build industrial-grade SCADA/HMI dashboards in MATLAB App Designer following ISA-101 conventions.
-matlab-release: ">=R2023b"  # opc.ua subscribe() introduced in R2023b; required by core OPC UA pattern. PI AF (afclient) requires R2026a — flagged "Available From" in Key Functions table.
+version: "1.1"
+human-description: Build industrial-grade SCADA/HMI dashboards in MATLAB following ISA-101 conventions. Produces a real App Designer app (.mlapp) by handing serialization to matlab-build-app when available, and falls back to a programmatic .m app otherwise.
+matlab-release: ">=R2023b"  # opc.ua subscribe() introduced in R2023b; required by core OPC UA pattern. PI AF (afclient) requires R2026a — flagged "Available From" in Key Functions table. Real App Designer .mlapp output needs R2025a+ (via matlab-build-app); plain-text .m+.xml needs R2026b+.
 required-tools:
   - evaluate_matlab_code
   - detect_matlab_toolboxes

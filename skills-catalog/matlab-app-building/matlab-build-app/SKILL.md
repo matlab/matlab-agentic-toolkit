@@ -261,7 +261,7 @@ After confirming path and archetype, produce a plan and write it to `<app-name>-
 
 **External skills:**
 - `matlab-build-chart` — [role, if applicable]
-- `matlab-theming` — [role, if applicable]
+- `matlab-apply-theme` — [role, if applicable]
 
 **File organization:**
 [app directory tree]
@@ -378,7 +378,7 @@ Both formats use the same `AppDesignerAgentInterface` API via the bundled `scrip
 ### External Skills (invoked, not read)
 
 - `matlab-build-chart` — when the app includes MATLAB plots (UIFigure path or UIFigure+accent)
-- `matlab-theming` — when the app needs dark mode, brand colors, or custom palettes (UIFigure path)
+- `matlab-apply-theme` — when the app needs dark mode, brand colors, or custom palettes (UIFigure path)
 
 ## After Plan Approval
 
@@ -388,7 +388,7 @@ Both formats use the same `AppDesignerAgentInterface` API via the bundled `scrip
 2. If MVVM warranted (Explorer, Wizard, Canvas, or complex apps): read the architecture reference
 3. Read the UIFigure guide to establish layout (grid, components, containers)
 4. Layer in path-specific references per the implementation sequence
-5. For visual polish: invoke `matlab-theming` (UIFigure) or read styling references (UIHTML accent)
+5. For visual polish: invoke `matlab-apply-theme` (UIFigure) or read styling references (UIHTML accent)
 6. For charts: invoke `matlab-build-chart` (UIFigure) or read charting references (UIHTML accent)
 7. **If App Designer serialization:** read the app-designer reference docs (shared guide + format-specific guide), then use the `AppDesignerAgentInterface` API to persist the app. The docs contain the complete build flow, property rules, and editing discipline.
 

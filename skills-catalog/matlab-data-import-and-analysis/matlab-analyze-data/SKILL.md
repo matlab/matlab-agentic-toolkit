@@ -4,7 +4,7 @@ description: Analyze data using MATLAB. Use when the task involves tables, timet
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # MATLAB Data Analysis
@@ -271,13 +271,15 @@ T = normalize(T,DataVariables=vartype("numeric"));           % all numeric varia
 T = normalize(T,"zscore", DataVariables="Value");            % specific variable
 ```
 
-### Type conversion and variable management
+### Transform and manage variables
 
 Check current types with `T.Properties.VariableTypes` (also writeable as a shortcut for conversion).
 
 ```matlab
 T = convertvars(T,"Status","categorical");               % string to categorical
 T = convertvars(T,vartype("cellstr"),"string");           % cellstr to string
+T = convertvars(T,@(x) isstring(x)||iscellstr(x),@lower); % 2nd arg (vars) and 3rd arg (dataType) can be function handles: select + transform in place
+T.Score = round(T.Score);                                 % for a single known variable, use direct dot-assignment, not convertvars
 T = renamevars(T,"OldName","NewName");
 T = movevars(T,"Key", Before="Value");
 T = addvars(T,x,y, Before="Value", NewVariableNames=["X" "Y"]);

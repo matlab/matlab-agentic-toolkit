@@ -31,11 +31,11 @@ Guidance for MATLAB data I/O — correct patterns for delimiters, locales, forma
 
 ## When NOT to Use
 
-- Large files that may not fit in memory, or choosing between tall arrays, datastores, and parallel workflows (use `matlab-choose-bigdata-solution` skill)
-- Database access via ODBC/JDBC — reading, writing, or querying relational databases (use `matlab-read-database` or `matlab-write-database` skill)
+- Large files that may not fit in memory, or choosing between tall arrays, datastores, and parallel workflows (use `matlab-choose-big-data-solution` skill)
+- Database access via ODBC/JDBC — reading, writing, or querying relational databases (use `matlab-use-database` skill)
 - SQL-based queries on large CSV/Parquet/JSON files for reduction before analysis (use `matlab-use-duckdb` skill)
 - Vehicle data from MDF/MF4/BLF/ASC log files or CAN/LIN bus decoding (use `matlab-import-export-vehicle-data` skill)
-- Vehicle network communication setup with CAN/CAN FD/J1939 (use `matlab-vehicle-network-communication` skill)
+- Vehicle network communication setup with CAN/CAN FD/J1939 (use `matlab-use-vehicle-network` skill)
 - Tracking data import for sensor fusion workflows (use `matlab-import-tracking-data` skill)
 - Medical image data — DICOM, NIfTI, or Analyze formats (use `matlab-read-medical-data` skill)
 - Market or financial data feeds (use `matlab-access-datafeed` skill)

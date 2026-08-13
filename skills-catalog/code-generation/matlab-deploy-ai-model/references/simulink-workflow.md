@@ -1,9 +1,10 @@
-# Using a PyTorch Model in Simulink
+# Using PyTorch and LiteRT Models in Simulink
 
-Integrate a PyTorch ExportedProgram (.pt2) into a Simulink model for simulation
-and C/C++ code generation. Two paths exist — both support pre/post-processing;
-choose based on how you want to structure it: separate Simulink blocks around
-the dedicated model block (Path A), or everything inside a single block (Path B).
+Integrate a PyTorch ExportedProgram (.pt2) or LiteRT (.tflite) model into a
+Simulink model for simulation and C/C++ code generation. Two paths exist — both
+support pre/post-processing; choose based on how you want to structure it:
+separate Simulink blocks around the dedicated model block (Path A), or
+everything inside a single block (Path B).
 
 ## Path A: Dedicated PyTorch ExportedProgram Block (preferred)
 
@@ -41,7 +42,9 @@ After setting `ModelFilePath`, the block reads the `.pt2` and auto-configures:
 
 The `InputsTable` 4th column is a permutation vector that maps Simulink port
 signal dimensions to model dimensions. This lets you feed image data in NHWC
-layout (natural for MATLAB/Simulink) without manual `permute` calls:
+layout (natural for MATLAB/Simulink) without manual `permute` calls. For
+multi-input models, each row in `InputsTable` specifies its own independent
+permutation — inputs can have different layouts.
 
 ```matlab
 % Default: identity [1 2 3 4] — port signal must be NCHW [1,3,224,224]
@@ -54,15 +57,89 @@ The permutation `[1 4 2 3]` means: port dim 1→model dim 1, port dim 2→model 
 port dim 3→model dim 2, port dim 4→model dim 3. So port shape NHWC is permuted to
 NCHW before inference.
 
+**Source-signal shape must match the pre-permutation port shape, not the model
+shape.** The permutation reorders *after* the port receives the signal, so:
+
+- With `InputsTable` permutation `[1 2 3 4]` (identity, default): the source
+  must produce **NCHW** (e.g., `[1 3 224 224]`) — same as the model.
+- With `InputsTable` permutation `[1 4 2 3]`: the source must produce
+  **NHWC** (e.g., `[1 224 224 3]`) — the block permutes it to NCHW internally.
+
+Feeding NCHW to a port configured with `[1 4 2 3]` double-permutes the axes,
+so `sim()` errors with a shape-mismatch inside the DL block. Verify the
+source shape before wiring: `size(u)` on a signal probe or a Display block
+inserted between the source and the DL block.
+
+### Signal Dimensionality (1-D vs 2-D)
+
+Simulink Constant blocks with `VectorParams1D = 'on'` (the default) produce
+1-D signals. Simulink passes 1-D signals as **column vectors** into MATLAB
+Function blocks and the internal MLFB of dedicated blocks. If the model
+expects a row vector (e.g., `[1 4]`), the input arrives as `[4 1]` and
+inference fails with a dimension mismatch.
+
+This only affects models whose inputs are 2-D (e.g., `[1 N]` feature
+vectors). Image models with 4-D inputs (`[1 H W C]`) are unaffected because
+4-D arrays cannot be collapsed to 1-D.
+
+**Fix:** Set `VectorParams1D = 'off'` on the Constant block so the signal
+retains its 2-D shape:
+
+```matlab
+add_block("simulink/Sources/Constant", [modelName "/Input"], ...
+    "Value", "ones(1,4,'single')", "VectorParams1D", "off");
+```
+
+Alternatively, use a Reshape block between the source and the model block to
+enforce the expected dimensions.
+
+### Variable-Size (Dynamic Batch) in Simulink
+
+Models with a variable-size batch dimension (`Inf` in `inputSpecifications`)
+require additional configuration in Simulink:
+
+**OutputsTable maximum size:** The OutputsTable has an "Inferred Size" column
+that shows `Inf` for variable-size dimensions and a "Maximum Size" column that
+defaults to the same values. Users can set a finite upper bound in the Maximum
+Size column to constrain memory allocation.
+
+**When a maximum bound is required:**
+- Rapid Accelerator mode
+- Accelerator mode
+- GPU Acceleration enabled (generated CUDA code)
+
+In these modes, you must specify a finite maximum size for all variable-size
+dimensions — unbounded `Inf` is not supported.
+
+**Enable dynamic memory allocation:** For variable-size signals, enable
+dynamic memory allocation on the model:
+
+```matlab
+set_param(modelName, 'MATLABDynamicMemAlloc', 'on');
+```
+
+**MATLAB Function block variable-size outputs:** If using Path B (MATLAB
+Function block) and the block output is variable-size, you must enable
+variable-size output on the MATLAB Function block port. In the Ports and Data
+Manager, set the output port's "Variable size" property to on.
+
 ### Connect and Simulate
 
 ```matlab
-% Add source and sink
+% InputsTable permutation drives the required source shape:
+%   [1 2 3 4] (default) → source produces NCHW, e.g. [1 3 224 224]
+%   [1 4 2 3]           → source produces NHWC, e.g. [1 224 224 3]
+
+% Example: identity permutation → NCHW source
 add_block("simulink/Sources/Constant", [modelName "/Input"], ...
-    "Value", "randn(1,3,224,224,'single')");
+    "Value", "randn(1,3,224,224,'single')");   % NCHW
 add_block("simulink/Sinks/Display", [modelName "/Output"]);
 add_line(modelName, "Input/1", "MyModel/1");
 add_line(modelName, "MyModel/1", "Output/1");
+
+% Example: [1 4 2 3] permutation → NHWC source
+% (Use this variant only when InputsTable was set with [1 4 2 3])
+%   "Value", "randn(1,224,224,3,'single')"     % NHWC
 
 % Simulate
 out = sim(modelName, "StopTime", "0");
@@ -122,10 +199,10 @@ slbuild(modelName);
 The code generator fully inlines the model inference into the generated code —
 no external runtime or `.pt2` file needed at deployment.
 
-For SIMD instruction sets, reduction-loop vectorization, multithreaded loops,
-and serializing large DNN weight constants to data files, see
-`references/codegen-performance-options.md`. Those options apply equally to
-`slbuild` and command-line `codegen`.
+For SIMD instruction sets, reduction-loop vectorization, and multithreaded loops,
+see the `matlab-generate-code` skill. For serializing large DNN weight constants
+to data files, see `references/dnn-codegen-options.md`. Those options apply
+equally to `slbuild` and command-line `codegen`.
 
 ## Path B: MATLAB Function Block (single-block custom logic)
 
@@ -183,8 +260,48 @@ resolves compile-time constants from string literals automatically.
 
 ## LiteRT Models
 
-The same library (`dlosslib`) provides a `LiteRT` block for `.tflite` models
-with identical usage — set `ModelFilePath` to the `.tflite` file.
+The same two paths apply to LiteRT (`.tflite`) models:
+
+### Path A: Dedicated LiteRT Block (preferred)
+
+The `dlosslib/LiteRT` block has the same integration pattern as the PyTorch
+ExportedProgram block — set `ModelFilePath` to the `.tflite` file:
+
+```matlab
+add_block("dlosslib/LiteRT", [modelName "/MyModel"]);
+set_param([modelName "/MyModel"], "ModelFilePath", "/path/to/model.tflite");
+```
+
+The block auto-detects input/output shapes from the `.tflite` file.
+
+**Multi-signature models:** For `.tflite` models containing multiple functions,
+use the `FcnName` drop-down (or set it programmatically) to select which
+function to invoke:
+
+```matlab
+set_param([modelName "/MyModel"], "FcnName", "detect");
+```
+
+### Path B: MATLAB Function Block
+
+Same pattern as PyTorch but using `loadLiteRTModel` and `invoke`:
+
+```matlab
+config = get_param([modelName "/Inference"], "MATLABFunctionConfiguration");
+config.FunctionScript = sprintf([ ...
+    'function out = fcn(input)\n' ...
+    '%%#codegen\n' ...
+    'net = loadLiteRTModel(''model.tflite'');\n' ...
+    'out = invoke(net, input);\n' ...
+    'end\n']);
+```
+
+For multi-signature models in a MATLAB Function block, pass `FcnName` to
+`invoke`:
+
+```matlab
+'out = invoke(net, input, FcnName="detect");\n' ...
+```
 
 ## Code Generation Configuration Checklist
 

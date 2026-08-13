@@ -1,0 +1,136 @@
+# Copyright 2026 The MathWorks, Inc.
+schema_version: 1
+
+display-name: "MATLAB Agentic Toolkit"
+description: "AI skills for MATLAB"
+
+dependencies:
+  - repo: https://github.com/matlab/matlab-mcp-server
+    default-version: latest
+
+skill-groups:
+  - name: matlab-core
+    display-name: "MATLAB Core"
+    description: "Create, debug, test, review, and manage MATLAB code and installations"
+    path: skills-catalog/matlab-core
+    required: true
+
+  - name: matlab-app-building
+    display-name: "MATLAB App Building"
+    description: "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration"
+    path: skills-catalog/matlab-app-building
+
+  - name: matlab-data-import-and-analysis
+    display-name: "MATLAB Data Import and Analysis"
+    description: "Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations"
+    path: skills-catalog/matlab-data-import-and-analysis
+
+  - name: matlab-environment-and-settings
+    display-name: "MATLAB Environment and Settings"
+    description: "Diff MATLAB settings between releases and migrate startup scripts to correct setting paths"
+    path: skills-catalog/matlab-environment-and-settings
+
+  - name: matlab-external-language-interfaces
+    display-name: "MATLAB External Language Interfaces"
+    description: "Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API"
+    path: skills-catalog/matlab-external-language-interfaces
+
+  - name: matlab-programming
+    display-name: "MATLAB Programming"
+    description: "Write robust MATLAB functions with validated inputs"
+    path: skills-catalog/matlab-programming
+
+  - name: matlab-software-development
+    display-name: "MATLAB Software Development"
+    description: "Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans"
+    path: skills-catalog/matlab-software-development
+
+  - name: aerospace
+    display-name: "Aerospace"
+    description: "Aerospace Toolbox"
+    path: skills-catalog/aerospace
+
+  - name: ai-and-statistics
+    display-name: "AI and Statistics"
+    description: "Deep Learning Toolbox and Statistics and Machine Learning Toolbox"
+    path: skills-catalog/ai-and-statistics
+
+  - name: automotive
+    display-name: "Automotive"
+    description: "Automated Driving Toolbox, RoadRunner, and RoadRunner Scene Builder"
+    path: skills-catalog/automotive
+
+  - name: cloud-solutions
+    display-name: "Cloud Solutions"
+    description: "MATLAB Drive"
+    path: skills-catalog/cloud-solutions
+
+  - name: code-generation
+    display-name: "Code Generation"
+    description: "Embedded Coder, Fixed-Point Designer, GPU Coder, and MATLAB Coder"
+    path: skills-catalog/code-generation
+
+  - name: computational-biology
+    display-name: "Computational Biology"
+    description: "SimBiology"
+    path: skills-catalog/computational-biology
+
+  - name: computational-finance
+    display-name: "Computational Finance"
+    description: "Datafeed Toolbox and Spreadsheet Link"
+    path: skills-catalog/computational-finance
+
+  - name: control-systems
+    display-name: "Control Systems"
+    description: "Predictive Maintenance Toolbox"
+    path: skills-catalog/control-systems
+
+  - name: image-processing-and-computer-vision
+    display-name: "Image Processing and Computer Vision"
+    description: "Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox"
+    path: skills-catalog/image-processing-and-computer-vision
+
+  - name: math-and-optimization
+    display-name: "Math and Optimization"
+    description: "Optimization Toolbox and PDE Toolbox"
+    path: skills-catalog/math-and-optimization
+
+  - name: parallel-computing
+    display-name: "Parallel Computing"
+    description: "Parallel Computing Toolbox and MATLAB Parallel Server"
+    path: skills-catalog/parallel-computing
+
+  - name: radar
+    display-name: "Radar"
+    description: "Phased Array System Toolbox, Sensor Fusion and Tracking Toolbox, and Mapping Toolbox"
+    path: skills-catalog/radar
+
+  - name: reporting-and-database-access
+    display-name: "Reporting and Database Access"
+    description: "Database Toolbox, MATLAB Report Generator, and Simulink Report Generator"
+    path: skills-catalog/reporting-and-database-access
+
+  - name: rf-and-mixed-signal
+    display-name: "RF and Mixed-Signal"
+    description: "Antenna Toolbox, Mixed-Signal Blockset, RF Toolbox, RF PCB Toolbox, and SerDes Toolbox"
+    path: skills-catalog/rf-and-mixed-signal
+
+  - name: robotics-and-autonomous-systems
+    display-name: "Robotics and Autonomous Systems"
+    description: "Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox"
+    path: skills-catalog/robotics-and-autonomous-systems
+
+  - name: signal-processing
+    display-name: "Signal Processing"
+    description: "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox"
+    path: skills-catalog/signal-processing
+
+  - name: test-and-measurement
+    display-name: "Test and Measurement"
+    description: "Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox"
+    path: skills-catalog/test-and-measurement
+
+  - name: wireless-communications
+    display-name: "Wireless Communications"
+    description: "Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, and Wireless Testbench"
+    path: skills-catalog/wireless-communications

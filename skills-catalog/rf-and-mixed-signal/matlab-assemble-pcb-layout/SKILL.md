@@ -20,7 +20,7 @@ metadata:
 
 ## When NOT to Use
 
-- Designing standard transmission lines — use `matlab-design-pcb-txline`
+- Designing standard transmission lines — use `matlab-design-pcb-transmission-line`
 - Importing layouts from Gerber, ODB++, or Allegro — use `matlab-read-pcb-layout`
 - Defining dielectric or metal materials — use `matlab-manage-pcb-material`
 - Running EM analysis after assembly — use `matlab-analyze-em`

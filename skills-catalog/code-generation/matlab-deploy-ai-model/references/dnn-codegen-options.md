@@ -3,7 +3,7 @@
 Options that only apply to deep-learning inference codegen. For generic
 codegen tuning (SIMD instruction sets, OpenMP multi-threading, MEX SIMD,
 `OptimizeReductions`, the MATLAB Coder ↔ Simulink Coder naming duality),
-see `codegen-performance-options.md`.
+see the `matlab-generate-code` skill.
 
 **When to read this file:** you're generating code from a `.pt2` or
 `.tflite` model and want to (a) route around third-party DL libraries,
@@ -33,7 +33,7 @@ and bypasses `InstructionSetExtensions`, OpenMP, and
 `LargeConstantGeneration` — those parameters only affect generated source
 code, not library calls. For plain-C DNN inference on host CPU or embedded
 targets, `"none"` is the correct choice; the perf knobs from
-`codegen-performance-options.md` (SIMD, OpenMP, `OptimizeReductions`) then
+the `matlab-generate-code` skill (SIMD, OpenMP, `OptimizeReductions`) then
 take effect on the generated inference code.
 
 ## 2. Large DNN constants (weights) — `LargeConstantGeneration` (R2024a+)
@@ -98,7 +98,7 @@ Notes:
 
 ## 3. MEX SIMD ceiling (DNN-inference context)
 
-Generic `SIMDAcceleration` values are documented in `codegen-performance-options.md`.
+Generic `SIMDAcceleration` values are documented in the `matlab-generate-code` skill.
 The DNN-inference-specific note:
 
 **MEX SIMD is capped at AVX2** via `"Full"` — there is no AVX512 option for

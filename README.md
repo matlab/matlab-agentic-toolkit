@@ -78,7 +78,7 @@ After you install the MATLAB Agentic Toolkit, your agent can use these tools pro
 The server also provides two MCP resources: `matlab_coding_guidelines` (coding standards) and `plain_text_live_code_guidelines` (Live Script format rules). These resources provide reference information that agents can read as needed. 
 
 ### Run MATLAB Workflows Using Agent Skills 
-After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; curated skills. For best results, install only the skill groups relevant to your work — agents are more reliable at triggering skills when fewer are loaded. You can also manually trigger a specific skill by name (e.g., `/matlab-testing` in Claude Code) to guarantee it loads. To read details about all the skills, see the [skills catalog](skills-catalog/). Skill groups include:
+After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; curated skills. For best results, install only the skill groups relevant to your work — agents are more reliable at triggering skills when fewer are loaded. You can also manually trigger a specific skill by name (e.g., `/matlab-write-test` in Claude Code) to guarantee it loads. To read details about all the skills, see the [skills catalog](skills-catalog/). Skill groups include:
 
 <!-- BEGIN SKILLS -->
 #### MATLAB Skills

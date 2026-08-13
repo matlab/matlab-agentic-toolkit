@@ -147,6 +147,8 @@ T.Properties.VariableTypes
 T.Properties.VariableTypes("Status") = "categorical";
 ```
 
+`convertvars` is not limited to type conversion: `convertvars(t, vars, dataType)` accepts function handles for both `vars` and `dataType`, letting you select variables by a predicate `vartype` can't express and apply a function in place - including functions that don't accept tables directly. See "Use `convertvars` for type conversion and in-place transforms" in `data-transformation.md`.
+
 ## `SamplePoints` for non-uniform data
 
 Many data preprocessing functions - `fillmissing`, `isoutlier`, `smoothdata`, and others - support a `SamplePoints` parameter for non-uniformly spaced data. The behavior depends on the container type:

@@ -1,0 +1,18 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "2.0"
+human-description: Choose the right MATLAB tool for processing large tabular data that may not fit in memory.
+matlab-release: ">=R2021a"
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_test_file
+  - check_matlab_code
+required-skills: []
+required-products: []
+optional-products:
+  - Parallel Computing Toolbox
+  - MATLAB Parallel Server
+  - Vehicle Network Toolbox
+toolkit: matlab-agentic-toolkit

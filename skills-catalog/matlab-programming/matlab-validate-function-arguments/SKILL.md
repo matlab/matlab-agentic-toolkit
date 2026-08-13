@@ -38,7 +38,7 @@ Write robust MATLAB functions using `arguments` blocks with correct semantics fo
 
 - Basic MATLAB programming without argument validation
 - App building or UI components (use `matlab-building-apps`)
-- Unit testing (use `matlab-testing`)
+- Unit testing (use `matlab-write-test`)
 - General OOP class design unrelated to argument validation
 - Simple `if`/`error` guard clauses for runtime invariants inside a function body
   (those aren't input validation — leave them as-is unless the user asks for an

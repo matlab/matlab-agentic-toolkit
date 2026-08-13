@@ -1,6 +1,6 @@
 ---
 name: matlab-model-via
-description: "Via modeling: pads, antipads, ground return vias, GRV placement, and signal integrity for high-speed layer transitions. TRIGGER: user asks to model a via, design a via transition, place ground return vias, analyze via performance, or check signal integrity through layer transitions. Invoke BEFORE writing code — only viaSingleEnded exists (no viaDifferential), and the location format is non-obvious. SKIP: general signal integrity without vias (use matlab-analyze-em), transmission line design (use matlab-design-pcb-txline), PDN analysis (use matlab-analyze-pcb-pdn), material/stackup setup only (use matlab-manage-pcb-material)."
+description: "Via modeling: pads, antipads, ground return vias, GRV placement, and signal integrity for high-speed layer transitions. TRIGGER: user asks to model a via, design a via transition, place ground return vias, analyze via performance, or check signal integrity through layer transitions. Invoke BEFORE writing code — only viaSingleEnded exists (no viaDifferential), and the location format is non-obvious. SKIP: general signal integrity without vias (use matlab-analyze-em), transmission line design (use matlab-design-pcb-transmission-line), PDN analysis (use matlab-analyze-pcb-pdn), material/stackup setup only (use matlab-manage-pcb-material)."
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
@@ -19,7 +19,7 @@ metadata:
 
 ## When NOT to Use
 
-- Designing transmission lines or impedance control — use `matlab-design-pcb-txline`
+- Designing transmission lines or impedance control — use `matlab-design-pcb-transmission-line`
 - Building custom PCB structures from shapes — use `matlab-assemble-pcb-layout`
 - Setting up substrate or conductor materials — use `matlab-manage-pcb-material`
 - Running full-wave EM analysis on non-via structures — use `matlab-analyze-em`

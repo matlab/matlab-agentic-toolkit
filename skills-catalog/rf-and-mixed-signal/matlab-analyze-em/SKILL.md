@@ -21,7 +21,7 @@ metadata:
 ## When NOT to Use
 
 - Building or assembling custom PCB structures — use `matlab-assemble-pcb-layout`
-- Designing standard transmission lines or catalog objects — use `matlab-design-pcb-txline`
+- Designing standard transmission lines or catalog objects — use `matlab-design-pcb-transmission-line`
 - Defining dielectric or metal materials — use `matlab-manage-pcb-material`
 - Cascading or connecting multiple components into circuits — use `matlab-integrate-pcb-circuit`
 - Importing PCB layouts from Gerber, ODB++, or Allegro — use `matlab-read-pcb-layout`
@@ -364,7 +364,7 @@ feedCurrent(obj, freq);             % Plots feed current magnitude
 
 ## Transmission Line RLGC and Impedance
 
-For pcb2D cross-section analysis, RLGC extraction, characteristic impedance (`getZ0`), and propagation delay, see `matlab-design-pcb-txline`.
+For pcb2D cross-section analysis, RLGC extraction, characteristic impedance (`getZ0`), and propagation delay, see `matlab-design-pcb-transmission-line`.
 
 ## Behavioral S-Parameters (Fast Analytic Models)
 
@@ -454,7 +454,7 @@ Behavioral models assume ideal microstrip/stripline geometry and may diverge fro
 
 - `matlab-manage-pcb-material` — Material properties affect solver accuracy and loss modeling
 - `matlab-assemble-pcb-layout` — Building custom structures to analyze
-- `matlab-design-pcb-txline` — Transmission line parameter extraction, pcb2D, RLGC, crosstalk
+- `matlab-design-pcb-transmission-line` — Transmission line parameter extraction, pcb2D, RLGC, crosstalk
 - `matlab-design-pcb-passive` — Behavioral S-parameters for inductors/capacitors
 
 ----

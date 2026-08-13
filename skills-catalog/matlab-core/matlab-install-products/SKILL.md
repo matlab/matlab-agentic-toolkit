@@ -4,7 +4,7 @@ description: "Deterministic workflow to download MATLAB Package Manager (mpm) an
 license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
-  version: "1.3"
+  version: "1.4"
 ---
 
 # Installing MATLAB Products with MATLAB Package Manager (mpm) - Deterministic Protocol
@@ -39,7 +39,7 @@ $ARGUMENTS
 **STOP. Read this entire section before executing ANY Windows step.**
 
 1. **NEVER** use `powershell.exe -Command` for ANY reason. Bash mangles `$`, backticks, quotes, arrays, and script blocks before PowerShell sees them. This WILL cause `unexpected EOF` or syntax errors.
-2. **NEVER** use bash heredoc syntax (`cat > file <<'EOF'`) or bash redirection (`echo ... >`) to create PowerShell scripts.
+2. **NEVER** create any file with a bash heredoc (`cat > file <<'EOF' ... EOF`) or shell redirection (`echo ... > file`, `printf ... > file`, `>>`). This includes **quoted** heredocs (`<<'PS1'`, `<<"EOF"`). Do not rationalize an exception: the reason is NOT variable expansion (so "the delimiter is quoted, so it's safe" is wrong). The reasons the ban is absolute are (a) Git Bash rewrites paths, line endings, and encoding as it creates the file, corrupting `.ps1` parsing, and (b) the **Write file tool is the single approved mechanism for creating any file in this protocol** — scripts and input files alike. There is no safe heredoc. If you catch yourself reaching for `cat`, `echo`, `printf`, `>`, `>>`, or `<<` to produce a file, STOP and use the Write file tool.
 3. **ALWAYS** write `.ps1` files using the **Write file tool**, then invoke with:
    `powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File <absolute-script-path>`
 4. Do not emit CMD-only syntax (`if not exist`, `set VAR=`, `%USERPROFILE%`). Use PowerShell equivalents (`Test-Path`, `$env:USERPROFILE`).
@@ -50,8 +50,11 @@ $ARGUMENTS
 
 Windows script authoring pattern:
 - **WRONG**: `powershell.exe -Command "$script = @'...`  (bash corrupts `$` and heredocs)
-- **WRONG**: `cat > C:/Windows/Temp/script.ps1 <<'PS1' ... PS1`  (bash heredoc, breaks on Windows)
+- **WRONG**: `cat > C:/Windows/Temp/script.ps1 <<'PS1' ... PS1`  (bash heredoc — banned even with a quoted `'PS1'` delimiter)
+- **WRONG**: `echo '...' > script.ps1` or `printf '...' > script.ps1`  (shell redirection — banned)
 - **CORRECT**: create a unique temp folder, use the **Write file tool** to write `.ps1` files into it, then run with `-File`
+
+The only Bash tool commands allowed in this protocol are: `mkdir -p` (create the working folder), `powershell.exe ... -File` (invoke a script), `test -f` (verify artifacts), and `rm -rf` (cleanup). Any Bash command that would create or write file *content* is a violation — file content comes from the Write file tool, always.
 
 Unique temp folder:
 - Before Step 1, create a timestamped working folder using the Bash tool:
@@ -138,9 +141,10 @@ Official documentation:
 ## Pre-Execution Checklist (verify before EVERY Windows step)
 
 Before running any command in Steps 1–3 on Windows, confirm:
-- [ ] The PowerShell script was written using the **Write file tool** (not `-Command`, not heredoc, not `echo`)
+- [ ] The PowerShell script was written using the **Write file tool** (not `-Command`, not heredoc, not `echo`/`printf`)
 - [ ] The script is invoked with `powershell.exe ... -File <path>` (not `-Command`)
 - [ ] No PowerShell code appears inline in any `bash` command
+- [ ] No Bash command contains `<<`, `>`, or `>>` redirecting into a `.ps1` or input file (heredoc/redirection is banned even with a quoted delimiter)
 
 If any check fails, STOP and rewrite using the Write file tool.
 

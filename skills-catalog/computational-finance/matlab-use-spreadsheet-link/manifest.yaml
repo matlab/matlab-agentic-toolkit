@@ -1,0 +1,13 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "2.0"
+human-description: Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link.
+matlab-release: ">=R2021a"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Spreadsheet Link
+optional-products: []
+required-tools: []
+required-skills: []

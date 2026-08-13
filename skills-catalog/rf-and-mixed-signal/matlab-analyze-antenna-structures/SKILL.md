@@ -51,10 +51,10 @@ Antenna Toolbox with appropriate EM solvers for each problem class.
 
 ## When NOT to Use
 
-- Designing standalone antenna elements or arrays (no platform) — use `matlab-design-antennas`
-- Optimizing antenna dimensions with SADEA/TR-SADEA — use `matlab-design-antennas`
-- Impedance matching, measured antenna objects, RF propagation, or SAR — use `matlab-integrate-antennas`
-- A flat `reflector` backing a dipole — use `matlab-design-antennas` (catalog element)
+- Designing standalone antenna elements or arrays (no platform) — use `matlab-design-antenna`
+- Optimizing antenna dimensions with SADEA/TR-SADEA — use `matlab-design-antenna`
+- Impedance matching, measured antenna objects, RF propagation, or SAR — use `matlab-integrate-antenna`
+- A flat `reflector` backing a dipole — use `matlab-design-antenna` (catalog element)
 
 ## Must-Follow Rules
 

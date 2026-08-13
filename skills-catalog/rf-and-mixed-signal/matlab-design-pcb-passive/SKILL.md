@@ -1,6 +1,6 @@
 ---
 name: matlab-design-pcb-passive
-description: "Spiral inductors, interdigital capacitors, baluns, resonators, phase shifters for impedance matching, DC blocking, and bias tees. TRIGGER: user asks to design or create a spiral inductor, interdigital capacitor, balun, resonator, phase shifter, or other passive RF component. Invoke BEFORE writing code — class names and property patterns are non-obvious. SKIP: filter design (use matlab-design-pcb-filter), coupler/splitter design (use matlab-design-pcb-coupler), transmission line design (use matlab-design-pcb-txline), EM analysis (use matlab-analyze-em), material setup only (use matlab-manage-pcb-material)."
+description: "Spiral inductors, interdigital capacitors, baluns, resonators, phase shifters for impedance matching, DC blocking, and bias tees. TRIGGER: user asks to design or create a spiral inductor, interdigital capacitor, balun, resonator, phase shifter, or other passive RF component. Invoke BEFORE writing code — class names and property patterns are non-obvious. SKIP: filter design (use matlab-design-pcb-filter), coupler/splitter design (use matlab-design-pcb-coupler), transmission line design (use matlab-design-pcb-transmission-line), EM analysis (use matlab-analyze-em), material setup only (use matlab-manage-pcb-material)."
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
@@ -19,7 +19,7 @@ metadata:
 
 ## When NOT to Use
 
-- Designing transmission lines (microstrip, stripline, CPW) — use `matlab-design-pcb-txline`
+- Designing transmission lines (microstrip, stripline, CPW) — use `matlab-design-pcb-transmission-line`
 - Designing filters (bandpass, lowpass, bandstop) — use `matlab-design-pcb-filter`
 - Designing couplers or splitters — use `matlab-design-pcb-coupler`
 - Setting up substrate materials — use `matlab-manage-pcb-material`

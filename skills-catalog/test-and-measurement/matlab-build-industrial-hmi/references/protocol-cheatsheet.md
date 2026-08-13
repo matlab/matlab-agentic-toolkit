@@ -24,7 +24,7 @@ Two callback signatures are valid, depending on whether you're writing the `subs
 | You're writing the `subscribe` call yourself | `cb(sub, notification)` — **2 args** | scalar struct (single change per call) |
 | The `subscribe` call came from the OPC UA Explorer app's generated script | `cb(subObj, notification, ~)` — **3 args** (vectorized) | struct array (one entry per node that changed in the cycle) |
 
-**When in doubt, write the subscribe call yourself with the 2-arg shape.** Only switch to the 3-arg vectorized shape when you're literally pasting the Explorer-generated `dataChangeCallback`. Mixing the two — 3-arg signature with 2-arg server output, or vice versa — is the most common "subscription succeeds, callback never fires / errors" cause.
+**When in doubt, write the subscribe call yourself with the 2-arg shape.** Only switch to the 3-arg vectorized shape when you're literally pasting the Explorer-generated `dataChangeCallback`. Mixing the two — 3-arg signature with 2-arg server output, or vice versa — is the most common "subscription succeeds, callback never fires / errors" cause. Two failure modes flow from getting this wrong (both in `common-mistakes.md` #17): a 2-arg `@(src, evt)` for an Explorer script throws *"Too many input arguments"*, and reading the Explorer's `notification` as a scalar updates only the first node.
 
 In both shapes, `notification.Node` and `notification.Data` are *struct arrays*, not scalars. Even when only one node changes, indexing as `notification.Node(i)` and `notification.Data(i)` works for the 1-element case — there's no need to special-case it.
 

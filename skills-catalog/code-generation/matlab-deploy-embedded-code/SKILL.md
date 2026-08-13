@@ -10,7 +10,7 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # Deploy Embedded Code
@@ -24,7 +24,7 @@ testing.
 - Generating C/C++ code for a microcontroller or embedded Linux board
 - Setting up PIL or SIL verification for generated code
 - Configuring code generation with no dynamic memory allocation
-- Deploying deep learning models to resource-constrained hardware
+- Configuring Embedded Coder for an AI model entry-point function prepared by `matlab-deploy-embedded-ai`; for the full AI compression and model-loading workflow, trigger `matlab-deploy-embedded-ai` first
 - Selecting a hardware target board (STM32, Raspberry Pi)
 
 ## When NOT to Use
@@ -92,7 +92,7 @@ cfg.LargeConstantGeneration = "KeepInSourceFiles";
 
 ### 4. Configure Performance (SIMD and OpenMP)
 
-**SIMD vectorization** — generates vectorized code for the target ISA:
+**SIMD vectorization for embedded ARM targets:**
 
 ```matlab
 cfg.InstructionSetExtensions = 'Neon v7';  % ARM Cortex-A (128-bit, 4x float32)
@@ -101,42 +101,42 @@ cfg.InstructionSetExtensions = 'Neon v7';  % ARM Cortex-A (128-bit, 4x float32)
 | Target | Value | Notes |
 |--------|-------|-------|
 | ARM Cortex-A (Raspberry Pi) | `'Neon v7'` | 128-bit SIMD |
-| Intel x86-64 | `'SSE'`, `'SSE4.1'`, `'AVX'`, `'AVX2'`, `'AVX512F'` | Match target CPU |
 | ARM Cortex-M | Do not set — use `CodeReplacementLibrary` instead | Different mechanism |
 
-**Code replacement library (CRL)** — routes supported ops to compiler-vendor
-optimized implementations (NEON on ARM, etc.). Complementary to
-`InstructionSetExtensions` on ARM Cortex-A:
+For non-embedded targets (Intel x86-64 and the full `InstructionSetExtensions`
+ladder), `OptimizeReductions`, and OpenMP, see the `matlab-generate-code` skill.
+For the MATLAB Coder ↔ Simulink Coder property naming duality, see
+`references/simulink-config.md`.
+
+**Code replacement library (CRL)** — routes supported ops to vendor-optimized
+math library implementations.
+
+**On Cortex-A: set BOTH `InstructionSetExtensions` AND a non-SIMD `CodeReplacementLibrary`.**
+They target different layers. ISE emits NEON SIMD intrinsics inline for
+vectorizable loops in generated code. A non-SIMD CRL routes higher-level math
+ops — trig, filtering, matrix — to library implementations you don't have to
+generate. `ARM Cortex-A CMSIS` maps to the ARM CMSIS-DSP library (hand-tuned
+Cortex-A kernels shipped by ARM); it does not itself emit NEON, so it composes
+with an explicit `InstructionSetExtensions = 'Neon v7'`. Setting only one of
+ISE or CRL leaves performance on the table:
 
 ```matlab
 cfg.HardwareImplementation.ProdHWDeviceType = 'ARM Compatible->ARM Cortex-A';
-cfg.CodeReplacementLibrary = 'GCC ARM Cortex-A';
+cfg.InstructionSetExtensions = 'Neon v7';           % SIMD intrinsics (also shown in §4 above)
+cfg.CodeReplacementLibrary   = 'ARM Cortex-A CMSIS'; % non-SIMD CRL — routes math ops to CMSIS-DSP
 ```
 
 For Cortex-M, select the CRL matching your compiler (e.g. `'ARM Cortex-M'` for
 generic; vendor-specific CRLs are shipped with the corresponding support
 package). Cortex-M does not use `InstructionSetExtensions`.
 
-**OpenMP multi-threading** — enables parallel loops in generated code:
+**OpenMP** — enable on multi-core targets (Cortex-A); disable on single-core
+(Cortex-M — no OS/threading support, will fail to compile):
 
 ```matlab
-cfg.EnableOpenMP = true;   % multi-core targets (Cortex-A, x86)
-cfg.EnableOpenMP = false;  % single-core targets (Cortex-M) — no OS/threading support, won't compile
+cfg.EnableOpenMP = true;   % multi-core targets (Cortex-A)
+cfg.EnableOpenMP = false;  % single-core targets (Cortex-M)
 ```
-
-**MATLAB Coder vs Simulink Coder naming.** Several properties above have
-different names when configuring the same option via `set_param` on a
-Simulink model:
-
-| MATLAB Coder (`cfg.X = ...`) | Simulink Coder (`set_param`) | Notes |
-|---|---|---|
-| `EnableOpenMP` | `MultiThreadedLoops` | Valid on both `grt.tlc` and `ert.tlc`; both take an OpenMP-capable compiler. |
-| `StackUsageMax` | `MaxStackSize` | Same numeric semantics on both sides. |
-| `DeepLearningConfig = coder.DeepLearningConfig("none")` | `DLTargetLibrary = "none"` (codegen) + `SimDLTargetLibrary = "none"` (simulation) | Simulink side takes a plain string, not a config object. Set BOTH parameters — `DLTargetLibrary` only affects `slbuild`; simulation uses the separate `SimDLTargetLibrary`. |
-
-This skill's examples are all MATLAB Coder (`cfg.X = ...`); for the Simulink
-side and for AI-model-specific perf knobs (reduction-loop vectorization,
-MEX SIMD), see `matlab-deploy-ai-model/references/codegen-performance-options.md`.
 
 ### 5. Set Up PIL Verification
 
@@ -203,8 +203,12 @@ codegen -config cfgSil -args {inputArgs} myEntryPoint
 | `LargeConstantGeneration` | `"KeepInSourceFiles"`, `"WriteOnlyDNNConstantsToDataFiles"` | Where to put large constants |
 | `StackUsageMax` | numeric (bytes) | Stack limit for generated code (Simulink: `MaxStackSize`) |
 | `EnableOpenMP` | boolean | OpenMP multi-threading (Simulink: `MultiThreadedLoops`) |
-| `CodeReplacementLibrary` | `"GCC ARM Cortex-A"`, `"ARM Cortex-M"`, … | Vendor-optimized op replacements |
+| `CodeReplacementLibrary` | `"ARM Cortex-A CMSIS"`, `"GCC ARM Cortex-A"` (SIMD), `"ARM Cortex-M"`, … | Vendor-optimized op replacements. `GCC ARM Cortex-A` is a SIMD CRL — do not pair with an explicit ISE. MATLAB warns it is not recommended; use `"ARM Cortex-A CMSIS"` instead |
 | `TargetLang` | `"C"`, `"C++"` | Output language |
+
+> **Simulink Coder path (`slbuild`):** properties in the "Simulink:" column above are
+> set via `set_param(modelName, 'PropertyName', value)` directly on the model name.
+> See `references/simulink-config.md` for the full Simulink Coder property mapping and code examples.
 
 ## Common Mistakes
 
@@ -226,9 +230,11 @@ codegen -config cfgSil -args {inputArgs} myEntryPoint
 ## References
 
 - `references/supported-hardware.md` — board specs, support packages, and PIL interface details
+- `references/simulink-config.md` — Simulink Coder property naming, `set_param` patterns, and `slbuild` code examples
 
 ## See Also
 
+- `matlab-generate-code` — generic codegen foundation: coder directives, screener, MEX generation, SIL, config tuning, SIMD/OpenMP for non-embedded targets
 - `matlab-deploy-ai-model` — full AI model codegen pipeline (load, verify, generate MEX/lib)
 
 ----

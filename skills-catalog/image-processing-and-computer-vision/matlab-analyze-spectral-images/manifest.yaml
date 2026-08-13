@@ -1,0 +1,16 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Read, process, analyze, label, and classify hyperspectral and multispectral images.
+matlab-release: ">=R2026a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Image Processing Toolbox
+  - Deep Learning Toolbox
+  - Computer Vision Toolbox
+toolkit: matlab-agentic-toolkit
+
+# Copyright 2026 The MathWorks, Inc.

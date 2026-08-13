@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Connect MATLAB to Databricks via Spark or JDBC for reading and writing data.
+matlab-release: ">=R2024b"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Database Toolbox
+optional-products: []
+required-tools:
+  - evaluate_matlab_code
+required-skills: []

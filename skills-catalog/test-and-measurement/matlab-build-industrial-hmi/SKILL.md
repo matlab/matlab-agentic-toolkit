@@ -1,11 +1,13 @@
 ---
 name: matlab-build-industrial-hmi
 description: >
-  Build industrial-grade SCADA/HMI dashboards in MATLAB App Designer following
-  industrial-HMI conventions (ISA-101-aligned): gray-field philosophy, alarms at
-  source, write safeguards, fixed-range trends, drill-down layout. Use when
-  wrapping OPC UA / Modbus / MQTT / OSI PI / PI AF monitoring scripts into a
-  live App Designer app, building plant overviews, designing operator
+  Build industrial-grade SCADA/HMI dashboards in MATLAB following industrial-HMI
+  conventions (ISA-101-aligned): gray-field philosophy, alarms at source, write
+  safeguards, fixed-range trends, drill-down layout. Produces a real App Designer
+  app (.mlapp, or plain-text .m+.xml on R2026b+) by handing serialization to the
+  matlab-build-app skill when available, and falls back to a programmatic .m app
+  otherwise. Use when wrapping OPC UA / Modbus / MQTT / OSI PI / PI AF monitoring
+  scripts into a live operator app, building plant overviews, designing operator
   dashboards, or any time a user asks for a "SCADA dashboard", "HMI", "plant
   dashboard", "operator screen", or "industrial monitoring app" in MATLAB.
   Trigger on: SCADA, HMI, industrial dashboard, plant overview, operator screen,
@@ -15,7 +17,7 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Industrial HMI Builder
@@ -32,8 +34,8 @@ Build operator-facing SCADA/HMI dashboards in MATLAB App Designer that follow in
 
 ## When NOT to Use
 
-- General App Designer mechanics (`uigridlayout`, callback wiring, lifecycle, `matlab.apps.AppBase` scaffolding) — use `matlab-build-app` instead. This skill assumes that knowledge.
-- Discovering OPC UA servers on a network, finding endpoint URLs, or browsing namespaces for the first time — use `matlab-connect-opcua-client`.
+- General App Designer mechanics (`uigridlayout`, callback wiring, lifecycle, `matlab.apps.AppBase` scaffolding) and serialization to a real App Designer file — this skill **delegates** those to `matlab-build-app`. See `references/app-designer-handoff.md`. Two things stay here and must **not** be routed away: gray-field theming (never hand color/dark-mode to `matlab-apply-theme`) and HMI trends (never hand them to `matlab-build-chart`).
+- Discovering OPC UA servers on a network, finding endpoint URLs, or browsing namespaces for the first time — use `matlab-discover-opcua-servers`.
 - Non-process domains (consumer apps, lab utilities, scientific GUIs) — the conventions here are tailored to plant operators monitoring physical processes.
 
 ## Must-Follow Rules
@@ -52,6 +54,7 @@ Build operator-facing SCADA/HMI dashboards in MATLAB App Designer that follow in
   See `references/color-and-layout-rules.md` for the full rationale and `references/common-mistakes.md` entry 24 for the visible failure mode if either argument is omitted.
 - **Quantity caps per screen:** ≤ 6 gauges, ≤ 4 trend axes, ≤ 12 numeric readouts. Beyond that, use a `uitable`.
 - **Connection state is BLUE** `[0.4 0.6 1.0]`. Green `[0 0.6 0]` is reserved for "operator must verify yes this is actively OK" — not for "comms up" or "running".
+- **Command buttons/controls are neutral gray.** Never a green Start / red Stop — buttons are always-visible chrome and carry no status, so coloring them spends the alarm colors and steals contrast from real alarms. Differentiate by label; show run/stopped state on a separate lamp. (Red E-Stop is the one convention-based exception.) See `references/color-and-layout-rules.md`.
 - **Like-typed analogs in one panel use like widgets.** Don't show one temperature as a gauge and another as a numeric label.
 - **NEVER produce a dark background for an industrial HMI, regardless of the user request.** ISA-101 has no dark variant; a dark field destroys color-as-exception (alarm reds and ambers stop popping against a near-black background, and operators desensitize). Always render gray-field (`[0.78 0.78 0.78]`) and reply with a one-sentence justification when the user asks for dark mode. This is not a default — it is a hard constraint.
 
@@ -75,6 +78,7 @@ Build operator-facing SCADA/HMI dashboards in MATLAB App Designer that follow in
 
 - **OPC UA: `subscribe()` is the default** at any node count and update rate, including 1 Hz with a small node set. Reserve `timer` for non-node UI work (clock displays, alarm flashing, idle dimming).
 - **R2026a OPC UA contract:** `subscribe(client, nodes, cb)` invokes `cb(sub, notification)`; data lives at `notification.Data.Value` / `notification.Data.Timestamp`; the originating node is `notification.Node` (struct with `Name`, `Identifier`, `NamespaceIndex`). Don't reference `src.Name` — that worked in older releases when `src` was the node, but errors in R2026a.
+- **Two callback shapes — match the source.** When *you* write the `subscribe` call, use the **2-arg** `cb(sub, notification)` above. When you paste an **OPC UA Explorer**–generated `dataChangeCallback`, it is **3-arg vectorized** — `cb(subObj, notification, ~)` — and `notification` is a **struct array** (one entry per node changed this cycle): iterate `notification(i).Node.Name` / `notification(i).Data.Value`; never treat it as scalar. Writing a 2-arg `@(src, evt)` for an Explorer script throws *"Too many input arguments"*; treating `notification` as scalar reads only the first node. See `references/protocol-cheatsheet.md` §OPC UA and `references/common-mistakes.md` #17.
 - **Modbus has no `subscribe()`** — use a polling `timer` with `BusyMode='drop'`, `ExecutionMode='fixedSpacing'`. The 6-arg `write()` order is `write(m, target, addr, val, serverId, 'precision')` — `serverId` BEFORE `'precision'`.
 - **MQTT `subscribe(c, topic, Callback=@cb)`** — the callback is a **name-value pair**, not positional. Decode `message` (a string) per the broker's payload schema (`str2double`, `jsondecode`).
 - **OSI / AVEVA PI Data Archive: use `piclient`** (Industrial Communication Toolbox, R2022a+). **Never** call `NET.addAssembly('OSIsoft.AFSDK')` or write `OSIsoft.AF.PI.PIServers` / `OSIsoft.AF.PISystems` code in MATLAB — the toolbox client wraps the AFSDK and returns native MATLAB types (`timetable`, `table`, `datetime`); rolling your own .NET interop loses type coercion, throws on permission errors that the toolbox handles, runs slowly because batched reads are bypassed, and breaks the integrated browser app. PI has **no `subscribe()`** — drive trends with a polling timer (same shape as Modbus). Writes via `write(piClient, tag, value, TimeInstance=datetime("now"))` are R2024a+.
@@ -88,24 +92,32 @@ See `references/protocol-cheatsheet.md` for OPC UA / Modbus / MQTT API shapes an
 
 - **Initialize typed `struct` properties:** `Foo struct = struct()`. A bare `Foo struct` declaration becomes `0×0 struct` and `app.Foo.Bar = 1` errors with *"A dot name structure assignment is illegal when the structure is empty."*
 - **`classdef` first.** A `function` block before `classdef` in the same file is a parse error. Drop the wrapper; the file's first non-comment statement must be `classdef`, name matching filename.
+- **No `function … end` in inline evaluation.** Function definitions are legal only inside code files, never in a command-window / inline context. When you sanity-check helper logic (severity bands, alarm math) through `evaluate_matlab_code`, the transcript *is* a command-window context — a pasted `function … end` block errors with `"Function definitions are not supported in this context."` Verify by exercising the helper from its file, or inline the arithmetic directly.
 - **Subscription cleanup:** `opc.ua.Subscription` has no public `delete`. Drop the handle (`app.Subscription = opc.ua.Subscription.empty;`) and `disconnect(client)` — that releases all subscriptions on that client.
 - **Subscribe per widget**, never rebuild a single global subscription on each add — each `subscribe()` accumulates a channel listener; rebuilds leak.
 - **Stop and delete timers** in `delete(app)` or `CloseRequestFcn`. A leaked timer keeps firing after the figure closes with stale handles.
 
 See `references/app-designer-gotchas.md` for full reproductions, the release-aware `AccessLevelCurrent` check, and per-widget subscription patterns.
 
+### App Designer Output
+
+- **Produce a real App Designer app by handing serialization to `matlab-build-app`.** When that skill's `AppDesignerAgentInterface` tool is available (`exist('AppDesignerAgentInterface','class')==8`, i.e. on the path), design the HMI here, then drive its verbs to emit a genuine `.mlapp` (R2025a+) — the default output, which opens in App Designer. Plain-text `.m`+`.xml` is available only on R2026b+ for source control. The architecture question is pre-answered: an industrial HMI is **always UIFigure** (never UIHTML), so skip the parent's architecture and serialization discovery.
+- **Fallback when the parent is unavailable:** generate a programmatic `.m` app exactly as these references describe. It runs identically; it just won't open in App Designer. State this to the user.
+- See `references/app-designer-handoff.md` for the division of labor with `matlab-build-app`, the hand-off protocol, the HMI→verb mapping (gray-field, alarm gauges, palette, cleanup), and the pre-serialize domain-compliance checklist. That file defers all serialization mechanics — verb API, file-format choice, and lifecycle — to the parent's `references/app-designer/agent-guide-shared.md`.
+
 ## Workflow
 
-When wrapping a monitoring script into an HMI, work through these eight steps in order. Widget choice depends on data type, layout depends on widget choice, and alarms/trends/writes layer on top.
+When wrapping a monitoring script into an HMI, work through these steps in order. Widget choice depends on data type, layout depends on widget choice, and alarms/trends/writes layer on top; serialization to a real App Designer app comes last.
 
 1. **Classify each node / tag / attribute** — binary, enumerated, analog with range, analog without range, writable, alarm thresholds (LL/L/H/HH). This list drives every later step. → `references/widget-selection-flowchart.md`. If the schema isn't given upfront → `references/server-agnostic-discovery.md`. If wrapping a generated script (OPC UA/Modbus Explorer or MQTT demo) → `references/protocol-cheatsheet.md` first; if wrapping a PI / PI AF script → `references/pi-af-cheatsheet.md`, for the exact API shapes.
 2. **Pick widgets** via the decision flowchart, cross-checking quantity caps. → `references/widget-selection-flowchart.md`.
 3. **Lay out by hierarchy** — Level 1 plant overview, Level 2 area, Level 3 detail; row 1 reserved for the persistent alarm banner. → `references/color-and-layout-rules.md`.
-4. **Wire live data per protocol** — OPC UA `subscribe()`, Modbus polling `timer`, MQTT `subscribe(... Callback=...)`, PI / PI AF polling `timer` against `read()` / `Attribute.read`. → `references/protocol-cheatsheet.md` and `references/pi-af-cheatsheet.md`.
+4. **Wire live data per protocol** — OPC UA `subscribe()` (self-written callback = 2-arg `cb(sub, notification)`; an Explorer-generated `dataChangeCallback` = **3-arg vectorized** over a struct array), Modbus polling `timer`, MQTT `subscribe(... Callback=...)`, PI / PI AF polling `timer` against `read()` / `Attribute.read`. → `references/protocol-cheatsheet.md` and `references/pi-af-cheatsheet.md`.
 5. **Configure alarms at source AND in a banner**, latched with Acknowledge. → `references/alarm-patterns.md`.
 6. **Configure trends** — 5-minute window, fixed YLim, threshold lines. → `references/trend-config-reference.md`.
 7. **Add write safeguards** on every setpoint — confirm, range label, flash feedback. → `references/write-safeguards-reference.md`.
-8. **Verify: launch, exercise, close cleanly.** Use `mcp__matlab__evaluate_matlab_code` to instantiate the app and exercise `delete(app)`; confirm no leaked timers, subscriptions, or figures. If construction fails on a struct or classdef error → `references/app-designer-gotchas.md`.
+8. **Serialize to a real App Designer app.** If `matlab-build-app` is available, hand the design to its `AppDesignerAgentInterface` and emit a `.mlapp` (the default); otherwise emit a programmatic `.m` app. Editing an *existing* App Designer HMI also routes through the parent's `open()`/`inspect()` loop. → `references/app-designer-handoff.md`.
+9. **Verify: launch, exercise, close cleanly.** Use `mcp__matlab__evaluate_matlab_code` to instantiate the app and exercise `delete(app)`; confirm no leaked timers, subscriptions, or figures. For a `.mlapp`, confirm `save()` succeeds and `validate()` is empty. If construction fails on a struct or classdef error → `references/app-designer-gotchas.md`.
 
 ## Key Functions
 
@@ -141,7 +153,7 @@ Each reference file includes executable code patterns for its topic. Load the re
 
 ## Common Mistakes
 
-See `references/common-mistakes.md` for documented anti-patterns with **Symptom → Wrong → Right → Why** breakdowns covering App Designer struct/classdef gotchas, ISA-101 violations (green for "normal", popup alarms, auto-scaling trends, `uilabel` for numerics, dark-field), and protocol-specific silent failures (Modbus `serverId`/`'precision'` order, MQTT positional callback, MQTT `NaN` from JSON payloads, OPC UA invented node names, OPC UA `evt.Value` vs `evt.Data.Value`, Explorer 3-arg vectorized callback, server-side 1601 timestamps).
+`references/common-mistakes.md` is a **grep-first lookup table** of 26 documented anti-patterns, each a **Symptom → Wrong → Right → Why** block. Don't load it whole — `Grep` it for the user's error string, or for the anti-pattern via its index table, and read only the matching `### N.` entry. It covers App Designer struct/classdef gotchas, ISA-101 violations (green for "normal", green Start / red Stop command buttons, popup alarms, auto-scaling trends, `uilabel` for numerics, dark-field), and protocol-specific silent failures (Modbus `serverId`/`'precision'` order, MQTT positional callback, MQTT `NaN` from JSON payloads, OPC UA invented node names, OPC UA `evt.Value` vs `evt.Data.Value`, Explorer 3-arg vectorized callback, server-side 1601 timestamps).
 
 ## References
 
@@ -157,7 +169,8 @@ See `references/common-mistakes.md` for documented anti-patterns with **Symptom 
 | Browsing an unknown server and inferring widgets at runtime | `references/server-agnostic-discovery.md` |
 | Hard-wiring a known node-to-widget schema | `references/known-schema-patterns.md` |
 | Construction errors (`struct` props, `classdef` ordering, listener leaks, `AccessLevelCurrent`) | `references/app-designer-gotchas.md` |
-| Debugging wrong API shapes, silent failures, or anti-patterns | `references/common-mistakes.md` |
+| Serializing to a real App Designer `.mlapp` via `matlab-build-app`, or editing an existing App Designer app | `references/app-designer-handoff.md` |
+| Debugging a specific error, silent failure, or anti-pattern | **Grep** `references/common-mistakes.md` for the error text or anti-pattern (it has an index table) — read only the matching entry, not the whole file |
 
 ## Toolbox Dependencies
 

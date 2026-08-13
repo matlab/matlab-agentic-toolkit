@@ -29,7 +29,7 @@ Programmatically create RoadRunner scenarios from MATLAB: actors, routes, phase 
 ## When NOT to Use
 
 - Connecting to or launching RoadRunner → use `roadrunner-core`
-- Building scenarios from recorded sensor data → use `matlab-scenario-builder`
+- Building scenarios from recorded sensor data → use `matlab-use-scenario-builder`
 - Authoring road geometry (lanes, junctions) → use `roadrunner-rrhd-authoring`
 - Importing maps or scenes → use `roadrunner-import-scene`
 - Simulating or exporting scenarios → use `roadrunner-scenario-simulating`

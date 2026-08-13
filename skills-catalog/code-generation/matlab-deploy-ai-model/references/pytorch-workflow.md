@@ -17,10 +17,17 @@ Two completely different pipelines exist. Choose based on the goal:
 | Since | R2022b | R2026a |
 | Use for | Quantization, compression, transfer learning (DLT tools) | C/C++/CUDA code generation |
 
-**Rule:** If generating code is the primary goal, use the MATLAB Coder Support
-Package for PyTorch and LiteRT Models path. Do not use `importNetworkFromPyTorch`,
-`coder.loadDeepLearningNetwork`, or `dlarray` for such workflows unless explicitly
-requested.
+**Rule:** If the goal is to keep the model's source of truth in PyTorch and
+generate code from it, use the MATLAB Coder Support Package for PyTorch and
+LiteRT Models path (`loadPyTorchExportedProgram` + `invoke`). Do not use
+`importNetworkFromPyTorch`, `coder.loadDeepLearningNetwork`, or `dlarray` on
+this path — that path converts the PyTorch model to a `dlnetwork` first.
+
+**If the user needs quantization (`dlquantizer`), projection, pruning, or
+`exportNetworkToSimulink`** and is OK with translating the model to a
+`dlnetwork` using the Deep Learning Toolbox, then route to the
+`matlab-deploy-embedded-ai` skill (Pattern 1), which covers
+`dlnetwork`-based workflows.
 
 ## Export PyTorch Model (if user doesn't have .pt2 yet)
 
@@ -51,71 +58,25 @@ function out = mInvoke(networkPath, input) %#codegen
 end
 ```
 
-**Why `coder.Constant` in the codegen call:** The model file path must be known at
-compile time so the code generator can resolve the model at build time.
+## Code Generation (MEX, Library, Executable)
 
-**Note on `coder.DeepLearningConfig`:** The MATLAB Coder Support Package for
-PyTorch and LiteRT Models path ignores this setting. It generates code directly
-from the PyTorchExportedProgram without requiring an external deep learning library.
-Setting it won't cause errors but has no effect.
+For the full codegen workflow (MEX generation, verification, library/executable
+targets, `coder.Constant` usage, and `coder.DeepLearningConfig` notes), see
+`codegen-workflow.md`.
 
-## Generate MEX
-
-**CPU MEX:**
+Quick reference — CPU MEX:
 
 ```matlab
 cfg = coder.config("mex");
-input = ones(1, 3, 224, 224, "single");  % match model's inputSpecifications
+input = ones(1, 3, 224, 224, "single");  % NCHW — match inputSpecifications
 codegen -config cfg -args {coder.Constant("model.pt2"), input} mInvoke
 ```
-
-**CUDA MEX (GPU acceleration):**
-
-```matlab
-cfg = coder.gpuConfig("mex");
-input = ones(1, 3, 224, 224, "single");  % match model's inputSpecifications
-codegen -config cfg -args {coder.Constant("model.pt2"), input} mInvoke
-```
-
-Key points:
-- `coder.Constant` makes the model filename a compile-time constant
-- Input shape must match `inputSpecifications` exactly (NCHW, not HWC)
-
-## Verify MEX Output
-
-```matlab
-refOut = mInvoke("model.pt2", input);
-mexOut = mInvoke_mex("model.pt2", input);
-testCase = matlab.unittest.TestCase.forInteractiveUse;
-testCase.verifyThat(mexOut, matlab.unittest.constraints.IsEqualTo(refOut, ...
-    'Within', matlab.unittest.constraints.AbsoluteTolerance(single(1e-5))));
-```
-
-## Generate Library/Executable
-
-Once MEX is verified, generate production code:
-
-```matlab
-cfgLib = coder.config("lib");
-codegen -config cfgLib -args {coder.Constant("model.pt2"), input} mInvoke
-```
-
-For DLL: `coder.config("dll")`. For executable: `coder.config("exe")`.
-
-**CUDA library/executable:**
-
-```matlab
-cfgLib = coder.gpuConfig("lib");
-codegen -config cfgLib -args {coder.Constant("model.pt2"), input} mInvoke
-```
-
-For CUDA DLL: `coder.gpuConfig("dll")`. For CUDA executable: `coder.gpuConfig("exe")`.
 
 ## Common Mistakes
 
 | Mistake | Why It's Wrong | Correct Approach |
 |---------|---------------|-----------------|
-| `importNetworkFromPyTorch("model.pt2")` | Returns `dlnetwork` (DLT path), cannot use `invoke` or codegen may fail | `loadPyTorchExportedProgram("model.pt2")` |
+| `importNetworkFromPyTorch("model.pt2")` on this skill's codegen path | Returns a `dlnetwork` (DLT path) — cannot use `invoke`, and codegen from a `dlnetwork` follows a different pipeline than the one this skill documents | Use `loadPyTorchExportedProgram("model.pt2")` for `.pt2` codegen. If a `dlnetwork` is required for quantization/projection/pruning/`exportNetworkToSimulink`, route to `matlab-deploy-embedded-ai` |
 | `coder.loadDeepLearningNetwork(...)` | DLT codegen API, not compatible with PyTorchExportedProgram | Use `loadPyTorchExportedProgram` in the entry-point directly |
 | `predict(net, dlarray(x, 'BCSS'))` | DLT inference API with dlarray wrapping | `invoke(model, x)` — no dlarray needed |
 | `coder.DeepLearningConfig('mkldnn')` | Ignored by the MATLAB Coder Support Package for PyTorch and LiteRT Models path | Optional — has no effect on PyTorchExportedProgram codegen |
@@ -126,15 +87,15 @@ For CUDA DLL: `coder.gpuConfig("dll")`. For CUDA executable: `coder.gpuConfig("e
 
 ## Conventions
 
-- Always use `loadPyTorchExportedProgram` for code generation workflows
-- Always check `inputSpecifications` for correct input shape and type
-- Always generate MEX first, verify, then proceed to lib/exe
-- Always use `coder.Constant` for the model file path argument
-- Input data is single-precision by default (check `inputSpecifications` to confirm)
-- Do NOT use `importNetworkFromPyTorch`, `coder.loadDeepLearningNetwork`, `dlarray`, `predict`, or `classify` in code generation workflows
+- Always use `loadPyTorchExportedProgram` for `.pt2` code generation workflows
+- PyTorch models use NCHW layout — do not feed HWC data without permuting
+- Do NOT use `importNetworkFromPyTorch`, `coder.loadDeepLearningNetwork`, `dlarray`, `predict`, or `classify` on this skill's `.pt2` codegen path. If the user needs a `dlnetwork` for quantization/projection/pruning or `exportNetworkToSimulink` prior to codegen, route to the `matlab-deploy-embedded-ai` skill
+- For shared conventions (MEX-first, `coder.Constant`, verify before lib), see `codegen-workflow.md`
 
 ## Detailed References
 
+- `codegen-workflow.md` — Shared codegen steps: MEX generation, verification,
+  library/executable targets, `coder.Constant`, `coder.DeepLearningConfig`.
 - `pytorch-api-reference.md` — Full API signatures and properties for
   `loadPyTorchExportedProgram` and `PyTorchExportedProgram`.
 - `pytorch-numeric-verification.md` — MATLAB Engine for Python pattern for

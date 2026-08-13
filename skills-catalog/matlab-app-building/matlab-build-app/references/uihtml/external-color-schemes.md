@@ -1,6 +1,6 @@
 # Importing External Color Schemes
 
-Apply an external color scheme (Material Design, Adobe Color, Tailwind, etc.) by replacing the color custom properties on `:root`. See `matlab-theming` for the shared token vocabulary and cross-path alignment.
+Apply an external color scheme (Material Design, Adobe Color, Tailwind, etc.) by replacing the color custom properties on `:root`. See `matlab-apply-theme` for the shared token vocabulary and cross-path alignment.
 
 ## Step 1: Extract the Palette
 
@@ -41,7 +41,7 @@ All components using `var(--accent)` etc. update automatically — no other chan
 
 ## Token Alignment with MATLAB
 
-If building a cross-path app (MATLAB + web), ensure your CSS tokens align with the MATLAB theme struct. The `matlab-theming` skill maps between them:
+If building a cross-path app (MATLAB + web), ensure your CSS tokens align with the MATLAB theme struct. The `matlab-apply-theme` skill maps between them:
 
 | Semantic Token | CSS Variable | MATLAB Struct |
 |---|---|---|
@@ -50,7 +50,7 @@ If building a cross-path app (MATLAB + web), ensure your CSS tokens align with t
 | success | `--success` | `theme.success` |
 | border | `--border` | `theme.border` |
 
-For the MATLAB-side import workflow, see `matlab-theming`.
+For the MATLAB-side import workflow, see `matlab-apply-theme`.
 
 ## Using with Branded Tokens
 

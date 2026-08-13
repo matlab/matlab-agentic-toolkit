@@ -170,7 +170,7 @@ Copy `assets/colors_and_type.css` into your project and link it first:
 
 **Graphics/chart colors:** `--c-graphics-1` through `--c-graphics-7` match MATLAB's default `colororder`, ensuring web charts stay consistent with MATLAB figures.
 
-For cross-path token alignment with MATLAB's theme struct, see `matlab-theming`.
+For cross-path token alignment with MATLAB's theme struct, see `matlab-apply-theme`.
 
 ## Responsive Design
 

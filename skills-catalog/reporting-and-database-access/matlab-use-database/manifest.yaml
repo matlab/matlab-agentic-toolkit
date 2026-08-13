@@ -1,0 +1,16 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
+scope: cross-product
+version: "1.0"
+human-description: Read, write, update, and manage relational databases from MATLAB.
+matlab-release: ">=R2021a"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Database Toolbox
+optional-products:
+  - Parallel Computing Toolbox
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+required-skills: []

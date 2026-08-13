@@ -1,6 +1,6 @@
 ---
 name: matlab-manage-pcb-material
-description: "Dielectric substrates, metal conductors, multi-layer stackups, and loss models (FR4, Rogers, Teflon) for RF PCB simulation. TRIGGER: user asks to set up a substrate, define dielectric properties, create a stackup, select a PCB material (FR4, Rogers, Teflon, etc.), or configure metal conductors. Invoke BEFORE writing dielectric() or metal() code — the API for named vs custom materials differs significantly. SKIP: PCB layout assembly (use matlab-assemble-pcb-layout), transmission line design (use matlab-design-pcb-txline), EM analysis (use matlab-analyze-em), importing a PCB file (use matlab-read-pcb-layout)."
+description: "Dielectric substrates, metal conductors, multi-layer stackups, and loss models (FR4, Rogers, Teflon) for RF PCB simulation. TRIGGER: user asks to set up a substrate, define dielectric properties, create a stackup, select a PCB material (FR4, Rogers, Teflon, etc.), or configure metal conductors. Invoke BEFORE writing dielectric() or metal() code — the API for named vs custom materials differs significantly. SKIP: PCB layout assembly (use matlab-assemble-pcb-layout), transmission line design (use matlab-design-pcb-transmission-line), EM analysis (use matlab-analyze-em), importing a PCB file (use matlab-read-pcb-layout)."
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
@@ -21,13 +21,13 @@ metadata:
 
 - Building the PCB layer structure itself — use `matlab-assemble-pcb-layout`
 - Running EM analysis after materials are defined — use `matlab-analyze-em`
-- Designing transmission lines that happen to need substrates — use `matlab-design-pcb-txline` (it references this skill for material details)
+- Designing transmission lines that happen to need substrates — use `matlab-design-pcb-transmission-line` (it references this skill for material details)
 - Importing material properties from an existing board file — use `matlab-read-pcb-layout`
 
 ## Typical Workflow
 
 1. **This skill:** Define substrate, conductor, and stackup — typically the first step in any RF PCB design
-2. **After:** Any design skill (`matlab-design-pcb-filter`, `matlab-design-pcb-txline`, `matlab-assemble-pcb-layout`, `matlab-model-via`) — pass materials to the component
+2. **After:** Any design skill (`matlab-design-pcb-filter`, `matlab-design-pcb-transmission-line`, `matlab-assemble-pcb-layout`, `matlab-model-via`) — pass materials to the component
 
 ## Quick Reference
 
@@ -282,7 +282,7 @@ sub = dielectric(Name="RO4350B", EpsilonR=3.66, LossTangent=0.0037, Thickness=0.
 
 - `matlab-assemble-pcb-layout` — Using materials in custom pcbComponent structures
 - `matlab-analyze-em` — How material properties affect solver accuracy
-- `matlab-design-pcb-txline` — Substrate selection for impedance control
+- `matlab-design-pcb-transmission-line` — Substrate selection for impedance control
 
 ----
 

@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "2.0"
+human-description: Design microstrip, stripline, CPW, and differential pair transmission lines with impedance control and crosstalk analysis.
+matlab-release: ">=R2025a"
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+required-skills: []
+required-products:
+  - RF PCB Toolbox
+toolkit: matlab-agentic-toolkit

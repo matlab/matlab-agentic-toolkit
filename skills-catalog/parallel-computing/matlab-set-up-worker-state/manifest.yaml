@@ -1,0 +1,13 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "2.0"
+human-description: Set up worker environment and per-worker state for parallel pools.
+matlab-release: ">=R2021a"
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+required-products:
+  - Parallel Computing Toolbox
+toolkit: matlab-agentic-toolkit

@@ -19,7 +19,7 @@ metadata:
 
 ## When NOT to Use
 
-- Designing transmission lines for impedance control — use `matlab-design-pcb-txline`
+- Designing transmission lines for impedance control — use `matlab-design-pcb-transmission-line`
 - Designing couplers or splitters — use `matlab-design-pcb-coupler`
 - Designing passive components (inductors, capacitors, baluns) — use `matlab-design-pcb-passive`
 - Setting up substrate or conductor materials — use `matlab-manage-pcb-material`

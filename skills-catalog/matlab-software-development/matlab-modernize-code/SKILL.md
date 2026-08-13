@@ -28,7 +28,7 @@ Replace deprecated MATLAB functions and anti-patterns with modern equivalents. T
 ## When NOT to Use
 
 - Reviewing code quality broadly — use `matlab-review-code` (which may then trigger this skill)
-- Debugging runtime errors — use `matlab-debugging`
+- Debugging runtime errors — use `matlab-debug-code`
 - Performance profiling — use performance skills (though anti-patterns below overlap)
 
 ## Quick Reference: Top Deprecated Functions
