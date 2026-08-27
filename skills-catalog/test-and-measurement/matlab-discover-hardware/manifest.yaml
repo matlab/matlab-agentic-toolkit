@@ -2,7 +2,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Discover, inspect, and set up MATLAB-supported hardware devices via helper functions.
 matlab-release: ">=R2022a"
 required-tools:

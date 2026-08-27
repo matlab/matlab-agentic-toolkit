@@ -109,7 +109,7 @@ errOpt = kfoldLoss(cvOptModel);
 accOpt = 1 - errOpt;
 ```
 
-Then evaluate on the held-out test set for the final reported accuracy via `scripts/score_holdout_test.m`:
+Then evaluate on the held-out test set for the final reported accuracy via `scripts/helpers/score_holdout_test.m`:
 
 ```matlab
 [accHoldout, accCIHoldout] = score_holdout_test(optimModel, XTest, YTest);

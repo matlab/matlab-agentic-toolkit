@@ -46,7 +46,7 @@ Diff MATLAB settings between releases and migrate startup scripts to correct set
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-migrate-settings` | Diff MATLAB settings between releases and update startup scripts to use the correct setting paths. |
+| `matlab-migrate-settings` | Compare MATLAB settings between releases and update MATLAB code files (.m) that programmatically configure MATLAB settings to use the correct setting paths for the target release. |
 
 ### MATLAB External Language Interfaces ([`matlab-external-language-interfaces`](./matlab-external-language-interfaces/))
 
@@ -72,7 +72,7 @@ Modernize legacy code, optimize performance and memory, document and create tool
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-instrument-opentelemetry-tracing` | Add OpenTelemetry tracing spans to MATLAB functions with correct context propagation and lifecycle. |
-| `matlab-modernize-code` | Modernize deprecated MATLAB functions and patterns. |
+| `matlab-modernize-code` | Modernize removed or discouraged MATLAB functions and patterns. |
 | `matlab-optimize-memory` | Find and fix memory bottlenecks in MATLAB code using a structured measure-profile-optimize-verify workflow. |
 | `matlab-optimize-performance` | Optimize performance of MATLAB code. |
 | `matlab-package-toolbox` | Package MATLAB code as an installable .mltbx toolbox. |
@@ -81,7 +81,7 @@ Modernize legacy code, optimize performance and memory, document and create tool
 
 ### Aerospace ([`aerospace`](./aerospace/))
 
-Supports Aerospace Toolbox&trade;
+Supports MATLAB, Aerospace Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -90,13 +90,14 @@ Supports Aerospace Toolbox&trade;
 
 ### AI and Statistics ([`ai-and-statistics`](./ai-and-statistics/))
 
-Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, and Statistics and Machine Learning Toolbox&trade;
+Supports MATLAB, Simulink, Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade;, Fixed-Point Designer&trade;, MATLAB Coder&trade;, MATLAB Compiler SDK&trade;, MATLAB Report Generator&trade;, Optimization Toolbox&trade;, Parallel Computing Toolbox&trade;, Statistics and Machine Learning Toolbox&trade;, Deep Learning Toolbox Converter for ONNX Model Format&trade;, Deep Learning Toolbox Converter for PyTorch Models&trade;, and Deep Learning Toolbox Converter for TensorFlow Models&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
 | `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
+| `matlab-engineer-tabular-features` | Engineer and select the best features for single-response tabular classification or regression in MATLAB. |
 | `matlab-fit-curve` | Fit curves and surfaces interactively using the Curve Fitter app. |
 | `matlab-import-external-ai-model` | Import PyTorch, ONNX, and Keras deep learning models into MATLAB and verify numerical correctness. |
 | `matlab-train-network` | Train, evaluate, and export neural networks to Simulink using the recommended APIs. Migrate legacy neural network training code to modern replacements. |
@@ -104,7 +105,7 @@ Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, and Statist
 
 ### Automotive ([`automotive`](./automotive/))
 
-Supports Automated Driving Toolbox&trade;, RoadRunner, and RoadRunner Scene Builder
+Supports MATLAB, Simulink, Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -123,7 +124,7 @@ Supports Automated Driving Toolbox&trade;, RoadRunner, and RoadRunner Scene Buil
 
 ### Cloud Solutions ([`cloud-solutions`](./cloud-solutions/))
 
-Supports MATLAB Drive&trade;
+Supports MATLAB, MATLAB Drive&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -131,7 +132,7 @@ Supports MATLAB Drive&trade;
 
 ### Code Generation ([`code-generation`](./code-generation/))
 
-Supports Embedded Coder&trade;, Fixed-Point Designer&trade;, GPU Coder&trade;, and MATLAB Coder&trade;
+Supports MATLAB, Embedded Coder, Fixed-Point Designer, GPU Coder&trade;, MATLAB Coder, MATLAB Test&trade;, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -143,17 +144,17 @@ Supports Embedded Coder&trade;, Fixed-Point Designer&trade;, GPU Coder&trade;, a
 
 ### Computational Biology ([`computational-biology`](./computational-biology/))
 
-Supports SimBiology&trade;
+Supports MATLAB, SimBiology&trade;, and Statistics and Machine Learning Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-build-simbiology-model` | Build SimBiology models from scratch, modify existing ones, and generate diagram layouts. |
-| `matlab-fit-simbiology-model` | Fit SimBiology model parameters to data. |
-| `matlab-simulate-simbiology-model` | Run simulations, sweep parameters, explore what-if scenarios, and perform sensitivity analysis on SimBiology models. |
+| `simbiology-build-model` | Build SimBiology models from scratch, modify existing ones, and generate diagram layouts. |
+| `simbiology-fit-model` | Fit SimBiology model parameters to data. |
+| `simbiology-simulate-model` | Run simulations, sweep parameters, explore what-if scenarios, and perform sensitivity analysis on SimBiology models. |
 
 ### Computational Finance ([`computational-finance`](./computational-finance/))
 
-Supports Datafeed Toolbox&trade; and Spreadsheet Link&trade;
+Supports MATLAB, Datafeed Toolbox&trade; and Spreadsheet Link&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -162,17 +163,17 @@ Supports Datafeed Toolbox&trade; and Spreadsheet Link&trade;
 
 ### Control Systems ([`control-systems`](./control-systems/))
 
-Supports Predictive Maintenance Toolbox&trade;
+Supports MATLAB, Control System Toolbox&trade;, Predictive Maintenance Toolbox&trade;, Signal Processing Toolbox&trade;, Statistics and Machine Learning Toolbox, and System Identification Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-extract-battery-features` | Extract battery features from cycling test data for degradation and health analysis. |
 | `matlab-extract-rotating-machinery-features` | Extract features from rotating machinery vibration data for condition monitoring and fault detection. |
-| `matlab-identify-linear-system` | Identify linear dynamic models from measurement data using System Identification Toolbox&trade;. |
+| `matlab-identify-linear-system` | Identify linear dynamic models from measurement data using System Identification Toolbox. |
 
 ### Image Processing and Computer Vision ([`image-processing-and-computer-vision`](./image-processing-and-computer-vision/))
 
-Supports Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar Toolbox&trade;, and Medical Imaging Toolbox&trade;
+Supports MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox&trade;, Lidar Toolbox&trade;, Medical Imaging Toolbox&trade;, and Optical Design and Simulation Library for Image Processing Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -181,7 +182,6 @@ Supports Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar 
 | `matlab-display-volume` | Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. |
 | `matlab-integrate-pytorch-vision` | Create MATLAB interfaces to Python image processing and computer vision models from GitHub repositories or pip packages using MPyReq. |
 | `matlab-model-optics` | Build, import, analyze, optimize, and tolerance optical systems and coatings using the Optical Design and Simulation Library. |
-| `matlab-normalize-image` | Normalize images to [0,1] with proper validation for float-class, bit-depth mismatch, and indexed image edge cases. |
 | `matlab-process-large-images` | Process large images using blockedImage. |
 | `matlab-read-medical-data` | Read, write, and manipulate medical imaging data (DICOM, NIfTI, NRRD) using Image Processing Toolbox and Medical Imaging Toolbox APIs. |
 | `matlab-read-write-point-cloud-file` | Read and write 3-D point cloud data in PLY, PCD, LAS/LAZ, PCAP, E57, and IDC formats. |
@@ -190,16 +190,17 @@ Supports Image Processing Toolbox&trade;, Computer Vision Toolbox&trade;, Lidar 
 
 ### Math and Optimization ([`math-and-optimization`](./math-and-optimization/))
 
-Supports Optimization Toolbox&trade; and PDE Toolbox&trade;
+Supports MATLAB, Optimization Toolbox, Partial Differential Equation Toolbox&trade;, and Symbolic Math Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-solve-optimization` | Formulate, solve, and validate MATLAB optimization problems using problem-based and solver-based approaches. |
-| `matlab-solve-pde` | Build and solve finite element models for thermal, structural, and electromagnetic problems using PDE Toolbox. |
+| `matlab-solve-pde` | Build and solve finite element models for thermal, structural, and electromagnetic problems using PDE Toolbox&trade;. |
+| `matlab-use-symbolic-math` | Generate correct MATLAB code using Symbolic Math Toolbox for analytical solutions, equation solving, calculus, transforms, and code generation. |
 
 ### Parallel Computing ([`parallel-computing`](./parallel-computing/))
 
-Supports Parallel Computing Toolbox&trade; and MATLAB Parallel Server&trade;
+Supports MATLAB, Parallel Computing Toolbox, and MATLAB Parallel Server&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -211,7 +212,7 @@ Supports Parallel Computing Toolbox&trade; and MATLAB Parallel Server&trade;
 
 ### Radar ([`radar`](./radar/))
 
-Supports Phased Array System Toolbox&trade;, Sensor Fusion and Tracking Toolbox&trade;, and Mapping Toolbox&trade;
+Supports MATLAB, Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Radar Toolbox&trade;, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -221,7 +222,7 @@ Supports Phased Array System Toolbox&trade;, Sensor Fusion and Tracking Toolbox&
 
 ### Reporting and Database Access ([`reporting-and-database-access`](./reporting-and-database-access/))
 
-Supports Database Toolbox&trade;, MATLAB Report Generator&trade;, and Simulink Report Generator&trade;
+Supports MATLAB, Database Toolbox&trade;, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -232,7 +233,7 @@ Supports Database Toolbox&trade;, MATLAB Report Generator&trade;, and Simulink R
 
 ### RF and Mixed Signal ([`rf-and-mixed-signal`](./rf-and-mixed-signal/))
 
-Supports Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Toolbox&trade;, RF PCB Toolbox&trade;, and SerDes Toolbox&trade;
+Supports MATLAB, Simulink, Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Blockset&trade;, RF PCB Toolbox&trade;, RF Toolbox&trade;, SerDes Toolbox&trade;, Signal Integrity Toolbox, Signal Processing Toolbox, and Statistics and Machine Learning Toolbox
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -251,7 +252,7 @@ Supports Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Toolbox&trade;
 | `matlab-integrate-pcb-circuit` | Cascade PCB components, add lumped elements, and export Touchstone files for multi-component RF circuits. |
 | `matlab-manage-pcb-material` | Define dielectric substrates, metal conductors, multi-layer stackups, and loss models for RF PCB simulation. |
 | `matlab-model-ams-systems` | Model PLL frequency synthesizers from IC datasheets or system specs using Mixed-Signal Blockset. Extracts parameters, selects architecture, assembles Simulink model, designs loop filter, validates phase noise. |
-| `matlab-model-rf` | Design, analyze, and simulate RF systems in MATLAB using RF Toolbox and RF Blockset&trade; -- from S-parameter I/O through full Circuit Envelope time-domain simulation. |
+| `matlab-model-rf` | Design, analyze, and simulate RF systems in MATLAB using RF Toolbox and RF Blockset -- from S-parameter I/O through full Circuit Envelope time-domain simulation. |
 | `matlab-model-serdes-systems` | Model, simulate, and optimize Serializer/Deserializer (SerDes) systems — serial and parallel links — using MATLAB SerDes Toolbox. |
 | `matlab-model-via` | Model vias with pads, antipads, and ground return vias for high-speed PCB layer transitions. |
 | `matlab-optimize-pcb-design` | Optimize RF PCB component dimensions for bandwidth, return loss, or area using patternsearch and surrogateopt. |
@@ -260,7 +261,7 @@ Supports Antenna Toolbox&trade;, Mixed-Signal Blockset&trade;, RF Toolbox&trade;
 
 ### Robotics and Autonomous Systems ([`robotics-and-autonomous-systems`](./robotics-and-autonomous-systems/))
 
-Supports Navigation Toolbox&trade;, UAV Toolbox&trade;, and Robotics System Toolbox&trade;
+Supports MATLAB, Navigation Toolbox&trade;, UAV Toolbox&trade;, and Robotics System Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -273,10 +274,11 @@ Supports Navigation Toolbox&trade;, UAV Toolbox&trade;, and Robotics System Tool
 
 ### Signal Processing ([`signal-processing`](./signal-processing/))
 
-Supports Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolbox&trade;, Signal Processing Toolbox&trade;, and Wavelet Toolbox&trade;
+Supports MATLAB, Simulink, Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolbox&trade;, Fixed-Point Designer, HDL Coder&trade;, Signal Processing Toolbox, and Wavelet Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-analyze-spectrum` | Analyze signal spectra using nonparametric and parametric estimators. |
 | `matlab-analyze-time-frequency-content` | Analyze time-frequency content using CWT, STFT, synchrosqueezing, and wavelet coherence. |
 | `matlab-configure-scope-object` | Configure properties of scope-related Simulink blocks or MATLAB objects |
 | `matlab-design-adaptive-filter` | Design and implement adaptive filters using System objects. |
@@ -290,7 +292,7 @@ Supports Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolbox&trade;
 
 ### Test and Measurement ([`test-and-measurement`](./test-and-measurement/))
 
-Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Industrial Communication Toolbox&trade;, MATLAB Support Package for Arduino Hardware&trade;, and Vehicle Network Toolbox&trade;
+Supports MATLAB, Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Image Processing Toolbox, Industrial Communication Toolbox&trade;, Vehicle Network Toolbox&trade;, and MATLAB Support Package for Arduino Hardware&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -298,7 +300,6 @@ Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Indu
 | `matlab-call-nidaqmx` | Translate NI-DAQmx C functions into correct calldaqlib MATLAB calls. |
 | `matlab-connect-arduino` | Discover, configure, and connect to Arduino&reg; boards from MATLAB via USB. |
 | `matlab-connect-bluetooth-low-energy-device` | Discover and connect to Bluetooth Low Energy peripheral devices from MATLAB. |
-| `matlab-connect-opcua-client` | Discover OPC UA servers and create secure client connections in MATLAB. |
 | `matlab-create-custom-arduino-library` | Create custom Arduino add-on libraries to access unsupported sensors and peripherals from MATLAB. |
 | `matlab-discover-hardware` | Discover, inspect, and set up MATLAB-supported hardware devices via helper functions. |
 | `matlab-enhance-camera-image` | Diagnose and enhance image quality from cameras connected via Image Acquisition Toolbox. |
@@ -306,11 +307,12 @@ Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Indu
 | `matlab-import-export-vehicle-data` | Import, decode, and export vehicle network data from/to log files (ASC, BLF, MDF, DAT, TXT) with correct handling of polymorphic return types, CAN/CAN FD/LIN decode pipelines, and MDF/BLF writing workflows. |
 | `matlab-modernize-daq` | Port legacy session-based Data Acquisition Toolbox code to the modern DataAcquisition interface. |
 | `matlab-use-cameras` | Connect to and acquire images from cameras using Image Acquisition Toolbox videoinput interface. |
+| `matlab-use-opcua-client` | Discover OPC UA servers, create secure MATLAB client connections, and browse and navigate server nodes. |
 | `matlab-use-vehicle-network` | Set up, troubleshoot, and analyze CAN/CAN FD vehicle network communication in MATLAB using Vehicle Network Toolbox across all supported hardware vendors. |
 
 ### Wireless Communications ([`wireless-communications`](./wireless-communications/))
 
-Supports Communications Toolbox&trade;, 5G Toolbox&trade;, WLAN Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, and Wireless Testbench&trade;
+Supports MATLAB, 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, Wireless Testbench&trade;, WLAN Toolbox&trade;, and Wireless Testbench Support Package for NI USRP Radios&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|

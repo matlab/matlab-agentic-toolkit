@@ -1,7 +1,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Optimize MATLAB functions for GPU Coder to generate faster CUDA code.
 matlab-release: ">=R2024b"
 required-tools:

@@ -1,30 +1,8 @@
 # SNR Conversion Guide & Theoretical BER
 
-## Conversion Formulas
+## Manual Fallback: SNR ↔ Per-Subcarrier SNR (pre-R2023b)
 
-All values in dB.
-
-### Eb/No ↔ Es/No
-
-```
-Es/No = Eb/No + 10*log10(BitsPerSymbol)
-```
-
-- `BitsPerSymbol` = log2(M) where M is the modulation order
-- Es/No is the energy per symbol relative to noise spectral density
-- Eb/No is the energy per bit relative to noise spectral density
-
-### Eb/No ↔ SNR
-
-```
-SNR = Eb/No + 10*log10(BitsPerSymbol * CodingRate / SamplesPerSymbol)
-```
-
-- `CodingRate` = information bits / coded bits (e.g., 3/4 for rate-3/4 LDPC)
-- `SamplesPerSymbol` = oversampling factor from pulse shaping (1 for baseband)
-- For uncoded systems, `CodingRate = 1`
-
-### SNR ↔ Per-Subcarrier SNR (OFDM)
+The `"snrsc"` mode in `convertSNR` requires R2023b or later. For R2022a–R2023a, use this formula:
 
 ```
 SNR_sc = SNR + 10*log10(FFTLength / NumActiveSubcarriers)
@@ -33,6 +11,8 @@ SNR_sc = SNR + 10*log10(FFTLength / NumActiveSubcarriers)
 - `FFTLength` = total number of subcarriers (including guards and DC)
 - `NumActiveSubcarriers` = number of data + pilot subcarriers
 - SNR_sc > SNR because energy is concentrated on fewer subcarriers
+
+All other conversions (Eb/No↔Es/No, Eb/No↔SNR, Es/No↔SNR) are handled by `convertSNR` (available since R2022a). Always use `convertSNR` — never compute these manually. For details, refer to the [`convertSNR` documentation](https://www.mathworks.com/help/comm/ref/convertsnr.html).
 
 ## Valid `convertSNR` Conversions
 
@@ -51,7 +31,7 @@ SNR_sc = SNR + 10*log10(FFTLength / NumActiveSubcarriers)
 | `snrsc` → `ebno` | **No** | Use two-step: `"snrsc"→"snr"` then `"snr"→"ebno"` |
 | `snrsc` → `esno` | **No** | Use two-step: `"snrsc"→"snr"` then `"snr"→"esno"` |
 
-> **Key insight for OFDM:** `convertSNR(ebno, "ebno", "snr")` returns the SNR per subcarrier (not wideband SNR). Do NOT pass this directly to `awgn()`. You must convert via `convertSNR(snrsc, "snrsc", "snr", ...)` to get wideband SNR, which subtracts `10*log10(nFFT/nActiveSC)`. Skipping this step gives ~0.90 dB too much SNR (for 64-FFT, 52 active), producing ~0.36x theoretical BER.
+> **Key insight for OFDM:** `convertSNR(ebno, "ebno", "snr")` returns the SNR per subcarrier (not wideband SNR). Do NOT pass this directly to `awgn()`. You must convert via `convertSNR(snrsc, "snrsc", "snr", ...)` to get wideband SNR, which subtracts `10*log10(nFFT/nActiveSC)`. Skipping this step overestimates SNR — for example, ~0.90 dB too much for 64-FFT with 52 active subcarriers, producing ~0.36x theoretical BER.
 
 ### `convertSNR` Name-Value Parameters
 
@@ -188,6 +168,8 @@ snrDb = convertSNR(ebnoDb, "ebno", "snr", ...
 
 ### 256-QAM, Rate-5/6, OFDM (2048-FFT, 1200 Active)
 
+Use the two-step conversion from Eb/No to wideband SNR:
+
 ```matlab
 ebnoDb = 20;
 
@@ -219,7 +201,7 @@ Use this section when the user asks for the Eb/No or SNR needed to achieve a tar
    - **OFDM:** Assume flat fading per subcarrier. If the modulation is supported by `berawgn` or `berfading`, use the analytical approach per subcarrier; otherwise, simulate.
 
 3. **Converting result to wideband SNR:**
-   - Convert per-subcarrier Eb/No to wideband SNR using the two-step process (see "Two-step OFDM conversion" above) to set the noise level for `awgn`.
+   - Convert per-subcarrier Eb/No to wideband SNR using the two-step process (see "256-QAM, Rate-5/6, OFDM" example above) to set the noise level for `awgn`.
 
 ### Example: Find Eb/No for target BER using fzero
 

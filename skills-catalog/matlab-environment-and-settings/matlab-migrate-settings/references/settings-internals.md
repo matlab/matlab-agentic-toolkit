@@ -44,6 +44,16 @@ A setting's key stays the same, but the group path changes between releases. The
 
 **Release-gating:** Only apply moves that the TARGET install confirms. If a path works in the target, leave it alone — even if a later release moves it.
 
+### 2b. Subgroup removal (setting moves up one level)
+
+A setting's intermediate subgroup is removed in the target, so the setting moves up to the parent group. The key name stays the same.
+
+**Example:** In ≤R2025b, `s.matlab.appdesigner.fileformat.mlapp.CreateNewAppsAs` exists. In R2026a, the `mlapp` subgroup was removed — the setting is now at `s.matlab.appdesigner.fileformat.CreateNewAppsAs`. The key `CreateNewAppsAs` still exists in the target SO under `fileformat`, just without the `mlapp` intermediate group.
+
+**How to detect:** The key exists in the target SO but with FEWER parent groups above it than in the source. When you see the key in the target's `grep -B40` context, count the group names above — if one is missing compared to the source, that subgroup was removed. The setting is NOT deleted — it moved up.
+
+**Critical:** Do NOT classify as "Removed" just because the full old path (`fileformat.mlapp.CreateNewAppsAs`) doesn't work. Search for the key name alone in the target SO — if it appears under a valid parent, it moved up.
+
 ### 3. Promotion to common (per-context → shared)
 
 A setting that existed separately under multiple contexts (e.g., one for editor, one for command window) merges into a single shared location in the target.
@@ -113,18 +123,19 @@ MATLAB automatically runs startup.m from userpath at launch.
 ```
 
 **Option 2 — Keep both and switch per-release**
-```
+
 Keep release-specific files (startup_R2025b.m, startup_R2026a.m, etc.)
 in your cloud-synced folder, and make your actual startup.m a dispatcher:
 
-  % startup.m — in userpath or on the MATLAB path
-  v = version('-release');
-  releaseFile = fullfile('<cloud-folder>', ['startup_' v '.m']);
-  if isfile(releaseFile)
-      run(releaseFile);
-  else
-      warning('No startup preferences file found for %s', v);
-  end
+```matlab
+% startup.m — in userpath or on the MATLAB path
+v = version('-release');
+releaseFile = fullfile('<cloud-folder>', ['startup_' v '.m']);
+if isfile(releaseFile)
+    run(releaseFile);
+else
+    warning('No startup preferences file found for %s', v);
+end
 ```
 
 **Option 3 — Symlink or copy into userpath**

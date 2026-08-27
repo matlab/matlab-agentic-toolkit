@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Communications Toolbox, 5G Toolbox, WLAN Toolbox, Bluetooth Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, and Wireless Testbench.
+display-name: "Wireless Communications"
+description: MATLAB, 5G Toolbox, Bluetooth Toolbox, Communications Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, Wireless Testbench, WLAN Toolbox, and Wireless Testbench Support Package for NI USRP Radios.
 keywords:
   - matlab
   - wireless

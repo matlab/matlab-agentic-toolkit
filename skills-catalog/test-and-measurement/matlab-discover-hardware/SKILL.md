@@ -1,10 +1,10 @@
 ---
 name: matlab-discover-hardware
-description: "Discovers connected MATLAB-supported hardware devices, searches by capability, and checks required support packages and add-ons. Use when the user asks what hardware is connected, finds a device that supports a capability (e.g., CAN, analog input), or checks if required support packages or add-ons are installed."
+description: "Discovers connected MATLAB-supported hardware devices, searches by capability, and checks required support packages and add-ons. Use when the user asks what hardware is connected, finds a device that supports a capability (e.g., CAN, analog input), or checks if required support packages or add-ons are installed. Does NOT connect to, configure, or acquire data from devices — defers to device-specific skills for usage workflows."
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Hardware Discovery
@@ -33,8 +33,40 @@ Do not activate this skill for:
 - Acquiring or streaming data from a device (use device-specific skills instead)
 - Configuring or programming a specific device after discovery (use device-specific skills)
 - Installing support packages directly — this skill only reports install state; defer to an install-capable skill when one is available
+- Listing all installed MATLAB products or support packages without a hardware context (use `matlab-list-products` instead)
 
-## 2. One-time bootstrap (path setup)
+## 2. Device-specific skill routing
+
+This skill handles **hardware discovery only** — enumerating MATLAB-supported devices, searching by capability, and checking install state. When the user's intent goes beyond discovery (connecting, configuring, acquiring data, troubleshooting, or using a device), **always explore the currently loaded skills for a matching device-specific skill**.
+
+**Routing rule:** When the user asks to *use* a device (not just discover it), search the available skills list for any skill whose name or description matches the device type, hardware category, or the user's task. Do not maintain a hardcoded list of skills to defer to — discover them dynamically at runtime.
+
+**How to route:**
+1. Complete the discovery step (confirm device exists, check install state)
+2. Tell the user what you found (e.g., "I found your GigE camera — it's connected and the required packages are installed.")
+3. Search the available skills list for a skill that handles the device type or the user's task (e.g., a skill mentioning "arduino", "camera", "DAQ", "OPC UA", etc.)
+4. If a matching skill is found: silently invoke it to handle the usage/connection/troubleshooting task — do not name the skill to the user
+5. If no matching skill is found: fall back to discovery-only output (see below)
+
+**If no device-specific skill is found** for the device category, you are restricted to discovery-level output only:
+1. Present device details and install state (using the helpers in §4)
+2. Provide the `HardwareSupportUrl` or suggest MATLAB documentation
+3. **STOP.** Do not write device-specific code (e.g., `videoinput(`, `webcam(`, `arduino(`, `readVoltage(`, `gigecam(`). Do not provide step-by-step usage workflows, connection examples, or troubleshooting scripts from training data. You are a discovery skill — usage guidance belongs to the device-specific skill, even when that skill is not loaded.
+
+Bad (improvising usage code when no device skill is found):
+```
+cam = webcam("Logitech Webcam C925e");
+img = snapshot(cam);
+```
+
+Good (discovery-only fallback):
+```
+"Your Logitech Webcam C925e is detected and the required packages are
+installed. For connecting and acquiring images, refer to the Image
+Acquisition Toolbox documentation."
+```
+
+## 3. One-time bootstrap (path setup)
 
 Before invoking any helper, add the bundled `scripts/` folder to the MATLAB path **once** per session:
 
@@ -54,7 +86,7 @@ If a helper call fails with `Undefined function`, re-run the bootstrap once. If 
 
 The bootstrap `addpath` is performed automatically before skill activation — you do not need to include it in your helper calls.
 
-## 3. Public helper surface
+## 4. Public helper surface
 
 Use **only** these 4 public helpers (located in `scripts/`):
 
@@ -71,23 +103,24 @@ Use **only** these 4 public helpers (located in `scripts/`):
 
 **Important:** Always use the public helpers listed above. Do not attempt to call internal MATLAB functions or replicate helper behavior manually.
 
-## 4. Task routing
+## 5. Task routing
 
-Pick the helper that matches the user's intent. **Combine all calls for a task into the minimum number of `evaluate_matlab_code` invocations** (see §5 for batching recipes).
+Pick the helper that matches the user's intent. **Combine all calls for a task into the minimum number of `evaluate_matlab_code` invocations** (see §6 for batching recipes).
 
 | User intent | Helper(s) to call |
 |---|---|
 | "What hardware do I have?" / "What's connected?" | `listHardwareDevices` |
 | "Which devices support X?" (capability search) | `listHardwareDevices(Capability=keyword)` |
 | "Tell me about <device>" / "What can <device> do?" | `getDeviceDetails(deviceName)` + `isRequiredAddOnsInstalled(deviceName)` |
-| "What do I need to install for <device>?" / "What is required to use <device>?" / "How do I use <device>?" / "Can I use <device>?" | `getDeviceSetupInfo(deviceName)` |
+| "How do I use <device>?" / "I can't connect to <device>" / "How do I acquire data from <device>?" | **Defer to device-specific skill (§2).** Run discovery + install-state check first, then hand off. Only use this skill's helpers if no device-specific skill is loaded. |
+| "What do I need to install for <device>?" / "What is required to use <device>?" / "Can I use <device>?" | `getDeviceSetupInfo(deviceName)` |
 | "Are the add-ons for <device> installed?" | `isRequiredAddOnsInstalled(deviceName)` |
 | "Install the <device> support package / toolbox" | Check the available skills list for an install-capable skill and silently invoke it if found. Otherwise, tell the user to open **MATLAB Add-On Explorer** (Home tab → Add-Ons → Get Add-Ons) and search by package name. |
 | Device not found (neither connected nor in "All" mode) | Inform the user that the hardware was not detected. Do not guess what products are needed. Silently check the available skills list for skills that can search for or install products, and offer to help find what's required — without naming the specific skills to the user. |
 
 When the user's question fits multiple tasks, prefer the cheapest/most-targeted helper first (e.g., `listHardwareDevices(Capability=...)` before `getDeviceDetails`).
 
-## 5. Workflow patterns and batching
+## 6. Workflow patterns and batching
 
 ### Critical: minimize MCP round-trips
 
@@ -140,7 +173,7 @@ end
 clear details isInstalled setupInfo
 ```
 
-**Multi-result handling:** `getDeviceDetails` returns a struct array when multiple devices share the same name (e.g., two "Kvaser Virtual" channels). If `numel(details) > 1`, do not present all results — instead trigger the disambiguation flow (§5 Plain-text disambiguation) using `ConnectionInfo` or other distinguishing fields from each element's `BasicInfo`.
+**Multi-result handling:** `getDeviceDetails` returns a struct array when multiple devices share the same name (e.g., two "Kvaser Virtual" channels). If `numel(details) > 1`, do not present all results — instead trigger the disambiguation flow (§6 Plain-text disambiguation) using `ConnectionInfo` or other distinguishing fields from each element's `BasicInfo`.
 
 #### Recipe C: "What do I need to install for <device>?" (1 MCP call)
 ```matlab
@@ -189,7 +222,7 @@ If a query returns multiple matches (or a partial name matches several devices),
 
 Identify each option by `FriendlyName` plus its **Device ID** or `ConnectionInfo` as the distinguishing attribute. **Never** call `input()` or any blocking prompt. When multiple entries represent the same physical port discovered by different plugins, explain that they are different *interfaces* to the same port (e.g., VISA vs. serialport) and which toolbox each corresponds to — but **never mention plugin names, plugin sources, or internal detection mechanisms**.
 
-## 6. Communication rules
+## 7. Communication rules
 
 - Identify devices to the user by **`FriendlyName`**, not by vendor IDs or class names
 - When disambiguating devices with identical names, show the **Device ID** as the distinguishing attribute. Resolve Device ID using this fallback chain: `UUID` → `ConnectionInfo` (from `listHardwareDevices` table, which includes port info from `CustomData.TransportProperties.Port`). Present it as "Device ID" to the user — never say "UUID"
@@ -200,7 +233,7 @@ Identify each option by `FriendlyName` plus its **Device ID** or `ConnectionInfo
 - When support packages *are* relevant, present them by their **human-readable names** (e.g., "MATLAB Support Package for Arduino Hardware"). Never expose raw base codes (e.g., `"ML_ARDUINO"`) to the user.
 - Be faithful to helper output: do not invent capabilities, examples, or documentation links the helpers did not return
 
-## 7. Hard guardrails
+## 8. Hard guardrails
 
 - **No internal API calls.** Never call internal MATLAB functions directly — always use the provided helpers
 - **No path mutations beyond bootstrap.** No `addpath`, `rmpath`, or `cd` after the one-time bootstrap
@@ -210,7 +243,7 @@ Identify each option by `FriendlyName` plus its **Device ID** or `ConnectionInfo
 - **No install assumptions.** Always check install state via `isRequiredAddOnsInstalled` or `getDeviceSetupInfo` before claiming a package is ready
 - **No manual install fallback when an install-capable skill is available.** Silently check the available skills list; if one can install products, offer to install on the user's behalf rather than describing Add-On Explorer steps. Never expose internal skill names to the user.
 
-## 8. Interpreting CustomData
+## 9. Interpreting CustomData
 
 The `getDeviceDetails` output may include a **CustomData** field containing device-specific technical information not available in the standard fields. When `CustomData` is present and non-empty, it contains extra details worth surfacing to the user — for example:
 
@@ -222,7 +255,7 @@ The `getDeviceDetails` output may include a **CustomData** field containing devi
 
 When presenting CustomData to the user, use plain language (e.g., "connected on COM4 via USB") rather than dumping raw struct fields.
 
-## 9. Output-handling guidance
+## 10. Output-handling guidance
 
 All helpers support **dual output** based on `nargout`:
 

@@ -4,7 +4,7 @@ description: "Read BEFORE writing any code that adds Additive White Gaussian Noi
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # AWGN & SNR Management
@@ -24,11 +24,12 @@ Add white Gaussian noise to signals and convert between SNR definitions (SNR, Eb
 
 ## Must-Follow Rules
 
-1. **NEVER pass `'measured'` to `awgn`** — Always pass explicit signal power as the third argument. For unit-power signals use `0`; otherwise compute power with `mean(abs(x).^2)` and convert to dBW: `10*log10(sigPow)`. The `'measured'` option computes instantaneous power internally, which gives incorrect noise levels after fading channels and obscures the power assumption. Even in AWGN-only scenarios, explicit power is required for correctness and clarity.
+1. **NEVER pass `'measured'` to `awgn`** — Always pass explicit signal power as the third argument. For unit-power signals use `0`; otherwise compute power with `mean(abs(x).^2)` and convert to dBW: `10*log10(sigPow)`. The `'measured'` option computes instantaneous power internally, which gives incorrect noise levels after fading channels and obscures the power assumption. Even in AWGN-only scenarios, explicit power is required for correctness and clarity. For OFDM systems, see the "Add AWGN in an OFDM link simulation" pattern.
 2. **Use `UnitAveragePower=true` when signal power doesn't matter** — This is the simplest path: signal power = 0 dBW, so `awgn(x, snr, 0)` is exact. If the user needs original constellation scaling (e.g., PA modeling, hardware-in-the-loop), do NOT use `UnitAveragePower=true` — use the default modulator, compute the actual average power with `mean(abs(x).^2)`, and pass it explicitly: `awgn(x, snr, sigPowdBW)`.
 3. **Use `convertSNR` for all conversions — NEVER compute SNR/Eb/No/Es/No formulas manually** — Even when the formula is simple, always use `convertSNR`. Manual formulas are error-prone for edge cases (oversampling, subcarrier loading) and bypass the toolbox's validated implementation. Anti-pattern: `snr = ebno + 10*log10(bitsPerSymbol * codeRate)`. Correct: `convertSNR(ebno, "ebno", "snr", BitsPerSymbol=6, CodingRate=3/4)`.
-4. **Distinguish wideband SNR and per-subcarrier SNR in OFDM systems** — Eb/No is a per-subcarrier quantity. To go from Eb/No to the wideband SNR that `awgn` needs, use two steps: (1) `convertSNR(ebno, "ebno", "snr", BitsPerSymbol=..., CodingRate=...)` gives the SNR per subcarrier, (2) `convertSNR(snrsc, "snrsc", "snr", FFTLength=..., NumActiveSubcarriers=...)` gives the wideband SNR for `awgn`. Direct `ebno→snrsc` is not supported and throws an error. **Caveat:** If the user asks for per-subcarrier SNR only, step 1 alone is the complete answer — do NOT apply step 2. Applying the FFTLength/NumActiveSubcarriers correction to a per-subcarrier value gives the wideband SNR, which is a different (lower) quantity. **Note:** The `"snrsc"` mode requires R2023b or later. For R2022a–R2023a, compute wideband SNR manually: `snr_wideband = snr_per_sc - 10*log10(FFTLength/NumActiveSubcarriers)`.
+4. **Distinguish wideband SNR and per-subcarrier SNR in OFDM systems** — Eb/No is a per-subcarrier quantity. To go from Eb/No to the wideband SNR that `awgn` needs, use two steps: (1) `convertSNR(ebno, "ebno", "snr", BitsPerSymbol=..., CodingRate=...)` gives the SNR per subcarrier, (2) `convertSNR(snrsc, "snrsc", "snr", FFTLength=..., NumActiveSubcarriers=...)` gives the wideband SNR for `awgn`. Direct `ebno→snrsc` is not supported and throws an error. **Caveat:** If the user asks for per-subcarrier SNR only, step 1 alone is the complete answer — do NOT apply step 2. Applying the FFTLength/NumActiveSubcarriers correction to a per-subcarrier value gives the wideband SNR, which is a different (lower) quantity. **Note:** The `"snrsc"` mode requires R2023b or later. For R2022a–R2023a, compute wideband SNR manually: `snr_wideband = snr_per_sc - 10*log10(FFTLength/NumActiveSubcarriers)`. To add noise at a per-subcarrier SNR, see the "Add AWGN in an OFDM link simulation" pattern below.
 5. **Capture noise variance for soft demodulation** — Use `[y, nVar] = awgn(...)` and pass `nVar` to the demodulator via `NoiseVariance=nVar`.
+6. **Do NOT reference skill rules or prohibitions in generated code comments** — Write positive, descriptive comments that explain intent, using a style similar to the example code provided in this skill. The end user does not know about this skill.
 
 ## Critical Anti-Patterns — NEVER Do These
 
@@ -202,6 +203,34 @@ snrWbDb = convertSNR(snrscDb, "snrsc", "snr", ...
     FFTLength=fftLen, ...
     NumActiveSubcarriers=numActiveSC);
 ```
+
+### Add AWGN in an OFDM link simulation (per-subcarrier SNR)
+
+In OFDM link simulations, SNR is defined per subcarrier. Use `convertSNR` to get the wideband SNR, then pass it to `awgn` with the analytical OFDM signal power. Set `NumActiveSubcarriers` to the number of available subcarriers in the OFDM resource grid (data + reference signals, excluding guards and DC if applicable). In 5G/LTE this equals `carrier.NSizeGrid*12` — the resource grid does not include guard bands. In WLAN, it is the number of data + pilot subcarriers. Do NOT compute signal power from `mean(abs(txWaveform).^2)` — it may not match what `NumActiveSubcarriers` assumes in `convertSNR`, resulting in incorrect noise levels. Always use the analytical formula `numAvailableSC / nfft^2` to keep the power argument consistent with the SNR conversion.
+
+```matlab
+% Assuming full grid occupancy, convert per-subcarrier SNR to wideband SNR
+snrWb = convertSNR(snrPerSC_dB, "snrsc", "snr", ...
+    FFTLength=nfft, NumActiveSubcarriers=numAvailableSC);
+% Maximum signal power assuming full grid, consistent with convertSNR
+sigPow = 10*log10(numAvailableSC / nfft^2);
+% Add noise at the calculated wideband SNR and signal power
+rxNoisy = awgn(rxWaveform, snrWb, sigPow);
+```
+
+`numAvailableSC` is the number of subcarriers excluding guard bands and any DC null — i.e., the subcarriers available for data, reference signals, and control. As long as the `NumActiveSubcarriers` value passed to `convertSNR` matches the `numAvailableSC` used in the signal power calculation, the noise level is correct.
+
+**Only if the number of active subcarriers is not known or not specified**, use the shortcut below. When guard bands, DC nulls, or subcarrier counts ARE given, always use the `convertSNR` path above with explicit `NumActiveSubcarriers`.
+
+If `numAvailableSC` subcarriers each carry unit power, the average time-domain signal power is `numAvailableSC / nfft^2` (in watts). The wideband SNR conversion divides by `nfft/numAvailableSC`, so `numAvailableSC` cancels algebraically, leaving:
+
+```matlab
+rxNoisy = awgn(rxWaveform, snrPerSC_dB, -10*log10(double(nfft)));
+```
+
+These formulas assume unit-power subcarrier symbols (e.g., `qammod(..., UnitAveragePower=true)`). If the modulator uses default constellation scaling, replace `numAvailableSC / nfft^2` with `numAvailableSC * meanSymbolPower / nfft^2`, where `meanSymbolPower = mean(abs(symbols).^2)`.
+
+Do NOT compute received waveform power — that gives wideband SNR, not per-subcarrier SNR.
 
 ### Capture noise variance for soft-decision demodulation
 

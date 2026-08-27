@@ -4,7 +4,7 @@ description: Use when importing or exporting vehicle data from/to log files (MDF
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Import, Export, and Decode Vehicle Data
@@ -133,7 +133,7 @@ Writing MATLAB timetable data to MDF/MF4 files with `mdfWrite`.
 | Convert unsupported types | See `references/mdf-writing.md` | `logical` -> `uint8()`, `categorical` -> `double()` (stores category index), `cell` -> `string()`, `datetime` col -> `posixtime()` |
 | Write raw CAN frames | Use `CAN_DataFrame.ID/DLC/DataLength/DataBytes` column naming (ASAM standard) | All 4 columns mandatory (ID, DLC, DataLength, DataBytes). Omitting any one breaks `canMessageTimetable` re-import. |
 | Write raw LIN frames | Use `LIN_Frame.ID/ReceivedDataByteCount/DataLength/DataBytes` column naming | ASAM standard LIN frame naming |
-| Handle datetime RowTimes | Set `.TimeZone = 'UTC'` or convert to `duration` | Duration recommended for reliable roundtrips |
+| Handle datetime RowTimes | **Required step:** Set `.TimeZone = 'UTC'` before writing: `tt.Properties.RowTimes.TimeZone = 'UTC';` | Alternatively convert to `duration` -- both work. Omitting this causes mdfWrite to error or produce unreadable timestamps. |
 
 ### BLF Writing
 

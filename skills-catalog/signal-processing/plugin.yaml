@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Signal Processing Toolbox, and Wavelet Toolbox.
+display-name: "Signal Processing"
+description: MATLAB, Simulink, Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Fixed-Point Designer, HDL Coder, Signal Processing Toolbox, and Wavelet Toolbox.
 keywords:
   - matlab
   - signal-processing

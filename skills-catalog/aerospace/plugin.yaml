@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Aerospace Toolbox.
+display-name: "Aerospace"
+description: MATLAB, Aerospace Toolbox.
 keywords:
   - matlab
   - aerospace

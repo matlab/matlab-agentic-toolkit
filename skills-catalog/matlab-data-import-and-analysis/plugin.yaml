@@ -1,4 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
+display-name: "MATLAB Data Import and Analysis"
 description: Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.
 keywords:
   - matlab

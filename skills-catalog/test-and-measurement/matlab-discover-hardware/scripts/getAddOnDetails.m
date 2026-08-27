@@ -31,6 +31,7 @@ function info = getAddOnDetails(baseCode)
 
 %   Copyright 2026 The MathWorks, Inc.
 
+
     arguments
         baseCode (1, 1) string {mustBeTextScalar, mustBeNonempty}
     end

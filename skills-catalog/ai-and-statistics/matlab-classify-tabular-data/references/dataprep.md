@@ -11,7 +11,7 @@ The skill operates on whichever data the parent provides. All analysis and flag 
 
 **Input-shape assumption.** X must be either a fully-numeric matrix (dense or sparse) OR a table. Categorical features are recognised only via table columns whose dtype is `categorical`, `string`, or `cellstr` — `compute_data_flags.hasCategorical` looks at column dtypes, not values, so a categorical variable encoded as `double` inside a matrix is invisible to this skill. If the user supplies predictors as a set of separate workspace variables of mixed types, assemble them into a table with `table(varA, varB, ...)` before running this reference; do not `horzcat` them into a numeric matrix.
 
-**Record every mutation in `preproc`.** Every user-driven or automatic edit to X or Y in this reference must be recorded in a struct-array variable named `preproc` (fields: `.op`, `.payload`, `.note`) *in the order it is applied*. This is what makes the Step 13 workflow-script export possible — the exported script replays `preproc` on new data via `scripts/apply_preproc.m`. Initialize `preproc` before any edits:
+**Record every mutation in `preproc`.** Every user-driven or automatic edit to X or Y in this reference must be recorded in a struct-array variable named `preproc` (fields: `.op`, `.payload`, `.note`) *in the order it is applied*. This is what makes the Step 13 workflow-script export possible — the exported script replays `preproc` on new data via `scripts/helpers/apply_preproc.m`. Initialize `preproc` before any edits:
 
 ```matlab
 preproc = struct('op', {}, 'payload', {}, 'note', {});
@@ -31,7 +31,7 @@ Report the following before any cleaning:
 - **Zero-variance features (global):** features constant across all observations
 - **Zero-variance features (within-class):** features constant within at least one class but not globally
 
-Use `ismissing` for missing value detection. Identify globally zero-variance columns via `scripts/find_zero_variance_columns.m`, which is sparse-safe (it does not densify the matrix).
+Use `ismissing` for missing value detection. Identify globally zero-variance columns via `scripts/helpers/find_zero_variance_columns.m`, which is sparse-safe (it does not densify the matrix).
 
 ### Ask about feature omission
 
@@ -131,7 +131,7 @@ end
 
 ## Step 3: Compute data characteristic flags
 
-After cleaning, call `scripts/compute_data_flags.m` to populate a single `flags` struct in the workspace:
+After cleaning, call `scripts/helpers/compute_data_flags.m` to populate a single `flags` struct in the workspace:
 
 ```matlab
 flags = compute_data_flags(X, Y);   % or (XTrain, YTrain) if hasHoldout

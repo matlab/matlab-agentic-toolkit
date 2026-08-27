@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: MATLAB Drive.
+display-name: "Cloud Solutions"
+description: MATLAB, MATLAB Drive.
 keywords:
   - matlab
   - cloud

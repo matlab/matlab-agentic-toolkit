@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Predictive Maintenance Toolbox.
+display-name: "Control Systems"
+description: MATLAB, Control System Toolbox, Predictive Maintenance Toolbox, Signal Processing Toolbox, Statistics and Machine Learning Toolbox, and System Identification Toolbox.
 keywords:
   - matlab
   - predictive-maintenance

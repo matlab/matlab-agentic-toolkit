@@ -18,7 +18,7 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 ---
 
 # MATLAB Function Argument Validation
@@ -395,7 +395,7 @@ When migrating from `inputParser` or `validateattributes`, use this decision tre
 |---------------|-------------|---------------------------|-----|
 | `@isnumeric` | Accepts any numeric, no conversion | `{mustBeNumeric}` | No class spec — avoids conversion |
 | `@ischar` | Accepts char only | `{mustBeA(label, 'char')}` or `(1,:) char` | `mustBeText`/`mustBeTextScalar` widens to accept string |
-| `@islogical` | Accepts logical only | `(1,1) logical` | Safe — nothing converts TO logical implicitly |
+| `@islogical` | Accepts logical only | `(1,1) {mustBeA(x, 'logical')}` | A `logical` class spec CONVERTS — `logical(1)` → `true`, so `1`/`0` (and other convertible scalars) would be accepted where `@islogical` rejects them. Use `mustBeA` (no class spec) to reject without converting. |
 | `{'numeric'}` | Accepts any numeric, no conversion | `{mustBeNumeric}` | `validateattributes` meta-class — same set as `@isnumeric` |
 | `{'float'}` | Accepts single or double | `{mustBeFloat}` | Equivalent to `{'single','double'}` |
 | `{'integer'}` (class spec, rare) | Accepts only integer types (int8…uint64) | Usually `{mustBeNumeric, mustBeInteger}`. Strict-only-if-intentional: `{mustBeA(x, ["int8","int16","int32","int64","uint8","uint16","uint32","uint64"])}` | The class-only form rejects integer-valued doubles like `5.0` — usually accidental. Widen to the lenient pairing unless the original code clearly meant to reject doubles. |

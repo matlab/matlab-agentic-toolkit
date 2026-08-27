@@ -65,7 +65,7 @@ To manually install and configure the MCP server rather than using the automated
 |----------|------------------|-------------------|
 | Claude Code | `~/.claude.json` | Use `claude mcp add` to configure. |
 | GitHub Copilot | VS Code user-profile `mcp.json` | Reload VS Code after setup completes. |
-| OpenAI Codex | `~/.codex/config.toml` | After setup, you can tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`: 1) Set `tool_timeout_sec = 600` to increase the tool timeout for longer MATLAB operations like test suites and simulations. Increase further for very long-running tasks. 2) Set `env_vars = ['WINDIR']` on Windows for Simulink&reg; to work, since Codex strips environment variables from MCP server subprocesses by default. |
+| OpenAI Codex | `~/.codex/config.toml` | After setup, you can tune two settings in the `[mcp_servers.matlab]` section of `~/.codex/config.toml`: 1) Set `tool_timeout_sec = 600` to increase the tool timeout for longer MATLAB operations like test suites and simulations. Increase further for very long-running tasks. 2) Set `env_vars = ['WINDIR']` on Windows&reg; for Simulink&reg; to work, since Codex strips environment variables from MCP server subprocesses by default. |
 | Gemini CLI | `~/.gemini/settings.json` | Start a new Gemini session after setup. |
 | Amp | `~/.config/amp/settings.json` | If you have `amp.mcpPermissions` rules that block MCP servers, add an allow rule for the MATLAB server. |
 
@@ -86,7 +86,7 @@ This command opts every configured agent out of data collection. This setting is
 <a id="adding-skills-only"></a>
 ## Adding Skills Only
 
-If you already have the MATLAB MCP Core Server, you only need skills. Skills are organized into folders under `skills-catalog/`, called skill groups. You must install the `matlab-core` skill group. For additional domain expertise, you can separately install other specific skill groups. Only install skills that you need to allow your agent to reliably trigger the skills. To ensure to load a specific skill in your workflow, you can also manually trigger the skill using its name.
+If you already have the MATLAB MCP Server, you only need skills. Skills are organized into folders under `skills-catalog/`, called skill groups. You must install the `matlab-core` skill group. For additional domain expertise, you can separately install other specific skill groups. Only install skills that you need to allow your agent to reliably trigger the skills. To ensure to load a specific skill in your workflow, you can also manually trigger the skill using its name.
 
 For details about the skills groups and skills, see the [`skills-catalog/` README](skills-catalog/README.md). 
 

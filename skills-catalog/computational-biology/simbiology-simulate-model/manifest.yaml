@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "2.0"
+human-description: Run simulations, sweep parameters, explore what-if scenarios, and perform sensitivity analysis on SimBiology models.
+matlab-release: ">=R2026a"
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+required-skills: []
+required-products:
+  - SimBiology
+toolkit: matlab-agentic-toolkit

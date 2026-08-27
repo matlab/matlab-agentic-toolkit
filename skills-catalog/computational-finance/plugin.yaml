@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Datafeed Toolbox and Spreadsheet Link.
+display-name: "Computational Finance"
+description: MATLAB, Datafeed Toolbox and Spreadsheet Link.
 keywords:
   - matlab
   - finance

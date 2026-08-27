@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: >
-  Parallel Computing Toolbox and MATLAB Parallel Server.
+display-name: "Parallel Computing"
+description: MATLAB, Parallel Computing Toolbox, and MATLAB Parallel Server.
 keywords:
   - matlab
   - parallel-computing

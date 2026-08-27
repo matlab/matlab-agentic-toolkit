@@ -1,7 +1,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: product-specific
-version: "1.1"
+version: "1.2"
 human-description: Add Additive White Gaussian Noise (AWGN) noise and convert between SNR, Eb/No, Es/No, and per-subcarrier SNR for communications simulations.
 matlab-release: ">=R2022a"
 required-tools:

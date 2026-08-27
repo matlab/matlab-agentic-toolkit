@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Curve Fitting Toolbox, Deep Learning Toolbox, and Statistics and Machine Learning Toolbox.
+display-name: "AI and Statistics"
+description: MATLAB, Simulink, Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models.
 keywords:
   - matlab
   - curve-fitting

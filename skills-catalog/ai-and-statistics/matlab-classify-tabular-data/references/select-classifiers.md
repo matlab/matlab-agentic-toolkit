@@ -1,10 +1,10 @@
 # Select Promising Classifiers Based on Dataset Characteristics
 
-The authoritative branch table lives in the .m files in this directory. This document explains **how the table is used** and **what invariants hold**; it does NOT enumerate branches or model lists — read the .m files for those.
+The authoritative branch table lives in the `.m` files under `scripts/model_catalog/`. This document explains **how the table is used** and **what invariants hold**; it does NOT enumerate branches or model lists — read those files for the recipes.
 
 ## Required inputs (from data analysis)
 
-A `flags` struct must already be populated by `scripts/compute_data_flags.m` (Step 2). It carries:
+A `flags` struct must already be populated by `scripts/helpers/compute_data_flags.m` (Step 2). It carries:
 
 `N`, `D`, `nClasses`, `classSize`, `smallestClassSize`, `classRatio`, `isBinary`, `isImbalanced`, `isWide`, `isHighD`, `isBig`, `hasManyMissing`, `isSparse`, `hasCategorical`.
 
@@ -56,12 +56,12 @@ The helper implements this spec — you do not implement it yourself:
 
 ## Imbalanced-data override
 
-When `flags.isImbalanced` is true, the boosting recipes from the base branch (LogitBoost, RoughAdaBoost, FineAdaBoost) are replaced by the list in `imbalanced_boosting.m`. See that file for the model list and the RUSBoost gate on `smallestClassSize`. The uniform-prior user question is in `select-classifiers-imbalanced.md`.
+When `flags.isImbalanced` is true, the boosting recipes from the base branch (LogitBoost, RoughAdaBoost, FineAdaBoost) are replaced by the list in `scripts/model_catalog/imbalanced_boosting.m`. See that file for the model list and the RUSBoost gate on `smallestClassSize`. The uniform-prior user question is in `select-classifiers-imbalanced.md`.
 
 Pass the overlay into `build_model_definitions` via the `'ImbalancedOverlay'` name-value pair — the helper does the substitution:
 
 ```matlab
-run(fullfile(skillPath, 'references', 'imbalanced_boosting.m'));
+run(fullfile(skillPath, 'scripts', 'model_catalog', 'imbalanced_boosting.m'));
 modelDefs = build_model_definitions(flags, skillPath, ...
     'X', XTrain, 'Y', YTrain, ...
     'ImbalancedOverlay', IMBALANCED_BOOSTING_MODELS);
@@ -107,13 +107,13 @@ When the user asks why models were selected, explain based on **data characteris
 
 ## Referenced files
 
-- **`build_model_definitions.m`** — the assembly helper called from Step 5. Dispatches the branch, applies every filter, resolves function-valued args, expands `MulticlassECOC=true` recipes into `-OVO` and `-OVA` pairs, and returns the `modelDefs` struct array ready to train.
-- **`classifier_branches.m`** — aggregator; loads the 5 branch scripts and populates `BRANCHES`. Called by `build_model_definitions`; callers do not run it directly.
-- **`branch_sparse.m`, `branch_many_missing.m`, `branch_categorical.m`, `branch_wide.m`, `branch_regular.m`** — one branch entry each; the authoritative model lists.
-- **`classifier_thresholds.m`** — numeric constants (imbalance ratio, wide-branch N cap, categorical-level cap, etc.).
-- **`model_recipe.m`** — recipe constructor and schema documentation.
-- **`resolve_recipe.m`** — resolves function-valued args to concrete scalars. Called by `build_model_definitions`.
-- **`imbalanced_boosting.m`** — boosting model list applied when `isImbalanced`. Load, then pass `IMBALANCED_BOOSTING_MODELS` to `build_model_definitions` via `'ImbalancedOverlay'`.
+- **`scripts/helpers/build_model_definitions.m`** — the assembly helper called from Step 5. Dispatches the branch, applies every filter, resolves function-valued args, expands `MulticlassECOC=true` recipes into `-OVO` and `-OVA` pairs, and returns the `modelDefs` struct array ready to train.
+- **`scripts/helpers/resolve_recipe.m`** — resolves function-valued args to concrete scalars. Called by `build_model_definitions`.
+- **`scripts/model_catalog/classifier_branches.m`** — aggregator; loads the 5 branch scripts and populates `BRANCHES`. Called by `build_model_definitions`; callers do not run it directly.
+- **`scripts/model_catalog/branch_sparse.m`, `branch_many_missing.m`, `branch_categorical.m`, `branch_wide.m`, `branch_regular.m`** — one branch entry each; the authoritative model lists.
+- **`scripts/model_catalog/classifier_thresholds.m`** — numeric constants (imbalance ratio, wide-branch N cap, categorical-level cap, etc.).
+- **`scripts/model_catalog/model_recipe.m`** — recipe constructor and schema documentation.
+- **`scripts/model_catalog/imbalanced_boosting.m`** — boosting model list applied when `isImbalanced`. Load, then pass `IMBALANCED_BOOSTING_MODELS` to `build_model_definitions` via `'ImbalancedOverlay'`.
 - **`select-classifiers-imbalanced.md`** — user-facing prose for the imbalance case (uniform-prior question and extreme-imbalance advisory).
 
 ---

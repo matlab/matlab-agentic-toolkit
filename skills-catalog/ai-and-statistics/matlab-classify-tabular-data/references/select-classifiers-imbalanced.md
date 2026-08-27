@@ -1,13 +1,13 @@
 # Imbalanced Data Modifier for Classifier Selection
 
-Dispatched from `select-classifiers.md` when `isImbalanced = true`. This document contains only the **user-facing procedure** (the mandatory uniform-prior question and the extreme-imbalance advisory). The boosting-model list itself lives in `imbalanced_boosting.m`.
+Dispatched from `select-classifiers.md` when `isImbalanced = true`. This document contains only the **user-facing procedure** (the mandatory uniform-prior question and the extreme-imbalance advisory). The boosting-model list itself lives in `scripts/model_catalog/imbalanced_boosting.m`.
 
 ## What this reference decides
 
 1. **Whether to use uniform prior** (mandatory user question).
 2. **Whether to warn the user** about extreme imbalance.
 
-The boosting model list is data, not procedure — see `imbalanced_boosting.m`.
+The boosting model list is data, not procedure — see `scripts/model_catalog/imbalanced_boosting.m`.
 
 ## 1. Uniform-prior question (MANDATORY)
 
@@ -26,11 +26,11 @@ If no: set `useUniformPrior = false` and proceed with default (empirical) priors
 ## 2. Apply the boosting overlay
 
 ```matlab
-run(fullfile(skillPath, 'references', 'imbalanced_boosting.m'));
+run(fullfile(skillPath, 'scripts', 'model_catalog', 'imbalanced_boosting.m'));
 % IMBALANCED_BOOSTING_MODELS is now in your workspace.
 ```
 
-Substitute the branch's boosting recipes (LogitBoost, RoughAdaBoost, FineAdaBoost — anything whose `args.Method` is a boosting method other than `Bag`) with `IMBALANCED_BOOSTING_MODELS`. The overlay itself gates RUSBoost inclusion on `smallestClassSize >= THRESHOLDS.rusboost_smallest_class` (see `classifier_thresholds.m`) — you do not need to re-check that yourself; recipes with a false `condition(flags)` drop out during the normal filter.
+Substitute the branch's boosting recipes (LogitBoost, RoughAdaBoost, FineAdaBoost — anything whose `args.Method` is a boosting method other than `Bag`) with `IMBALANCED_BOOSTING_MODELS`. The overlay itself gates RUSBoost inclusion on `smallestClassSize >= THRESHOLDS.rusboost_smallest_class` (see `scripts/model_catalog/classifier_thresholds.m`) — you do not need to re-check that yourself; recipes with a false `condition(flags)` drop out during the normal filter.
 
 ## 3. Extreme-imbalance advisory
 

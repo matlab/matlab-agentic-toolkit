@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "2.0"
+matlab-release: ">=R2026a"
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+  - run_matlab_file
+required-skills: []
+required-products:
+  - SimBiology
+human-description: Build SimBiology models from scratch, modify existing ones, and generate diagram layouts.
+toolkit: matlab-agentic-toolkit

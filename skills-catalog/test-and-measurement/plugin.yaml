@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Data Acquisition Toolbox, Image Acquisition Toolbox, Industrial Communication Toolbox, MATLAB Support Package for Arduino Hardware, and Vehicle Network Toolbox.
+display-name: "Test and Measurement"
+description: MATLAB, Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware.
 keywords:
   - matlab
   - data-acquisition

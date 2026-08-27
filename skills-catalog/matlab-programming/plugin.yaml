@@ -1,4 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
+display-name: "MATLAB Programming"
 description: Write robust MATLAB functions with validated inputs.
 keywords:
   - matlab

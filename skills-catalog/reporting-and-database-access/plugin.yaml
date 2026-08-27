@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Database Toolbox, MATLAB Report Generator, and Simulink Report Generator.
+display-name: "Reporting and Database Access"
+description: MATLAB, Database Toolbox, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator.
 keywords:
   - matlab
   - database

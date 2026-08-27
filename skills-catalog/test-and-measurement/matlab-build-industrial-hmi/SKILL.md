@@ -35,7 +35,7 @@ Build operator-facing SCADA/HMI dashboards in MATLAB App Designer that follow in
 ## When NOT to Use
 
 - General App Designer mechanics (`uigridlayout`, callback wiring, lifecycle, `matlab.apps.AppBase` scaffolding) and serialization to a real App Designer file — this skill **delegates** those to `matlab-build-app`. See `references/app-designer-handoff.md`. Two things stay here and must **not** be routed away: gray-field theming (never hand color/dark-mode to `matlab-apply-theme`) and HMI trends (never hand them to `matlab-build-chart`).
-- Discovering OPC UA servers on a network, finding endpoint URLs, or browsing namespaces for the first time — use `matlab-discover-opcua-servers`.
+- Discovering OPC UA servers on a network, finding endpoint URLs, or browsing namespaces for the first time — use `matlab-use-opcua-client`.
 - Non-process domains (consumer apps, lab utilities, scientific GUIs) — the conventions here are tailored to plant operators monitoring physical processes.
 
 ## Must-Follow Rules

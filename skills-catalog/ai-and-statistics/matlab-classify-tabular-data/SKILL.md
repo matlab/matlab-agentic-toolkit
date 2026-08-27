@@ -14,14 +14,14 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Compare Classification Models with Statistical Uncertainty
 
 Compare classifiers on the user's dataset and identify the top tier of models that are statistically equivalent in accuracy.
 
-This skill bundles the workflow in `references/` (step-by-step instructions and branch tables read on-demand) and `scripts/` (reusable computation and plotting helpers). Do not invoke files in `references/` as separate skills — they are only loaded via the `Read` tool when the corresponding step runs. See `references/README.md` for the layout and why the branch-table `.m` files live in `references/` instead of `scripts/`.
+This skill bundles the workflow in `references/` (step-by-step markdown instructions read on demand) and `scripts/` (MATLAB code). Under `scripts/`, `helpers/` holds the reusable computation and plotting functions the agent calls directly, and `model_catalog/` holds the declarative branch-table `.m` files invoked internally by `build_model_definitions` via `run(...)`. Do not invoke files in `references/` as separate skills — they are only loaded via the `Read` tool when the corresponding step runs. See `references/README.md` for the layout.
 
 ## When to Use
 
@@ -40,15 +40,15 @@ This skill bundles the workflow in `references/` (step-by-step instructions and 
 
 ## Running MATLAB
 
-Run all MATLAB code via the MATLAB MCP server (`mcp__matlab__evaluate_matlab_code`, or `mcp__matlab__run_matlab_file` for scripts). Set `project_path` to this skill's `scripts/` directory so the workflow helpers resolve on the current working folder without any `addpath` calls.
+Run all MATLAB code via the MATLAB MCP server (`mcp__matlab__evaluate_matlab_code`, or `mcp__matlab__run_matlab_file` for scripts). Set `project_path` to this skill's `scripts/helpers/` directory so the workflow helpers resolve on the current working folder without any `addpath` calls.
 
 ## Communication style while running this skill
 
-Talk to the user about their **data and results**, not about the skill's plumbing. Everything under `references/`, `scripts/`, and the branch tables is internal — a user watching the run should never have to ask what a filename means.
+Talk to the user about their **data and results**, not about the skill's plumbing. Everything under `references/` and `scripts/` (both `helpers/` and `model_catalog/`) is internal — a user watching the run should never have to ask what a filename means.
 
 Concretely, while executing this skill:
 
-- **Do not name internal files or helpers** in progress messages. `references/select-classifiers.md`, `build_model_definitions`, `compute_pairwise_pvalues_cv`, `classifier_branches.m`, `resolve_recipe`, `modelDefs`, `cvFitFcn`, etc., are all internal. If you must reference them (e.g., surfacing a bug the user can act on), name them once and explain what they are.
+- **Do not name internal files or helpers** in progress messages. `references/select-classifiers.md`, `build_model_definitions`, `compute_pairwise_pvalues_cv`, `classifier_branches`, `resolve_recipe`, `modelDefs`, `cvFitFcn`, etc., are all internal. If you must reference them (e.g., surfacing a bug the user can act on), name them once and explain what they are.
 - **Do not narrate branch dispatch or filter decisions** by name. "Dispatching to the wide branch", "applying the imbalanced overlay", "`isSparse` is false so we skip the sparse branch" — all internal. The user only needs to hear the *outcome*: "This dataset is wide (200 features, 40 samples), so I'm using linear models."
 - **Do not read reference files out loud.** When a step says *STOP and read `references/foo.md`*, that is a directive to you, not a status update to broadcast. Read it silently and continue.
 - **Do announce what the user chose to run, and roughly how long it will take**, before a long training loop or HPO run. One sentence.
@@ -67,10 +67,10 @@ Rule of thumb: if a sentence would only make sense to someone who has read this 
 
 **Do not reuse any variables from previous analysis runs.** Always execute the full prescription and set all variables from scratch for each analyzed dataset. Every step must define its own variables — never assume anything remains in the workspace from a prior run.
 
-**Define `skillPath` up front.** Several helpers and reference `.m` files take `skillPath` as an argument (the parent directory of `scripts/`). When you invoke MATLAB via `evaluate_matlab_code` with `project_path` set to this skill's `scripts/` folder, MATLAB's working directory *is* `scripts/`, so `skillPath = fileparts(pwd);` gives the correct value. Set it at the top of the first code block that needs it (Step 2 or Step 3) and rely on the same value thereafter:
+**Define `skillPath` up front.** Several helpers take `skillPath` as an argument (the skill's root directory, two levels above `scripts/helpers/`). When you invoke MATLAB via `evaluate_matlab_code` with `project_path` set to this skill's `scripts/helpers/` folder, MATLAB's working directory *is* `scripts/helpers/`, so `skillPath = fileparts(fileparts(pwd));` gives the correct value. Set it at the top of the first code block that needs it (Step 2 or Step 3) and rely on the same value thereafter:
 
 ```matlab
-skillPath = fileparts(pwd);  % parent of scripts/; used by build_model_definitions, THRESHOLDS load, imbalanced overlay, export_workflow_script
+skillPath = fileparts(fileparts(pwd));  % skill root; used by build_model_definitions, THRESHOLDS load, imbalanced overlay, export_workflow_script
 ```
 
 For all rules about how to write the MATLAB code itself (use built-ins, do not inspect template objects, training-time rules, figure rules), see `scripts/README.md`.
@@ -88,9 +88,9 @@ For all rules about how to write the MATLAB code itself (use built-ins, do not i
 
 **STOP. Use the Read tool on `references/dataprep.md` (relative to this skill's directory). Do NOT write any MATLAB code until you have read that file. Follow its instructions exactly as written.**
 
-Run the dataprep instructions on `XTrain`/`YTrain` if `hasHoldout = true` (dataset came with a separate test set), or on `X`/`Y` otherwise. On return, the workspace must contain a `flags` struct produced by `scripts/compute_data_flags.m` with fields: `N`, `D`, `nClasses`, `classSize`, `smallestClassSize`, `classRatio`, `isBinary`, `isImbalanced`, `isWide`, `isHighD`, `isBig`, `hasManyMissing`, `isSparse`, `hasCategorical`.
+Run the dataprep instructions on `XTrain`/`YTrain` if `hasHoldout = true` (dataset came with a separate test set), or on `X`/`Y` otherwise. On return, the workspace must contain a `flags` struct produced by `compute_data_flags` with fields: `N`, `D`, `nClasses`, `classSize`, `smallestClassSize`, `classRatio`, `isBinary`, `isImbalanced`, `isWide`, `isHighD`, `isBig`, `hasManyMissing`, `isSparse`, `hasCategorical`.
 
-The workspace must also contain a `preproc` struct array recording every mutation to X or Y in the order applied. Its op catalog — the only four ops the exported Step 14 workflow script can replay via `scripts/apply_preproc.m` — is:
+The workspace must also contain a `preproc` struct array recording every mutation to X or Y in the order applied. Its op catalog — the only four ops the exported Step 14 workflow script can replay via `apply_preproc` — is:
 
 | `.op` | When emitted | `.payload` fields |
 |---|---|---|
@@ -108,7 +108,7 @@ If `hasHoldout = true` (dataset came with a separate test set): skip this step.
 Otherwise, load the thresholds and use `flags.smallestClassSize` (computed in Step 2) to present a recommendation:
 
 ```matlab
-run(fullfile(skillPath, 'references', 'classifier_thresholds.m'));  % populates THRESHOLDS
+run(fullfile(skillPath, 'scripts', 'model_catalog', 'classifier_thresholds.m'));  % populates THRESHOLDS
 ```
 
 If `flags.smallestClassSize > THRESHOLDS.holdout_smallest_class`, recommend a 70/30 holdout split. Interpolate the actual threshold into the prompt via `sprintf` — do not hardcode the number:
@@ -127,7 +127,7 @@ Otherwise (`flags.smallestClassSize <= THRESHOLDS.holdout_smallest_class`), reco
 >
 > Which do you prefer? (cv / holdout)
 
-Wait for the user's response. If the user chooses holdout, create the split via `scripts/make_holdout_split.m` and set `hasHoldout = true`. If the user chooses cv, set `hasHoldout = false`.
+Wait for the user's response. If the user chooses holdout, create the split via `make_holdout_split` and set `hasHoldout = true`. If the user chooses cv, set `hasHoldout = false`.
 
 All subsequent steps operate on the training data (`XTrain`/`YTrain` when `hasHoldout`, or `X`/`Y` otherwise).
 
@@ -152,7 +152,7 @@ The matched branch list is exhaustive. Do not add models the branch does not nam
 
 If `isImbalanced = true`, also Read `references/select-classifiers-imbalanced.md` for the boosting-method override and the **mandatory** uniform-prior decision. In an interactive session the agent must pose the uniform-prior question verbatim to the user and receive an answer before any `fit*` call. In a non-interactive session (e.g., automated evaluation) where the agent has been instructed not to prompt, the agent must still surface the choice explicitly: name both options (`Prior='uniform'` vs `Prior='empirical'`), state which one it is defaulting to and why, and flag that this is normally the user's call. Silently defaulting without surfacing the trade-off — even when the domain (e.g., fraud detection, medical screening) makes one option sound "obviously right" — is a hard failure of the imbalanced workflow.
 
-Model definitions are assembled by `scripts/build_model_definitions.m`. Do NOT hand-transcribe recipes from the branch table — call the helper. It dispatches the branch, applies every filter (binaryOnly / condition / interpretability), resolves function-valued args, and expands every `MulticlassECOC=true` recipe into TWO entries (one `-OVO`, one `-OVA`). Hand-writing the recipe list drops the OVA variant every time — the helper makes that impossible.
+Model definitions are assembled by `build_model_definitions`. Do NOT hand-transcribe recipes from the branch table — call the helper. It dispatches the branch, applies every filter (binaryOnly / condition / interpretability), resolves function-valued args, and expands every `MulticlassECOC=true` recipe into TWO entries (one `-OVO`, one `-OVA`). Hand-writing the recipe list drops the OVA variant every time — the helper makes that impossible.
 
 ```matlab
 % flags was populated in Step 2 via compute_data_flags(X, Y).
@@ -168,7 +168,7 @@ modelDefs = build_model_definitions(flags, skillPath, 'X', XTrain, 'Y', YTrain);
 % 'UseUniformPrior' NV pair — set from the user's answer — bakes
 % 'Prior','uniform' into every cvFitFcn (CV path). On the holdout path
 % it is passed straight to train_and_score_holdout in Step 6 instead.
-%   run(fullfile(skillPath, 'references', 'imbalanced_boosting.m'));
+%   run(fullfile(skillPath, 'scripts', 'model_catalog', 'imbalanced_boosting.m'));
 %   modelDefs = build_model_definitions(flags, skillPath, ...
 %       'X', XTrain, 'Y', YTrain, ...
 %       'ImbalancedOverlay',  IMBALANCED_BOOSTING_MODELS, ...
@@ -233,7 +233,7 @@ If `useUniformPrior = true`:
 
 ### CV path (`hasHoldout = false`)
 
-For each model, call `scripts/train_and_score_cv.m`. It runs the model's `cvFitFcn` and returns `cvModel`, `trainTime`, `acc`, `accCI` (95% CI from `binofit`), and `perFoldAcc` — the per-model per-fold accuracy vector (nFolds × 1).
+For each model, call `train_and_score_cv`. It runs the model's `cvFitFcn` and returns `cvModel`, `trainTime`, `acc`, `accCI` (95% CI from `binofit`), and `perFoldAcc` — the per-model per-fold accuracy vector (nFolds × 1).
 
 Aggregate the per-model results across the loop as follows:
 
@@ -259,7 +259,7 @@ Report a table of cross-validated accuracies with 95% confidence intervals.
 
 ### Holdout path (`hasHoldout = true`)
 
-For each model, call `scripts/train_and_score_holdout.m`. It handles the `ClassificationNeuralNetwork` exception (R2026a and earlier, where the "template" is actually a trained model) and the optional `'Prior','uniform'` flag. It returns the trained `model`, `trainTime`, `acc`, `accCI`, and `YHat` (the prediction vector on the test set).
+For each model, call `train_and_score_holdout`. It handles the `ClassificationNeuralNetwork` exception (R2026a and earlier, where the "template" is actually a trained model) and the optional `'Prior','uniform'` flag. It returns the trained `model`, `trainTime`, `acc`, `accCI`, and `YHat` (the prediction vector on the test set).
 
 Aggregate the per-model results across the loop as follows:
 
@@ -326,11 +326,11 @@ plot_pvalue_heatmap(pvalMatrix, modelNames, sprintf('Pairwise testckfold p-value
 plot_pvalue_heatmap(pvalMatrix, modelNames, 'Pairwise testcholdout p-values (McNemar)');
 ```
 
-The script lives at `scripts/plot_pvalue_heatmap.m` in this skill directory. As with every other helper, it resolves via the current working folder — do not modify the MATLAB path.
+The script lives at `scripts/helpers/plot_pvalue_heatmap.m` in this skill directory. As with every other helper, it resolves via the current working folder — do not modify the MATLAB path.
 
 ## Step 9: Visualize
 
-Show two figures by calling the bundled scripts (`scripts/plot_accuracy_bars.m` and `scripts/plot_training_time.m`). Both sort models by descending accuracy and highlight top-tier models.
+Show two figures by calling `plot_accuracy_bars` and `plot_training_time`. Both sort models by descending accuracy and highlight top-tier models.
 
 ```matlab
 plot_accuracy_bars(modelNames, acc, accCI, topTierIdx, ...
@@ -355,7 +355,7 @@ end
 boostIndices = find(isBoost);
 ```
 
-Loop `for boostIdx = boostIndices`, then call the bundled script (`scripts/plot_boosting_curve.m`):
+Loop `for boostIdx = boostIndices`, then call `plot_boosting_curve`:
 
 ```matlab
 boostModelName = modelDefs(boostIdx).name;
@@ -436,47 +436,50 @@ Do NOT:
 
 ### References (loaded on demand)
 
-- **`references/README.md`** — layout: how `references/` and `scripts/` split responsibilities, and why the branch-table `.m` files must live in `references/`
+- **`references/README.md`** — layout: how `references/`, `scripts/helpers/`, and `scripts/model_catalog/` split responsibilities
 - **`references/dataprep.md`** — analyzes and cleans data, computes characteristic flags (Step 2)
 - **`references/select-classifiers.md`** — selects promising models based on dataset characteristics and interpretability rating (Step 5)
 - **`references/select-classifiers-imbalanced.md`** — boosting/uniform-prior overrides for imbalanced data (read from Step 5 when `isImbalanced`)
 - **`references/hpo.md`** — hyperparameter optimization for user-selected models (Step 11)
 - **`references/save-and-export.md`** — save selected trained models to `.mat` and emit a self-contained retraining `.m` script (Steps 13 and 14)
-- **`references/classifier_branches.m`** — assembles the `BRANCHES` struct array (sparse / many-missing / categorical / wide / regular) via `run(...)`; invoked from `build_model_definitions`. Not called directly by the agent.
-- **`references/classifier_thresholds.m`** — declarative thresholds shared by the branch tables (populates `THRESHOLDS`). Not called directly by the agent.
-- **`references/branch_sparse.m`, `branch_many_missing.m`, `branch_categorical.m`, `branch_wide.m`, `branch_regular.m`** — one file per branch; each appends its models to `BRANCHES` via `model_recipe(...)`. Not called directly.
-- **`references/imbalanced_boosting.m`** — overlay of boosting recipes applied when `isImbalanced`; populates `IMBALANCED_BOOSTING_MODELS`. Not called directly.
-- **`references/model_recipe.m`** — recipe constructor used only inside the branch `.m` files. Kept in `references/` so `run(...)` chains resolve it (see `references/README.md`).
 
-### Scripts (called by the agent)
+### Model catalog (`scripts/model_catalog/`, resolved via `run(...)` chains)
+
+- **`classifier_branches.m`** — assembles the `BRANCHES` struct array (sparse / many-missing / categorical / wide / regular) via `run(...)`; invoked from `build_model_definitions`. Not called directly by the agent.
+- **`classifier_thresholds.m`** — declarative thresholds shared by the branch tables (populates `THRESHOLDS`). Not called directly by the agent.
+- **`branch_sparse.m`, `branch_many_missing.m`, `branch_categorical.m`, `branch_wide.m`, `branch_regular.m`** — one file per branch; each appends its models to `BRANCHES` via `model_recipe(...)`. Not called directly.
+- **`imbalanced_boosting.m`** — overlay of boosting recipes applied when `isImbalanced`; populates `IMBALANCED_BOOSTING_MODELS`. Not called directly.
+- **`model_recipe.m`** — recipe constructor used only inside the branch `.m` files. Colocated with the branch files so `run(...)` chains resolve it.
+
+### Helper scripts (`scripts/helpers/`, called by the agent)
 
 - **`scripts/README.md`** — code-level rules (use built-ins, don't inspect templates, training-time rules, figure rules)
-- **`scripts/build_model_definitions.m`** — assembles the `modelDefs` struct array from `flags` + branch table; handles branch dispatch, recipe filters, `resolve_recipe`, and OVO/OVA expansion. Call from Step 5 with `project_path` set to `scripts/`.
-- **`scripts/resolve_recipe.m`** — resolves function-valued recipe args to concrete scalars using `flags`. Called by `build_model_definitions`.
-- **`scripts/find_zero_variance_columns.m`** — sparse-safe zero-variance column detection (used by `references/dataprep.md`)
-- **`scripts/compute_data_flags.m`** — computes the dataset-characteristic flags consumed by Step 5 (used by `references/dataprep.md`)
-- **`scripts/is_bag_of_tokens.m`** — sparse-safe check for non-negative integer values (used by `references/select-classifiers.md`)
+- **`scripts/helpers/build_model_definitions.m`** — assembles the `modelDefs` struct array from `flags` + branch table; handles branch dispatch, recipe filters, `resolve_recipe`, and OVO/OVA expansion. Call from Step 5 with `project_path` set to `scripts/helpers/`.
+- **`scripts/helpers/resolve_recipe.m`** — resolves function-valued recipe args to concrete scalars using `flags`. Called by `build_model_definitions`.
+- **`scripts/helpers/find_zero_variance_columns.m`** — sparse-safe zero-variance column detection (used by `references/dataprep.md`)
+- **`scripts/helpers/compute_data_flags.m`** — computes the dataset-characteristic flags consumed by Step 5 (used by `references/dataprep.md`)
+- **`scripts/helpers/is_bag_of_tokens.m`** — sparse-safe check for non-negative integer values (used by `references/select-classifiers.md`)
 - **`count_categorical_levels`** — total number of categorical levels in a table (used by `references/select-classifiers.md`; p-coded per `scripts/.pcode`)
 - **`stratified_subsample`** — per-class capped subsample preserving class proportions (used by `references/select-classifiers.md`; p-coded per `scripts/.pcode`)
-- **`scripts/make_holdout_split.m`** — stratified train/test split (Step 3)
-- **`scripts/train_and_score_cv.m`** — CV training, accuracy CI, per-fold accuracies (Step 6, CV path)
-- **`scripts/train_and_score_holdout.m`** — holdout training, accuracy CI, predictions; handles the `ClassificationNeuralNetwork` exception (Step 6, holdout path)
-- **`scripts/compute_pairwise_pvalues_cv.m`** — pairwise `testckfold` p-value matrix, diagonal seeded with 1 (Step 8, CV path)
-- **`scripts/compute_pairwise_pvalues_holdout.m`** — pairwise `testcholdout` p-value matrix, diagonal seeded with 1 (Step 8, holdout path)
-- **`scripts/plot_pvalue_heatmap.m`** — pairwise p-value heatmap (Step 8)
-- **`scripts/plot_accuracy_bars.m`** — accuracy bar chart with 95% CI (Step 9)
-- **`scripts/plot_training_time.m`** — training-time bar chart (Step 9)
-- **`scripts/plot_boosting_curve.m`** — boosting learning curve, holdout or CV (Step 10)
-- **`scripts/resume_boosting_holdout.m`** — resume an ensemble with more trees on the holdout path; recompute accuracy and predictions (Step 10)
-- **`scripts/resume_boosting_cv.m`** — resume a cross-validated ensemble with more trees on the CV path; recompute accuracy and per-fold accuracies via `kfoldLoss` (Step 10)
-- **`scripts/score_holdout_test.m`** — final accuracy + 95% CI on the held-out test set (used by `references/hpo.md`)
-- **`scripts/aggregate_nested_cv_loss.m`** — aggregate out-of-fold predictions into accuracy + 95% CI, with optional uniform-prior weighting (used by `references/hpo.md`)
-- **`scripts/sanitize_model_name.m`** — convert a model display name (e.g., `LinearSVM-OVO`) into a valid MATLAB identifier (`LinearSVM_OVO`). Shared by `save_selected_models` and the retraining script emitted by `export_workflow_script` so both sides sanitize identically.
-- **`scripts/save_selected_models.m`** — save user-selected trained models to a `.mat` file, retraining CV-wrapped models on full data via `modelDefs(k).fitFcn` so what's saved is deployable (Step 13)
-- **`scripts/apply_preproc.m`** — replay recorded `preproc` ops on new data (used by the exported workflow script; Step 14)
-- **`scripts/retrain_with_hpo.m`** — single-shot HPO on the full training set (used by the exported workflow script; Step 14)
-- **`scripts/retrain_with_resume.m`** — retrain an ensemble with extra learning cycles baked into `NumLearningCycles` (used by the exported workflow script; Step 14)
-- **`scripts/export_workflow_script.m`** — emit a self-contained retraining workflow `.m` script (Step 14)
+- **`scripts/helpers/make_holdout_split.m`** — stratified train/test split (Step 3)
+- **`scripts/helpers/train_and_score_cv.m`** — CV training, accuracy CI, per-fold accuracies (Step 6, CV path)
+- **`scripts/helpers/train_and_score_holdout.m`** — holdout training, accuracy CI, predictions; handles the `ClassificationNeuralNetwork` exception (Step 6, holdout path)
+- **`scripts/helpers/compute_pairwise_pvalues_cv.m`** — pairwise `testckfold` p-value matrix, diagonal seeded with 1 (Step 8, CV path)
+- **`scripts/helpers/compute_pairwise_pvalues_holdout.m`** — pairwise `testcholdout` p-value matrix, diagonal seeded with 1 (Step 8, holdout path)
+- **`scripts/helpers/plot_pvalue_heatmap.m`** — pairwise p-value heatmap (Step 8)
+- **`scripts/helpers/plot_accuracy_bars.m`** — accuracy bar chart with 95% CI (Step 9)
+- **`scripts/helpers/plot_training_time.m`** — training-time bar chart (Step 9)
+- **`scripts/helpers/plot_boosting_curve.m`** — boosting learning curve, holdout or CV (Step 10)
+- **`scripts/helpers/resume_boosting_holdout.m`** — resume an ensemble with more trees on the holdout path; recompute accuracy and predictions (Step 10)
+- **`scripts/helpers/resume_boosting_cv.m`** — resume a cross-validated ensemble with more trees on the CV path; recompute accuracy and per-fold accuracies via `kfoldLoss` (Step 10)
+- **`scripts/helpers/score_holdout_test.m`** — final accuracy + 95% CI on the held-out test set (used by `references/hpo.md`)
+- **`scripts/helpers/aggregate_nested_cv_loss.m`** — aggregate out-of-fold predictions into accuracy + 95% CI, with optional uniform-prior weighting (used by `references/hpo.md`)
+- **`scripts/helpers/sanitize_model_name.m`** — convert a model display name (e.g., `LinearSVM-OVO`) into a valid MATLAB identifier (`LinearSVM_OVO`). Shared by `save_selected_models` and the retraining script emitted by `export_workflow_script` so both sides sanitize identically.
+- **`scripts/helpers/save_selected_models.m`** — save user-selected trained models to a `.mat` file, retraining CV-wrapped models on full data via `modelDefs(k).fitFcn` so what's saved is deployable (Step 13)
+- **`scripts/helpers/apply_preproc.m`** — replay recorded `preproc` ops on new data (used by the exported workflow script; Step 14)
+- **`scripts/helpers/retrain_with_hpo.m`** — single-shot HPO on the full training set (used by the exported workflow script; Step 14)
+- **`scripts/helpers/retrain_with_resume.m`** — retrain an ensemble with extra learning cycles baked into `NumLearningCycles` (used by the exported workflow script; Step 14)
+- **`scripts/helpers/export_workflow_script.m`** — emit a self-contained retraining workflow `.m` script (Step 14)
 
 ---
 

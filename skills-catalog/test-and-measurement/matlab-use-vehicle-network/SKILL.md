@@ -4,7 +4,7 @@ description: Use when setting up vehicle network communication in MATLAB using V
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "2.0"
+  version: "2.1"
 ---
 
 # MATLAB Vehicle Network Communication

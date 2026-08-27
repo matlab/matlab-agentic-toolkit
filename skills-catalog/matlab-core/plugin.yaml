@@ -1,4 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
+display-name: "MATLAB Core"
 description: >
   Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these.
 keywords:

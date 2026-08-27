@@ -1,0 +1,18 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Engineer and select the best features for single-response tabular classification or regression in MATLAB.
+matlab-release: ">=R2022b"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Statistics and Machine Learning Toolbox
+optional-products:
+  - MATLAB Report Generator
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+  - check_matlab_code
+required-skills: []
+
+# Copyright 2026 The MathWorks, Inc.

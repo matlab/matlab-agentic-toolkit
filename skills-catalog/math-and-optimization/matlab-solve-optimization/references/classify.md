@@ -7,7 +7,7 @@ The class you assign decides three things: which solver to use, what guarantee y
 Before formulating with `optimproblem`, check if a purpose-built tool exists for the user's domain. These tools encode domain structure (constraints, typical objectives, standard forms) that the generic path discards:
 
 - **Finance:** `Portfolio`, `PortfolioCVaR`, `PortfolioMAD` (Financial Toolbox)
-- **Control:** `lqr`, `lqg`, `mpc` (Control System Toolbox / MPC Toolbox)
+- **Control:** `lqr`, `lqg`, `mpc` (Control System Toolbox / Model Predictive Control Toolbox)
 - **Simulink parameter tuning:** `sdo.optimize`, Response Optimizer (Simulink Design Optimization)
 
 **Method:** search the doc for your domain keyword + "MATLAB" + "optimize" or "toolbox." If a tool exists, confirm it's licensed (`ver` / `license('test', ...)`) before committing to it.

@@ -5,5 +5,4 @@ function baseCodes = getDeviceAddOns(device)
 %   models, external apps). Returns string.empty if none found.
 
 %   Copyright 2026 The MathWorks, Inc.
-
 end

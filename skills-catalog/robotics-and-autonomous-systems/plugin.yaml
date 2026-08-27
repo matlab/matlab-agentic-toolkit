@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.
+display-name: "Robotics and Autonomous Systems"
+description: MATLAB, Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.
 keywords:
   - matlab
   - robotics

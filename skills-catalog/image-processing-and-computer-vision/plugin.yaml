@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Image Processing Toolbox, Computer Vision Toolbox, Lidar Toolbox, and Medical Imaging Toolbox.
+display-name: "Image Processing and Computer Vision"
+description: MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox, Lidar Toolbox, Medical Imaging Toolbox, and Optical Design and Simulation Library for Image Processing Toolbox.
 keywords:
   - matlab
   - image-processing

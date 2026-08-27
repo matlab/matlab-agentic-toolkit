@@ -1,14 +1,13 @@
+# Copyright 2026 The MathWorks, Inc.
 # manifest.yaml — Tooling metadata for matlab-migrate-settings
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
-human-description: Diff MATLAB settings between releases and update startup scripts to use the correct setting paths.
-matlab-release: ">=R2023b"
+version: "1.1"
+human-description: Compare MATLAB settings between releases and update MATLAB code files (.m) that programmatically configure MATLAB settings to use the correct setting paths for the target release.
+matlab-release: ">=R2022b"
 required-products: []
 optional-products: []
 required-tools: [evaluate_matlab_code]
 required-skills: []
 toolkit: matlab-agentic-toolkit
-
-# Copyright 2026 The MathWorks, Inc.

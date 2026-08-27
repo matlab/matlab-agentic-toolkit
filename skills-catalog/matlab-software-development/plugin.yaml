@@ -1,4 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
+display-name: "MATLAB Software Development"
 description: >
   Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans.
 keywords:

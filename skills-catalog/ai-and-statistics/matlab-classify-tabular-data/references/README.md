@@ -1,6 +1,6 @@
 # References — layout and conventions
 
-`references/` holds the skill's **policy** content: the step-by-step markdown for each phase, plus the declarative branch tables that decide which classifiers apply on each kind of dataset. `scripts/` holds the **computation** (helpers that call MATLAB built-ins with the skill's conventions). The two directories are intentionally separate; editing a branch table changes which models the skill recommends, editing a script changes how a computation is performed.
+`references/` holds the skill's **policy prose**: the step-by-step markdown for each phase. Computation lives under `scripts/`, which is split into two subfolders: `scripts/helpers/` (functions the agent calls directly, e.g. `build_model_definitions`, `train_and_score_cv`) and `scripts/model_catalog/` (declarative `.m` files chained via `run(...)` from inside `build_model_definitions`, deciding which classifiers apply on each kind of dataset).
 
 ## Markdown files
 
@@ -10,10 +10,11 @@ Read only when the corresponding step in `SKILL.md` says so:
 - **`select-classifiers.md`** — Step 5 model-selection prescription.
 - **`select-classifiers-imbalanced.md`** — Step 5 overlay when `flags.isImbalanced`.
 - **`hpo.md`** — Step 11 hyperparameter-optimization prescription.
+- **`save-and-export.md`** — Steps 13 and 14 save/export prescription.
 
-## Branch tables (`.m` files) — do not call directly
+## Model catalog — do not call directly
 
-These are agent-invisible. The agent calls `scripts/build_model_definitions.m`; that helper `run(...)`s the following in sequence and reads the variables they populate in the caller's workspace:
+The files in `scripts/model_catalog/` are agent-invisible. The agent calls `scripts/helpers/build_model_definitions.m`; that helper `run(...)`s the following in sequence and reads the variables they populate in the caller's workspace:
 
 - **`classifier_branches.m`** — walks the five branch files below and populates `BRANCHES`.
 - **`classifier_thresholds.m`** — populates the `THRESHOLDS` struct shared by the branch files.
@@ -21,13 +22,13 @@ These are agent-invisible. The agent calls `scripts/build_model_definitions.m`; 
 - **`imbalanced_boosting.m`** — populates `IMBALANCED_BOOSTING_MODELS`; loaded by the agent from Step 5 when `flags.isImbalanced` and passed to `build_model_definitions` via the `'ImbalancedOverlay'` name-value pair.
 - **`model_recipe.m`** — recipe constructor used inside every branch file.
 
-## Why `model_recipe.m` is here and not in `scripts/`
+## Why the catalog files live together in `scripts/model_catalog/`
 
-MATLAB's `run(scriptFile)` temporarily changes the current working folder to `scriptFile`'s directory while the script executes. So while `classifier_branches.m` runs, cwd is `references/`; while `branch_sparse.m` runs (chained via `run(...)` from `classifier_branches.m`), cwd is still `references/`.
+MATLAB's `run(scriptFile)` temporarily changes the current working folder to `scriptFile`'s directory while the script executes. So while `classifier_branches.m` runs, cwd is `scripts/model_catalog/`; while `branch_sparse.m` runs (chained via `run(...)` from `classifier_branches.m`), cwd is still `scripts/model_catalog/`.
 
-`model_recipe` is called from inside those chained scripts. It has to resolve by cwd (since the SDK forbids `addpath`). That only works if `model_recipe.m` is in `references/` next to its callers. Moving it to `scripts/` breaks the chain — the helper becomes unreachable during `run(...)`, and every branch file errors with *"Undefined function 'model_recipe' for input arguments of type 'struct'"*.
+`model_recipe` is called from inside those chained scripts. It has to resolve by cwd (since the SDK forbids `addpath`). That only works if `model_recipe.m` sits next to its callers. Splitting these files across directories breaks the chain — the recipe helper becomes unreachable during `run(...)`, and every branch file errors with *"Undefined function 'model_recipe' for input arguments of type 'struct'"*.
 
-The same reasoning applies to `classifier_branches.m`, `classifier_thresholds.m`, `imbalanced_boosting.m`, and the `branch_*.m` files: they populate variables in the caller's workspace and are only invoked via `run(...)` from `build_model_definitions`. Keeping them in `references/` alongside `model_recipe.m` keeps the whole chain resolvable without any path manipulation. Callers see only the entry point `scripts/build_model_definitions.m`, which is a proper function.
+The same reasoning applies to `classifier_branches.m`, `classifier_thresholds.m`, `imbalanced_boosting.m`, and the `branch_*.m` files: they populate variables in the caller's workspace and are only invoked via `run(...)` from `build_model_definitions`. Keeping them together in `scripts/model_catalog/` keeps the whole chain resolvable without any path manipulation. Callers see only the entry point `scripts/helpers/build_model_definitions.m`, which is a proper function.
 
 ---
 

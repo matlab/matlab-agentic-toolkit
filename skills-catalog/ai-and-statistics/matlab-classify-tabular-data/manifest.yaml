@@ -1,7 +1,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier.
 matlab-release: ">=R2025a"
 required-tools:

@@ -1,4 +1,5 @@
 # Copyright 2026 The MathWorks, Inc.
+display-name: "MATLAB Environment and Settings"
 description: Diff MATLAB settings between releases and migrate startup scripts to correct setting paths.
 keywords:
   - matlab

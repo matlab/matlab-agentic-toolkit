@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: Embedded Coder, Fixed-Point Designer, GPU Coder, and MATLAB Coder.
+display-name: "Code Generation"
+description: MATLAB, Embedded Coder, Fixed-Point Designer, GPU Coder, MATLAB Coder, MATLAB Test, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models.
 keywords:
   - matlab
   - code-generation

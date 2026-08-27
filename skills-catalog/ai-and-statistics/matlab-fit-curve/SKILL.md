@@ -4,7 +4,7 @@ description: Fit curves and surfaces interactively with the Curve Fitter app for
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Interactive Curve and Surface Fitting

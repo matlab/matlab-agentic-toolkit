@@ -1,5 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
-description: SimBiology.
+display-name: "Computational Biology"
+description: MATLAB, SimBiology, and Statistics and Machine Learning Toolbox.
 keywords:
   - matlab
   - bioinformatics
