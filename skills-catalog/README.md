@@ -156,7 +156,7 @@ Supports MATLAB, SimBiology&trade;, and Statistics and Machine Learning Toolbox
 
 ### Computational Finance ([`computational-finance`](./computational-finance/))
 
-Supports MATLAB, Datafeed Toolbox&trade; and Spreadsheet Link&trade;
+Supports MATLAB, Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox&trade;, and Spreadsheet Link&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|

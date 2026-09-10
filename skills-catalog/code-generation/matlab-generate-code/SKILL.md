@@ -46,7 +46,7 @@ Umbrella skill for the MATLAB Coder workflow: generate code, verify it, refine t
 - **Generating code from an AI model** (PyTorch `.pt2` / LiteRT `.tflite` via `loadPyTorchExportedProgram` / `loadLiteRTModel`) → use **matlab-deploy-ai-model**. Return here for the underlying `coder.*` directives, config tuning, and screener/verification.
 - **Deploying to physical embedded hardware** (on-target PIL, ERT hardware configs, board selection — STM32 / Raspberry Pi / ARM Cortex) → use **matlab-deploy-embedded-code**. This skill covers host-side codegen, SIL, and config tuning up to hardware targeting.
 - **Speeding up interpreted MATLAB by rewriting the M-code** (vectorization, preallocation, caching) → use **matlab-optimize-performance**. This skill's acceleration path assumes you want to compile to MEX/C, not restructure the algorithm.
-- **General MATLAB test authoring** (parameterized tests, fixtures, mocking, coverage, CI/CD, App Designer) → use **matlab-write-test**. This skill covers only codegen-equivalence tests (`coder.runTest`, `matlabtest.coder.TestCase`).
+- **General MATLAB test authoring** (parameterized tests, fixtures, mocking, App Designer) → use **matlab-write-tests**; for running suites, collecting coverage, and CI/CD → use **matlab-run-tests**. This skill covers only codegen-equivalence tests (`coder.runTest`, `matlabtest.coder.TestCase`).
 - **Modernizing deprecated APIs for currency/maintainability** when code generation is not the goal → use **matlab-modernize-code**. This skill rewrites source only to satisfy codegen constraints, with explicit authorization.
 
 ## Routing — load the matching reference file on demand
