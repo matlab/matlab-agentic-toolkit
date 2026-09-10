@@ -165,6 +165,9 @@ Everything else is FREE — do not over-sequence:
   `addComponent` `props` struct. Fewer calls, and coupled-order pairs (like
   `DropDown` `Items`-before-`Value`) are reordered for you (see the mlapp guide).
   Reserve `setProperty` for *edits* to an already-built app, not fresh construction.
+  For a child of a `GridLayout`, place it in a cell with `'Layout',
+  struct('Row', r, 'Column', c)`, a struct, never a `[row col]` vector (see the
+  mlapp guide, "Placing a component into a GridLayout cell").
 - **Code is order-free.** Callback bodies, methods, and `addProperty` reference
   `app.<X>` at *runtime*, not when you call the verb. A callback body may mention a
   component or property you have not declared yet. The only code-side ordering rule is

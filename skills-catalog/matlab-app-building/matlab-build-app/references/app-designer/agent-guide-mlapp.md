@@ -129,6 +129,18 @@ Two notes for the curious: `ValueIndex` is ignored by codegen for `DropDown`/`Sw
 `ButtonGroup` has no `Value` at all (its selection is `SelectedObject`, a child handle).
 None of this changes what you do — set properties in any order.
 
+### Placing a component into a GridLayout cell
+
+To place a component in a grid cell, pass `Layout` as a **struct** with `Row`
+and `Column` fields. NOT a `[row col]` vector (rejected with
+`AppDesignerAgentInterface:invalidLayoutValue`) and NOT dot-path
+(`"Layout.Row"`).
+
+```matlab
+appBuilder.addComponent("Button", "GoButton", "MainGrid", struct( ...
+    'Text', 'Go', 'Layout', struct('Row', 1, 'Column', 2)));
+```
+
 ## `save()` for mlapp: atomic, gate-then-write
 
 Because a partial write to a binary file is unrecoverable corruption, mlapp `save()`

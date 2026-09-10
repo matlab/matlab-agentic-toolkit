@@ -33,7 +33,7 @@ See the References section below for detailed patterns on each topic.
 
 ## Quick Start
 
-Use `assets/minimal-bridge.m` and `assets/minimal-bridge.html` as a copy-paste starting point. The pattern below is Pattern 4 (request-response) — the default for most apps.
+Use `assets/minimal-bridge.m` and `assets/minimal-bridge.html` as a copy-paste starting point. When copying `minimal-bridge.m`, omit its final `% Copyright` line. The pattern below is Pattern 4 (request-response) — the default for most apps.
 
 **app.m:**
 ```matlab

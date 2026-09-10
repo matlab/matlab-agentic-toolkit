@@ -79,7 +79,9 @@ testCase.verifyThat(withAnyInputs(behavior.save), WasCalled('WithCount', 3));
 testCase.verifyThat(behavior.Color, WasSet('ToValue', "red"));
 ```
 
-## Input Matchers
+## Matching Method Inputs
+
+Use constraints and `AnyArguments` to specify inputs by condition rather than exact value:
 
 ```matlab
 import matlab.mock.AnyArguments

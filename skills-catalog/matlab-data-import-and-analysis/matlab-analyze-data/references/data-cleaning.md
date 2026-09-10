@@ -1,6 +1,6 @@
 # Data Cleaning
 
-**Contents:** missing value comparison, standardizeMissing, omitmissing (+ min/max and std/var pitfalls), fillmissing (methods, MaxGap), isoutlier/rmoutliers/filloutliers, isbetween/allbetween/clip
+**Contents:** missing value comparison, standardizeMissing, omitmissing (+ min/max and std/var pitfalls), rmmissing caution, fillmissing (methods, MaxGap), isoutlier/rmoutliers/filloutliers, isbetween/allbetween/clip
 
 ## Do not use `==`, `isequal`, or `ismember` for missing value comparison
 ```matlab
@@ -55,6 +55,23 @@ s = nanstd(T.Value);
 
 **Pitfall with `std`/`var`:** the first optional argument is a weight flag, not a dimension. `std(x,0)` normalizes by N-1 (sample, default). `std(x,1)` normalizes by N (population). To operate along a specific dimension, you must pass the weight first: `std(x,0,2)` for std along dimension 2. Writing `std(x,2)` computes population std with weight=2, not std along dimension 2.
 
+**Toolbox note:** `mad` and `range` require Statistics and Machine Learning Toolbox.
+
+## Be cautious with `rmmissing` on an entire table
+
+`rmmissing` on a table drops any row that has a missing value in *any* variable, which can discard valid data unnecessarily. Prefer handling missingness per-variable with `fillmissing` or targeted column selection. Use `rmmissing` when you genuinely need complete cases across all variables:
+
+```matlab
+% Targeted: remove rows missing in a specific variable
+T = rmmissing(T, DataVariables="Value");
+
+% Targeted: fill instead of remove
+T = fillmissing(T,"linear", DataVariables="Value");
+
+% Complete cases: only when you need every variable to be non-missing
+Tcomplete = rmmissing(T);
+```
+
 ## Use `fillmissing` to fill gaps in data
 
 Choose the fill method based on the nature of the data. Operate on the whole table with `DataVariables` rather than extracting columns:
@@ -86,6 +103,28 @@ T = fillmissing(T, "linear", DataVariables=vartype("numeric"));
 T = fillmissing(T, "previous", DataVariables=vartype("categorical"));
 T = fillmissing(T, "constant", "N/A", DataVariables=vartype("string"));
 ```
+
+### Fill at specific locations with `MissingLocations`
+
+Use `MissingLocations` when you have a logical mask identifying values to treat as missing but want to preserve actual NaN/NaT values (e.g., sentinel values like -999 that mean "below detection limit" while NaN means "sensor offline — don't interpolate"):
+
+```matlab
+% On a vector: mask is a logical vector the same size
+badMask = x == -999;
+x = fillmissing(x, "linear", MissingLocations=badMask);
+
+% On a table: mask is a logical array matching the full table size
+mask = false(size(T));
+mask(:,2) = T.Temperature == -999;
+T = fillmissing(T, "linear", MissingLocations=mask, DataVariables="Temperature");
+
+% Or (R2024a+) a table of logicals with same variable names
+loc = table(T.Temperature == -999, 'VariableNames', "Temperature");
+T = fillmissing(T, "linear", MissingLocations=loc, DataVariables="Temperature");
+% -999 values are interpolated; actual NaN values are left untouched
+```
+
+If you want to fill both sentinels AND actual missing values together, use `standardizeMissing` first instead — it converts sentinels to standard missing, then `fillmissing` handles all of them.
 
 ### Available fill methods
 
@@ -135,6 +174,13 @@ Q1 = prctile(T.Value,25);
 Q3 = prctile(T.Value,75);
 IQRval = Q3 - Q1;
 isOut = T.Value < (Q1 - 1.5*IQRval) | T.Value > (Q3 + 1.5*IQRval);
+
+% Avoid: Manual MAD thresholding — use isoutlier(...,"median") instead
+med = median(T.Value,"omitmissing");
+madVal = median(abs(T.Value - med),"omitmissing");
+isOut = abs(T.Value - med) > k * 1.4826 * madVal;
+% Correct: isoutlier uses the same scaled-MAD criterion by default
+isOut = isoutlier(T.Value,"median",ThresholdFactor=k);
 ```
 
 Detection methods and their `ThresholdFactor` defaults (controls how aggressively outliers are flagged):

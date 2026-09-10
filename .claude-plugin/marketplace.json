@@ -23,7 +23,7 @@
     },
     {
       "name": "ai-and-statistics",
-      "version": "0.7.0",
+      "version": "0.8.0",
       "description": "MATLAB, Simulink, Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models.",
       "author": {
         "name": "MathWorks"
@@ -124,8 +124,8 @@
     },
     {
       "name": "computational-finance",
-      "version": "0.3.0",
-      "description": "MATLAB, Datafeed Toolbox and Spreadsheet Link.",
+      "version": "0.4.0",
+      "description": "MATLAB, Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link.",
       "author": {
         "name": "MathWorks"
       },
@@ -134,7 +134,9 @@
         "finance",
         "datafeed",
         "spreadsheet-link",
-        "excel"
+        "excel",
+        "portfolio-optimization",
+        "instrument-pricing"
       ],
       "source": "./skills-catalog/computational-finance",
       "category": "development",
@@ -197,7 +199,7 @@
     },
     {
       "name": "matlab-app-building",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -215,7 +217,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -234,7 +236,7 @@
     },
     {
       "name": "matlab-data-import-and-analysis",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
       "author": {
         "name": "MathWorks"
@@ -345,7 +347,7 @@
     },
     {
       "name": "radar",
-      "version": "0.2.2",
+      "version": "0.3.0",
       "description": "MATLAB, Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox.",
       "author": {
         "name": "MathWorks"

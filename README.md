@@ -18,7 +18,6 @@ Use this toolkit to:
 ## Requirements
 
 * MATLAB R2021a or later
-* Git&trade;
 * AI coding agent that supports MCP servers and skills. Supported agents are configured automatically. Otherwise, refer to your agent’s documentation to manually configure the MCP server and install skills. Supported agents include:
     - Claude Code
     - GitHub&reg; Copilot
@@ -129,7 +128,7 @@ This updates the skills, configurations, and MCP server binary for both the MATL
 
 ---
 ## Security Considerations
-When using the MATLAB Agentic Toolkit and MATLAB MCP Server, you should thoroughly review and validate all tool calls before you run them. Always keep a human in the loop for important actions and only proceed once you are confident the call will do exactly what you expect. For more information, see [User Interaction Model (MCP)](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#user-interaction-model) and [Security Considerations (MCP)](https://modelcontextprotocol.io/specification/2025-06-18/server/tools#security-considerations).
+When using the MATLAB Agentic Toolkit and MATLAB MCP Server, you should thoroughly review and validate all tool calls before you run them. Always keep a human in the loop for important actions and only proceed once you are confident the call will do exactly what you expect. For more information, see [User Interaction Model (MCP)](https://modelcontextprotocol.io/specification/latest/server/tools#user-interaction-model) and [Security Considerations (MCP)](https://modelcontextprotocol.io/specification/latest/server/tools#security-considerations).
 
 ---
 ## Data Collection

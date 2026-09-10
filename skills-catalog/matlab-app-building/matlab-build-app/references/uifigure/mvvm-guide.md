@@ -239,43 +239,9 @@ The returned struct keeps all objects alive. When the user closes the figure, th
 
 **Do NOT use `assignin('base', ...)`** — it pollutes the base workspace and makes cleanup unpredictable. Return a struct instead.
 
-## Async Commands with parfeval
+## Async Commands and Long-Running Work
 
-For long-running operations, keep the UI responsive:
-
-```matlab
-% In ViewModel:
-function processAsyncCommand(obj, method)
-    obj.IsProcessing = true;
-    obj.StatusMessage = "Processing...";
-
-    f = parfeval(backgroundPool, @processInBackground, 1, obj.Model.RawData, method);
-    afterEach(f, @(result) obj.onAsyncComplete(result), 0);
-end
-```
-
-```matlab
-% Private method in ViewModel:
-function onAsyncComplete(obj, result)
-    obj.Model.ProcessedData = result;
-    obj.Model.IsValid = true;
-    obj.StatusMessage = "Complete";
-    obj.IsProcessing = false;
-end
-```
-
-```matlab
-% Standalone function (must be self-contained for backgroundPool)
-function result = processInBackground(data, method)
-    switch method
-        case "linear",    result = data * 2;
-        case "quadratic", result = data .^ 2;
-        case "cubic",     result = data .^ 3;
-    end
-end
-```
-
-The background function cannot reference handle objects — pass raw data in, get raw data out. The `afterEach` callback runs on the main thread and can safely update ViewModel properties.
+For any operation that takes more than about a second, do NOT hand-roll `parfeval`/`backgroundPool` plumbing here. Use a background task instead: it provides the full infrastructure (progress streaming via `DataQueue`, cancellation, and cleanup on close) with the work placed correctly across the MVVM layers. See `mvvm-background-tasks.md`.
 
 ## Testing the ViewModel
 
@@ -304,7 +270,7 @@ Run tests with `runtests('testMainViewModel')` — no figure window needed.
 - [ ] View binds to ViewModel via `addlistener` on `PostSet`
 - [ ] View stores listeners in an array and deletes them in `delete()`
 - [ ] Entry point returns a struct to keep object references alive
-- [ ] Heavy computations use `parfeval(backgroundPool, ...)` in async commands
+- [ ] Long-running work uses a background task (see `mvvm-background-tasks.md`), not hand-rolled `parfeval`
 - [ ] ViewModel can be tested without creating a View
 
 ## Troubleshooting
@@ -316,7 +282,6 @@ Run tests with `runtests('testMainViewModel')` — no figure window needed.
 | Objects garbage-collected immediately | No reference held | Return struct from `runApp()`, assign to variable |
 | Stale UI after ViewModel change | View not bound to that property | Add `addlistener` in `bindToViewModel()` and initial `syncFromViewModel()` |
 | Invalid or deleted object error | Listener fires after View destroyed | Delete listeners in View's `delete()` method |
-| Cannot pass handle objects to parfeval | backgroundPool is a separate process | Pass raw data to background function, update handles in `afterEach` callback |
 | Circular listener updates | Model change triggers ViewModel triggers Model | Use a guard flag or check value equality before setting |
 
 ## References
@@ -325,6 +290,7 @@ Run tests with `runtests('testMainViewModel')` — no figure window needed.
 |-------|------|-------------|
 | View binding | `mvvm-view-binding.md` | Complete MainView class, addlistener binding, View design guidelines |
 | Testing | `mvvm-testing.md` | ViewModel unit tests without UI, test patterns |
+| Background execution | `mvvm-background-tasks.md` | Long-running work: template infrastructure, progress, cancellation, cleanup |
 
 ----
 

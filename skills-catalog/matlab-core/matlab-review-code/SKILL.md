@@ -23,7 +23,7 @@ Systematically review MATLAB code for quality, correctness, performance, and adh
 
 - User wants to debug a runtime error — use `matlab-debug-code` instead
 - User wants to optimize performance — use performance profiling skills
-- User wants to generate tests — use `matlab-write-test` instead
+- User wants to generate tests — use `matlab-write-tests` instead
 
 ## Workflow
 

@@ -2,7 +2,7 @@
 
 ## Setup/Teardown Hierarchy
 
-ClassSetup → (MethodSetup → Test → MethodTeardown) × N → ClassTeardown
+ClassSetup → (MethodSetup → Test → MethodTeardown) × N tests → ClassTeardown
 
 **Prefer `addTeardown`** over `TestMethodTeardown`/`TestClassTeardown` blocks. Reserve those blocks for unconditional cleanup unrelated to a specific resource.
 
@@ -25,8 +25,10 @@ end
 | Fixture | Constructor | Purpose |
 |---|---|---|
 | `WorkingFolderFixture` | `()` or `('WithSuffix', name)` | Temp working folder |
+| `TemporaryFolderFixture` | `()` or `('WithSuffix', name)` | Temp folder (doesn't cd into it) |
 | `PathFixture` | `(folderPath)` or `(folderPath, IncludingSubfolders=true)` | Add folder to MATLAB path |
 | `CurrentFolderFixture` | `(folderPath)` | Change current folder |
+| `ProjectFixture` | `(projectFolder)` | Open and close a MATLAB project |
 | `EnvironmentVariableFixture` | `(varName, value)` | Set environment variable |
 | `SuppressedWarningsFixture` | `(warningID)` | Suppress specific warning |
 
@@ -57,11 +59,13 @@ classdef DatabaseFixture < matlab.unittest.fixtures.Fixture
         end
     end
 end
+```
 
-% If the fixture accepts configuration, override isCompatible so the
-% framework knows when two instances can share state.
+If the fixture accepts configuration, override `isCompatible` so the framework knows when two instances can share state.
 
-% Usage as shared fixture:
+Usage as shared fixture:
+
+```matlab
 classdef (SharedTestFixtures = {DatabaseFixture}) ...
     DatabaseTest < matlab.unittest.TestCase
 

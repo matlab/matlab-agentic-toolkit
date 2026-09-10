@@ -1,6 +1,6 @@
-# Test Execution, Coverage, and CI/CD
+# Test Execution and CI/CD
 
-Running tests, analyzing results, collecting code coverage, and configuring CI/CD pipelines.
+Running tests, analyzing results, and configuring CI/CD pipelines.
 
 ## Running Tests
 
@@ -41,41 +41,6 @@ for r = results([results.Incomplete])
     disp(r.Details.DiagnosticRecord.Report);
 end
 ```
-
-## Code Coverage
-
-### Collect and Display
-
-Run tests with coverage. Include `CoverageResult` (programmatic) and `CoverageReport` (HTML). Add `CoberturaFormat` for CI.
-
-```matlab
-import matlab.unittest.TestRunner
-import matlab.unittest.plugins.CodeCoveragePlugin
-import matlab.unittest.plugins.codecoverage.CoverageResult
-import matlab.unittest.plugins.codecoverage.CoverageReport
-
-runner = TestRunner.withTextOutput;
-covFormat = CoverageResult;
-runner.addPlugin(CodeCoveragePlugin.forFolder('src', ...
-    Producing=[covFormat, CoverageReport('coverage-report')]));
-results = runner.run(testsuite('tests'));
-
-covResults = covFormat.Result;
-disp(covResults);
-for i = 1:numel(covResults)
-    disp(covResults(i));
-end
-```
-
-### Identify Coverage Gaps
-
-Script: [scripts/printCoverageGaps.m](../scripts/printCoverageGaps.m)
-
-Deploy to the user's project when requested. The script expects `covResults` from the Collect step and prints uncovered items. It has 4 tiers — include tiers up to the `MetricLevel` used:
-- default (no MetricLevel) → statement & function only
-- `"decision"` → through decision
-- `"condition"` → through condition
-- `"mcdc"` → all tiers
 
 ## CI/CD Integration with buildtool
 

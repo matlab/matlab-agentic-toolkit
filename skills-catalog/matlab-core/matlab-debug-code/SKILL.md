@@ -26,7 +26,7 @@ questions about how MATLAB code works. Don't just guess from code alone.
 
 - Code quality review without a runtime problem — use `matlab-reviewing-code` instead
 - Performance profiling — use performance optimization workflows
-- Writing tests for correctness — use `matlab-write-test` instead
+- Writing tests for correctness — use `matlab-write-tests` instead
 - Understanding MATLAB APIs or language features without a specific bug
 
 ## Static Analysis vs Runtime Debugging

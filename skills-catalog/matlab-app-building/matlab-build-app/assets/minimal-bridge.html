@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    body { font-family: system-ui, sans-serif; padding: 20px; }
+    button { padding: 8px 16px; cursor: pointer; }
+    #response { margin-top: 12px; color: #555; }
+</style>
+</head>
+<body>
+
+<h2 id="greeting">Waiting for MATLAB...</h2>
+<button onclick="sendPing()">Ping MATLAB</button>
+<p id="response"></p>
+
+<script>
+    function setup(htmlComponent) {
+        window.htmlComponent = htmlComponent;
+
+        // Pattern 1: receive initial data via Data property
+        htmlComponent.addEventListener('DataChanged', function(event) {
+            document.getElementById('greeting').textContent = htmlComponent.Data.greeting;
+        });
+
+        // Pattern 3: receive custom events from MATLAB
+        htmlComponent.addEventListener('Pong', function(event) {
+            document.getElementById('response').textContent =
+                event.Data.message + ' at ' + event.Data.timestamp;
+        });
+
+        htmlComponent.addEventListener('Error', function(event) {
+            document.getElementById('response').textContent = 'Error: ' + event.Data;
+        });
+    }
+
+    // Pattern 2: send event to MATLAB
+    function sendPing() {
+        window.htmlComponent.sendEventToMATLAB('Ping', 'hello');
+    }
+</script>
+
+</body>
+</html>
+
+<!-- Copyright 2026 The MathWorks, Inc. -->

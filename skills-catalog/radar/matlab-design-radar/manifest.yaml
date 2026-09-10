@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "1.0"
+human-description: Design, configure, and analyze radar systems in the Radar Designer app.
+matlab-release: ">=R2021a"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Radar Toolbox
+optional-products: []
+required-tools:
+  - evaluate_matlab_code
+required-skills: []

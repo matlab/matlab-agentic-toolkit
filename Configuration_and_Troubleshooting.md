@@ -5,7 +5,6 @@ This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an ove
 ## Requirements
 
 - MATLAB R2021a or later 
-- Git&trade;
 - AI coding agent that supports MCP servers and skills. Supported agents are configured automatically. Otherwise, refer to your agent’s documentation to manually configure the MCP server and install skills. Supported agents include:
   - Claude Code  
   - GitHub&reg; Copilot  
@@ -21,13 +20,14 @@ To install MATLAB Agentic Toolkit in an offline or air-gapped environment, first
 
 | Artifact | Where to Get It |
 |----------|----------------|
-| MCP server binary | [Latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download the binary for your platform (e.g., `matlab-mcp-server-macos-arm64`, `matlab-mcp-server-windows-x64.exe`) |
-| MCP server toolbox | [Latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download `MATLABMCPServerToolbox.mltbx` |
-| MATLAB Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/matlab-agentic-toolkit) |
-| Simulink Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/simulink-agentic-toolkit). Required only when installing Simulink Agentic Toolkit|
+| MCP server binary | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download the binary for your platform (e.g., `matlab-mcp-server-macos-arm64`, `matlab-mcp-server-windows-x64.exe`). |
+| MCP server toolbox | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download `MATLABMCPServerToolbox.mltbx`. |
+| Agentic Toolkit Installer | [Simulink Agentic Toolkit latest release](https://github.com/matlab/simulink-agentic-toolkit/releases/latest) — download `agenticToolkitInstaller.mltbx`. |
+| MATLAB Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/matlab-agentic-toolkit). |
+| Simulink Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/simulink-agentic-toolkit). Required only when installing Simulink Agentic Toolkit.|
 
-
-After you download these artifacts, run the `setupAgenticToolkit` command in your MATLAB command window with these name-value arguments.
+After you download these artifacts, open `agenticToolkitInstaller.mltbx` in MATLAB to install the installer add-on.
+In MATLAB, run the `setupAgenticToolkit` command in the command window with these name-value arguments.
 
 | Argument | Value |
 |----------|-----------------|
@@ -53,7 +53,7 @@ If you do not have MATLAB installed, you can install MATLAB with your AI agent u
 1) Install MATLAB Agentic Toolkit skills using the steps in [Adding Skills Only](#adding-skills-only).
 2) Ask your agent to install MATLAB using the `matlab-install-products` skill. 
 
-After you install MATLAB, you can complete the MATLAB Agentic Toolkit setup either by following the instructions in [Agentic Toolkit Installer](README.md#install-the-matlab-agentic-toolkit) to automatically install MATLAB MCP Server, or by manually installing and configuring MATLAB MCP Server.
+After you install MATLAB, you can complete the MATLAB Agentic Toolkit setup either by following the instructions in [Agentic Toolkit Installer](README.md#install-matlab-agentic-toolkit) to automatically install MATLAB MCP Server, or by manually installing and configuring MATLAB MCP Server.
 
 ---
 

@@ -1,49 +1,58 @@
 ---
-name: matlab-write-test
-description: Generate and run MATLAB unit tests using matlab.unittest and matlab.uitest. Parameterized tests, fixtures, mocking, coverage analysis, CI/CD with buildtool, app testing with gestures. Use when creating tests, writing test classes, running test suites, checking coverage, testing apps, or validating MATLAB code.
+name: matlab-write-tests
+description: >
+  Generate and structure MATLAB unit tests using matlab.unittest and matlab.uitest
+  features, including class-based tests, parameterized testing, fixtures, mocking, and app
+  testing with gestures. Use when writing, generating, or adding tests, creating test classes, adding
+  test methods, parameterizing tests, setting up fixtures, mocking dependencies, or testing
+  App Designer apps. Do NOT use for running tests, collecting coverage, or CI/CD
+  configuration.
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "2.0"
+  version: "1.0"
 ---
 
-# Testing
+# Write Tests
 
-Generate, structure, and run MATLAB unit tests using the `matlab.unittest` framework. Covers class-based tests, parameterized testing, fixtures, mocking, coverage analysis, CI/CD integration, and app testing via MCP.
+Generate, structure, and organize MATLAB unit tests using the `matlab.unittest` and `matlab.uitest` frameworks.
 
 ## When to Use
 
 - User asks to write tests for a MATLAB function or class
-- User wants to run an existing test suite
-- User needs coverage analysis or CI/CD configuration
+- User wants to add test methods or parameterize existing tests
+- User needs fixtures, mocking, or dependency injection in tests
 - Test-driven development — writing tests before implementation
-- Testing App Designer apps with programmatic gestures (see [reference/app-testing-guidance.md](reference/app-testing-guidance.md))
+- Testing App Designer apps with programmatic gestures
+- Baseline/regression tests against stored reference data (golden file, snapshot, characterization tests)
 
 ## When NOT to Use
 
+- Running tests, analyzing failures, or filtering test suites — use `matlab-run-tests`
+- Collecting or analyzing code coverage — use `matlab-run-tests`
+- CI/CD pipeline configuration — use `matlab-run-tests`
 - Testing Simulink models — use Simulink test skills
-- Performance benchmarking — use profiling workflows
 
 ## Must-Follow Rules
 
 - **Present a test plan first** — For non-trivial test suites, propose test methods and edge cases for user approval before writing code
-- **Always use class-based tests** — Every test file must inherit from `matlab.unittest.TestCase`. Never use script-based tests
+- **Always use class-based tests** — Inherit from the appropriate TestCase superclass. Never use script-based tests
 - **No logic in test methods** — No `if`, `switch`, `for`, or `try/catch`. Follow **Arrange-Act-Assert**. If a test needs conditionals, split into separate methods
 - **Test public interfaces, not implementation** — Never test private methods directly
-- **Execute via MCP** — Use `run_matlab_test_file` or `evaluate_matlab_code` to run tests
+- **Execute via MCP** — Use `run_matlab_test_file` or `evaluate_matlab_code` to run tests after writing. For advanced test execution (coverage, filtering, CI), see the `matlab-run-tests` skill
 
 ## Workflow
 
 ### Simple tests (clear behavior, limited scope)
 1. Briefly state what you'll test (methods + key edge cases)
 2. Write the test file after user confirms
+3. Run via `run_matlab_test_file` MCP tool to confirm tests pass
 
 ### Standard tests (large codebase, multiple files)
 1. **Gather requirements** — Code to test, expected behaviors, error conditions, scope, dependencies
 2. **Present test plan** — List test methods, edge cases, parameterization strategy for approval
 3. **Implement** — Write tests following the patterns below
-4. **Run** — Execute via `run_matlab_test_file` MCP tool
-5. **Check coverage** — Identify untested paths, add tests
+4. **Verify** — Run via `run_matlab_test_file` MCP tool to confirm tests pass
 
 ## Key Functions
 
@@ -54,8 +63,6 @@ Generate, structure, and run MATLAB unit tests using the `matlab.unittest` frame
 | Size/type | `verifySize`, `verifyClass`, `verifyEmpty` | Structural checks |
 | Errors | `verifyError` | Confirm error is thrown with correct ID |
 | Warnings | `verifyWarning`, `verifyWarningFree` | Check warning behavior |
-| Infra | `runtests`, `TestSuite`, `TestRunner` | Run and organize tests |
-| Coverage | `CodeCoveragePlugin`, `CoverageResult` | Measure test coverage |
 
 ### Qualification Levels
 
@@ -63,7 +70,7 @@ Generate, structure, and run MATLAB unit tests using the `matlab.unittest` frame
 |-------|-----------|-------------|
 | `verify` | Continues test | Default — most assertions |
 | `assert` | Stops current test | Setup validation |
-| `fatal` | Stops entire suite | Environment preconditions |
+| `fatalAssert` | Stops entire suite | Environment preconditions |
 | `assume` | Skips test | Conditional execution (e.g., toolbox check) |
 
 ## Patterns
@@ -72,7 +79,6 @@ Generate, structure, and run MATLAB unit tests using the `matlab.unittest` frame
 
 ```matlab
 classdef computeAreaTest < matlab.unittest.TestCase
-    %computeAreaTest Tests for the computeArea function.
 
     methods (Test)
         function testSquare(testCase)
@@ -116,7 +122,24 @@ classdef unitConverterTest < matlab.unittest.TestCase
 end
 ```
 
-For advanced parameterization (combinations, dynamic parameters, `ClassSetupParameter`), see [reference/parameterized-tests-guidance.md](reference/parameterized-tests-guidance.md).
+Error testing — identical `verifyError` logic, only inputs and error IDs vary:
+
+```matlab
+properties (TestParameter)
+    InvalidInput = struct( ...
+        'zeroDivisor', struct('input', {{5, 0}}, 'errorId', 'fn:zeroDivisor'), ...
+        'stringArg',   struct('input', {{'hello', 1}}, 'errorId', 'fn:nonNumeric'), ...
+        'cellArg',     struct('input', {{{1}, 2}}, 'errorId', 'fn:nonNumeric'))
+end
+
+methods (Test)
+    function testInvalidInputThrows(testCase, InvalidInput)
+        testCase.verifyError(@() fn(InvalidInput.input{:}), InvalidInput.errorId);
+    end
+end
+```
+
+For advanced parameterization (combinations, dynamic parameters, `ClassSetupParameter`), see [references/parameterized-tests-guidance.md](references/parameterized-tests-guidance.md).
 
 ### Setup, Teardown, and Fixtures
 
@@ -149,7 +172,7 @@ classdef fileProcessorTest < matlab.unittest.TestCase
 end
 ```
 
-For built-in fixtures, custom fixtures, and shared fixtures, see [reference/fixtures-guidance.md](reference/fixtures-guidance.md).
+For built-in fixtures, custom fixtures, and shared fixtures, see [references/fixtures-guidance.md](references/fixtures-guidance.md).
 
 ### Determinism
 
@@ -183,60 +206,9 @@ methods (Test, TestTags = {'Integration', 'Slow'})
 end
 ```
 
-Run by tag: `runtests('tests', Tag='Unit')` or `runtests('tests', ExcludeTag='Slow')`.
-
-## Running Tests
-
-### Via MCP
-
-Use the `run_matlab_test_file` MCP tool for test files. For inline runs with filtering:
-
-```matlab
-results = runtests('tests');                            % all tests in folder
-results = runtests('tests', Tag='Unit');                % by tag
-results = runtests('tests', Name='*Calculator*');       % by name pattern
-results = runtests('tests', UseParallel=true);          % parallel execution
-results = runtests('tests', Strict=true);               % warnings = failures
-```
-
-### Analyzing Results
-
-```matlab
-disp(results);
-
-for r = results([results.Failed])
-    fprintf('\nFAILED: %s\n', r.Name);
-    disp(r.Details.DiagnosticRecord.Report);
-end
-```
-
-## Coverage Analysis
-
-```matlab
-import matlab.unittest.TestRunner
-import matlab.unittest.plugins.CodeCoveragePlugin
-import matlab.unittest.plugins.codecoverage.CoverageResult
-import matlab.unittest.plugins.codecoverage.CoverageReport
-
-runner = TestRunner.withTextOutput;
-covFormat = CoverageResult;
-runner.addPlugin(CodeCoveragePlugin.forFolder('src', ...
-    Producing=[covFormat, CoverageReport('coverage-report')]));
-results = runner.run(testsuite('tests'));
-
-covResults = covFormat.Result;
-disp(covResults);
-```
-
-For coverage gap analysis, use the `printCoverageGaps` script in [reference/test-execution-guidance.md](reference/test-execution-guidance.md).
-
-## CI/CD Integration
-
-Use `buildtool` with a `buildfile.m` for CI pipelines. See [reference/test-execution-guidance.md](reference/test-execution-guidance.md) for `buildfile.m` templates and CI configs (GitHub Actions, Azure DevOps, GitLab CI).
-
 ## App Designer Testing
 
-For testing apps with programmatic UI gestures (`press`, `choose`, `type`, `drag`), see [reference/app-testing-guidance.md](reference/app-testing-guidance.md).
+For testing apps with programmatic UI gestures (`press`, `choose`, `type`, `drag`), see [references/app-testing-guidance.md](references/app-testing-guidance.md).
 
 Key points:
 - Inherit from `matlab.uitest.TestCase` (not `matlab.unittest.TestCase`)
@@ -244,18 +216,47 @@ Key points:
 - Compare `uilabel.Text` with char (`'text'`), not string (`"text"`)
 - Compare `.Enable` with `matlab.lang.OnOffSwitchState.on`/`.off`
 
+## Baseline Tests
+
+For baseline, regression, gold-file, snapshot, or characterization tests, use `matlabtest.parameters.matfileBaseline` + `verifyEqualsBaseline` (requires MATLAB Test, R2024b+) instead of hardcoding expected values or manually loading reference data.
+
+### Workflow
+
+1. **Define parameterization** — One `TestParameter` property per baseline value, using `matlabtest.parameters.matfileBaseline` with `VariableName`. Consolidate related baselines into a single MAT file.
+2. **Write test methods** — Each method accepts the baseline parameter and calls `verifyEqualsBaseline`. Pass `AbsTol` or `RelTol` for floating-point tolerance.
+3. **Generate baseline data** — Run the function under test, save results to the baseline MAT file.
+4. **Run tests** — Execute the test file to confirm actual values match baselines.
+
+```matlab
+properties (TestParameter)
+    result = matlabtest.parameters.matfileBaseline( ...
+        "baselines/output.mat", VariableName="result")
+end
+
+methods (Test)
+    function testOutput(testCase, result)
+        actual = myFunction(inputData);
+        testCase.verifyEqualsBaseline(actual, result);
+    end
+end
+```
+
+**Never use `verifyEqual` with hardcoded or manually-computed expected values for baseline/regression/gold-file tests.** Always use `matfileBaseline` + `verifyEqualsBaseline` — even when tolerance is needed (pass `AbsTol`/`RelTol` to `verifyEqualsBaseline`).
+
+Store baselines in `baselines/` relative to the test file. For detailed patterns, multiple-variable consolidation, and baseline generation, see [references/baseline-tests-guidance.md](references/baseline-tests-guidance.md).
+
 ## References
 
 Load these on demand — most tests only need what's in this file.
 
 | Load when... | Reference |
 |---|---|
-| Tests need setup/teardown, temp dirs, path management, shared state | [reference/fixtures-guidance.md](reference/fixtures-guidance.md) |
-| Floating-point tolerance selection, constraint objects, custom constraints | [reference/constraints-guidance.md](reference/constraints-guidance.md) |
-| Multiple parameters, dynamic parameters, combination strategies | [reference/parameterized-tests-guidance.md](reference/parameterized-tests-guidance.md) |
-| Code depends on external services, needs mock objects or dependency injection | [reference/mocking-guidance.md](reference/mocking-guidance.md) |
-| Running tests in CI, buildtool config, coverage gap analysis | [reference/test-execution-guidance.md](reference/test-execution-guidance.md) |
-| Testing App Designer apps with gestures, dialogs, async callbacks | [reference/app-testing-guidance.md](reference/app-testing-guidance.md) |
+| Tests need setup/teardown, temp dirs, path management, shared state | [references/fixtures-guidance.md](references/fixtures-guidance.md) |
+| Floating-point tolerance selection, constraint objects, custom constraints | [references/constraints-guidance.md](references/constraints-guidance.md) |
+| Multiple parameters, dynamic parameters, combination strategies | [references/parameterized-tests-guidance.md](references/parameterized-tests-guidance.md) |
+| Code depends on external services, needs mock objects or dependency injection | [references/mocking-guidance.md](references/mocking-guidance.md) |
+| Testing App Designer apps with gestures, dialogs, async callbacks | [references/app-testing-guidance.md](references/app-testing-guidance.md) |
+| Baseline/regression tests against stored reference data, golden file tests | [references/baseline-tests-guidance.md](references/baseline-tests-guidance.md) |
 
 ## Conventions
 
@@ -266,6 +267,7 @@ Load these on demand — most tests only need what's in this file.
 - No logic in test methods — follow Arrange-Act-Assert
 - Use `addTeardown` for cleanup — it runs even if the test fails
 - Use struct-based `TestParameter` for readable parameterized test names
+- Prefer: parameterized error testing over repeated methods when multiple inputs trigger the same verifyError pattern
 - Keep test methods focused — test one behavior per method
 - Tests must be independent and compatible with parallel execution
 - Run tests via the `run_matlab_test_file` MCP tool for automatic result capture
@@ -275,4 +277,3 @@ Load these on demand — most tests only need what's in this file.
 Copyright 2026 The MathWorks, Inc.
 
 ----
-

@@ -18,11 +18,11 @@ Advanced verification techniques, tolerances, and custom constraints. For basic 
 
 ## Diagnostic Messages
 
-Add diagnostics when the failure cause wouldn't be obvious:
+Add diagnostics that describe what the assertion is checking — they should be meaningful regardless of whether the test passes or fails:
 
 ```matlab
-testCase.verifyEqual(result, expected, ...
-    sprintf('Failed for input=%d', input));
+testCase.verifyEqual(result, [1 2 3 4 5], ...
+    "Output must be in ascending order.")
 ```
 
 ## Constraint Objects

@@ -1,0 +1,16 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines.
+matlab-release: ">=R2021a"
+toolkit: matlab-agentic-toolkit
+required-products: []
+optional-products:
+  - MATLAB Test
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_test_file
+required-skills: []
+
+# Copyright 2026 The MathWorks, Inc.

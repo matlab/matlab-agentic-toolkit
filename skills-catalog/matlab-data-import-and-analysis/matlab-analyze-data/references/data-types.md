@@ -4,6 +4,14 @@
 
 MATLAB also provides `dictionary`, `enumeration`, and other container types not covered in detail here. This skill focuses on the types most commonly encountered in tabular data analysis.
 
+## Quick Reference: Modern vs Legacy Types
+
+| Instead of | Use | Why |
+|---|---|---|
+| `datenum`, `datestr` | `datetime` | Proper arithmetic, timezone support |
+| `char`, `cellstr`, `strcmp` | `string`, `==`/`matches` | `==` for scalar, `matches` for vector comparison |
+| Numeric codes or strings with few unique values | `categorical` | Self-documenting, works with grouping functions, memory-efficient |
+
 ## Use `datetime` not serial date numbers
 ```matlab
 dt = datetime("2024-01-15");
@@ -20,6 +28,53 @@ dn2 = now;
 dateString = datestr(dn,"yyyy-mm-dd");
 elapsed = dn2 - dn;  % The unit of this is not clear!
 ```
+
+### Effective use of the `datetime` constructor
+
+**Set `InputFormat`, `TimeZone`, and `Format` as name-value arguments on the single
+`datetime(...)` call — never as follow-up `dt.TimeZone = ...` / `dt.Format = ...` assignments.**
+The property names match the argument names, so build the value fully in one statement:
+
+```matlab
+offsets = ["2024-03-15T09:30:00-05:00" "2024-03-15T14:00:00+00:00"];
+
+% One call — parse, set the zone, and set the display format together
+dt = datetime(offsets, ...
+    InputFormat="yyyy-MM-dd'T'HH:mm:ssZZZZZ", ...
+    TimeZone="America/Los_Angeles", ...
+    Format="yyyy-MM-dd HH:mm:ss zzz");
+
+% Avoid: parse, then mutate in separate statements
+dt = datetime(offsets,InputFormat="yyyy-MM-dd'T'HH:mm:ssZZZZZ");
+dt.TimeZone = "America/Los_Angeles";
+dt.Format = "yyyy-MM-dd HH:mm:ss zzz";
+```
+
+Use a follow-up `.TimeZone` / `.Format` assignment only to restamp a datetime you did not just
+construct.
+
+**Convert text timestamps with `InputFormat`, not manual/regex parsing.** For any text-to-datetime
+conversion, write an `InputFormat` that matches the pattern in the data. Any literal characters
+(marker letters, custom separators) can be escaped inside single quotes:
+
+```matlab
+% Custom "2024_day100" day-of-year format — the literal word "day" contains letters that
+% collide with format tokens, so quote it; DDD then parses the day-of-year number
+labels = ["2024_day100" "2024_day200" "2024_day365"];
+dt = datetime(labels,InputFormat="uuuu_'day'DDD",Format="uuuu-MM-dd");
+
+% Doubled slashes as literal separators
+dates = ["15//03//2024" "16//03//2024"];
+dt = datetime(dates,InputFormat="dd//MM//yyyy");
+```
+
+Look up the correct format tokens with `doc datetime.Format` — common ones: `yyyy`/`uuuu` (year),
+`MM` (month number) vs `MMM`/`MMMM` (month name), `dd` (day), `DDD` (day of year), `HH` (24-hour)
+vs `hh` (12-hour), `mm` (minute), `ss` (second), `QQQ` (quarter), `ZZZZZ` (offset like `-05:00`),
+`zzz` (zone abbreviation).
+
+Manual text/regex parsing is only justified when (a) the data uses a token `datetime` does not
+support, or (b) an `InputFormat` call errors or returns `NaT` on the real values.
 
 ### Extract datetime components
 

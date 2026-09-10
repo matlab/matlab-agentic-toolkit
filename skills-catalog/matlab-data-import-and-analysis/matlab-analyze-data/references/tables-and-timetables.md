@@ -60,6 +60,30 @@ T.Operator = ["Alice"; "Bob"; "Alice"; "Carol"];
 T.EquipmentID = ["EQ-01"; "EQ-02"; "EQ-01"; "EQ-03"];
 ```
 
+## Prefer `DataVariables`/`vartype` over column-by-column loops
+
+**It is rarely better to use a `for` loop to iterate over table variables.** MATLAB's table functions operate on multiple variables at once via `DataVariables` and `vartype` — prefer these over column-by-column loops:
+
+```matlab
+% Recommended: operate on multiple variables at once
+T = fillmissing(T,"linear", DataVariables=vartype("numeric"));
+T = normalize(T, DataVariables=vartype("numeric"));
+T = smoothdata(T,"movmean",5, DataVariables=["Sensor1" "Sensor2" "Sensor3"]);
+
+% Recommended: chain multiple preprocessing steps — each call handles all target variables
+vars = ["Temp" "Pressure" "Flow" "Vibration"];
+T = fillmissing(T,"linear", DataVariables=vars);
+T = filloutliers(T,"linear","movmedian",25, DataVariables=vars);
+T = smoothdata(T,"movmean",5, DataVariables=vars);
+
+% Avoid: wrapping a multi-step pipeline in a loop over variables
+for v = vars
+    T.(v) = fillmissing(T.(v),"linear");
+    T.(v) = filloutliers(T.(v),"linear","movmedian",25);
+    T.(v) = smoothdata(T.(v),"movmean",5);
+end
+```
+
 ## Use `vartype` for type-based selection
 ```matlab
 % Select by type
@@ -180,6 +204,18 @@ See also [smoothing-and-trends.md](smoothing-and-trends.md) and [data-cleaning.m
 ## `ReplaceValues` for non-destructive operations
 
 Many preprocessing functions overwrite table/timetable variables by default. Set `ReplaceValues=false` to append results as new variables instead (e.g., `"Value_filled"`, `"Temp_smoothed"`). See [data-transformation.md](data-transformation.md) for the full list of supporting functions and examples.
+
+## Construct timetables from a sample rate or time step
+
+When data is uniformly sampled, use `SampleRate` or `TimeStep` instead of constructing an explicit time vector. The timetable stores only the step and start time — row times are computed on demand, using less memory:
+
+```matlab
+% From sample rate (Hz) — row times are durations starting at 0
+TT = timetable(sensorData, SampleRate=1000);
+
+% From time step + absolute start time — row times are datetimes
+TT = timetable(sensorData, TimeStep=seconds(0.001), StartTime=datetime(2024,1,1));
+```
 
 ## Timetable row times dimension name
 
@@ -333,7 +369,32 @@ TT = syncevents(TT,EventDataVariables="EventLabels");
 
 ## Pass tables directly to math and chart functions when supported
 
-Many math operations (`sin`, `std`, `sum`) and chart functions (`plot`, `stackedplot`, `scatter`) accept tables directly — this preserves variable names as labels. Use `sin(T(:,vars))` not `sin(T{:,:})`. Only extract to array for functions that require it (e.g., `eig`, `svd`).
+Many math operations (`sin`, `cos`, `abs`, `log`, `exp`, `mean`, `std`, `sum`, `min`, `max`) and chart functions (`plot`, `stackedplot`, `scatter`) accept tables directly — this preserves variable names as labels and is faster than indirect alternatives. **Pass the table directly to the math function** — use `mean(T(:,vars))` or `std(T)`, not `varfun(@mean,T)` or `T{:,:}` extraction. Only extract to array for functions that truly require it (e.g., `eig`, `svd`).
+
+```matlab
+% Recommended: pass table directly to math functions
+m = mean(T(:,vartype("numeric")));
+s = std(T(:,["Height" "Weight"]));
+
+% Avoid: varfun wrapping (slower, less readable, same result)
+m = varfun(@mean, T, InputVariables=vartype("numeric"));
+
+% Avoid: extracting to array (loses variable names and metadata)
+m = mean(T{:,vartype("numeric")});
+```
+
+```matlab
+% Recommended: keep data in the timetable throughout preprocessing
+TT = fillmissing(TT,"linear", DataVariables=vartype("numeric"));
+TT = smoothdata(TT,"movmean",25, DataVariables=vartype("numeric"));
+TT = detrend(TT, DataVariables=vartype("numeric"));
+
+% Avoid: extracting to array up front, then processing on the array
+data = TT{:,vartype("numeric")};      % loses variable names, time info
+data = fillmissing(data,"linear");
+data = smoothdata(data,"movmean",25);
+data = detrend(data);
+```
 
 ## Use `table2array` when you need a numeric array
 ```matlab

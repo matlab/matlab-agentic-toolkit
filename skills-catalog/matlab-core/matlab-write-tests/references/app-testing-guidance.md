@@ -5,9 +5,9 @@ Test MATLAB App Designer applications programmatically using `matlab.uitest.Test
 ## Workflow
 
 1. **Inspect the app** — Read the app class to identify components, callbacks, and testable behavior
-2. **Design test cases** — Map each user workflow to a test method: setup state, perform gestures, verify outcome
-3. **Create the test class** — Inherit from `matlab.uitest.TestCase`, launch the app in `TestMethodSetup`, close in `TestMethodTeardown`
-4. **Write gesture sequences** — Use `press`, `choose`, `type`, `drag` to simulate user actions
+2. **Design test cases** — Map each user workflow to a test method (arrange state, perform gestures, verify outcome)
+3. **Create the test class** — Inherit from `matlab.uitest.TestCase`, launch the app in `TestMethodSetup` with `addTeardown` for cleanup
+4. **Write gesture sequences** — Simulate user actions using `matlab.uitest.TestCase` gesture methods (see Key Functions below)
 5. **Verify outcomes** — Assert on component values, visibility, plot data, table contents, or app properties
 6. **Run and iterate** — Execute via `run_matlab_test_file`, fix failures, add edge cases
 
@@ -23,7 +23,8 @@ Test MATLAB App Designer applications programmatically using `matlab.uitest.Test
 | Gesture — hover | `hover(tc, comp)`, `hover(tc, comp, location)` — axes, figures |
 | Gesture — scroll | `scroll(tc, comp, direction)` — axes, figures (R2024a+) |
 | Context menus | `chooseContextMenu(tc, comp, menuItem)` — right-click menus (R2020b+) |
-| Dialogs | `dismissDialog(tc, dialogType, fig)`, `chooseDialog(tc, dialogType, fig, option)` (R2024b+) |
+| Dialog — dismiss | `dismissDialog(tc, dialogType, fig)` — close alert dialogs (R2024b+) |
+| Dialog — choose | `chooseDialog(tc, dialogType, fig, option)` — select dialog option (R2024b+) |
 | Figure unlock | `matlab.uitest.unlock(fig)` — unlock figure for manual interaction after test |
 | Interactive use | `matlab.uitest.TestCase.forInteractiveUse` — ad-hoc testing at command window |
 
@@ -31,11 +32,10 @@ Test MATLAB App Designer applications programmatically using `matlab.uitest.Test
 
 ### Test Class Structure
 
-Every app test class follows this pattern: launch the app fresh for each test, interact via gestures, verify, then close.
+Every app test class follows this pattern: store the app in a property, launch in `TestMethodSetup` with `addTeardown` for cleanup, interact via gestures in test methods. The app name (`MyApp`), component names (`RunButton`, `StatusLabel`), and expected values (`'Ready'`) in the example below are example-specific — substitute with the actual app under test.
 
 ```matlab
-classdef tMyApp < matlab.uitest.TestCase
-    %tMyApp Programmatic tests for MyApp.
+classdef MyAppTest < matlab.uitest.TestCase
 
     properties (Access = private)
         App
@@ -44,13 +44,8 @@ classdef tMyApp < matlab.uitest.TestCase
     methods (TestMethodSetup)
         function launchApp(testCase)
             testCase.App = MyApp();
+            testCase.addTeardown(@delete, testCase.App);
             drawnow;
-        end
-    end
-
-    methods (TestMethodTeardown)
-        function closeApp(testCase)
-            delete(testCase.App);
         end
     end
 
@@ -76,15 +71,10 @@ The test needs handles to UI components. How you get them depends on the app arc
 app = MyApp();
 press(testCase, app.RunButton);
 
-% Pattern B: App uses private properties — add a test helper method
-%   In the app class, add:
-%   methods (Access = ?matlab.uitest.TestCase)
-%       function comp = getComponent(app, name)
-%           comp = app.(name);
-%       end
-%   end
-btn = getComponent(app, 'RunButton');
-press(testCase, btn);
+% Pattern B: If components are private, make them public for testability.
+% App Designer components should be accessible via public properties
+% so tests can interact with them directly. Avoid friend-class access
+% or testing private implementation details.
 
 % Pattern C: Find components by type/tag from the figure
 fig = app.UIFigure;
@@ -92,93 +82,19 @@ btns = findobj(fig, 'Type', 'uibutton', 'Text', 'Run');
 press(testCase, btns(1));
 ```
 
-### Gesture Quick Reference
+### Verifiable Component Properties
 
-```matlab
-% Button press
-press(testCase, app.RunButton);
-
-% Dropdown selection
-choose(testCase, app.MethodDropDown, "FFT");
-
-% Numeric edit field
-type(testCase, app.FrequencyField, 100);
-
-% Text edit field
-type(testCase, app.FileNameField, "data.csv");
-
-% Slider to specific value
-choose(testCase, app.GainSlider, 0.75);
-
-% Drag slider between values
-drag(testCase, app.GainSlider, 0.2, 0.8);
-
-% Tab selection
-choose(testCase, app.TabGroup, "Results");
-
-% Checkbox / toggle
-choose(testCase, app.NormalizeCheckBox);
-
-% State button (toggle)
-press(testCase, app.EnableStateButton);
-
-% Spinner increment
-press(testCase, app.OrderSpinner, 'up');
-
-% List box — single item
-choose(testCase, app.ChannelListBox, "Ch1");
-
-% List box — multiple items
-choose(testCase, app.ChannelListBox, {"Ch1", "Ch3"});
-
-% Table cell selection
-choose(testCase, app.DataTable, [2 3]);
-
-% Table cell editing
-type(testCase, app.DataTable, [2 3], 42);
-
-% Knob rotation
-choose(testCase, app.ModeKnob, "High");
-
-% Context menu
-chooseContextMenu(testCase, app.DataTable, app.DeleteMenuItem);
-
-% Hover on axes
-hover(testCase, app.UIAxes, [5.0 3.2]);
-
-% Scroll
-scroll(testCase, app.UIAxes, "up");
-```
-
-### Verifying Outputs
-
-```matlab
-% Component value
-testCase.verifyEqual(app.ResultField.Value, 42, 'AbsTol', 1e-10);
-
-% Component state
-testCase.verifyTrue(app.RunButton.Enable, 'Button should be enabled');
-testCase.verifyEqual(app.StatusLabel.Text, 'Complete');
-
-% Dropdown items updated
-testCase.verifyTrue(ismember("NewOption", app.MethodDropDown.Items));
-
-% Plot data verification
-lines = findobj(app.UIAxes, 'Type', 'Line');
-testCase.verifyNumElements(lines, 2, 'Expected 2 line series');
-testCase.verifyLength(lines(1).XData, 1000);
-
-% Table contents
-testCase.verifySize(app.ResultsTable.Data, [10 4]);
-testCase.verifyGreaterThan(app.ResultsTable.Data{1, "Score"}, 0);
-
-% Component visibility
-testCase.verifyEqual(app.AdvancedPanel.Visible, "on");
-
-% Image / heatmap presence
-images = findobj(app.UIAxes, 'Type', 'Image');
-testCase.verifyNumElements(images, 1);
-```
+| What to check | Access pattern |
+|---------------|---------------|
+| Field value | `app.EditField.Value` |
+| Label text | `app.Label.Text` |
+| Button/component enabled | `app.Button.Enable` |
+| Dropdown items | `app.DropDown.Items` |
+| Dropdown selection | `app.DropDown.Value` |
+| Table data | `app.Table.Data` |
+| Panel visibility | `app.Panel.Visible` |
+| Plot line data | `findobj(app.UIAxes, 'Type', 'Line')` → `.XData`, `.YData` |
+| Image presence | `findobj(app.UIAxes, 'Type', 'Image')` |
 
 ### Dialog Handling (R2024b+)
 
@@ -223,31 +139,6 @@ function testAsyncAnalysis(testCase)
 end
 ```
 
-### Parameterized App Tests
-
-```matlab
-classdef tAnalysisApp < matlab.uitest.TestCase
-    properties (TestParameter)
-        method = {"FFT", "Welch", "Periodogram"}
-    end
-
-    methods (Test)
-        function testMethodProducesOutput(testCase, method)
-            app = MyApp();
-            testCase.addTeardown(@delete, app);
-            drawnow;
-
-            choose(testCase, app.MethodDropDown, method);
-            press(testCase, app.RunButton);
-
-            lines = findobj(app.UIAxes, 'Type', 'Line');
-            testCase.verifyNotEmpty(lines, ...
-                sprintf('Method "%s" should produce a plot', method));
-        end
-    end
-end
-```
-
 ## Type-Matching Pitfalls
 
 UI component properties do not always return the types you expect. These mismatches cause `verifyEqual` failures:
@@ -276,16 +167,11 @@ testCase.verifyEqual(app.RunButton.Enable, testCase.ON);
 - Figures **must be visible** — never set `'Visible', 'off'` on the test figure
 - Call `drawnow` after app creation and before the first gesture
 - Launch a **fresh app per test** in `TestMethodSetup` to avoid cross-test contamination
-- Delete the app in `TestMethodTeardown` to prevent figure accumulation
-- Use `testCase.addTeardown(@delete, app)` as an alternative to explicit teardown
+- Use `testCase.addTeardown(@delete, app)` immediately after launching the app to ensure cleanup even if the test fails. Prefer this over a separate `TestMethodTeardown` block
 - Access components via public properties; use `findobj` as a fallback for private components
 - Compare label `.Text` with **char** (`'text'`), not string (`"text"`)
 - Compare `.Enable` with `matlab.lang.OnOffSwitchState.on`/`.off`, not `'on'`/`'off'`
-- Use `'AbsTol'` with `verifyEqual` for all floating-point comparisons
-- Prefix test files with `t` and place in `test/` directory
 - For apps with long callbacks, poll with `pause`/`drawnow` and a timeout — never use a fixed `pause` alone
-- Test one behavior per method — keep tests focused and independent
-- Use parameterized tests to cover dropdown options and configuration combinations
 
 ----
 

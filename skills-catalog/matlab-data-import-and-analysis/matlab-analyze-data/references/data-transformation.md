@@ -3,10 +3,14 @@
 **Contents:** logical indexing, sortrows, topkrows, rowfun, varfun, convertvars, renamevars/movevars/addvars/removevars, splitvars/mergevars, discretize, normalize, clip/rescale, pivot/stack/unstack/rows2vars, join/innerjoin/outerjoin
 
 ## Use logical indexing for basic row filtering
+
+**Prefer `isbetween` over manual `>=` & `<=` for range checks.** It handles boundary semantics (open/closed intervals), works consistently across numeric, datetime, and duration types, and is less error-prone than compound expressions:
+
 ```matlab
-Thigh = T(T.Value > 100, :);
-TBob = T(T.Name == "Bob", :);
-Trecent = T(T.Date > datetime(2024,1,1), :);
+Thigh = T(T.Value > 100, :);                       % single bound — logical indexing
+TBob = T(T.Name == "Bob", :);                      % equality
+Trange = T(isbetween(T.Age,18,65),:);              % range filtering (two bounds)
+Trecent = T(T.Date > datetime(2024,1,1), :);       % single bound — logical indexing
 ```
 
 **Exception**: Use `find` when you need the actual indices (e.g., for reporting positions).
@@ -73,9 +77,12 @@ end
 ```
 
 ## Use `varfun` for variable-wise operations
+
+**Note:** Many math functions (`mean`, `std`, `sum`, `min`, `max`, `log10`, `exp`, `sin`, `abs`, etc.) accept tables directly - prefer `std(T)` over `varfun(@std,T)` or `convertvars(T,vartype("numeric"),@log)`. See "Pass tables directly to math and chart functions when supported" in `tables-and-timetables.md`.
+
 ```matlab
-% Apply a function to each variable independently
-T2 = varfun(@mean, T, InputVariables=vartype("numeric"));
+% Apply a custom function to each numeric variable independently
+T2 = varfun(@(x) (x - min(x)) ./ (max(x) - min(x)), T, InputVariables=vartype("numeric"));
 
 % Apply a custom function to specific variables
 T2 = varfun(@(x) x ./ max(x), T, InputVariables=["Score1" "Score2"]);

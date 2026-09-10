@@ -17,7 +17,8 @@ Create, debug, test, review, and manage MATLAB&reg; code and installations
 | `matlab-list-products` | Show all installed MATLAB products and support packages for a given MATLAB installation folder. |
 | `matlab-read-documentation` | Fetch and navigate MathWorks documentation specific for your MATLAB release to determine correct function syntax, complete workflows, and determine best practices for working in MATLAB and Simulink&reg; software. |
 | `matlab-review-code` | Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. |
-| `matlab-write-test` | Generate and run MATLAB unit tests using the matlab.unittest framework. |
+| `matlab-run-tests` | Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines. |
+| `matlab-write-tests` | Generate and structure MATLAB unit tests using class-based testing frameworks. |
 
 ### MATLAB App Building ([`matlab-app-building`](./matlab-app-building/))
 
@@ -94,6 +95,7 @@ Supports MATLAB, Simulink, Curve Fitting Toolbox&trade;, Deep Learning Toolbox&t
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
+| `matlab-analyze-reliability` | Fit life distributions and accelerated life models for reliability analysis. |
 | `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
 | `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
@@ -158,7 +160,9 @@ Supports MATLAB, Datafeed Toolbox&trade; and Spreadsheet Link&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Connect to Bloomberg&reg;, FRED&reg;, and Haver Analytics&reg; to retrieve financial and economic data using the Datafeed Toolbox. |
+| `matlab-access-datafeed` | Connect to Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, and LSEG&reg; Datastream to retrieve financial and economic data using the Datafeed Toolbox. |
+| `matlab-optimize-portfolio` | Formulate and solve mean-variance portfolio optimization problems. |
+| `matlab-price-instrument` | Price financial instruments using Monte Carlo, FFT, or interest-rate trees. |
 | `matlab-use-spreadsheet-link` | Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link. |
 
 ### Control Systems ([`control-systems`](./control-systems/))
@@ -206,8 +210,8 @@ Supports MATLAB, Parallel Computing Toolbox, and MATLAB Parallel Server&trade;
 |-------|---------------------------|
 | `matlab-diagnose-parfor` | Diagnose and fix parfor variable classification errors in MATLAB. |
 | `matlab-discover-clusters` | Discover parallel computing clusters and manage cluster profiles. |
-| `matlab-setup-gpu` | Detect and validate GPU availability for MATLAB GPU computing. |
 | `matlab-set-up-worker-state` | Set up worker environment and per-worker state for parallel pools. |
+| `matlab-setup-gpu` | Detect and validate GPU availability for MATLAB GPU computing. |
 | `matlab-use-thread-pool` | Speed up local parallel computing by using thread-based parallel pool. |
 
 ### Radar ([`radar`](./radar/))
@@ -217,6 +221,7 @@ Supports MATLAB, Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Rad
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Design, select, and analyze radar and sonar waveforms using the Phased Array System Toolbox. |
+| `matlab-design-radar` | Design, configure, and analyze radar systems in the Radar Designer app. |
 | `matlab-import-tracking-data` | Import raw tracking data (CSV, XLSX, TXT, or MATLAB tables) into objectDetection arrays and objectTrack arrays used by Sensor Fusion and Tracking Toolbox. |
 | `matlab-simulate-radar-detections` | Simulate statistical radar detections for surveillance and tracking radar scenarios. |
 

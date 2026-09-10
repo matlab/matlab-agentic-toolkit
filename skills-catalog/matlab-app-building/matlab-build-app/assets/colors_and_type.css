@@ -1,0 +1,428 @@
+/* =============================================================
+   Design System — CSS Custom Properties
+   Professional MATLAB App Styling
+   All colors, typography, spacing, shadow, and semantic tokens
+   ============================================================= */
+
+:root {
+
+  /* ─── FULL COLOR PALETTE ────────────────────────────────── */
+
+  /* Neutrals */
+  --c-white:     #FFFFFF;
+  --c-black:     #000000;
+  --c-gray-50:   #F5F5F5;
+  --c-gray-100:  #E6E6E6;
+  --c-gray-200:  #D9D9D9;
+  --c-gray-300:  #BFBFBF;
+  --c-gray-400:  #A6A6A6;
+  --c-gray-500:  #888888;
+  --c-gray-600:  #7D7D7D;
+  --c-gray-700:  #616161;
+  --c-gray-750:  #4C4C4C;
+  --c-gray-800:  #333333;
+  --c-gray-850:  #2A2A2A;
+  --c-gray-900:  #212121;
+  --c-gray-950:  #121212;
+
+  /* Blue */
+  --c-blue-100:  #F5FAFF;
+  --c-blue-150:  #C9E7FF;
+  --c-blue-200:  #B4DEFF;
+  --c-blue-300:  #83CAFF;
+  --c-blue-400:  #54B6FF;
+  --c-blue-500:  #268CDD;
+  --c-blue-550:  #1171BE;
+  --c-blue-600:  #1656A7;
+  --c-blue-700:  #104280;
+  --c-blue-800:  #0B2F5C;
+  --c-blue-900:  #00243E;
+
+  /* Brand Blues */
+  --c-brand-1:   #0076A8;
+  --c-brand-2:   #08609D;
+  --c-brand-3:   #004B87;
+  --c-brand-4:   #004073;
+
+  /* Cobalt */
+  --c-cobalt-100: #DEEFFF;
+  --c-cobalt-150: #DAECFF;
+  --c-cobalt-200: #CBE5FF;
+  --c-cobalt-300: #A3C8FF;
+  --c-cobalt-400: #7DA9FF;
+  --c-cobalt-500: #6582FD;
+  --c-cobalt-600: #0E00FF;
+  --c-cobalt-700: #0C02AF;
+  --c-cobalt-800: #08036F;
+  --c-cobalt-900: #141A33;
+
+  /* Aqua */
+  --c-aqua-100:  #DFFFFF;
+  --c-aqua-200:  #C4FFFF;
+  --c-aqua-300:  #6CF4FF;
+  --c-aqua-400:  #35D2FA;
+  --c-aqua-450:  #2FBEEF;
+  --c-aqua-500:  #00A9E0;
+  --c-aqua-550:  #2393BF;
+  --c-aqua-600:  #1776A5;
+  --c-aqua-700:  #245474;
+  --c-aqua-800:  #273D4F;
+  --c-aqua-900:  #232B33;
+
+  /* Teal */
+  --c-teal-100:  #F2FFFD;
+  --c-teal-200:  #D0F9F4;
+  --c-teal-300:  #74EBDA;
+  --c-teal-400:  #1FCFBE;
+  --c-teal-500:  #00A3A3;
+  --c-teal-600:  #027880;
+  --c-teal-700:  #02555C;
+  --c-teal-800:  #013A3E;
+  --c-teal-900:  #002121;
+
+  /* Green */
+  --c-green-100: #F5FFF2;
+  --c-green-200: #E5FADD;
+  --c-green-300: #CBFFBE;
+  --c-green-400: #94EF84;
+  --c-green-450: #49DB40;
+  --c-green-500: #3AC831;
+  --c-green-550: #3BAA32;
+  --c-green-600: #008013;
+  --c-green-700: #02580E;
+  --c-green-800: #013E0A;
+  --c-green-900: #062C04;
+
+  /* Yellow */
+  --c-yellow-100: #F3EFE5;
+  --c-yellow-200: #FFF5BC;
+  --c-yellow-300: #FFEF91;
+  --c-yellow-400: #FFE864;
+  --c-yellow-500: #FFD60A;
+  --c-yellow-550: #C6A814;
+  --c-yellow-600: #8B6606;
+  --c-yellow-700: #674C06;
+  --c-yellow-800: #453304;
+  --c-yellow-900: #261B00;
+
+  /* Gold */
+  --c-gold-100:  #FFF9EF;
+  --c-gold-150:  #FFEBB7;
+  --c-gold-200:  #FFDB9A;
+  --c-gold-300:  #FEC04C;
+  --c-gold-400:  #EDB120;
+  --c-gold-500:  #B3882A;
+  --c-gold-600:  #745A26;
+  --c-gold-700:  #634D20;
+  --c-gold-800:  #4A3A19;
+  --c-gold-900:  #332916;
+
+  /* Honey */
+  --c-honey-100: #FFF4E0;
+  --c-honey-150: #FFEAC6;
+  --c-honey-200: #FFD997;
+  --c-honey-300: #FFB942;
+  --c-honey-400: #FFA100;
+  --c-honey-500: #E38B0F;
+  --c-honey-550: #B36205;
+  --c-honey-600: #9C5F23;
+  --c-honey-700: #724824;
+  --c-honey-750: #653C1A;
+  --c-honey-800: #472F1E;
+  --c-honey-900: #291B11;
+
+  /* Brown */
+  --c-brown-100: #F5EDE9;
+  --c-brown-150: #FBE7D8;
+  --c-brown-200: #F3D3BC;
+  --c-brown-300: #E9B490;
+  --c-brown-400: #DC996C;
+  --c-brown-500: #CB845D;
+  --c-brown-600: #A0522C;
+  --c-brown-700: #7B3115;
+  --c-brown-800: #5F1B08;
+  --c-brown-850: #461B0F;
+  --c-brown-900: #26190E;
+
+  /* Orange */
+  --c-orange-100: #FEF9ED;
+  --c-orange-150: #FFD9B7;
+  --c-orange-200: #FFD19E;
+  --c-orange-300: #FFAB66;
+  --c-orange-400: #FE9043;
+  --c-orange-500: #F57729;
+  --c-orange-550: #DD5400;
+  --c-orange-600: #C04C0B;
+  --c-orange-700: #A24302;
+  --c-orange-800: #823400;
+  --c-orange-850: #663011;
+  --c-orange-900: #332002;
+
+  /* Red */
+  --c-red-100:   #FAF0F0;
+  --c-red-150:   #FFE1E0;
+  --c-red-200:   #FFCBCB;
+  --c-red-300:   #FF9D9A;
+  --c-red-400:   #FF7A74;
+  --c-red-500:   #FF453A;
+  --c-red-550:   #E11B14;
+  --c-red-600:   #B7312C;
+  --c-red-700:   #902622;
+  --c-red-800:   #610908;
+  --c-red-850:   #4D0100;
+  --c-red-900:   #330E0B;
+
+  /* Pink */
+  --c-pink-100:  #FBE5F3;
+  --c-pink-150:  #FFDBF2;
+  --c-pink-200:  #FECDED;
+  --c-pink-300:  #FCB1E3;
+  --c-pink-400:  #FA8AD4;
+  --c-pink-500:  #F267C5;
+  --c-pink-550:  #E951B8;
+  --c-pink-600:  #D1048B;
+  --c-pink-700:  #960064;
+  --c-pink-800:  #6E0149;
+  --c-pink-850:  #56014E;
+  --c-pink-900:  #330133;
+
+  /* Purple */
+  --c-purple-100: #FBF4FF;
+  --c-purple-150: #F3E3FF;
+  --c-purple-200: #EED7FF;
+  --c-purple-300: #E6BFFF;
+  --c-purple-400: #D694FF;
+  --c-purple-500: #C05CFB;
+  --c-purple-600: #A709F5;
+  --c-purple-700: #8516D1;
+  --c-purple-800: #5E2296;
+  --c-purple-850: #38115E;
+  --c-purple-900: #271232;
+
+  /* Storm */
+  --c-storm-100: #F1F3F8;
+  --c-storm-200: #D6DCE8;
+  --c-storm-300: #B5C1D8;
+  --c-storm-400: #93A1BF;
+  --c-storm-500: #7C89A6;
+  --c-storm-600: #64708C;
+  --c-storm-700: #57627C;
+  --c-storm-800: #36415B;
+  --c-storm-900: #1C1F28;
+
+  /* Graphics Colors */
+  --c-graphics-1: #0072BD;
+  --c-graphics-2: #D95319;
+  --c-graphics-3: #EDB120;
+  --c-graphics-4: #7E2F8E;
+  --c-graphics-5: #77AC30;
+  --c-graphics-6: #4DBEEE;
+  --c-graphics-7: #A2142F;
+  --c-graphics-8: #FFD60A;
+  --c-graphics-9: #6582FD;
+  --c-graphics-10: #FF453A;
+  --c-graphics-11: #00A3A3;
+  --c-graphics-12: #CB845D;
+
+  /* ─── SEMANTIC VARIABLES — LIGHT THEME ─────────────────── */
+
+  /* Text */
+  --color-text-primary:            var(--c-gray-900);      /* #212121 */
+  --color-text-secondary:          var(--c-gray-700);      /* #616161 */
+  --color-text-hyperlink:          var(--c-blue-550);      /* #1171BE */
+  --color-text-hyperlink-hover:    var(--c-blue-500);      /* #268CDD */
+  --color-text-hyperlink-visited:  var(--c-purple-700);    /* #8516D1 */
+  --color-text-live-editor-title:  var(--c-orange-600);    /* #C04C0B */
+  --color-text-disabled:           var(--c-gray-400);
+
+  /* Backgrounds */
+  --bg-primary:       var(--c-gray-50);       /* #F5F5F5 */
+  --bg-code:          var(--c-white);         /* #FFFFFF */
+  --bg-secondary:     var(--c-gray-100);      /* #E6E6E6 */
+  --bg-canvas:        var(--c-gray-50);
+
+  /* Borders */
+  --border-primary:           var(--c-gray-600);      /* #7D7D7D */
+  --border-secondary:         var(--c-gray-300);      /* #BFBFBF */
+
+  /* Selection */
+  --color-selection-primary:       var(--c-blue-600);      /* #1656A7 */
+  --color-selection-secondary:     var(--c-blue-500);      /* #268CDD */
+  --color-selection-tertiary:      var(--c-blue-200);      /* #B4DEFF */
+  --color-selection-list:          var(--c-gray-300);      /* #BFBFBF */
+
+  /* Highlights */
+  --color-highlight-primary:       var(--c-yellow-500);    /* #FFD60A */
+  --color-highlight-secondary:     var(--c-yellow-200);    /* #FFF5BC */
+
+  /* Alerts */
+  --color-alert-error:             var(--c-red-600);       /* #B7312C */
+  --color-alert-warning:           var(--c-honey-550);     /* #B36205 */
+  --color-alert-success:           var(--c-green-600);     /* #008013 */
+
+  /* Alert backgrounds (light) */
+  --color-alert-error-bg:          var(--c-red-100);
+  --color-alert-warning-bg:        var(--c-honey-100);
+  --color-alert-success-bg:        var(--c-green-100);
+
+  /* Code Syntax */
+  --color-syntax-default:          var(--c-gray-900);      /* #212121 */
+  --color-syntax-comment:          var(--c-green-600);     /* #008013 */
+  --color-syntax-keyword:          var(--c-cobalt-600);    /* #0E00FF */
+  --color-syntax-string:           var(--c-purple-600);    /* #A709F5 */
+  --color-syntax-error:            var(--c-red-600);       /* #B7312C */
+  --color-syntax-system-command:   var(--c-yellow-600);    /* #8B6606 */
+  --color-syntax-validation:       var(--c-brown-600);     /* #A0522C */
+  --color-syntax-shared-scope:     var(--c-teal-600);      /* #027880 */
+  --color-syntax-unterm-string:    var(--c-red-600);       /* #B7312C */
+  --color-syntax-autofix-bg:       var(--c-yellow-200);    /* #FFF5BC */
+
+  /* ─── TYPOGRAPHY ─────────────────────────────────────────── */
+
+  --font-sans:  'Source Sans 3', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --font-mono:  'Source Code Pro', Consolas, 'Courier New', monospace;
+
+  /* Scale */
+  --text-xs:    11px;
+  --text-sm:    12px;
+  --text-base:  13px;
+  --text-md:    14px;
+  --text-lg:    16px;
+  --text-xl:    18px;
+  --text-2xl:   20px;
+  --text-3xl:   24px;
+  --text-4xl:   28px;
+  --text-5xl:   36px;
+
+  /* Weights */
+  --fw-normal:  400;
+  --fw-semi:    600;
+  --fw-bold:    700;
+
+  /* Line heights */
+  --lh-tight:   1.2;
+  --lh-snug:    1.35;
+  --lh-normal:  1.5;
+  --lh-relaxed: 1.6;
+
+  /* ─── SPACING ─────────────────────────────────────────────── */
+
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ─── BORDER RADIUS ──────────────────────────────────────── */
+
+  --radius-none:   0px;
+  --radius-sm:     2px;
+  --radius-md:     4px;
+  --radius-lg:     6px;
+  --radius-pill:   100px;
+
+  /* ─── SHADOWS ─────────────────────────────────────────────── */
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.08);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md:  0 2px 8px rgba(0,0,0,0.14);
+  --shadow-lg:  0 4px 16px rgba(0,0,0,0.18);
+  --shadow-xl:  0 8px 32px rgba(0,0,0,0.22);
+
+  /* ─── COMPONENT TOKENS ───────────────────────────────────── */
+
+  /* Toolstrip */
+  --toolstrip-height:       36px;
+  --toolstrip-bg:           var(--c-gray-50);
+  --toolstrip-border:       var(--c-gray-300);
+  --toolstrip-item-hover:   var(--c-gray-100);
+  --toolstrip-item-active:  var(--c-gray-200);
+
+  /* Sidebar */
+  --sidebar-width:          240px;
+  --sidebar-bg:             var(--c-gray-50);
+  --sidebar-border:         var(--c-gray-300);
+
+  /* Input fields */
+  --input-bg:               var(--c-white);
+  --input-border:           var(--c-gray-600);
+  --input-border-focus:     var(--c-blue-550);
+  --input-border-error:     var(--c-red-600);
+  --input-radius:           var(--radius-sm);
+  --input-height:           28px;
+  --input-padding:          var(--space-1) var(--space-2);
+
+  /* Buttons */
+  --btn-radius:             var(--radius-sm);
+  --btn-height:             28px;
+  --btn-font-size:          var(--text-base);
+  --btn-padding:            0 var(--space-3);
+
+  /* Button — Primary */
+  --btn-primary-bg:         var(--c-brand-3);
+  --btn-primary-bg-hover:   var(--c-brand-2);
+  --btn-primary-bg-active:  var(--c-brand-4);
+  --btn-primary-text:       var(--c-white);
+  --btn-primary-border:     var(--c-brand-4);
+
+  /* Button — Secondary */
+  --btn-secondary-bg:       var(--c-white);
+  --btn-secondary-bg-hover: var(--c-gray-100);
+  --btn-secondary-text:     var(--c-gray-900);
+  --btn-secondary-border:   var(--c-gray-600);
+
+  /* Button — Destructive */
+  --btn-destructive-bg:     var(--c-red-600);
+  --btn-destructive-text:   var(--c-white);
+
+}
+
+/* ─── BASE ELEMENT STYLES ───────────────────────────────────── */
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: var(--fw-normal);
+  line-height: var(--lh-normal);
+  color: var(--color-text-primary);
+  background-color: var(--bg-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1 { font-size: var(--text-4xl); font-weight: var(--fw-bold);   line-height: var(--lh-tight); }
+h2 { font-size: var(--text-3xl); font-weight: var(--fw-bold);   line-height: var(--lh-tight); }
+h3 { font-size: var(--text-xl);  font-weight: var(--fw-semi);   line-height: var(--lh-snug);  }
+h4 { font-size: var(--text-lg);  font-weight: var(--fw-semi);   line-height: var(--lh-snug);  }
+h5 { font-size: var(--text-md);  font-weight: var(--fw-semi);   line-height: var(--lh-snug);  }
+h6 { font-size: var(--text-base);font-weight: var(--fw-semi);   line-height: var(--lh-snug);  }
+
+p  { font-size: var(--text-base); line-height: var(--lh-relaxed); margin-bottom: var(--space-4); }
+
+a  {
+  color: var(--color-text-hyperlink);
+  text-decoration: underline;
+}
+a:hover {
+  color: var(--color-text-hyperlink-hover);
+}
+a:visited {
+  color: var(--color-text-hyperlink-visited);
+}
+
+code, pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  background: var(--bg-code);
+}
+
+small {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Copyright 2026 The MathWorks, Inc. */

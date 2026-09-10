@@ -3,7 +3,7 @@ name: matlab-build-app
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "2.1"
+  version: "2.2"
 description: >
   Build MATLAB apps from requirements to working code. Asks discovery questions
   (or skips them when the path is known), recommends UIFigure or UIHTML
@@ -58,6 +58,7 @@ Use this skill when:
 - UIFigure app: MUST use `uigridlayout` for all structural layout — never `Position`-based sizing
 - UIHTML/web app: MUST use CSS Grid or Flexbox for chrome — no absolute positioning for structural panels
 - The chrome (header, sidebar, tabs, step indicator) MUST remain spatially stable
+- Background execution (any operation taking more than ~1 second) requires a class-structured app and MUST be read up first in `references/background-tasks.md` — do NOT hand-write `parfeval`/`backgroundPool`/`DataQueue` plumbing from memory. For an App Designer app (`.mlapp` or plain text) you MUST use the `addBackgroundTask` verb and NEVER hand-roll the infrastructure or reuse the standalone-programmatic manual wiring. For a standalone programmatic app, use the MVVM structure per that doc. A flat nested-function app that needs background work MUST escalate to one of these.
 - App Designer serialization: MUST read `references/app-designer/agent-guide-shared.md` (covers ownership models, editing discipline, property rules, quoting) plus the format-specific guide (`agent-guide-mlapp.md` or `agent-guide-plaintext.md`) before building. Those docs are the single source of truth; do not attempt to edit app files without reading them first.
 
 ## Workflow
@@ -159,6 +160,7 @@ This is a **serialization** question, not an architecture question. The app's st
 - **Interaction style:** Real-time feedback needed? → slight UIFigure lean
 - **Existing work:** Existing MATLAB UI code? → UIFigure. Existing web assets? → UIHTML
 - **Distribution:** May need to work outside MATLAB? → UIHTML
+- **Long computations:** Will any operation take more than a second? → use a background task (read `references/background-tasks.md`). Note this requires a class-structured app: App Designer serialization, or MVVM if standalone programmatic. Heavy, long, or one-shot work is ALWAYS a background task, never a timer; a timer fits only scheduled, cheap-per-tick work that must update the UI on the main thread (read `references/timers.md`).
 
 ## Path Decision Logic
 
@@ -300,6 +302,9 @@ After plan approval, read the relevant internal references to execute the build.
 | MVVM architecture (complex apps) | `references/uifigure/mvvm-guide.md` |
 | View binding patterns | `references/uifigure/mvvm-view-binding.md` |
 | ViewModel testing | `references/uifigure/mvvm-testing.md` |
+| Background execution — concepts + routing (read first) | `references/background-tasks.md` |
+| Background execution — standalone programmatic (MVVM) wiring | `references/uifigure/mvvm-background-tasks.md` |
+| Timers — periodic main-thread work (NOT for offloading heavy work) | `references/timers.md` |
 
 ### UIHTML Path
 
@@ -342,6 +347,8 @@ Both formats use the same `AppDesignerAgentInterface` API via the bundled `scrip
 | When building... | Read |
 |-----------------|------|
 | Verbs, build sequence, editing, `save()`/`validate()`/`finalize()`, `inspect()` | `references/app-designer/agent-guide-shared.md` |
+| Background execution — concepts + routing (read first) | `references/background-tasks.md` |
+| Background execution — `addBackgroundTask` verb reference | `references/app-designer/background-tasks.md` |
 
 **Plain-text (`.m` + `.xml`):**
 

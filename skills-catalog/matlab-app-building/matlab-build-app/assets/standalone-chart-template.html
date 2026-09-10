@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<!--
+  Standalone Chart.js Template
+  ============================
+  Self-contained multi-chart page: line trend, bar comparison, doughnut composition.
+  Uses CDN — works in standalone web apps opened directly in a browser.
+
+  For uihtml (UIHTML app):
+    1. Download chart.js locally: https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js
+    2. Place it in ./lib/chart.umd.min.js (same folder as your HTML)
+    3. Replace the <script src="https://cdn..."> below with <script src="./lib/chart.umd.min.js">
+    4. Add setup(htmlComponent) and wire DataChanged → renderCharts(data)
+    See: knowledge/guides/uihtml-bridge-integration.md
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart Template</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :root {
+      --bg:        #f5f5f5;
+      --surface:   #ffffff;
+      --text:      #1a1a1a;
+      --text-muted:#666666;
+      --border:    #e0e0e0;
+      --gap:       16px;
+      --radius:    8px;
+      --shadow:    0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      margin: 0;
+      padding: var(--gap);
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: var(--gap);
+    }
+
+    header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+
+    .filters {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .filter-group { display: flex; align-items: center; gap: 6px; }
+    .filter-group label { font-size: 13px; color: var(--text-muted); }
+    .filter-group select {
+      padding: 5px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 13px;
+      background: var(--surface);
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: var(--gap);
+      margin-bottom: var(--gap);
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .chart-card h3 {
+      margin: 0 0 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .chart-wrap { position: relative; height: 260px; }
+
+    .bar-row {
+      grid-column: 1 / -1;  /* span both columns */
+    }
+
+    @media (max-width: 640px) {
+      .chart-grid { grid-template-columns: 1fr; }
+      .bar-row { grid-column: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Chart Template</h1>
+    <div class="filters">
+      <div class="filter-group">
+        <label for="filterCategory">Category</label>
+        <select id="filterCategory" onchange="applyFilters()">
+          <option value="all">All</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Trend Over Time</h3>
+      <div class="chart-wrap"><canvas id="lineChart"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Composition</h3>
+      <div class="chart-wrap"><canvas id="donutChart"></canvas></div>
+    </div>
+
+    <div class="chart-card bar-row">
+      <h3>By Category</h3>
+      <div class="chart-wrap" style="height: 220px;"><canvas id="barChart"></canvas></div>
+    </div>
+  </div>
+
+  <script>
+    // ── Colors: MATLAB default colororder ──────────────────────────────────
+    const COLORS = ['#0072BD','#D95319','#EDB120','#7E2F8E','#77AC30','#4DBEEE','#A2142F'];
+
+    // ── Embedded data (replace with real data or wire to MATLAB bridge) ────
+    const RAW_DATA = [
+      { month: 'Jan', category: 'Alpha', value: 42 },
+      { month: 'Jan', category: 'Beta',  value: 31 },
+      { month: 'Jan', category: 'Gamma', value: 18 },
+      { month: 'Feb', category: 'Alpha', value: 55 },
+      { month: 'Feb', category: 'Beta',  value: 27 },
+      { month: 'Feb', category: 'Gamma', value: 24 },
+      { month: 'Mar', category: 'Alpha', value: 61 },
+      { month: 'Mar', category: 'Beta',  value: 44 },
+      { month: 'Mar', category: 'Gamma', value: 29 },
+      { month: 'Apr', category: 'Alpha', value: 50 },
+      { month: 'Apr', category: 'Beta',  value: 38 },
+      { month: 'Apr', category: 'Gamma', value: 33 },
+    ];
+
+    // ── Chart instances ────────────────────────────────────────────────────
+    let lineChartInst = null;
+    let donutChartInst = null;
+    let barChartInst = null;
+
+    // ── Value formatter ────────────────────────────────────────────────────
+    function fmt(v) {
+      if (v >= 1e6) return `${(v/1e6).toFixed(1)}M`;
+      if (v >= 1e3) return `${(v/1e3).toFixed(1)}K`;
+      return v.toLocaleString();
+    }
+
+    // ── Filter logic ───────────────────────────────────────────────────────
+    function applyFilters() {
+      const cat = document.getElementById('filterCategory').value;
+      const filtered = RAW_DATA.filter(row =>
+        cat === 'all' || row.category === cat
+      );
+      renderCharts(filtered);
+    }
+
+    function populateFilters() {
+      const categories = [...new Set(RAW_DATA.map(d => d.category))].sort();
+      const sel = document.getElementById('filterCategory');
+      categories.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = opt.textContent = c;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ── Aggregation helpers ────────────────────────────────────────────────
+    function aggregateByMonth(data) {
+      const map = {};
+      data.forEach(({ month, value }) => {
+        map[month] = (map[month] || 0) + value;
+      });
+      const months = [...new Set(RAW_DATA.map(d => d.month))]; // preserve order
+      return { labels: months, values: months.map(m => map[m] ?? 0) };
+    }
+
+    function aggregateByCategory(data) {
+      const map = {};
+      data.forEach(({ category, value }) => {
+        map[category] = (map[category] || 0) + value;
+      });
+      const labels = Object.keys(map).sort();
+      return { labels, values: labels.map(l => map[l]) };
+    }
+
+    // ── Chart renderers ────────────────────────────────────────────────────
+    function renderCharts(data) {
+      const { labels: monthLabels, values: monthValues } = aggregateByMonth(data);
+      const { labels: catLabels,   values: catValues   } = aggregateByCategory(data);
+
+      // Line chart ──────────────────────────────────────────────────────────
+      if (lineChartInst) {
+        lineChartInst.data.labels = monthLabels;
+        lineChartInst.data.datasets[0].data = monthValues;
+        lineChartInst.update('none');
+      } else {
+        lineChartInst = new Chart(document.getElementById('lineChart'), {
+          type: 'line',
+          data: {
+            labels: monthLabels,
+            datasets: [{
+              label: 'Total',
+              data: monthValues,
+              borderColor: COLORS[0],
+              backgroundColor: COLORS[0] + '20',
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 4,
+              pointHoverRadius: 7,
+              fill: true,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: ctx => fmt(ctx.parsed.y) } }
+            },
+            scales: {
+              x: { grid: { display: false } },
+              y: { beginAtZero: true, ticks: { callback: fmt } }
+            }
+          }
+        });
+      }
+
+      // Doughnut chart ──────────────────────────────────────────────────────
+      if (donutChartInst) {
+        donutChartInst.data.labels = catLabels;
+        donutChartInst.data.datasets[0].data = catValues;
+        donutChartInst.update('none');
+      } else {
+        donutChartInst = new Chart(document.getElementById('donutChart'), {
+          type: 'doughnut',
+          data: {
+            labels: catLabels,
+            datasets: [{
+              data: catValues,
+              backgroundColor: COLORS.map(c => c + 'CC'),
+              borderColor: '#ffffff',
+              borderWidth: 2,
+              hoverOffset: 6,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+              legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12 } },
+              tooltip: {
+                callbacks: {
+                  label: ctx => {
+                    const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                    const pct = ((ctx.parsed / total) * 100).toFixed(1);
+                    return `${ctx.label}: ${fmt(ctx.parsed)} (${pct}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+
+      // Bar chart ───────────────────────────────────────────────────────────
+      const isHorizontal = catLabels.length > 8;
+      if (barChartInst) {
+        barChartInst.data.labels = catLabels;
+        barChartInst.data.datasets[0].data = catValues;
+        barChartInst.update('none');
+      } else {
+        barChartInst = new Chart(document.getElementById('barChart'), {
+          type: 'bar',
+          data: {
+            labels: catLabels,
+            datasets: [{
+              label: 'Value',
+              data: catValues,
+              backgroundColor: COLORS.map(c => c + 'CC'),
+              borderColor: COLORS,
+              borderWidth: 1,
+              borderRadius: 4,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: isHorizontal ? 'y' : 'x',
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: ctx => fmt(ctx.parsed[isHorizontal ? 'x' : 'y']) } }
+            },
+            scales: {
+              x: { beginAtZero: true, grid: { display: isHorizontal } },
+              y: { beginAtZero: !isHorizontal, grid: { display: !isHorizontal } }
+            }
+          }
+        });
+      }
+    }
+
+    // ── Init ───────────────────────────────────────────────────────────────
+    populateFilters();
+    renderCharts(RAW_DATA);
+  </script>
+</body>
+</html>
+
+<!-- Copyright 2026 The MathWorks, Inc. -->

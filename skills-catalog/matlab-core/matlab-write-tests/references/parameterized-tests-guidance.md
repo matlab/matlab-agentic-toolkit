@@ -98,11 +98,9 @@ end
 
 methods (Static, TestParameterDefinition)
     function tolerance = getTolerance(precision)
-        if strcmp(precision, 'single')
-            tolerance = struct('loose', 1e-4, 'tight', 1e-6);
-        else
-            tolerance = struct('loose', 1e-10, 'tight', 1e-14);
-        end
+        toleranceMap.single = struct('loose', 1e-4, 'tight', 1e-6);
+        toleranceMap.double = struct('loose', 1e-10, 'tight', 1e-14);
+        tolerance = toleranceMap.(precision);
     end
 end
 ```

@@ -14,7 +14,27 @@ Strategies for systematic data exploration: understanding structure, identifying
 
 ## 1. First Look
 
-Start with structure and shape before any analysis:
+Start with structure and shape before any analysis. **Prefer wrapping exploration output with `jsonencode` — particularly for tables and structs.** The default displays are better for human readers, but it is easy for agents to misinterpret which values belong to which variables in plain-text table output. JSON gives unambiguous, structured results:
+
+```matlab
+jsonencode(summary(T))      % per-variable stats as nested struct
+jsonencode(head(T))         % first 8 rows as structured JSON
+```
+
+`summary` has two modes:
+- **Display mode** (no output captured): prints human-readable stats to the command window.
+- **Struct mode** (output captured or passed to a function, as in `jsonencode(summary(T))`): returns a struct whose field names are the variable names. Each field contains `Size`, `Type`, and `NumMissing`, plus type-specific statistics listed below.
+
+Default statistics by variable type:
+- **numeric, datetime, duration:** `Min`, `Median`, `Max`, `Mean`, `Std`
+- **categorical (ordinal):** `Min`, `Median`, `Max`, plus category counts
+- **categorical (non-ordinal):** category counts only
+- **logical:** true/false counts only
+- **string, calendarDuration, other:** `NumMissing` only (no additional stats)
+
+**This single call already provides variable names, types, dimensions, missing counts, and descriptive statistics — do not recompute these with `varfun(@class,...)`, `sum(ismissing(...))`, or similar.**
+
+For standalone scripts intended for human readers, leave the semicolon off to invoke the `display` method — it shows dimensions, variable names, and a truncated preview. Avoid `disp` (omits headers and prints every row, flooding output on large tables) and `fprintf` in a loop (verbose, old-style):
 
 ```matlab
 head(T)                         % first 8 rows - see what the data looks like
@@ -22,6 +42,7 @@ summary(T)                      % per-variable: type, stats, missing counts
 size(T)                         % [nRows, nVars]
 T.Properties.VariableNames      % variable names
 T.Properties.VariableTypes      % programmatic access to types
+T                               % dimensions + header + truncated preview
 ```
 
 `summary` is the single most informative exploration command: it shows the data type of every variable, descriptive statistics (min, median, max for numeric; counts for categorical), and missing value counts. For wide tables it is more useful than `head` since it shows every variable without truncation. From R2024b, use `Statistics`, `DataVariables`, and `Detail` name-value arguments to customize:
@@ -77,7 +98,7 @@ categories(T.Category)                      % list defined category names
 These are examples of common techniques, not an exhaustive list. Choose what is appropriate for the data and question — consider other approaches beyond these based on the dataset's characteristics:
 
 ```matlab
-% Correlation matrix for numeric variables (corrcoef is core MATLAB; corr requires Statistics Toolbox)
+% Pearson correlation (corrcoef is base MATLAB)
 % Use Rows="complete" to drop rows with any NaN (default propagates NaN)
 R = corrcoef(T{:,vartype("numeric")}, Rows="complete");
 
@@ -87,6 +108,8 @@ pivot(T, Rows="Department", Columns="Status", Method="count")
 % Group means - does a numeric variable differ across groups?
 groupsummary(T,"Region","mean","Revenue")
 ```
+
+For Kendall or Spearman rank correlation, use `corr` (requires Statistics and Machine Learning Toolbox) with the `Type` name-value argument.
 
 ## 5. Uniqueness and Cardinality
 

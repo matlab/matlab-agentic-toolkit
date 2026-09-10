@@ -64,9 +64,23 @@ G = groupsummary(T,"Region",@(loss,cust) sum(loss.*cust,"omitnan")/sum(cust,"omi
 
 **Pitfall:** Do not use `findgroups`+`accumarray` for aggregation when `groupsummary` can do the job — `groupsummary` is simpler, faster, and works directly with tables. Use `findgroups` alone only when you need group indices without aggregation (e.g., to assign a group ID column).
 
+**Variable name inputs must be string arrays, not cell arrays.** For grouping variables and data variables passed as names, use string arrays. Cell arrays have different semantics — they pass multiple variables together as separate inputs to a bivariate function handle:
+```matlab
+% Correct — string array for grouping and data variable names
+G = groupsummary(T,["Category" "Region"],"mean",["Sales" "Cost"]);
+
+% Cell array — different behavior: passes Sales and Cost together to bivariate function
+G = groupsummary(T,"Region",@(sales,cost) sum(sales.*cost,"omitnan")/sum(cost,"omitnan"), {"Sales","Cost"});
+```
+
+### Names of output variables
+
+Besides the grouping variables and the always-present `GroupCount` (which are never renamed), each computed statistic becomes its own output variable. By default its name combines the method and the input variable — the `sum_Loss`, `mean_Loss`, ... columns seen above. Named methods (`"mean"`, `"sum"`, ...) use the method name as the prefix; **function-handle** methods instead get a generic numbered prefix (`fun1_Loss`, `fun2_Loss`).
+
 ### On-the-fly binning
 
-`groupsummary` (and `groupcounts`, `groupfilter`, `grouptransform`) support binning rules as the grouping variable, so you don't need to create a binned column with `discretize` first:
+`groupsummary` (and `groupcounts`, `groupfilter`, `grouptransform`) support binning rules as the grouping variable, so you don't need to create a binned column with `discretize` first. **When binning is needed only for a single aggregation — not reused downstream — prefer on-the-fly bin methods to keep the source table free of intermediate columns.**
+
 ```matlab
 % Bin a numeric variable with custom edges
 G = groupsummary(T,"Age",[0 18 35 50 Inf],"mean","Income");
@@ -80,6 +94,9 @@ G = groupsummary(TT,"Time","month","mean","Temperature");      % Jan 2023, Feb 2
 % Time-based binning — cyclic (collapses across the higher unit to find patterns)
 G = groupsummary(TT,"Time","hourofday","mean","Temperature");  % 0-23
 G = groupsummary(TT,"Time","dayname","mean","Sales");          % "Monday", "Tuesday", ...
+
+% Multiple datetime bins at once (e.g., day-of-week × quarter pattern)
+G = groupsummary(TT,"Time",{"dayname","quarterofyear"},"mean","Loss");
 
 % Mix regular grouping and binning
 G = groupsummary(T,{"Region","Age"},{"none",[0 18 35 50 Inf]},"mean","Salary");
@@ -144,6 +161,16 @@ end
 ```
 
 The key distinction: when the function returns one logical per group, it filters entire groups. When it returns one logical per row, it filters individual rows within each group.
+
+**When the filter logic matches a built-in detection function (`isoutlier`, `ismissing`, `ischange`), use it inside the function handle rather than reimplementing the arithmetic.** Built-in functions handle edge cases (NaN, constant groups) and accept tuning parameters like `ThresholdFactor`:
+```matlab
+% Recommended: use built-in detection function
+T = groupfilter(T,"Category",@(x) ~isoutlier(x),"Value");
+T = groupfilter(T,"Category",@(x) ~isoutlier(x,"mean",ThresholdFactor=2),"Value");
+
+% Avoid: reimplementing the detection arithmetic manually
+T = groupfilter(T,"Category",@(x) abs(x - mean(x)) < 2*std(x),"Value");
+```
 
 ## Use `grouptransform` to transform data within each group
 
