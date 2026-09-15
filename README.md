@@ -1,5 +1,13 @@
 # MATLAB Agentic Toolkit
 
+<p align="center">
+  English •
+  <a href="l10n/README.es.md">Español</a> •
+  <a href="l10n/README.ja.md">日本語</a> •
+  <a href="l10n/README.ko.md">한국어</a> •
+  <a href="l10n/README.zh-cn.md">简体中文</a>
+</p>
+
 [![Latest Release](https://img.shields.io/github/v/release/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 [![Release Date](https://img.shields.io/github/release-date/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 

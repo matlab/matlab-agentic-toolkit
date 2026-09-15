@@ -1,5 +1,13 @@
 # Skills Catalog
 
+<p align="center">
+  English •
+  <a href="../l10n/skills-catalog/README.es.md">Español</a> •
+  <a href="../l10n/skills-catalog/README.ja.md">日本語</a> •
+  <a href="../l10n/skills-catalog/README.ko.md">한국어</a> •
+  <a href="../l10n/skills-catalog/README.zh-cn.md">简体中文</a>
+</p>
+
 The skills catalog organizes agent skills into groups. Each group contains one or more skill folders, each with a `SKILL.md` file and a `manifest.yaml` file. The `manifest.yaml` file contains metadata about the skill.
 
 ## Skills
