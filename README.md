@@ -11,7 +11,7 @@
 [![Latest Release](https://img.shields.io/github/v/release/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 [![Release Date](https://img.shields.io/github/release-date/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 
-The MATLAB&reg; Agentic Toolkit allows you to use AI agents with MATLAB by giving your AI agent the knowledge and context to work efficiently with MATLAB and its toolboxes. Use this toolkit to provide trusted MATLAB capabilities to your agent. This toolkit can prevent your AI coding agent from hallucinating toolbox functions, missing new features, and wasting time with extra steps that experienced MATLAB users would skip. 
+The MATLAB&reg; Agentic Toolkit allows you to use AI agents with MATLAB by giving your AI agent the knowledge and context to work efficiently with MATLAB and its toolboxes. Use this toolkit to provide proven MATLAB capabilities to your agent. This toolkit can prevent your AI coding agent from hallucinating toolbox functions, missing new features, and wasting time with extra steps that experienced MATLAB users would skip. 
 
 Use this toolkit to: 
 
@@ -92,13 +92,13 @@ After you install the MATLAB Agentic Toolkit, your agent can use MathWorks&reg; 
 
 | Skill Group | Description |
 |-------------|-------------|
-| [**MATLAB Core**](skills-catalog/README.md#matlab-core-matlab-core) | Create, debug, test, review, and manage MATLAB code and installations |
+| [**MATLAB Core**](skills-catalog/README.md#matlab-core-matlab-core) | Create, debug, review, and manage MATLAB code and installations |
 | [**MATLAB App Building**](skills-catalog/README.md#matlab-app-building-matlab-app-building) | Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration |
 | [**MATLAB Data Import and Analysis**](skills-catalog/README.md#matlab-data-import-and-analysis-matlab-data-import-and-analysis) | Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations |
 | [**MATLAB Environment and Settings**](skills-catalog/README.md#matlab-environment-and-settings-matlab-environment-and-settings) | Diff MATLAB settings between releases and migrate startup scripts to correct setting paths |
 | [**MATLAB External Language Interfaces**](skills-catalog/README.md#matlab-external-language-interfaces-matlab-external-language-interfaces) | Call Python&reg; libraries from MATLAB and upgrade MEX files to the interleaved complex API |
 | [**MATLAB Programming**](skills-catalog/README.md#matlab-programming-matlab-programming) | Write robust MATLAB functions with validated inputs |
-| [**MATLAB Software Development**](skills-catalog/README.md#matlab-software-development-matlab-software-development) | Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans |
+| [**MATLAB Software Development**](skills-catalog/README.md#matlab-software-development-matlab-software-development) | Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans |
 
 #### Toolbox Skills
 

@@ -4,7 +4,7 @@ description: "Read BEFORE writing any code that adds Additive White Gaussian Noi
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # AWGN & SNR Management
@@ -133,6 +133,27 @@ rxFaded = chan(txSig);
 rxNoisy = awgn(rxFaded, snr, avgGaindB);  % account for channel gain
 ```
 
+### Channel output normalization in OFDM (5G / WLAN)
+
+5G channels (`nrTDLChannel`, `nrCDLChannel`), WLAN channels (`wlanTGnChannel`, `wlanTGacChannel`, etc.), and the Communications Toolbox `comm.MIMOChannel` and `comm.RayTracingChannel` have a `NormalizeChannelOutputs` property (default: `true`) that divides the channel output power by the number of receive antennas. Other Communications Toolbox channels (`comm.RayleighChannel`, `comm.RicianChannel`) do not have this property.
+
+When `NormalizeChannelOutputs=true`, the analytical OFDM signal power must account for the `nRxAnts` scaling:
+
+```matlab
+% Base OFDM signal power
+sigPow = 10*log10(numAvailableSC / nfft^2);
+
+% Adjust for NormalizeChannelOutputs=true (5G/WLAN channels)
+sigPow = sigPow - 10*log10(nRxAnts);
+
+% Additionally adjust for NormalizePathGains=false (if applicable)
+sigPow = sigPow + avgGaindB;
+```
+
+Both properties default to `true` for 5G/WLAN channels, so the common case only requires the `nRxAnts` correction. If `NormalizePathGains` is also set to `false`, apply both adjustments.
+
+If `NormalizeChannelOutputs=false`, no `nRxAnts` correction is needed — use the base formula.
+
 ### Noise variance is total, not per-component
 
 The second output of `awgn` is the total noise variance. For complex signals, the per-component (I or Q) variance is half this value:
@@ -220,17 +241,9 @@ rxNoisy = awgn(rxWaveform, snrWb, sigPow);
 
 `numAvailableSC` is the number of subcarriers excluding guard bands and any DC null — i.e., the subcarriers available for data, reference signals, and control. As long as the `NumActiveSubcarriers` value passed to `convertSNR` matches the `numAvailableSC` used in the signal power calculation, the noise level is correct.
 
-**Only if the number of active subcarriers is not known or not specified**, use the shortcut below. When guard bands, DC nulls, or subcarrier counts ARE given, always use the `convertSNR` path above with explicit `NumActiveSubcarriers`.
-
-If `numAvailableSC` subcarriers each carry unit power, the average time-domain signal power is `numAvailableSC / nfft^2` (in watts). The wideband SNR conversion divides by `nfft/numAvailableSC`, so `numAvailableSC` cancels algebraically, leaving:
-
-```matlab
-rxNoisy = awgn(rxWaveform, snrPerSC_dB, -10*log10(double(nfft)));
-```
-
-These formulas assume unit-power subcarrier symbols (e.g., `qammod(..., UnitAveragePower=true)`). If the modulator uses default constellation scaling, replace `numAvailableSC / nfft^2` with `numAvailableSC * meanSymbolPower / nfft^2`, where `meanSymbolPower = mean(abs(symbols).^2)`.
-
 Do NOT compute received waveform power — that gives wideband SNR, not per-subcarrier SNR.
+
+**For 5G workflows** (`nrTDLChannel`/`nrCDLChannel`, `nrOFDMModulate`), add noise using the `N0`/`randn` form as in the shipped 5G examples — see [references/5g-link-noise.md](references/5g-link-noise.md), which covers the form, the `awgn` equivalent, the frequency-domain noise variance for the receiver (`nrEqualizeMMSE`, `nrPDSCHDecode`), the `NormalizeChannelOutputs=false` case, and non-unit-power scaling.
 
 ### Capture noise variance for soft-decision demodulation
 
@@ -248,6 +261,8 @@ softBits = qamdemod(rxSig, M, UnitAveragePower=true, ...
     NoiseVariance=noiseVar);
 ```
 
+**OFDM note:** When noise is added to the time-domain waveform (after `ofdmmod`) and demodulation is performed in the frequency domain (after `ofdmdemod`), the FFT scales the noise variance by `nfft`. Pass `noiseVar * nfft` to the demodulator's `NoiseVariance` parameter — not the time-domain `noiseVar` returned by `awgn`.
+
 ## After Adding Noise
 
 - **Validate against theory** — Compare simulated BER to theoretical BER using `berawgn`. See [references/snr-conversion-guide.md](references/snr-conversion-guide.md).
@@ -260,5 +275,6 @@ softBits = qamdemod(rxSig, M, UnitAveragePower=true, ...
 | Load when... | Reference |
 |---|---|
 | Need theoretical BER curves, conversion formulas, `berawgn` usage, or common system examples | [references/snr-conversion-guide.md](references/snr-conversion-guide.md) |
+| Adding noise to a 5G waveform, or need the noise variance for the 5G receiver (`nrEqualizeMMSE`, `nrPDSCHDecode`) | [references/5g-link-noise.md](references/5g-link-noise.md) |
 
 Copyright 2026 The MathWorks, Inc.

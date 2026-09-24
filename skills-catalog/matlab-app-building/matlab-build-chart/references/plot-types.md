@@ -1,97 +1,74 @@
-# Common Plot Types
+ # Common Plot Types
 
-Always pass `ax` as the first argument. For uiaxes differences from traditional axes, see `references/axes-config.md`.
+For uiaxes differences from traditional axes, see `references/axes-config.md`.
 
-## Line Plot
+## General Rules
 
-```matlab
-p = plot(ax, x, y, 'LineWidth', 1.5);
-p.Color = [0.2 0.4 0.8];
-p.LineStyle = '--';
-p.Marker = 'o';
-p.MarkerSize = 6;
-p.MarkerFaceColor = 'auto';
-p.MarkerIndices = 1:10:length(x);  % markers at every 10th point
-p.DisplayName = 'Signal A';        % legend label
-```
+1. **Axes first:** Always pass `ax` as the first argument to any plotting function.
+2. **Store the handle:** Assign the output to a variable (e.g., `p = plot(ax, ...)`).
+3. **Do not hard-code colors.** Hard-coded RGB values bypass the theming system. To change colors, use `colororder(ax, newColors)`. To match colors across charts, set their `SeriesIndex` to the same value.
+4. **Multiple series:** Prefer matrix or table syntax over `hold on` — many charting functions accept a matrix (columns = series) or table input directly, producing more concise code.
+5. **Legend:** Use `legend(ax, 'Series 1', 'Series 2')` with explicit labels. Do not use `legend('show')` or `legend('on')` — these are outdated syntaxes.
 
-**Multiple series:**
-```matlab
-hold(ax, 'on');
-p1 = plot(ax, x, y1, 'DisplayName', 'Series 1');
-p2 = plot(ax, x, y2, 'DisplayName', 'Series 2');
-hold(ax, 'off');
-legend(ax, 'show');
-```
+## Type-Specific Notes
 
-## Scatter Plot
+### Line
 
-```matlab
-s = scatter(ax, x, y, 36, colorVector);  % size=36, color by data
-s.MarkerFaceColor = 'flat';              % fill with CData colors
-s.MarkerFaceAlpha = 0.6;                 % transparency
-s.MarkerEdgeColor = 'none';              % no outline
-```
+- `MarkerIndices` controls which points show markers (line-only property):
+  ```matlab
+  p = plot(ax, x, y, 'Marker', 'o');
+  p.MarkerIndices = 1:10:length(x);
+  ```
 
-**Per-point sizing:**
-```matlab
-s = scatter(ax, x, y, sizeVector);  % sizeVector in pt^2
-```
+### Scatter / Bar — Per-Element Coloring
 
-## Bar Chart
+- Both use `FaceColor = 'flat'` + `CData`, but the shape differs:
+  ```matlab
+  % Scatter: CData is a color vector (Nx1) or Nx3 RGB
+  s = scatter(ax, x, y, 36, colorVector);
+  s.MarkerFaceColor = 'flat';
 
-```matlab
-b = bar(ax, categories, values);
-b.FaceColor = 'flat';
-b.CData = myColorMatrix;  % Nx3 RGB for per-bar coloring
-b.EdgeColor = 'none';
-b.BarWidth = 0.6;
-```
+  % Bar: CData is an Nx3 RGB matrix (one row per bar)
+  b = bar(ax, categories, values);
+  b.FaceColor = 'flat';
+  b.CData = myColorMatrix;
+  ```
 
-**Grouped bars:**
-```matlab
-b = bar(ax, groupedData);  % matrix: rows=groups, cols=series
-legend(ax, 'A', 'B', 'C');
-```
+### Bar — Labels
 
-## Histogram
+- Bar charts support labeling individual bars via built-in properties:
+  ```matlab
+  b = bar(ax, categories, values);
+  b.Labels = string(values);
+  b.LabelLocation = 'end-outside';  % 'end-outside' | 'end-inside'
+  ```
 
-```matlab
-h = histogram(ax, data);
-h.NumBins = 30;
-h.Normalization = 'probability';
-h.FaceColor = [0.2 0.4 0.8];
-h.FaceAlpha = 0.7;
-h.EdgeColor = 'white';
-```
+### Histogram
 
-## Heatmap
+- Use `'probability'` for normalization (not `'normalized'`, which does not exist):
+  ```matlab
+  h = histogram(ax, data);
+  h.Normalization = 'probability';
+  ```
 
-**Parent is figure or panel, NOT uiaxes:**
+### Heatmap
 
-```matlab
-hm = heatmap(panel, xLabels, yLabels, dataMatrix);
-hm.Colormap = parula;
-hm.ColorLimits = [0 100];
-hm.CellLabelFormat = '%0.1f';
-hm.GridVisible = 'off';
-hm.Title = 'Correlation Matrix';
-```
+- **Parent must be figure or panel, NOT uiaxes.** Heatmap is a chart object that creates its own axes:
+  ```matlab
+  hm = heatmap(panel, xLabels, yLabels, dataMatrix);
+  ```
 
-## Surface Plot
+### Surface
 
-```matlab
-[X, Y] = meshgrid(-5:0.25:5);
-Z = sin(sqrt(X.^2 + Y.^2));
+- 3D axes get default interactions (rotate, zoom, pan) automatically. To restrict or customize interactions, set `Interactions` and `InteractionOptions` on the axes:
+  ```matlab
+  s = surf(ax, X, Y, Z);
+  s.FaceColor = 'interp';
+  s.EdgeColor = 'none';
 
-s = surf(ax, X, Y, Z);
-s.FaceColor = 'interp';
-s.EdgeColor = 'none';
-s.FaceAlpha = 0.9;
-
-% Enable 3D rotation
-ax.Interactions = [rotateInteraction dataTipInteraction];
-```
+  % Limit interactions to rotate and data tip only
+  ax.Interactions = [rotateInteraction dataTipInteraction];
+  ```
 
 ----
 

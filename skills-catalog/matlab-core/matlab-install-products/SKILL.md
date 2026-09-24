@@ -4,7 +4,7 @@ description: "Deterministic workflow to download MATLAB Package Manager (mpm) an
 license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
-  version: "1.4"
+  version: "1.5"
 ---
 
 # Installing MATLAB Products with MATLAB Package Manager (mpm) - Deterministic Protocol
@@ -107,6 +107,7 @@ Step 2 — Prepare input file
   Download release template for <release> from mathworks.com
   Set destination folder: <destination>
   Enable products: <comma-separated list>
+  Add caller=agent to mark this as an agent-driven install
   Input file: <working folder>\mpm_input_<releaselower>.txt
   Script: <working folder>\mpm_prepare_input.ps1
 
@@ -208,6 +209,7 @@ Download the template input file for the requested release, then edit it:
 - Uncomment and set `destinationFolder` to the requested installation path.
 - Uncomment each `product.<Name>` line for requested products and support packages.
 - Add `noJRE=true` to the input file (on its own line, after `destinationFolder`). This prevents mpm from bundling a Java Runtime. Only omit this line if the user explicitly requests JRE installation.
+- Add a `caller=agent` line (see "**caller** — mark the install as agent-driven" below).
 - Leave `updateLevel` commented unless the user requests a specific update.
 - Do not edit the checksum line (`?checksum=...`).
 
@@ -216,6 +218,7 @@ After editing the file, verify:
 - `destinationFolder` matches the user-requested install path exactly.
 - Each requested `product.<Name>` line is uncommented (no leading `#`).
 - Non-requested products remain commented out.
+- A `caller=agent` line is present.
 
 If any verification fails, stop and retry the download once, then re-edit and re-verify.
 If it still fails, stop and report the error.
@@ -225,6 +228,14 @@ You must look up the exact `product.<Name>` identifiers in the release input fil
 Product identifiers use underscores for spaces (e.g. "Signal Processing Toolbox" -> `product.Signal_Processing_Toolbox`).
 
 - Always display the full path to the ps1 script that was generated
+
+#### caller — mark the install as agent-driven (required)
+
+Recent versions of mpm accept a `caller` input-file key that records what initiated the installation. Always add it to the input file as its own line with the fixed value `agent`, so the line reads exactly `caller=agent`.
+
+Use this exact value — do not substitute an agent name, model, or any other identifier. It records only that an automation agent performed the install, letting agent-driven installs be distinguished from manual ones in telemetry.
+
+Set `caller` **inside the input file**, not on the command line. When `--inputfile` is used, mpm rejects any other command-line option, so the caller value must travel in the input file. mpm records the value in its installation telemetry (uppercased), so casing is not significant.
 
 #### Windows (PowerShell)
 
@@ -266,6 +277,7 @@ $lines = $lines | ForEach-Object {
   if ($_ -match '^\s*#?\s*destinationFolder=') {
     "destinationFolder=$Destination"
     "noJRE=true"
+    "caller=agent"
   }
   else {
     $_
@@ -292,6 +304,9 @@ $destinationLine = $lines | Where-Object { $_ -match '^destinationFolder=' } | S
 if (-not $destinationLine) { throw "destinationFolder line not found in $inputFile" }
 if ($destinationLine -ne "destinationFolder=$Destination") { throw "destinationFolder mismatch: $destinationLine" }
 
+$callerLine = $lines | Where-Object { $_ -match '^caller=' } | Select-Object -First 1
+if ($callerLine -ne "caller=agent") { throw "caller line missing or incorrect: $callerLine" }
+
 $uncommentedProducts = $lines | Where-Object { $_ -match '^\s*product\.' }
 $unexpectedProducts  = $uncommentedProducts | Where-Object { $ProductList -notcontains $_ }
 if ($unexpectedProducts) { throw "Unrequested products enabled: $($unexpectedProducts -join ', ')" }
@@ -313,14 +328,14 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 
 
 #### Linux/macOS
 
-See `reference/linux-macos-steps.md` for the full shell script. Summary: download the release input file with `curl`, edit with `sed` to set `destinationFolder` and uncomment requested products, then verify all edits.
+See `reference/linux-macos-steps.md` for the full shell script. Summary: download the release input file with `curl`, edit with `sed` to set `destinationFolder`, add `noJRE=true` and a `caller=agent` line, and uncomment requested products, then verify all edits.
 
 - Do not delete generated files yet; cleanup happens after Step 3.
 
 ### Step 3 - Run the install command and completion check
 
 **IMPORTANT:**
-- When using `--inputfile`, do not pass any other mpm options.
+- When using `--inputfile`, do not pass any other mpm options. The caller value is set inside the input file in Step 2 (`caller=agent`), not on the command line — mpm rejects `--inputfile` combined with any other option.
 - Windows requires elevation. Use `Start-Process -Verb RunAs` for elevated execution.
 - Always display the fully expanded command before running it.
 - Substitute actual values for release, working folder, and destination in the snippets below.
@@ -358,7 +373,7 @@ powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File 
 
 #### Linux/macOS
 
-See `reference/linux-macos-steps.md`. Summary: run `mpm install --inputfile=<path>` directly (no elevation needed).
+See `reference/linux-macos-steps.md`. Summary: run `mpm install --inputfile=<path>` directly (no elevation needed). The `caller=agent` line is already in the input file from Step 2.
 
 ### Step 4 - Verification
 
@@ -431,6 +446,7 @@ Do not show this link if the user only installed toolboxes or support packages w
 | `mpm_input_<release>.txt` | Release-specific input file template from mathworks.com |
 | `product.<Name>` | Input file entry format for products and support packages |
 | `destinationFolder=<path>` | Input file directive setting the install location |
+| `caller=agent` | Input file directive marking the install as agent-driven |
 | `Start-Process -Verb RunAs -Wait` | Elevated execution on Windows (UAC) |
 | `Invoke-WebRequest -OutFile` | Download files in PowerShell |
 | `curl -fL -o` | Download files on Linux/macOS |

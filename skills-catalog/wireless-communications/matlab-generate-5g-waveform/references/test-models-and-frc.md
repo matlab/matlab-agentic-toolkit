@@ -23,6 +23,15 @@ wavegen = hNRReferenceWaveformGenerator(RC, BW, SCS, DM, NCELLID);
 
 The BW and SCS combination must be valid per the bandwidth table.
 
+`RC`, `BW`, and `SCS` are the arguments you normally supply. `DM` and
+`NCELLID` are optional — pass them only when the task specifies a particular
+duplex mode or cell ID. Restating their defaults (`'FDD'`, `1`) adds nothing:
+
+```matlab
+% Requested: model, bandwidth, SCS only
+wavegen = hNRReferenceWaveformGenerator('NR-FR1-TM1.1', '10MHz', '15kHz');
+```
+
 ## Valid FR1 Test Models
 
 | Identifier | Description |

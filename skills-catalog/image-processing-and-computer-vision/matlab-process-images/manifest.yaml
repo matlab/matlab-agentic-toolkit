@@ -1,0 +1,29 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Process, analyze, and transform images using MATLAB Image Processing Toolbox.
+matlab-release: ">=R2024b"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Image Processing Toolbox
+optional-products:
+  - Computer Vision Toolbox
+  - Deep Learning Toolbox
+  - Medical Imaging Toolbox
+  - Wavelet Toolbox
+required-tools:
+  - evaluate_matlab_code
+required-skills:
+  - matlab-analyze-spectral-images
+  - matlab-build-app
+  - matlab-display-image
+  - matlab-display-volume
+  - matlab-model-optics
+  - matlab-process-large-images
+  - matlab-integrate-pytorch-vision
+  - matlab-read-documentation
+  - matlab-read-medical-data
+  - matlab-recognize-text
+  - matlab-use-visual-inspection

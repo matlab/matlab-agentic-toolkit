@@ -44,6 +44,9 @@ requested_products="product.MATLAB product.Simulink"
 sed -i'' "s|^#*\s*destinationFolder=.*|destinationFolder=$expected_destination|" "$input_file"
 sed -i'' "/^destinationFolder=/a noJRE=true" "$input_file"
 
+# Edit: add caller=agent after noJRE=true
+sed -i'' "/^noJRE=true/a caller=agent" "$input_file"
+
 # Edit: uncomment requested products
 for product in $requested_products; do
   sed -i'' "s|^#\s*\(${product}\)\s*$|\1|" "$input_file"
@@ -55,6 +58,9 @@ if [ "$destination_line" != "destinationFolder=$expected_destination" ]; then
   echo "destinationFolder mismatch: $destination_line" >&2
   exit 1
 fi
+
+# Verify: caller=agent line present
+grep -qx 'caller=agent' "$input_file" || { echo "caller=agent line not found in $input_file" >&2; exit 1; }
 
 # Verify: no unrequested products uncommented
 uncommented_products=$(grep -E '^[[:space:]]*product\.' "$input_file" | tr -d '\r')
@@ -72,6 +78,10 @@ done
 ```
 
 ## Step 3 - Run the install command
+
+When using `--inputfile`, pass no other mpm options — mpm rejects `--inputfile` combined with any other option. The caller value travels in the input file as the `caller=agent` line added in Step 2, not on the command line.
+
+The `caller=agent` line uses the fixed value `agent` — it records only that an automation agent performed the install, not which one, so do not substitute an agent name or model. mpm records the value in its installation telemetry (uppercased), so casing is not significant.
 
 ```sh
 set -eu

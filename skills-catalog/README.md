@@ -15,7 +15,7 @@ The skills catalog organizes agent skills into groups. Each group contains one o
 <!-- BEGIN SKILLS -->
 ### MATLAB Core ([`matlab-core`](./matlab-core/))
 
-Create, debug, test, review, and manage MATLAB&reg; code and installations
+Create, debug, review, and manage MATLAB&reg; code and installations
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -25,8 +25,6 @@ Create, debug, test, review, and manage MATLAB&reg; code and installations
 | `matlab-list-products` | Show all installed MATLAB products and support packages for a given MATLAB installation folder. |
 | `matlab-read-documentation` | Fetch and navigate MathWorks documentation specific for your MATLAB release to determine correct function syntax, complete workflows, and determine best practices for working in MATLAB and Simulink&reg; software. |
 | `matlab-review-code` | Review MATLAB code for quality, performance, maintainability, and adherence to MathWorks coding standards. |
-| `matlab-run-tests` | Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines. |
-| `matlab-write-tests` | Generate and structure MATLAB unit tests using class-based testing frameworks. |
 
 ### MATLAB App Building ([`matlab-app-building`](./matlab-app-building/))
 
@@ -76,7 +74,7 @@ Write robust MATLAB functions with validated inputs
 
 ### MATLAB Software Development ([`matlab-software-development`](./matlab-software-development/))
 
-Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans
+Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -85,8 +83,10 @@ Modernize legacy code, optimize performance and memory, document and create tool
 | `matlab-optimize-memory` | Find and fix memory bottlenecks in MATLAB code using a structured measure-profile-optimize-verify workflow. |
 | `matlab-optimize-performance` | Optimize performance of MATLAB code. |
 | `matlab-package-toolbox` | Package MATLAB code as an installable .mltbx toolbox. |
+| `matlab-run-tests` | Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines. |
 | `matlab-write-help` | Generate or improve MATLAB help text following MathWorks documentation standards. |
 | `matlab-write-performance-tests` | Write MATLAB performance tests using the matlab.perftest.TestCase framework. |
+| `matlab-write-tests` | Generate and structure MATLAB unit tests using class-based testing frameworks. |
 
 ### Aerospace ([`aerospace`](./aerospace/))
 
@@ -105,12 +105,13 @@ Supports MATLAB, Simulink, Curve Fitting Toolbox&trade;, Deep Learning Toolbox&t
 |-------|---------------------------|
 | `matlab-analyze-reliability` | Fit life distributions and accelerated life models for reliability analysis. |
 | `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
-| `matlab-create-experiment` | Create experiments for the Experiment Manager app by analyzing user code, and generating the appropriate functions and hyperparameters. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
 | `matlab-engineer-tabular-features` | Engineer and select the best features for single-response tabular classification or regression in MATLAB. |
 | `matlab-fit-curve` | Fit curves and surfaces interactively using the Curve Fitter app. |
 | `matlab-import-external-ai-model` | Import PyTorch, ONNX, and Keras deep learning models into MATLAB and verify numerical correctness. |
+| `matlab-interpret-machine-learning-model` | Interpret and explain a trained tabular machine-learning model (classification or regression) in MATLAB. |
 | `matlab-train-network` | Train, evaluate, and export neural networks to Simulink using the recommended APIs. Migrate legacy neural network training code to modern replacements. |
+| `matlab-use-experiment-manager` | Create, modify, delete, and duplicate experiments in Experiment Manager with live UI sync. |
 | `matlab-use-machine-learning-apps` | Train, compare, and export machine learning models using Classification Learner and Regression Learner apps. |
 
 ### Automotive ([`automotive`](./automotive/))
@@ -194,11 +195,13 @@ Supports MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processin
 | `matlab-display-volume` | Display 3-D image volumes, medical image volumes, surface meshes, and annotations for 3-D image processing. |
 | `matlab-integrate-pytorch-vision` | Create MATLAB interfaces to Python image processing and computer vision models from GitHub repositories or pip packages using MPyReq. |
 | `matlab-model-optics` | Build, import, analyze, optimize, and tolerance optical systems and coatings using the Optical Design and Simulation Library. |
+| `matlab-process-images` | Process, analyze, and transform images using MATLAB Image Processing Toolbox. |
 | `matlab-process-large-images` | Process large images using blockedImage. |
 | `matlab-read-medical-data` | Read, write, and manipulate medical imaging data (DICOM, NIfTI, NRRD) using Image Processing Toolbox and Medical Imaging Toolbox APIs. |
 | `matlab-read-write-point-cloud-file` | Read and write 3-D point cloud data in PLY, PCD, LAS/LAZ, PCAP, E57, and IDC formats. |
 | `matlab-recognize-text` | Build OCR pipelines in MATLAB using the ocr() function. |
 | `matlab-register-point-clouds` | Register and align 3-D point clouds using ICP, NDT, LOAM, FGR, phase correlation, and CPD algorithms. |
+| `matlab-use-visual-inspection` | Build machine vision inspection systems with Visual Inspection Toolbox&trade;. |
 
 ### Math and Optimization ([`math-and-optimization`](./math-and-optimization/))
 
@@ -297,6 +300,7 @@ Supports MATLAB, Simulink, Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP Sys
 | `matlab-design-adaptive-filter` | Design and implement adaptive filters using System objects. |
 | `matlab-design-digital-filter` | Design and validate digital filters in MATLAB. |
 | `matlab-design-dsphdl-ddc` | Design HDL-optimized Digital Down Converters using dsphdl System objects. |
+| `matlab-evaluate-acoustic-metrics` | Select and compute acoustic, psychoacoustic, and speech quality metrics. |
 | `matlab-extract-signal-features` | Extract per-frame time, frequency, and time-frequency features from 1D signals. |
 | `matlab-play-record-audio` | Play and record audio in MATLAB using audiostreamer. |
 | `matlab-prepare-signal-data` | Condition raw signals (fill gaps, detrend, deoutlier, denoise, resample/align) and build signalDatastore pipelines for ML training -- labels, stratified splits, framing, parallel reads, and trainnet hand-off. |
@@ -331,6 +335,7 @@ Supports MATLAB, 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communication
 |-------|---------------------------|
 | `matlab-add-awgn` | Add Additive White Gaussian Noise (AWGN) noise and convert between SNR, Eb/No, Es/No, and per-subcarrier SNR for communications simulations. |
 | `matlab-design-ofdm-system` | Design and simulate custom OFDM systems using ofdmmod/ofdmdemod, with fading channel configuration, equalization, synchronization (timing/CFO), LDPC coding, SNR handling, subcarrier allocation, and pilot-based channel estimation |
+| `matlab-detect-capture-usrp` | Detect and capture RF signals on USRP radios using energy or preamble triggers. |
 | `matlab-generate-5g-waveform` | Generate 3GPP-compliant 5G NR downlink and uplink baseband waveforms. |
 | `matlab-generate-ble-waveform` | Generate and analyze Bluetooth Low Energy PHY waveforms. |
 | `matlab-generate-gnss-waveform` | Generate GNSS baseband waveforms (GPS, Galileo, NavIC) with physically realistic or user-specified channel impairments using the Satellite Communications Toolbox. |

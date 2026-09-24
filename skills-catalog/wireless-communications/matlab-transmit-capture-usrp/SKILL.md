@@ -32,7 +32,7 @@ Generate, transmit, and capture RF waveforms using NI USRP radios in MATLAB.
 
 - Setting up or connecting a USRP radio for the first time — use the **matlab-set-up-usrp-radio** skill
 - FPGA targeting workflows — see [Target NI USRP Radios](https://www.mathworks.com/help/wireless-testbench/target-ni-usrp-devices.html)
-- Intelligent capture with preamble/energy detection — see [Spectrum Monitoring](https://www.mathworks.com/help/wireless-testbench/spectrum-monitoring.html)
+- Triggered (wake-on-signal) capture with preamble/energy detection — use the **matlab-detect-capture-usrp** skill
 - Multi-device synchronization — see [Radio Management](https://www.mathworks.com/help/wireless-testbench/radio-management.html)
 
 ## Prerequisites

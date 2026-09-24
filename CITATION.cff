@@ -1,10 +1,11 @@
+# Copyright 2026 The MathWorks, Inc.
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "MATLAB Agentic Toolkit"
 abstract: 
   The MATLAB® Agentic Toolkit allows you to use AI agents with MATLAB 
   by giving your AI agent the knowledge and context to work efficiently 
-  with MATLAB and its toolboxes. Use this toolkit to provide trusted 
+  with MATLAB and its toolboxes. Use this toolkit to provide proven 
   MATLAB capabilities to your agent.
 
 type: software

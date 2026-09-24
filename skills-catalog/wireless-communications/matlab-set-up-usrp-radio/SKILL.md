@@ -38,7 +38,7 @@ These workflows each require a working radio connection first — use this skill
 
 - FPGA targeting or HDL workflows — check for a dedicated skill, or see [Target NI USRP Radios](https://www.mathworks.com/help/wireless-testbench/target-ni-usrp-devices.html)
 - Generating or transmitting waveforms — check for a dedicated skill, or see [Transmit and Capture](https://www.mathworks.com/help/wireless-testbench/transmit-and-capture-RF-signals.html)
-- Intelligent capture (preamble/energy detection) — check for a dedicated skill, or see [Spectrum Monitoring](https://www.mathworks.com/help/wireless-testbench/spectrum-monitoring.html)
+- Triggered (wake-on-signal) capture with preamble/energy detection — use the **matlab-detect-capture-usrp** skill
 - Multi-device synchronization — check for a dedicated skill, or see [Radio Management](https://www.mathworks.com/help/wireless-testbench/radio-management.html)
 - `comm.SDRuReceiver` or `comm.SDRuTransmitter` path — this skill covers the modern Wireless Testbench path
 - Installing MATLAB or toolboxes — do not use or recommend `mpm` (MATLAB Package Manager). This skill assumes MATLAB and the Wireless Testbench support package are already installed.

@@ -1,0 +1,17 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Interpret and explain a trained tabular machine-learning model (classification or regression) in MATLAB.
+matlab-release: ">=R2021a"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Statistics and Machine Learning Toolbox
+optional-products:
+  - Deep Learning Toolbox
+  - Parallel Computing Toolbox
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+
+# Copyright 2026 The MathWorks, Inc.

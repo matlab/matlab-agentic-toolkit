@@ -27,7 +27,7 @@ You are helping a user formulate and solve a portfolio optimization problem usin
 - User needs to retrieve market data from Bloomberg, FRED, or Haver Analytics — use `matlab-access-datafeed`
 - User wants to predict returns or portfolio weights using neural networks or ML — use `matlab-train-network`
 - User only wants to clean, explore, or summarize a returns table without optimization — use `matlab-analyze-data`
-- User wants Experiment Manager parameter sweeps (not portfolio frontier) — use `matlab-create-experiment`
+- User wants Experiment Manager parameter sweeps (not portfolio frontier) — use `matlab-use-experiment-manager`
 - User wants CVaR, MAD, or other non-mean-variance risk measures — use `PortfolioCVaR` or `PortfolioMAD` classes (not covered by this skill)
 
 ## Key Principle

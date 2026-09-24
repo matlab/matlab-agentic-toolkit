@@ -3,7 +3,7 @@ name: matlab-build-chart
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 description: >
   Create and customize MATLAB charts and plots. Plot types (line, scatter,
   bar, histogram, heatmap, surface), axes configuration, annotations, data tips,
