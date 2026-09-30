@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 645cf259dedf8b012f89fdb7006ad7c1afa33e3e
+- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
 -->
 
 # MATLAB Agentic Toolkit
@@ -18,7 +18,7 @@ Source English Markdown:
 [![Latest Release](https://img.shields.io/github/v/release/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 [![Release Date](https://img.shields.io/github/release-date/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 
-MATLAB&reg; Agentic Toolkit permite usar agentes de IA con MATLAB proporcionando al agente de IA el conocimiento y el contexto necesarios para trabajar eficientemente con MATLAB y sus toolboxes. Use este toolkit para proporcionar funcionalidades de MATLAB de confianza a su agente. Este toolkit puede evitar que su agente de IA alucine funciones de toolboxes, pase por alto funcionalidades nuevas y pierda tiempo con pasos adicionales que los usuarios experimentados de MATLAB omitirían.
+MATLAB&reg; Agentic Toolkit permite usar agentes de IA con MATLAB proporcionando al agente de IA el conocimiento y el contexto necesarios para trabajar eficientemente con MATLAB y sus toolboxes. Use este toolkit para proporcionar funcionalidades probadas de MATLAB a su agente. Este toolkit puede evitar que su agente de IA alucine funciones de toolboxes, pase por alto funcionalidades nuevas y pierda tiempo con pasos adicionales que los usuarios experimentados de MATLAB omitirían.
 
 Use este toolkit para:
 
@@ -44,7 +44,7 @@ Use este toolkit para:
 
 Estos pasos muestran cómo usar MATLAB Agentic Toolkit para instalar MATLAB MCP Server y agregar skills a su agente.
 
-> Nota: Para obtener instrucciones sobre la instalación desde archivos locales, la instalación en un entorno sin conexión, las opciones de configuración de este toolkit, notas específicas de la plataforma, pasos de verificación, resolución de problemas y la configuración manual sin el instalador, consulte [Configuration and Troubleshooting](../Configuration_and_Troubleshooting.md). Si ya tiene instalado el servidor MCP y solo necesita agregar skills, consulte [Adding Skills Only](../Configuration_and_Troubleshooting.md#adding-skills-only).
+> Nota: Para obtener instrucciones sobre la instalación desde archivos locales, la instalación en un entorno sin conexión, las opciones de configuración de este toolkit, notas específicas de la plataforma, pasos de verificación, resolución de problemas y la configuración manual sin el instalador, consulte [Configuración y solución de problemas](Configuration_and_Troubleshooting.es.md). Si ya tiene instalado el servidor MCP y solo necesita agregar skills, consulte [Agregar solo skills](Configuration_and_Troubleshooting.es.md#agregar-solo-skills).
 
 ### Instalar MATLAB Agentic Toolkit
 
@@ -146,7 +146,7 @@ Cuando use MATLAB Agentic Toolkit y MATLAB MCP Server, debe revisar y validar ex
 ---
 ## Recopilación de datos
 
-MATLAB MCP Server recopila datos de uso anonimizados de forma predeterminada. Para obtener más detalles, consulte [Data Collection](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.es.md#recopilación-de-datos) en la documentación del servidor MCP. Para desactivar la recopilación, consulte [Disable Data Collection](../Configuration_and_Troubleshooting.md#disable-data-collection).
+MATLAB MCP Server recopila datos de uso anonimizados de forma predeterminada. Para obtener más detalles, consulte [Data Collection](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.es.md#recopilación-de-datos) en la documentación del servidor MCP. Para desactivar la recopilación, consulte [Deshabilitar la recopilación de datos](Configuration_and_Troubleshooting.es.md#deshabilitar-la-recopilación-de-datos).
 
 ---
 ## Licencia y uso

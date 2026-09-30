@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 645cf259dedf8b012f89fdb7006ad7c1afa33e3e
+- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
 -->
 
 # MATLAB Agentic Toolkit
@@ -18,7 +18,7 @@ Source English Markdown:
 [![Latest Release](https://img.shields.io/github/v/release/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 [![Release Date](https://img.shields.io/github/release-date/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 
-MATLAB&reg; Agentic Toolkit 允许您通过为 AI 智能体提供高效使用 MATLAB 及其工具箱所需的知识和上下文，将 AI 智能体与 MATLAB 配合使用。使用此工具包为您的智能体提供可信赖的 MATLAB 功能。此工具包可以防止您的 AI 智能体虚构工具箱函数、遗漏新功能，以及在经验丰富的 MATLAB 用户会跳过的额外步骤上浪费时间。
+MATLAB&reg; Agentic Toolkit 允许您通过为 AI 智能体提供高效使用 MATLAB 及其工具箱所需的知识和上下文，将 AI 智能体与 MATLAB 配合使用。使用此工具包为您的智能体提供已证明的 MATLAB 功能。此工具包可以防止您的 AI 智能体虚构工具箱函数、遗漏新功能，以及在经验丰富的 MATLAB 用户会跳过的额外步骤上浪费时间。
 
 使用此工具包可以：
 
@@ -45,7 +45,7 @@ MATLAB&reg; Agentic Toolkit 允许您通过为 AI 智能体提供高效使用 MA
 
 以下步骤展示了如何使用 MATLAB Agentic Toolkit 安装 MATLAB MCP Server 并向您的智能体添加技能。
 
-> 注意：有关从本地文件安装、在离线环境中安装、此工具包的配置设置选项、平台特定说明、验证步骤、故障排除以及不使用安装程序的手动设置的说明，请参阅[配置和故障排除](../Configuration_and_Troubleshooting.md)。如果您已安装 MCP 服务器且只需要添加技能，请参阅[仅添加技能](../Configuration_and_Troubleshooting.md#adding-skills-only)。
+> 注意：有关从本地文件安装、在离线环境中安装、此工具包的配置设置选项、平台特定说明、验证步骤、故障排除以及不使用安装程序的手动设置的说明，请参阅[配置和故障排除](Configuration_and_Troubleshooting.zh-cn.md)。如果您已安装 MCP 服务器且只需要添加技能，请参阅[仅添加技能](Configuration_and_Troubleshooting.zh-cn.md#adding-skills-only)。
 
 ### 安装 MATLAB Agentic Toolkit
 
@@ -148,7 +148,7 @@ setupAgenticToolkit("update")
 ---
 ## 数据收集
 
-MATLAB MCP Server 默认收集匿名使用数据。有关完整详细信息，请参阅 MCP 服务器文档中的[数据收集](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.zh-cn.md#数据收集)。要选择退出，请参阅[禁用数据收集](../Configuration_and_Troubleshooting.md#disable-data-collection)。
+MATLAB MCP Server 默认收集匿名使用数据。有关完整详细信息，请参阅 MCP 服务器文档中的[数据收集](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.zh-cn.md#数据收集)。要选择退出，请参阅[禁用数据收集](Configuration_and_Troubleshooting.zh-cn.md#禁用数据收集)。
 
 ---
 ## 许可和使用

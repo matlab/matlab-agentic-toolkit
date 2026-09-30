@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 645cf259dedf8b012f89fdb7006ad7c1afa33e3e
+- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
 -->
 
 # MATLAB Agentic Toolkit
@@ -11,14 +11,14 @@ Source English Markdown:
   <a href="../README.md">English</a> •
   <a href="README.es.md">Español</a> •
   <a href="README.ja.md">日本語</a> •
-  <a href="README.ko.md">한국어</a> •
+  한국어 •
   <a href="README.zh-cn.md">简体中文</a>
 </p>
 
 [![Latest Release](https://img.shields.io/github/v/release/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 [![Release Date](https://img.shields.io/github/release-date/matlab/matlab-agentic-toolkit?cacheSeconds=1800)](https://github.com/matlab/matlab-agentic-toolkit/releases/latest)
 
-MATLAB&reg; Agentic Toolkit은 AI 에이전트가 MATLAB 및 해당 툴박스와 효율적으로 작업하는 데 필요한 지식과 컨텍스트를 제공함으로써 MATLAB을 AI 에이전트와 함께 사용할 수 있도록 지원합니다. 이 툴킷을 사용하여 신뢰할 수 있는 MATLAB 기능을 에이전트에 제공하십시오. 이 툴킷은 AI 에이전트가 툴박스 함수 관련 할루시네이션을 일으키거나, 새로운 기능을 놓치거나, 숙련된 MATLAB 사용자라면 건너뛸 불필요한 단계에 시간을 낭비하는 일을 방지할 수 있습니다.
+MATLAB&reg; Agentic Toolkit은 AI 에이전트가 MATLAB 및 해당 툴박스와 효율적으로 작업하는 데 필요한 지식과 컨텍스트를 제공함으로써 MATLAB을 AI 에이전트와 함께 사용할 수 있도록 지원합니다. 이 툴킷을 사용하여 검증된 MATLAB 기능을 에이전트에 제공하십시오. 이 툴킷은 AI 에이전트가 툴박스 함수 관련 할루시네이션을 일으키거나, 새로운 기능을 놓치거나, 숙련된 MATLAB 사용자라면 건너뛸 불필요한 단계에 시간을 낭비하는 일을 방지할 수 있습니다.
 
 이 툴킷으로 다음과 같은 작업을 수행할 수 있습니다.
 
@@ -45,7 +45,7 @@ MATLAB&reg; Agentic Toolkit은 AI 에이전트가 MATLAB 및 해당 툴박스와
 
 다음 단계에서는 MATLAB Agentic Toolkit을 사용하여 MATLAB MCP Server를 설치하고 에이전트에 스킬을 추가하는 방법을 보여줍니다.
 
-> 참고: 로컬 파일에서의 설치, 오프라인 환경에서의 설치, 이 툴킷의 구성 옵션, 플랫폼별 참고 사항, 검증 절차, 문제 해결 및 인스톨러를 사용하지 않는 수동 설정에 대한 지침은 [Configuration and Troubleshooting](../Configuration_and_Troubleshooting.md)을 참조하십시오. MCP 서버가 이미 설치되어 있고 스킬만 추가해야 하는 경우 [Adding Skills Only](../Configuration_and_Troubleshooting.md#adding-skills-only)를 참조하십시오.
+> 참고: 로컬 파일에서의 설치, 오프라인 환경에서의 설치, 이 툴킷의 구성 옵션, 플랫폼별 참고 사항, 검증 절차, 문제 해결 및 인스톨러를 사용하지 않는 수동 설정에 대한 지침은 [구성 및 문제 해결](Configuration_and_Troubleshooting.ko.md)을 참조하십시오. MCP 서버가 이미 설치되어 있고 스킬만 추가해야 하는 경우 [스킬만 추가하기](Configuration_and_Troubleshooting.ko.md#adding-skills-only)를 참조하십시오.
 
 ### MATLAB Agentic Toolkit 설치
 
@@ -148,7 +148,7 @@ MATLAB Agentic Toolkit 및 MATLAB MCP Server를 사용할 때는 모든 툴 호�
 ---
 ## 데이터 수집
 
-MATLAB MCP Server는 기본적으로 익명화된 사용 데이터를 수집합니다. 전체 세부 정보는 MCP 서버 문서의 [데이터 수집](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.ko.md#데이터-수집)을 참조하십시오. 데이터 수집을 거부하려면 [Disable Data Collection](../Configuration_and_Troubleshooting.md#disable-data-collection)을 참조하십시오.
+MATLAB MCP Server는 기본적으로 익명화된 사용 데이터를 수집합니다. 전체 세부 정보는 MCP 서버 문서의 [데이터 수집](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.ko.md#데이터-수집)을 참조하십시오. 데이터 수집을 거부하려면 [Disable Data Collection](Configuration_and_Troubleshooting.ko.md#데이터-수집-비활성화)을 참조하십시오.
 
 ---
 ## 라이선스 및 사용

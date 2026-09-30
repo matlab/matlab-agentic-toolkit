@@ -1,5 +1,13 @@
 # Configuration and Troubleshooting
 
+<p align="center">
+  English •
+  <a href="l10n/Configuration_and_Troubleshooting.es.md">Español</a> •
+  <a href="l10n/Configuration_and_Troubleshooting.ja.md">日本語</a> •
+  <a href="l10n/Configuration_and_Troubleshooting.ko.md">한국어</a> •
+  <a href="l10n/Configuration_and_Troubleshooting.zh-cn.md">简体中文</a>
+</p>
+
 This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an overview of the MATLAB Agentic Toolkit, see the [README](README.md).
 
 ## Requirements
