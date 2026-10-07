@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # MATLAB Agentic Toolkit
@@ -97,13 +97,13 @@ Después de instalar MATLAB Agentic Toolkit, su agente puede usar skills selecci
 
 | Grupo de skills | Descripción |
 |-------------|-------------|
-| [**MATLAB Core**](skills-catalog/README.es.md#matlab-core-matlab-core) | Crear, depurar, probar, revisar y administrar código e instalaciones de MATLAB |
+| [**MATLAB Core**](skills-catalog/README.es.md#matlab-core-matlab-core) | Crear, depurar, revisar y administrar código e instalaciones de MATLAB |
 | [**MATLAB App Building**](skills-catalog/README.es.md#matlab-app-building-matlab-app-building) | Compilar aplicaciones de MATLAB programáticamente usando componentes de interfaz de usuario, diseños, callbacks e integración web |
 | [**MATLAB Data Import and Analysis**](skills-catalog/README.es.md#matlab-data-import-and-analysis-matlab-data-import-and-analysis) | Importar, exportar y analizar datos en MATLAB usando tablas, horarios, filtrado, agregación y operaciones de series temporales |
 | [**MATLAB Environment and Settings**](skills-catalog/README.es.md#matlab-environment-and-settings-matlab-environment-and-settings) | Comparar ajustes de MATLAB entre versiones y migrar scripts de inicio a rutas de ajustes correctas |
 | [**MATLAB External Language Interfaces**](skills-catalog/README.es.md#matlab-external-language-interfaces-matlab-external-language-interfaces) | Invocar bibliotecas de Python&reg; desde MATLAB y actualizar archivos MEX a la API interleaved complex |
 | [**MATLAB Programming**](skills-catalog/README.es.md#matlab-programming-matlab-programming) | Escribir funciones de MATLAB robustas con entradas validadas |
-| [**MATLAB Software Development**](skills-catalog/README.es.md#matlab-software-development-matlab-software-development) | Modernizar código heredado, optimizar rendimiento y memoria, documentar y crear toolboxes, crear proyectos y desarrollar planes de compilación |
+| [**MATLAB Software Development**](skills-catalog/README.es.md#matlab-software-development-matlab-software-development) | Escribir y ejecutar pruebas, modernizar código heredado, optimizar rendimiento y memoria, documentar y crear toolboxes, crear proyectos y desarrollar planes de compilación |
 
 #### Skills de toolboxes
 

@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: cd7a55815df574409a09d14d6333641cc86cff3e
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # スキル カタログ
@@ -22,7 +22,7 @@ Source English Markdown:
 <!-- BEGIN SKILLS -->
 ### MATLAB 基本機能 ([`matlab-core`](../../skills-catalog/matlab-core/))
 
-MATLAB&reg; コードとインストールの作成、デバッグ、テスト、レビュー、管理
+MATLAB&reg; コードとインストールの作成、デバッグ、レビュー、管理
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
@@ -32,8 +32,6 @@ MATLAB&reg; コードとインストールの作成、デバッグ、テスト�
 | `matlab-list-products` | 指定した MATLAB インストール フォルダーにインストールされているすべての MATLAB 製品とサポート パッケージを表示する。 |
 | `matlab-read-documentation` | 使用中の MATLAB リリースに固有の MathWorks ドキュメントを取得して参照し、正しい関数構文、完全なワークフロー、MATLAB および Simulink&reg; ソフトウェアでのベスト プラクティスを確認する。 |
 | `matlab-review-code` | MATLAB コードの品質、パフォーマンス、保守性、MathWorks コーディング規約への準拠をレビューする。 |
-| `matlab-run-tests` | MATLAB テスト スイートを実行し、コード カバレッジを収集して、CI/CD パイプラインを構成する。 |
-| `matlab-write-tests` | クラスベースのテスト フレームワークを使用して MATLAB ユニット テストを生成および構造化する。 |
 
 ### MATLAB アプリ作成 ([`matlab-app-building`](../../skills-catalog/matlab-app-building/))
 
@@ -83,7 +81,7 @@ MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルを�
 
 ### MATLAB ソフトウェア開発 ([`matlab-software-development`](../../skills-catalog/matlab-software-development/))
 
-レガシ コードの最新化、パフォーマンスとメモリの最適化、ドキュメント作成とツールボックスの作成、プロジェクトの作成、ビルド プランの作成
+テストの記述と実行、レガシ コードの最新化、パフォーマンスとメモリの最適化、ドキュメント作成とツールボックスの作成、プロジェクトの作成、ビルド プランの作成
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
@@ -92,8 +90,10 @@ MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルを�
 | `matlab-optimize-memory` | 構造化された測定、プロファイリング、最適化、および検証から成るワークフローを使用して MATLAB コードのメモリ ボトルネックを見つけて修正する。 |
 | `matlab-optimize-performance` | MATLAB コードのパフォーマンスを最適化する。 |
 | `matlab-package-toolbox` | MATLAB コードをインストール可能な .mltbx ツールボックスとしてパッケージ化する。 |
+| `matlab-run-tests` | MATLAB テスト スイートを実行し、コード カバレッジを収集して、CI/CD パイプラインを構成する。 |
 | `matlab-write-help` | MathWorks ドキュメント標準に従って MATLAB ヘルプ テキストを生成または改善する。 |
 | `matlab-write-performance-tests` | matlab.perftest.TestCase フレームワークを使用して MATLAB パフォーマンス テストを記述する。 |
+| `matlab-write-tests` | クラスベースのテスト フレームワークを使用して MATLAB ユニット テストを生成および構造化する。 |
 
 ### 航空宇宙関連 ([`aerospace`](../../skills-catalog/aerospace/))
 
@@ -112,12 +112,13 @@ MATLAB、Simulink、Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;�
 |-------|---------------------------|
 | `matlab-analyze-reliability` | 信頼性分析のために寿命分布モデルと加速寿命モデルを当てはめる。 |
 | `matlab-classify-tabular-data` | 候補モデルを比較し、統計的に同等な上位モデル群を特定して表形式データを分類する。 |
-| `matlab-create-experiment` | ユーザー コードを分析し、適切な関数とハイパーパラメーターを生成して実験マネージャー アプリ用の実験を作成する。 |
 | `matlab-deploy-embedded-ai` | MATLAB と Simulink を使用して AI モデルを組み込みハードウェアにデプロイする。 |
 | `matlab-engineer-tabular-features` | MATLAB で単一応答の表形式分類または回帰に最適な特徴量を作成・選択する。 |
 | `matlab-fit-curve` | 曲線フィッター アプリを使用して対話的に曲線と曲面を当てはめる。 |
 | `matlab-import-external-ai-model` | PyTorch、ONNX、Keras ディープ ラーニング モデルを MATLAB にインポートし、数値の正確性を検証する。 |
+| `matlab-interpret-machine-learning-model` | 学習済みの表形式機械学習モデル (分類または回帰) を MATLAB で解釈・説明する。 |
 | `matlab-train-network` | 推奨 API を使用してニューラル ネットワークに学習させ、これを評価し、Simulink にエクスポートする。レガシのニューラル ネットワーク学習コードを最新の代替手段に移行する。 |
+| `matlab-use-experiment-manager` | ライブ UI 同期を使用して、実験マネージャーで実験を作成、変更、削除、複製する。 |
 | `matlab-use-machine-learning-apps` | 分類学習器アプリおよび回帰学習器アプリを使用して機械学習モデルに学習させ、これを比較、エクスポートする。 |
 
 ### 自動車関連 ([`automotive`](../../skills-catalog/automotive/))
@@ -201,11 +202,13 @@ MATLAB、Computer Vision Toolbox、Deep Learning Toolbox、Image Processing Tool
 | `matlab-display-volume` | 3D イメージ処理のための 3D イメージ ボリューム、医用画像ボリューム、サーフェス メッシュ、アノテーションを表示する。 |
 | `matlab-integrate-pytorch-vision` | MPyReq を使用して GitHub リポジトリまたは pip パッケージの Python イメージ処理およびコンピューター ビジョン モデル用の MATLAB インターフェースを作成する。 |
 | `matlab-model-optics` | Optical Design and Simulation Library を使用して光学系とコーティングを構築、インポート、分析、最適化、公差解析を行う。 |
+| `matlab-process-images` | MATLAB Image Processing Toolbox を使用してイメージを処理、解析、変換する。 |
 | `matlab-process-large-images` | blockedImage を使用して大きなイメージを処理する。 |
 | `matlab-read-medical-data` | Image Processing Toolbox と Medical Imaging Toolbox API を使用して医用画像データ (DICOM、NIfTI、NRRD) の読み書きおよび操作を行う。 |
 | `matlab-read-write-point-cloud-file` | PLY、PCD、LAS/LAZ、PCAP、E57、IDC 形式で 3D 点群データを読み書きする。 |
 | `matlab-recognize-text` | ocr() 関数を使用して MATLAB で OCR パイプラインを構築する。 |
 | `matlab-register-point-clouds` | ICP、NDT、LOAM、FGR、位相相関、CPD アルゴリズムを使用して 3D 点群の位置合わせを行う。 |
+| `matlab-use-visual-inspection` | Visual Inspection Toolbox&trade; を使用してマシン ビジョン検査システムを構築する。 |
 
 ### 数学および最適化 ([`math-and-optimization`](../../skills-catalog/math-and-optimization/))
 
@@ -304,6 +307,7 @@ MATLAB、Simulink、Audio Toolbox&trade;、DSP HDL Toolbox&trade;、DSP System T
 | `matlab-design-adaptive-filter` | System objects を使用して適応フィルターを設計・実装する。 |
 | `matlab-design-digital-filter` | MATLAB でデジタル フィルターを設計・検証する。 |
 | `matlab-design-dsphdl-ddc` | dsphdl System objects を使用して HDL に最適化されたデジタル ダウン コンバーターを設計する。 |
+| `matlab-evaluate-acoustic-metrics` | 音響、心理音響、および音声品質メトリクスを選択・計算する。 |
 | `matlab-extract-signal-features` | 1 次元信号からフレームごとの時間、周波数、時間-周波数特徴量を抽出する。 |
 | `matlab-play-record-audio` | audiostreamer を使用して MATLAB でオーディオを再生・録音する。 |
 | `matlab-prepare-signal-data` | 生信号の前処理 (ギャップ補間、トレンド除去、外れ値除去、ノイズ除去、リサンプリング/アライメント) を行い、ML トレーニング用の signalDatastore パイプライン (ラベル付け、層化分割、フレーミング、並列読み込み、trainnet への引き渡し) を構築する。 |
@@ -338,6 +342,7 @@ MATLAB、5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Tool
 |-------|---------------------------|
 | `matlab-add-awgn` | 加法性ホワイト ガウス ノイズ (AWGN) を追加し、通信シミュレーション用に SNR、Eb/No、Es/No、サブキャリアごとの SNR 間で変換する。 |
 | `matlab-design-ofdm-system` | ofdmmod/ofdmdemod を使用してカスタム OFDM システムを設計・シミュレーションする。フェージング チャネル構成、等化、同期 (タイミング/CFO)、LDPC 符号化、SNR ハンドリング、サブキャリア割り当て、パイロット ベースのチャネル推定を含む。 |
+| `matlab-detect-capture-usrp` | エネルギーまたはプリアンブル トリガーを使用して USRP ラジオで RF 信号を検出・キャプチャする。 |
 | `matlab-generate-5g-waveform` | 3GPP 準拠の 5G NR ダウンリンクおよびアップリンク ベースバンド波形を生成する。 |
 | `matlab-generate-ble-waveform` | Bluetooth Low Energy PHY 波形を生成・分析する。 |
 | `matlab-generate-gnss-waveform` | Satellite Communications Toolbox を使用して、物理的に現実的なチャネル劣化要因またはユーザー指定のチャネル劣化要因を含む GNSS ベースバンド波形 (GPS, Galileo, NavIC) を生成する。 |
