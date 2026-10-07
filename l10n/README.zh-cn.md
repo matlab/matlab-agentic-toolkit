@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # MATLAB Agentic Toolkit
@@ -99,13 +99,13 @@ shareMATLABSession()
 
 | 技能组 | 描述 |
 |-------------|-------------|
-| [**MATLAB 核心**](skills-catalog/README.zh-cn.md#matlab-核心-matlab-core) | 创建、调试、测试、审查和管理 MATLAB 代码及安装 |
+| [**MATLAB 核心**](skills-catalog/README.zh-cn.md#matlab-核心-matlab-core) | 创建、调试、审查和管理 MATLAB 代码及安装 |
 | [**MATLAB App 构建**](skills-catalog/README.zh-cn.md#matlab-app-构建-matlab-app-building) | 使用 UI 组件、布局、回调和 Web 集成以编程方式构建 MATLAB 应用程序 |
 | [**MATLAB 数据导入和分析**](skills-catalog/README.zh-cn.md#matlab-数据导入和分析-matlab-data-import-and-analysis) | 使用表、timetable、筛选、聚合和时间序列操作在 MATLAB 中导入、导出和分析数据 |
 | [**MATLAB 环境和设置**](skills-catalog/README.zh-cn.md#matlab-环境和设置-matlab-environment-and-settings) | 比较不同版本之间的 MATLAB 设置差异，并将启动脚本迁移到正确的设置路径 |
 | [**MATLAB 外部语言接口**](skills-catalog/README.zh-cn.md#matlab-外部语言接口-matlab-external-language-interfaces) | 从 MATLAB 调用 Python&reg; 库并将 MEX 文件升级到 interleaved complex API |
 | [**MATLAB 编程**](skills-catalog/README.zh-cn.md#matlab-编程-matlab-programming) | 编写具有经过验证的输入的稳健 MATLAB 函数 |
-| [**MATLAB 软件开发**](skills-catalog/README.zh-cn.md#matlab-软件开发-matlab-software-development) | 现代化遗留代码、优化性能和内存、编写文档和创建工具箱、创建工程和制定构建计划 |
+| [**MATLAB 软件开发**](skills-catalog/README.zh-cn.md#matlab-软件开发-matlab-software-development) | 编写和运行测试、现代化遗留代码、优化性能和内存、编写文档和创建工具箱、创建工程和制定构建计划 |
 
 #### 工具箱技能
 

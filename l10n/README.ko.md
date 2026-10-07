@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # MATLAB Agentic Toolkit
@@ -99,13 +99,13 @@ MATLAB Agentic Toolkit을 설치한 후에는 에이전트가 MathWorks&reg;가 
 
 | 스킬 그룹 | 설명 |
 |-------------|-------------|
-| [**MATLAB 코어**](skills-catalog/README.ko.md#matlab-코어-matlab-core) | MATLAB 코드를 생성, 디버그, 테스트, 검토하고 MATLAB 설치를 관리 |
+| [**MATLAB 코어**](skills-catalog/README.ko.md#matlab-코어-matlab-core) | MATLAB 코드를 생성, 디버그, 검토하고 MATLAB 설치를 관리 |
 | [**MATLAB 앱 작성**](skills-catalog/README.ko.md#matlab-앱-작성-matlab-app-building) | UI 컴포넌트, 레이아웃, 콜백, 웹 통합을 사용하여 프로그래밍 방식으로 MATLAB 앱 작성 |
 | [**MATLAB 데이터 가져오기 및 분석**](skills-catalog/README.ko.md#matlab-데이터-가져오기-및-분석-matlab-data-import-and-analysis) | 테이블, 타임테이블, 필터링, 집계, 시계열 연산을 사용하여 MATLAB에서 데이터 가져오기, 내보내기 및 분석 |
 | [**MATLAB 환경 및 설정**](skills-catalog/README.ko.md#matlab-환경-및-설정-matlab-environment-and-settings) | MATLAB 릴리스 간 설정 차이를 비교하고, 시작 스크립트(Startup Script)가 올바른 설정 경로를 사용하도록 마이그레이션 |
 | [**MATLAB 외부 언어 인터페이스**](skills-catalog/README.ko.md#matlab-외부-언어-인터페이스-matlab-external-language-interfaces) | MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interleaved complex API(실수부/허수부 결합형 복소수 API)로 업그레이드 |
 | [**MATLAB 프로그래밍**](skills-catalog/README.ko.md#matlab-프로그래밍-matlab-programming) | 입력값 유효성을 검사하는 견고한 MATLAB 함수 작성 |
-| [**MATLAB 소프트웨어 개발**](skills-catalog/README.ko.md#matlab-소프트웨어-개발-matlab-software-development) | 레거시 코드 현대화, 성능 및 메모리 최적화, 툴박스 문서화 및 생성, 프로젝트 생성, 빌드 계획 개발 |
+| [**MATLAB 소프트웨어 개발**](skills-catalog/README.ko.md#matlab-소프트웨어-개발-matlab-software-development) | 테스트 작성 및 실행, 레거시 코드 현대화, 성능 및 메모리 최적화, 툴박스 문서화 및 생성, 프로젝트 생성, 빌드 계획 개발 |
 
 #### 툴박스 스킬
 

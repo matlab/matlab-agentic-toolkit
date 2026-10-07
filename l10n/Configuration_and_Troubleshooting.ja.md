@@ -99,7 +99,7 @@ setupAgenticToolkit("configure", DisableTelemetry=true)
 ---
 
 <a id="adding-skills-only"></a>
-## スキルのみ追加
+## スキルのみの追加
 
 MATLAB MCP Server が既にある場合は、スキルのみが必要です。スキルは `skills-catalog/` の下のフォルダー (スキル グループと呼ばれる) にまとめられています。`matlab-core` スキル グループはインストールする必要があります。追加のドメインの専門知識のために、他の特定のスキル グループを個別にインストールできます。エージェントがスキルを確実にトリガーできるように、必要なスキルのみをインストールしてください。ワークフローで特定のスキルを確実に読み込むには、その名前を使用して手動でスキルをトリガーすることもできます。
 
@@ -276,7 +276,7 @@ cp /path/to/matlab-agentic-toolkit/templates/vscode-mcp.json .vscode/mcp.json
 ---
 
 ## サポートと貢献
-MathWorks は、このリポジトリを使用してフィードバックを提供することを推奨しています。このリポジトリではプル リクエストは有効になっていません。技術サポートを依頼したり、機能拡張リクエストを送信したりするには、[GitHub Issue を作成](https://github.com/matlab/matlab-agentic-toolkit/issues) するか、[テクニカル サポートに連絡](https://www.mathworks.com/support/contact_us.html) してください。
+MathWorks は、このリポジトリを使用してフィードバックを提供することを推奨しています。このリポジトリではプル リクエストは有効になっていません。技術サポートを依頼したり、機能拡張リクエストを送信したりするには、[GitHub Issue を作成](https://github.com/matlab/matlab-agentic-toolkit/issues)するか、[テクニカル サポートにお問い合わせ](https://www.mathworks.com/support/contact_us.html)ください。
 
 ----
 

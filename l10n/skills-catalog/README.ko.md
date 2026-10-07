@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: cd7a55815df574409a09d14d6333641cc86cff3e
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # 스킬 카탈로그
@@ -22,7 +22,7 @@ Source English Markdown:
 <!-- BEGIN SKILLS -->
 ### MATLAB 코어 ([`matlab-core`](../../skills-catalog/matlab-core/))
 
-MATLAB&reg; 코드를 생성, 디버그, 테스트, 검토하고 MATLAB 설치를 관리
+MATLAB&reg; 코드를 생성, 디버그, 검토하고 MATLAB 설치를 관리
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
@@ -32,8 +32,6 @@ MATLAB&reg; 코드를 생성, 디버그, 테스트, 검토하고 MATLAB 설치�
 | `matlab-list-products` | 지정된 MATLAB 설치 폴더에 설치된 모든 MATLAB 제품 및 지원 패키지를 표시합니다. |
 | `matlab-read-documentation` | 사용 중인 MATLAB 릴리스에 해당하는 MathWorks 문서를 가져와 탐색하여 올바른 함수 구문, 완전한 워크플로 및 MATLAB과 Simulink&reg; 소프트웨어 사용 모범 사례를 확인합니다. |
 | `matlab-review-code` | MATLAB 코드의 품질, 성능, 유지보수성, MathWorks 코딩 표준 준수 여부를 검토합니다. |
-| `matlab-run-tests` | MATLAB 테스트 스위트를 실행하고, 코드 커버리지를 수집하고, CI/CD 파이프라인을 구성합니다. |
-| `matlab-write-tests` | 클래스 기반 테스트 프레임워크를 사용하여 MATLAB 단위 테스트를 생성하고 구조화합니다. |
 
 ### MATLAB 앱 작성 ([`matlab-app-building`](../../skills-catalog/matlab-app-building/))
 
@@ -83,7 +81,7 @@ MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interlea
 
 ### MATLAB 소프트웨어 개발 ([`matlab-software-development`](../../skills-catalog/matlab-software-development/))
 
-레거시 코드 현대화, 성능 및 메모리 최적화, 툴박스 문서화 및 생성, 프로젝트 생성, 빌드 계획 개발
+테스트 작성 및 실행, 레거시 코드 현대화, 성능 및 메모리 최적화, 툴박스 문서화 및 생성, 프로젝트 생성, 빌드 계획 개발
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
@@ -92,8 +90,10 @@ MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interlea
 | `matlab-optimize-memory` | 구조화된 측정-프로파일링-최적화-검증 워크플로를 사용하여 MATLAB 코드의 메모리 병목 현상을 찾아 해결합니다. |
 | `matlab-optimize-performance` | MATLAB 코드의 성능을 최적화합니다. |
 | `matlab-package-toolbox` | MATLAB 코드를 설치 가능한 .mltbx 툴박스로 패키징합니다. |
+| `matlab-run-tests` | MATLAB 테스트 스위트를 실행하고, 코드 커버리지를 수집하고, CI/CD 파이프라인을 구성합니다. |
 | `matlab-write-help` | MathWorks 문서화 표준에 따라 MATLAB 도움말 텍스트를 생성하거나 개선합니다. |
 | `matlab-write-performance-tests` | matlab.perftest.TestCase 프레임워크를 사용하여 MATLAB 성능 테스트를 작성합니다. |
+| `matlab-write-tests` | 클래스 기반 테스트 프레임워크를 사용하여 MATLAB 단위 테스트를 생성하고 구조화합니다. |
 
 ### 항공우주 ([`aerospace`](../../skills-catalog/aerospace/))
 
@@ -112,12 +112,13 @@ MATLAB, Simulink, Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Em
 |-------|---------------------------|
 | `matlab-analyze-reliability` | 신뢰성 분석을 위해 수명 분포와 가속 수명 모델을 피팅합니다. |
 | `matlab-classify-tabular-data` | 여러 후보 모델을 비교하고 통계적으로 동등한 최상위 모델군(top tier)을 식별하여 테이블 형식 데이터를 분류합니다. |
-| `matlab-create-experiment` | 사용자 코드를 분석하고 적절한 함수와 하이퍼파라미터를 생성하여 실험 관리자 앱에서 실행할 실험을 만듭니다. |
 | `matlab-deploy-embedded-ai` | MATLAB과 Simulink를 사용하여 AI 모델을 임베디드 하드웨어에 배포합니다. |
 | `matlab-engineer-tabular-features` | MATLAB에서 단일 응답 변수에 대한 테이블 형식 분류 또는 회귀에 사용할 최적의 특징을 엔지니어링하고 선택합니다. |
 | `matlab-fit-curve` | 곡선 피팅기 앱을 사용하여 대화형 방식으로 곡선과 곡면을 피팅합니다. |
 | `matlab-import-external-ai-model` | PyTorch, ONNX, Keras 딥러닝 모델을 MATLAB으로 가져오고 수치적 정확성을 검증합니다. |
+| `matlab-interpret-machine-learning-model` | MATLAB에서 훈련된 테이블 형식 머신러닝 모델(분류 또는 회귀)을 해석하고 설명합니다. |
 | `matlab-train-network` | 권장 API를 사용하여 신경망을 훈련, 평가하고 Simulink로 내보냅니다. 레거시 신경망 훈련 코드를 최신 대체 방식으로 마이그레이션합니다. |
+| `matlab-use-experiment-manager` | 실시간 UI 동기화를 통해 실험 관리자에서 실험을 생성, 수정, 삭제 및 복제합니다. |
 | `matlab-use-machine-learning-apps` | 분류 학습기 앱과 회귀 학습기 앱을 사용하여 머신러닝 모델을 훈련시키고, 비교하고, 내보냅니다. |
 
 ### 자동차 ([`automotive`](../../skills-catalog/automotive/))
@@ -201,11 +202,13 @@ MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox
 | `matlab-display-volume` | 3차원 영상 처리를 위해 3차원 영상 볼륨, 의료 영상 볼륨, 곡면 메시, 주석을 표시합니다. |
 | `matlab-integrate-pytorch-vision` | MPyReq를 사용하여 GitHub 리포지토리 또는 pip 패키지의 Python 영상 처리 및 컴퓨터 비전 모델을 MATLAB과 연동하는 인터페이스를 만듭니다. |
 | `matlab-model-optics` | Optical Design and Simulation Library를 사용하여 광학 시스템 및 광학 코팅을 구축하고, 가져오고, 분석하고, 최적화하고, 공차 분석(tolerance)을 수행합니다. |
+| `matlab-process-images` | MATLAB Image Processing Toolbox를 사용하여 영상을 처리, 분석, 변환합니다. |
 | `matlab-process-large-images` | blockedImage를 사용하여 대용량 영상을 처리합니다. |
 | `matlab-read-medical-data` | Image Processing Toolbox 및 Medical Imaging Toolbox API를 사용하여 의료 영상 데이터(DICOM, NIfTI, NRRD)를 읽고, 쓰고, 조작합니다. |
 | `matlab-read-write-point-cloud-file` | PLY, PCD, LAS/LAZ, PCAP, E57, IDC 형식으로 3차원 포인트 클라우드 데이터를 읽고 씁니다. |
 | `matlab-recognize-text` | ocr() 함수를 사용하여 MATLAB에서 OCR 파이프라인을 구축합니다. |
 | `matlab-register-point-clouds` | ICP, NDT, LOAM, FGR, 위상 상관(phase correlation), CPD 알고리즘을 사용하여 3차원 포인트 클라우드를 정합 및 정렬합니다. |
+| `matlab-use-visual-inspection` | Visual Inspection Toolbox&trade;를 사용하여 머신 비전 검사 시스템을 구축합니다. |
 
 ### 수학 및 최적화 ([`math-and-optimization`](../../skills-catalog/math-and-optimization/))
 
@@ -304,6 +307,7 @@ MATLAB, Simulink, Audio Toolbox&trade;, DSP HDL Toolbox&trade;, DSP System Toolb
 | `matlab-design-adaptive-filter` | System Object를 사용하여 적응 필터를 설계하고 구현합니다. |
 | `matlab-design-digital-filter` | MATLAB에서 디지털 필터를 설계하고 검증합니다. |
 | `matlab-design-dsphdl-ddc` | dsphdl System Object를 사용하여 HDL 최적화 디지털 다운 컨버터(Digital Down Converter)를 설계합니다. |
+| `matlab-evaluate-acoustic-metrics` | 음향, 심리음향, 음성 품질 메트릭을 선택하고 계산합니다. |
 | `matlab-extract-signal-features` | 1차원 신호로부터 프레임별 시간, 주파수, 시간-주파수 특징을 추출합니다. |
 | `matlab-play-record-audio` | audiostreamer를 사용하여 MATLAB에서 오디오를 재생하고 녹음합니다. |
 | `matlab-prepare-signal-data` | 원시 신호를 전처리(누락된 구간 채우기, 추세 제거, 이상값 제거, 잡음 제거, 리샘플링/정렬)하고 ML 훈련을 위한 signalDatastore 파이프라인을 구축합니다. 여기에는 레이블 지정, 층화 분할(stratified split), 프레임 분할(framing), 병렬 읽기(parallel read), trainnet 전달(hand-off)이 포함됩니다. |
@@ -338,6 +342,7 @@ MATLAB, 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox
 |-------|---------------------------|
 | `matlab-add-awgn` | 통신 시뮬레이션을 위해 가산성 백색 가우스 잡음(AWGN)을 추가하고, SNR, Eb/No, Es/No, 부반송파당 SNR(per-subcarrier SNR) 간에 변환합니다. |
 | `matlab-design-ofdm-system` | ofdmmod/ofdmdemod를 사용하여 사용자 지정 OFDM 시스템을 설계하고 시뮬레이션합니다. 페이딩 채널 구성, 이퀄라이제이션, 동기화(타이밍/CFO), LDPC 코딩, SNR 처리, 부반송파 할당, 파일럿 기반 채널 추정을 포함합니다. |
+| `matlab-detect-capture-usrp` | 에너지 또는 프리앰블 트리거를 사용하여 USRP 라디오에서 RF 신호를 감지하고 캡처합니다. |
 | `matlab-generate-5g-waveform` | 3GPP를 준수하는 5G NR 다운링크 및 업링크 기저대역 파형을 생성합니다. |
 | `matlab-generate-ble-waveform` | Bluetooth Low Energy PHY 파형을 생성하고 분석합니다. |
 | `matlab-generate-gnss-waveform` | Satellite Communications Toolbox를 사용하여 물리적으로 현실적인 채널 손상 또는 사용자 지정된 채널 손상이 포함된 GNSS 기저대역 파형(GPS, Galileo, NavIC)을 생성합니다. |

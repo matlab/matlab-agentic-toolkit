@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 2e666f3ff5d9ee8046297c23bee913d7a6dd1124
+- Commit: a8c3d13fe0c8ebd9c05454bb38f13e5904eeabc4
 -->
 
 # MATLAB Agentic Toolkit
@@ -26,7 +26,7 @@ MATLAB&reg; Agentic Toolkit を使用すると、AI エージェントに MATLAB
 
 - スキルと呼ばれる厳選された専門知識をエージェントに提供する。これらのスキルは MATLAB のワークフロー、規約、ベスト プラクティスに関する知識をエージェントに提供するとともに、トークン消費を最小限に抑えます。
 
-> [!メモ]
+> [!NOTE]
 > AI エージェントを Simulink&reg; でのみ使用する場合は、[Simulink Agentic Toolkit](https://github.com/matlab/simulink-agentic-toolkit) をインストールしてください。両方のツールキットをインストールする場合は、[Agentic Toolkit Installer](#matlab-agentic-toolkit-のインストール) を使用してください。
 
 
@@ -45,7 +45,7 @@ MATLAB&reg; Agentic Toolkit を使用すると、AI エージェントに MATLAB
 
 以下の手順では、MATLAB Agentic Toolkit を使用して MATLAB MCP Server をインストールし、エージェントにスキルを追加する方法を示します。
 
-> メモ: ローカル ファイルからのインストール、オフライン環境でのインストール、このツールキットの設定オプション、プラットフォーム固有の注意事項、検証手順、トラブルシューティング、インストーラーを使用しない手動セットアップについては、[Configuration and Troubleshooting](Configuration_and_Troubleshooting.ja.md) を参照してください。MCP サーバーが既にインストールされていてスキルの追加のみが必要な場合は、[Adding Skills Only](Configuration_and_Troubleshooting.ja.md#adding-skills-only) を参照してください。
+> メモ: ローカル ファイルからのインストール、オフライン環境でのインストール、このツールキットの設定オプション、プラットフォーム固有の注意事項、検証手順、トラブルシューティング、インストーラーを使用しない手動セットアップについては、[構成とトラブルシューティング](Configuration_and_Troubleshooting.ja.md) を参照してください。MCP サーバーが既にインストールされていてスキルの追加のみが必要な場合は、[スキルのみの追加](Configuration_and_Troubleshooting.ja.md#adding-skills-only) を参照してください。
 
 ### MATLAB Agentic Toolkit のインストール
 
@@ -99,13 +99,13 @@ MATLAB Agentic Toolkit のインストール後、エージェントは MathWork
 
 | スキル グループ | 説明 |
 |-------------|-------------|
-| [**MATLAB 基本機能**](skills-catalog/README.ja.md#matlab-基本機能-matlab-core) | MATLAB コードとインストールの作成、デバッグ、テスト、レビュー、管理 |
+| [**MATLAB 基本機能**](skills-catalog/README.ja.md#matlab-基本機能-matlab-core) | MATLAB コードとインストールの作成、デバッグ、レビュー、管理 |
 | [**MATLAB アプリ作成**](skills-catalog/README.ja.md#matlab-アプリ作成-matlab-app-building) | UI コンポーネント、レイアウト、コールバック、Web 統合を使用して MATLAB アプリをプログラムで作成 |
 | [**MATLAB データ インポートと解析**](skills-catalog/README.ja.md#matlab-データ-インポートと解析-matlab-data-import-and-analysis) | table、timetable、フィルタリング、集計、時系列演算を使用した MATLAB でのデータのインポート、エクスポート、解析 |
 | [**MATLAB 環境と設定**](skills-catalog/README.ja.md#matlab-環境と設定-matlab-environment-and-settings) | リリース間の MATLAB 設定の差分比較とスタートアップ スクリプトの正しい設定パスへの移行 |
 | [**MATLAB 外部言語インターフェイス**](skills-catalog/README.ja.md#matlab-外部言語インターフェイス-matlab-external-language-interfaces) | MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルをインターリーブされた複素数 API にアップグレード |
 | [**MATLAB プログラミング**](skills-catalog/README.ja.md#matlab-プログラミング-matlab-programming) | 入力検証を備えた堅牢な MATLAB 関数の記述 |
-| [**MATLAB ソフトウェア開発**](skills-catalog/README.ja.md#matlab-ソフトウェア開発-matlab-software-development) | レガシ コードの最新化、パフォーマンスとメモリの最適化、ドキュメント作成とツールボックスの作成、プロジェクトの作成、ビルド プランの作成 |
+| [**MATLAB ソフトウェア開発**](skills-catalog/README.ja.md#matlab-ソフトウェア開発-matlab-software-development) | テストの記述と実行、レガシ コードの最新化、パフォーマンスとメモリの最適化、ドキュメント作成とツールボックスの作成、プロジェクトの作成、ビルド プランの作成 |
 
 #### ツールボックス スキル
 
