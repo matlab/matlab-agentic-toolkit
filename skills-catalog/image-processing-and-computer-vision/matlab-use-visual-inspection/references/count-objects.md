@@ -48,7 +48,7 @@ Set `MaxMatches` at least as high as the maximum expected count in the scene.
 Use `Inf` when the count is unknown; use a known upper bound (e.g., 50) when
 you want to limit computation for speed.
 
-See `matlab-match-shape` skill for full guidance on parameter tuning, synthetic
+See `references/match-shape.md` for full guidance on parameter tuning, synthetic
 templates, and multi-class counting.
 
 **Strengths:** No training, fast, deterministic, works with a single template.
@@ -126,7 +126,7 @@ detected objects above threshold.
 count = size(bboxes, 1);
 ```
 
-See `matlab-detect-objects` skill for training, threshold selection, and
+See `references/detect-objects.md` for training, threshold selection, and
 evaluation workflows.
 
 **Strengths:** Precise localization, per-class counting, handles complex scenes.

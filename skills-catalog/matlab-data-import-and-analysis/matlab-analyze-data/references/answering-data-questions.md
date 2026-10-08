@@ -51,6 +51,7 @@ Always return the actual values from the dataset, not interpretations or mapping
 
 When filtering data, consider whether exact matching (`==`, `matches`) or partial matching (`contains`, `startsWith`) is more appropriate for the use case.
 
+- For computed numeric values (cumulative sums, ratios, scaled measurements), use `isapprox` instead of `==` for lookups. Floating-point accumulation means values like `cumsum(repmat(0.1,50,1))` won't equal `5.0` exactly. See [data-transformation.md](data-transformation.md) for tolerance options.
 - For row counting after filtering, use `height(filteredTable)` or `nnz(logicalIndex)`.
 - Verify the magnitude of results against the known table size.
 

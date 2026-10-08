@@ -76,6 +76,12 @@ vs `hh` (12-hour), `mm` (minute), `ss` (second), `QQQ` (quarter), `ZZZZZ` (offse
 Manual text/regex parsing is only justified when (a) the data uses a token `datetime` does not
 support, or (b) an `InputFormat` call errors or returns `NaT` on the real values.
 
+**Time standards (R2026b).** By default a `datetime` has no associated time standard (`TimeStandard="none"`), so its interpretation depends on context. For leap-second-sensitive or domain-specific work (e.g. aerospace, astronomy, telecommunications), set the `TimeStandard` name-value argument to an explicit standard — International Atomic Time (`"TAI"`) or Terrestrial Time (`"TT"`), with `"UTC"` and `"simplifiedUTC"` also supported:
+```matlab
+t = datetime("now",TimeStandard="TT");     % set at construction (preferred)
+```
+Like `TimeZone` and `Format`, `TimeStandard` is also a property — assign it directly (`t.TimeStandard = "TAI";`) only to restamp an existing datetime.
+
 ### Extract datetime components
 
 Pull out parts of a datetime for computed variables, filtering, or display. In these examples, `T` is a table with a `Date` variable of type `datetime`:
@@ -87,11 +93,14 @@ T.Day = day(T.Date);
 T.Weekday = weekday(T.Date);               % numeric (1=Sunday)
 T.Quarter = quarter(T.Date);
 T.Hour = hour(T.Date);
+T.TimeOfDay = timeofday(T.Date);               % duration since midnight
 
 % Split into multiple components at once
 [y,m,d] = ymd(T.Date);
 [h,m,s] = hms(T.Date);
 ```
+
+See [data-transformation.md](data-transformation.md) for filtering with `isbetween`.
 
 Use `dateshift` to snap dates to calendar boundaries or find specific weekdays:
 ```matlab
@@ -114,6 +123,14 @@ T.ResponseTime = T.EndTime - T.StartTime;       % duration result
 offset = calmonths(3) + caldays(15);
 T.DueDate = T.StartDate + offset;
 ```
+
+**Pin arithmetic to period ends with `ArithmeticMethod` (R2026b).** By default, adding a `calendarDuration` preserves the day of the month when it exists. To keep results anchored to the end of the month or quarter instead, construct the `calendarDuration` with `ArithmeticMethod="endofmonth"` (or `"endofquarter"`):
+```matlab
+% Month-end-aware offset: adding it lands on month ends (Jan 31 → Feb 28/29 → Mar 31 → ...)
+offset = calendarDuration(0,1,0,ArithmeticMethod="endofmonth");
+T.PeriodEnd = T.StartDate + offset;
+```
+`caldiff` and `between` support the same end-of-period differencing, and `isregular` recognizes month-end/quarter-end row times as regular.
 
 Use `duration` for fixed time periods (elapsed time, sensor intervals). Use `calendarDuration` when calendar boundaries matter (months and years have variable lengths due to leap years and DST).
 
@@ -182,6 +199,12 @@ Use ordinal categorical for rankings and comparisons:
 T.Priority = categorical(T.Priority, ...
     ["Low" "Medium" "High" "Critical"], Ordinal=true);
 urgent = T(T.Priority >= "High",:);
+```
+
+**`matches`, `startsWith`, `endsWith`, and `contains` accept `categorical` input directly (R2026b).** They test against the category names, so there is no need to convert a categorical variable back to `string` first:
+```matlab
+isActive  = matches(T.Status,"Active");          % T.Status is categorical — no string(T.Status)
+hasPrefix = startsWith(T.Region,"North");        % operates on the category names directly
 ```
 
 ### Manage categories

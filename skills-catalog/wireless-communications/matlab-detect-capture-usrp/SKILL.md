@@ -4,17 +4,16 @@ description: Smart triggered RF capture on NI USRP radios with Wireless Testbenc
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Detect and Capture RF Signals on NI USRP Radios
 
 ## Reference Loading
 - **Code patterns (required at Step 4):** for the seven copy-ready capture patterns (A–G) and the loopback table, `Read references/patterns.md` before generating any capture code.
-- For API signatures, property ranges, and threshold constraints: `Read references/api.md`
-- For conceptual architecture and detector behavior: `Read references/overview.md`
-- For the threshold calibration sub-workflow (`plotDetectionSignals` / `plotThreshold` step-by-step): `Read references/threshold-calibration.md`
-- Load the api / overview / calibration references only when generating code that requires specific parameter values, constraints, or tuning.
+- **API reference (required at Step 3):** `Read references/api.md` for signatures, property ranges, and threshold constraints. Every generation validates parameters against it before emitting code — see the Always rule below. This read is not optional.
+- **On demand:** `references/overview.md` — conceptual architecture and detector behavior.
+- **On demand, after a failure only:** `references/threshold-calibration.md` — the calibration sub-workflow (`plotDetectionSignals` / `plotThreshold` step-by-step). Do not load it during first-time code generation.
 
 ## Sub-Workflows
 
@@ -30,8 +29,16 @@ Route into `references/threshold-calibration.md` whenever **any** of these condi
 
 1. **No detection** — generated Pattern returned `status == 0` (capture timed out, no data captured) and the user expected a signal to fire it. This is the primary trigger.
 2. **Wrong detection** — Pattern returned `status >= 1` but the captured data is wrong: noise instead of signal, baseline instead of preamble, saturated waveform (`max(abs(data))` near `1.414`), or sanity ratio fails (`r < 50` for energyDetector, `r < 100` for preambleDetector).
-3. **Unstable detection** — Pattern fires inconsistently across consecutive runs (sometimes `status=0`, sometimes `status=1`); thresholds are sitting on a jittery boundary.
+3. **Unstable detection** — the user reports, or an earlier run in this session already showed, that the Pattern fires inconsistently (sometimes `status=0`, sometimes `status=1`); thresholds are sitting on a jittery boundary. Do **not** run extra captures hunting for this — the Always rule below caps a clean run at one.
 4. **User explicitly asks** to "calibrate", "tune thresholds", "tune detection", "fix detection", "why didn't it detect", "diagnose", or names `plotDetectionSignals` / `plotThreshold`.
+
+**Sanity ratio `r` — where it comes from.** Every Pattern's `%% Verify` block computes and prints `r`, so triggers 2 and 3 are read straight off the pattern's own output. No extra run is needed.
+
+| Detector | Formula the pattern prints | Real signal |
+|----------|---------------------------|-------------|
+| `energyDetector` (A/B/E/F) | `r = max(abs(data).^2) / median(abs(data).^2)` | `r >= 50` |
+| `preambleDetector` (C/D/G) | same ratio on the matched-filter output, `filter(conj(flipud(pd.Preamble)), 1, data)` | `r > 100` |
+| Wideband chirp / OFDM (F) | raw `r` under-reports — `15-20` is normal; the pattern also prints a matched-filter ratio | matched-filter ratio `>> 100` |
 
 Do **not** route into the sub-workflow for first-time code generation — generate the Pattern from this SKILL.md, run it, and only route into calibration on a failure outcome. The sub-workflow assumes a detector object is already configured and a TX or external signal is present.
 
@@ -171,8 +178,8 @@ Organized by when they apply: **Always** rules fire on every generation, **Ask F
 - **Use a `radioName` variable from user input** — never hardcode radio names.
 - **Begin every pattern with `clear ed pd`** — releases any prior radio lease regardless of detector class. The same physical radio can be held by either an `energyDetector` or a `preambleDetector` object; clearing only one variable name does not release a lease held by the other, which causes `validateLeaseOwner` errors when patterns are pasted sequentially into the same MATLAB session.
 - **Validate threshold ranges before generating code** — see `references/api.md` for exact valid ranges per parameter (key: energyDetector `FixedThreshold` [0, 8191], preambleDetector `FixedThreshold` [0, 4095]). If a value is out of range, state the valid range and do not emit the code.
-- **End every generated code block with a `%% Verify` section** that reports the outcome. Do NOT hard-`assert` on `status`: a timeout (`status == 0`) is an expected result to handle (warn + route to calibration), not a crash — a hard assert makes a no-signal bench run throw.
-- **Stop after the first successful capture — do not re-run to "confirm."** Once a capture returns `status == 1` and the `%% Verify` sanity check passes (or, for a wideband chirp/OFDM signal, the matched-filter check confirms it), the task is done. Do NOT execute the full deliverable again end-to-end or re-open `plotDetectionSignals` / `plotThreshold` to double-check — each extra radio round-trip costs real seconds and risks a timeout.
+- **End every generated code block with a `%% Verify` section** that reports the outcome and prints the sanity ratio `r` (formulas in the table above). Do NOT hard-`assert` on `status`: a timeout (`status == 0`) is an expected result to handle (warn + route to calibration), not a crash — a hard assert makes a no-signal bench run throw.
+- **Run the generated script once — do not re-run it to "confirm."** This caps whole-script runs, *not* the loops inside one run: let Pattern E complete all `NumCaptures` captures and let Pattern G finish every channel in its scan loop. Once `%% Verify` reports success (`status == 1`, or `status > 0` for multi-capture) and the printed `r` clears its threshold — or, for a wideband chirp/OFDM signal, the matched-filter ratio confirms it — the task is done. Do NOT execute the full deliverable again end-to-end or re-open `plotDetectionSignals` / `plotThreshold` to double-check — each extra radio round-trip costs real seconds and risks a timeout. *Only* exception: the user reports earlier inconsistent firing (sub-workflow trigger 3), where a short repeat is allowed — see Exit Criteria in `references/threshold-calibration.md`.
 - **Use `transmit()` / `stopTransmission()` on the detector object** for transmit-then-detect — do NOT create a separate `basebandTransmitter`.
 - **Set `ThresholdMethod` before calling `transmit()`** — you cannot switch fixed↔adaptive during a continuous transmission (it errors: "stop the ongoing transmission first"). `MinimumEnergy`, `EnergyDeltaThreshold`, and `FixedThreshold` *can* be tuned live, so sweep those without stopping.
 - **Match the calibration plot to the detector class** — `plotDetectionSignals` is energyDetector-only; `plotThreshold` is preambleDetector-only. Never cross them.

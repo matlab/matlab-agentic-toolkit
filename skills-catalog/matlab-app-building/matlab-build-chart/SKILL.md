@@ -3,7 +3,7 @@ name: matlab-build-chart
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.1"
+  version: "1.2"
 description: >
   Create and customize MATLAB charts and plots. Plot types (line, scatter,
   bar, histogram, heatmap, surface), axes configuration, annotations, data tips,
@@ -249,7 +249,6 @@ Issues marked *(uifigure only)* apply only when plotting in uifigure apps.
 | Heatmap fails in uiaxes *(uifigure only)* | Heatmap needs figure/panel parent | Use `heatmap(fig, ...)` or `heatmap(panel, ...)` |
 | `saveas` fails *(uifigure only)* | Not supported for uifigure | Use `exportgraphics(ax, file)` |
 | `subplot()` errors *(uifigure only)* | Not supported in uifigure | Use `tiledlayout`/`nexttile` or `uigridlayout` |
-| Zoom stops working after scroll callback *(uifigure only)* | `WindowScrollWheelFcn` disables zoom | Call `disableDefaultInteractivity(ax)` |
 
 ## References
 

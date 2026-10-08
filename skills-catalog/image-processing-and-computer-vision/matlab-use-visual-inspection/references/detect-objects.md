@@ -14,8 +14,8 @@ feature fusion — the recommended detector for industrial defect detection.
 
 ## When NOT to Use
 
-- Anomaly detection without defect labels — use `matlab-detect-anomaly`
-- Template matching / part localization — use `matlab-match-shape`
+- Anomaly detection without defect labels — see `references/detect-anomaly.md`
+- Template matching / part localization — see `references/match-shape.md`
 - Pixel-level segmentation — use semantic segmentation
 - Only need binary good/bad without localization — use anomaly detection
 

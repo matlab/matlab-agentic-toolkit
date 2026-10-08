@@ -13,6 +13,8 @@ Trange = T(isbetween(T.Age,18,65),:);              % range filtering (two bounds
 Trecent = T(T.Date > datetime(2024,1,1), :);       % single bound — logical indexing
 ```
 
+For time-of-day component extraction before filtering, see [data-types.md](data-types.md) § "Extract datetime components".
+
 **Exception**: Use `find` when you need the actual indices (e.g., for reporting positions).
 
 **Floating-point pitfall:** Do not use `==` to match computed numeric values — round-off error makes exact equality unreliable. Use `isapprox` (R2024b) instead:
@@ -78,7 +80,7 @@ end
 
 ## Use `varfun` for variable-wise operations
 
-**Note:** Many math functions (`mean`, `std`, `sum`, `min`, `max`, `log10`, `exp`, `sin`, `abs`, etc.) accept tables directly - prefer `std(T)` over `varfun(@std,T)` or `convertvars(T,vartype("numeric"),@log)`. See "Pass tables directly to math and chart functions when supported" in `tables-and-timetables.md`.
+**Note:** `varfun`, brace indexing, and `table2array` are unnecessary when a built-in function or operator already accepts tables. Math functions like `mean`, `std`, `sum` accept tables directly, and scalar arithmetic (`T * 100`, `T / 2`) works on tables directly. See [tables-and-timetables.md](tables-and-timetables.md) for examples.
 
 ```matlab
 % Apply a custom function to each numeric variable independently
@@ -168,7 +170,7 @@ for i = 1:height(T)
 end
 ```
 
-Note: if the binning is for a subsequent grouping step, `groupsummary`, `groupfilter`, `grouptransform`, and `pivot` all support binning on the fly via binning rules — no need to create a separate variable. See the grouping deep dive for examples.
+Note: if the binning is for a subsequent grouping step, `groupsummary`, `groupfilter`, `grouptransform`, and `pivot` all support binning on the fly via binning rules — no need to create a separate variable. See [grouping-and-aggregation.md](grouping-and-aggregation.md) for examples.
 
 ## Use `normalize` not `zscore`
 ```matlab
@@ -274,6 +276,11 @@ Functions that support `ReplaceValues`: `fillmissing`, `filloutliers`, `smoothda
 T = innerjoin(T1,T2, Keys="Key");                            % only matching rows
 T = outerjoin(T1,T2, Keys="Key", MergeKeys=true);            % all rows, fill missing
 T = join(T1,T2);                                             % assumes matching key names
+```
+
+**Control output row order with `RowOrder`.** By default, `innerjoin` and `outerjoin` sort the output rows by the key variables. Pass `RowOrder="stable"` to return rows in the order they appear in the input instead — this also skips the sort, which can improve performance on large tables and tall arrays:
+```matlab
+T = innerjoin(T1,T2, Keys="Key", RowOrder="stable");         % preserve input order, skip the key-sort
 ```
 
 ---

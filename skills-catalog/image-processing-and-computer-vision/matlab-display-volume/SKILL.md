@@ -4,7 +4,7 @@ description: Display 3-D image volumes, medical image volumes, surface meshes, a
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 ---
 
 # Volume Display
@@ -312,7 +312,7 @@ viewer.AnnotationMovedFcn = @(~,evt) fprintf("ROI Position: [%.1f, %.1f, %.1f]\n
 
 When building apps, call `viewer3d(parent)` to create a Viewer parented to a `uigridlayout`, then call `volshow` with that Viewer as the parent. Create the Volume object eagerly at construction time with empty data (`[]`) — this avoids conditional logic later and lets you simply update `obj.Data` when data becomes available. Only defer Volume creation if the app supports switching between fundamentally different display modes (e.g., volume vs. surface-only).
 
-Use a standard app classdef (see `matlab-building-apps` skill) with the following in `createComponents`:
+Use a standard app classdef (see `matlab-build-app` skill) with the following in `createComponents`:
 
 ```matlab
 % Inside createComponents(app) — viewer3d parented to grid layout

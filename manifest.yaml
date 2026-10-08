@@ -11,7 +11,7 @@ dependencies:
 skill-groups:
   - name: matlab-core
     display-name: "MATLAB Core"
-    description: "Create, debug, test, review, and manage MATLAB code and installations. Every toolkit user needs these"
+    description: "Create, debug, review, and manage MATLAB code and installations. Every toolkit user needs these"
     path: skills-catalog/matlab-core
     required: true
 
@@ -25,11 +25,6 @@ skill-groups:
     description: "Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations"
     path: skills-catalog/matlab-data-import-and-analysis
 
-  - name: matlab-environment-and-settings
-    display-name: "MATLAB Environment and Settings"
-    description: "Diff MATLAB settings between releases and migrate startup scripts to correct setting paths"
-    path: skills-catalog/matlab-environment-and-settings
-
   - name: matlab-external-language-interfaces
     display-name: "MATLAB External Language Interfaces"
     description: "Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API"
@@ -42,95 +37,95 @@ skill-groups:
 
   - name: matlab-software-development
     display-name: "MATLAB Software Development"
-    description: "Modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans"
+    description: "Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, manage packages, and develop build plans"
     path: skills-catalog/matlab-software-development
 
   - name: aerospace
     display-name: "Aerospace"
-    description: "MATLAB, Aerospace Toolbox"
+    description: "Aerospace Toolbox"
     path: skills-catalog/aerospace
 
   - name: ai-and-statistics
     display-name: "AI and Statistics"
-    description: "MATLAB, Simulink, Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models"
+    description: "Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models"
     path: skills-catalog/ai-and-statistics
 
   - name: automotive
     display-name: "Automotive"
-    description: "MATLAB, Simulink, Automated Driving Toolbox, Computer Vision Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox"
+    description: "Automated Driving Toolbox, Computer Vision Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox"
     path: skills-catalog/automotive
 
   - name: cloud-solutions
     display-name: "Cloud Solutions"
-    description: "MATLAB, MATLAB Drive"
+    description: "MATLAB Drive"
     path: skills-catalog/cloud-solutions
 
   - name: code-generation
     display-name: "Code Generation"
-    description: "MATLAB, Embedded Coder, Fixed-Point Designer, GPU Coder, MATLAB Coder, MATLAB Test, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models"
+    description: "Embedded Coder, Fixed-Point Designer, GPU Coder, MATLAB Coder, MATLAB Test, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models"
     path: skills-catalog/code-generation
 
   - name: computational-biology
     display-name: "Computational Biology"
-    description: "MATLAB, SimBiology, and Statistics and Machine Learning Toolbox"
+    description: "SimBiology and Statistics and Machine Learning Toolbox"
     path: skills-catalog/computational-biology
 
   - name: computational-finance
     display-name: "Computational Finance"
-    description: "MATLAB, Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link"
+    description: "Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link"
     path: skills-catalog/computational-finance
 
   - name: control-systems
     display-name: "Control Systems"
-    description: "MATLAB, Control System Toolbox, Predictive Maintenance Toolbox, Signal Processing Toolbox, Statistics and Machine Learning Toolbox, and System Identification Toolbox"
+    description: "Control System Toolbox, Predictive Maintenance Toolbox, Signal Processing Toolbox, Statistics and Machine Learning Toolbox, and System Identification Toolbox"
     path: skills-catalog/control-systems
 
   - name: image-processing-and-computer-vision
     display-name: "Image Processing and Computer Vision"
-    description: "MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox, Lidar Toolbox, Medical Imaging Toolbox, and Optical Design and Simulation Library for Image Processing Toolbox"
+    description: "Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox, Lidar Toolbox, Medical Imaging Toolbox, Optical Design and Simulation Library for Image Processing Toolbox, and Visual Inspection Toolbox"
     path: skills-catalog/image-processing-and-computer-vision
 
   - name: math-and-optimization
     display-name: "Math and Optimization"
-    description: "MATLAB, Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox"
+    description: "Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox"
     path: skills-catalog/math-and-optimization
 
   - name: parallel-computing
     display-name: "Parallel Computing"
-    description: "MATLAB, Parallel Computing Toolbox, and MATLAB Parallel Server"
+    description: "Parallel Computing Toolbox and MATLAB Parallel Server"
     path: skills-catalog/parallel-computing
 
   - name: radar
     display-name: "Radar"
-    description: "MATLAB, Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox"
+    description: "Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox"
     path: skills-catalog/radar
 
   - name: reporting-and-database-access
     display-name: "Reporting and Database Access"
-    description: "MATLAB, Database Toolbox, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator"
+    description: "Database Toolbox, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator"
     path: skills-catalog/reporting-and-database-access
 
   - name: rf-and-mixed-signal
     display-name: "RF and Mixed Signal"
-    description: "MATLAB, Simulink, Antenna Toolbox, Mixed-Signal Blockset, RF Blockset, RF PCB Toolbox, RF Toolbox, SerDes Toolbox, Signal Integrity Toolbox, Signal Processing Toolbox, and Statistics and Machine Learning Toolbox"
+    description: "Antenna Toolbox, Mixed-Signal Blockset, RF Blockset, RF PCB Toolbox, RF Toolbox, SerDes Toolbox, Signal Integrity Toolbox, Signal Processing Toolbox, and Statistics and Machine Learning Toolbox"
     path: skills-catalog/rf-and-mixed-signal
 
   - name: robotics-and-autonomous-systems
     display-name: "Robotics and Autonomous Systems"
-    description: "MATLAB, Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox"
+    description: "Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox"
     path: skills-catalog/robotics-and-autonomous-systems
 
   - name: signal-processing
     display-name: "Signal Processing"
-    description: "MATLAB, Simulink, Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Fixed-Point Designer, HDL Coder, Signal Processing Toolbox, and Wavelet Toolbox"
+    description: "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Fixed-Point Designer, HDL Coder, Signal Processing Toolbox, and Wavelet Toolbox"
     path: skills-catalog/signal-processing
 
   - name: test-and-measurement
     display-name: "Test and Measurement"
-    description: "MATLAB, Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware"
+    description: "Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware"
     path: skills-catalog/test-and-measurement
 
   - name: wireless-communications
     display-name: "Wireless Communications"
-    description: "MATLAB, 5G Toolbox, Bluetooth Toolbox, Communications Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, Wireless Testbench, WLAN Toolbox, and Wireless Testbench Support Package for NI USRP Radios"
+    description: "5G Toolbox, Bluetooth Toolbox, Communications Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, Wireless Testbench, WLAN Toolbox, and Wireless Testbench Support Package for NI USRP Radios"
     path: skills-catalog/wireless-communications

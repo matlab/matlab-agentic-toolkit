@@ -229,6 +229,17 @@ TT.Properties.DimensionNames{1}                     % check the actual name
 
 This matters when referencing row times by name in `groupsummary`, `sortrows`, or other functions. Always use the actual dimension name rather than assuming `"Time"`.
 
+## Timetables support numeric row times for non-time axes (R2026b)
+
+Row times are no longer restricted to `datetime`/`duration` — a timetable can use a numeric (`double` or `single`) vector as its row times, so you can index by a unit-agnostic quantity such as distance or depth rather than clock time. A plain numeric subscript still selects by *position*, so use the `labels` subscripting helper to indicate that the contained numeric values are row-time subscripts rather than positional indices:
+```matlab
+TT = timetable(temperature, RowTimes=depth);   % depth (double, e.g. metres) as row times
+TT(100,:)                    % positional: the 100th row
+TT(labels(100),:)            % row-time subscript: the row where depth == 100
+TT(timerange(100,inf),:)     % row-time range: rows with depth > 100
+```
+The spacing-aware preprocessing benefits of timetables (`retime`, `fillmissing`, `smoothdata`, ...) still apply along the numeric axis.
+
 ## Use `retime` to resample timetables, not manual interpolation
 ```matlab
 TThourly = retime(TT,"hourly","linear");
@@ -395,6 +406,19 @@ data = fillmissing(data,"linear");
 data = smoothdata(data,"movmean",25);
 data = detrend(data);
 ```
+
+## Scalar arithmetic on tables and timetables (R2026b)
+
+**Scalar arithmetic operators apply directly to a table/timetable (R2026b).** You can now use `*`, `/`, and `\` on a table or timetable whose other operand is a scalar (`mtimes`/`mrdivide`/`mldivide`) — no data extraction needed. The scalar is applied to every variable and the variable names are preserved:
+```matlab
+Tpercents = T * 100;       % convert fractional values to percentages
+Thalf     = T / 2;         % halve every variable
+
+% Avoid — extracting to array for a simple scalar operation
+T{:,:} = T{:,:} * 100;             % unnecessary brace indexing
+T2 = array2table(table2array(T) / 2, VariableNames=T.Properties.VariableNames);  % unnecessary round-trip
+```
+Only a scalar is supported as the other operand; for element-wise math against another array, operate per variable or extract to an array.
 
 ## Use `table2array` when you need a numeric array
 ```matlab

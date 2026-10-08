@@ -1,6 +1,6 @@
 # Time-Domain Analysis
 
-For time-domain channel characterization (TDR, impulse response, step response, eye diagrams), fit the extracted S-parameters with a rational model, then compute time responses. See the `matlab-fit-rational-model` skill for full details.
+For time-domain channel characterization (TDR, impulse response, step response, eye diagrams), fit the extracted S-parameters with a rational model, then compute time responses. See `reference/rational-fitting.md` for full details.
 
 ## End-to-End: .s4p Connector + Trace + Via → Step Response
 

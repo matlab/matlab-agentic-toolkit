@@ -6,8 +6,11 @@ Wireless Testbench provides two detection application objects for triggered capt
 
 | Object | Trigger Mechanism | Use When |
 |--------|-------------------|----------|
-| `energyDetector` | Signal power exceeds threshold | No known preamble; detect any signal appearance |
+| `energyDetector` | Signal power exceeds threshold | The user gives an **explicit** energy/power cue ("energy", "power rise", "above the noise floor") |
 | `preambleDetector` | Correlation with known sequence | Known preamble (Zadoff-Chu, L-LTF, PSS, etc.) |
+
+The absence of a preamble is **not** a cue for energy detection. If the request names no energy/power
+cue, no preamble, and no threshold parameters, ask first — see the Ask First guardrail in `SKILL.md`.
 
 Both objects require exclusive access to radio hardware. Only one application object per radio can exist at a time.
 

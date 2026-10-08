@@ -32,20 +32,20 @@ Default statistics by variable type:
 - **logical:** true/false counts only
 - **string, calendarDuration, other:** `NumMissing` only (no additional stats)
 
-**This single call already provides variable names, types, dimensions, missing counts, and descriptive statistics — do not recompute these with `varfun(@class,...)`, `sum(ismissing(...))`, or similar.**
+**This single call already provides variable names, types, dimensions, missing counts, and descriptive statistics — AVOID recomputing these with `varfun(@class,...)`, `sum(ismissing(...))`, or similar.**
 
 For standalone scripts intended for human readers, leave the semicolon off to invoke the `display` method — it shows dimensions, variable names, and a truncated preview. Avoid `disp` (omits headers and prints every row, flooding output on large tables) and `fprintf` in a loop (verbose, old-style):
 
 ```matlab
 head(T)                         % first 8 rows - see what the data looks like
 summary(T)                      % per-variable: type, stats, missing counts
-size(T)                         % [nRows, nVars]
-T.Properties.VariableNames      % variable names
-T.Properties.VariableTypes      % programmatic access to types
+size(T)                         % [nRows, nVars] -- not necessary if also calling summary()
+T.Properties.VariableNames      % variable names -- not necessary if also calling summary()
+T.Properties.VariableTypes      % programmatic access to types -- not necessary if also calling summary()
 T                               % dimensions + header + truncated preview
 ```
 
-`summary` is the single most informative exploration command: it shows the data type of every variable, descriptive statistics (min, median, max for numeric; counts for categorical), and missing value counts. For wide tables it is more useful than `head` since it shows every variable without truncation. From R2024b, use `Statistics`, `DataVariables`, and `Detail` name-value arguments to customize:
+`summary` is the single most informative exploration command. It always includes the basics for every variable: Size, Type, and Description (when available). It also shows a default set of per-variable descriptive statistics (min, median, max for numeric; counts for categorical), and missing value counts. For wide tables it is more useful than `head` since it shows every variable without truncation. From R2024b, use `Statistics`, `DataVariables`, and `Detail` name-value arguments to customize:
 ```matlab
 summary(T, Statistics=["mean" "std" "min" "max"], DataVariables=vartype("numeric"))  % R2024b+
 summary(T, Statistics="allstats")    % everything available; silently skips stats that don't apply to a given type
@@ -56,7 +56,7 @@ Note: `Detail="high"` only affects the printed display. When capturing output (`
 
 ## 2. Missing Data Assessment
 
-Understand the extent of missingness before deciding how to handle it:
+If you already called `summary(T)`, each variable's struct field includes `NumMissing` — you do not need `sum(ismissing(T))` to repeat that count. Use the functions below for targeted missing-data questions if the full `summary(T)` has not been already calculated:
 
 ```matlab
 anymissing(T)                               % quick check: any missing values at all?
@@ -93,6 +93,28 @@ countcats(T.Category)                       % counts for each defined category
 categories(T.Category)                      % list defined category names
 ```
 
+### Density estimation
+
+Use `kde` (base MATLAB, R2023b) for smooth univariate density estimates:
+
+```matlab
+% Basic density estimate
+[f, xf, bw] = kde(T.Price);
+
+% Positive data with plug-in bandwidth — good for multimodal or skewed distributions
+% Support: "unbounded" (default), "positive", "nonnegative", "negative", or [L U]
+% Bandwidth: "normal-approx" (default), "plug-in", or positive scalar
+[f, xf] = kde(T.ResponseTime, Support="positive", Bandwidth="plug-in");
+
+% Cumulative distribution function
+% ProbabilityFcn: "pdf" (default) or "cdf"
+[f, xf] = kde(T.Value, ProbabilityFcn="cdf", Support=[0 100]);
+```
+
+Also accepts `Kernel` (`"normal"`, `"box"`, `"triangle"`, `"parabolic"`, or function handle), `EvaluationPoints` or `NumPoints` to control where the estimate is evaluated, and `Weight` for weighted observations.
+
+For bivariate density, censored data, or survival functions (`"survivor"`, `"cumhazard"`, `"icdf"`), use `ksdensity` (requires Statistics and Machine Learning Toolbox).
+
 ## 4. Relationships Between Variables
 
 These are examples of common techniques, not an exhaustive list. Choose what is appropriate for the data and question — consider other approaches beyond these based on the dataset's characteristics:
@@ -109,7 +131,7 @@ pivot(T, Rows="Department", Columns="Status", Method="count")
 groupsummary(T,"Region","mean","Revenue")
 ```
 
-For Kendall or Spearman rank correlation, use `corr` (requires Statistics and Machine Learning Toolbox) with the `Type` name-value argument.
+For Kendall or Spearman rank correlation, use `corr` (requires Statistics and Machine Learning Toolbox) with the `Type` name-value argument. When complete cases are required and you need to explicitly remove rows, see the `rmmissing` caution in [data-cleaning.md](data-cleaning.md).
 
 ## 5. Uniqueness and Cardinality
 

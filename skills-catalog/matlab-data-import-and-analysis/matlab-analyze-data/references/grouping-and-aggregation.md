@@ -77,6 +77,18 @@ G = groupsummary(T,"Region",@(sales,cost) sum(sales.*cost,"omitnan")/sum(cost,"o
 
 Besides the grouping variables and the always-present `GroupCount` (which are never renamed), each computed statistic becomes its own output variable. By default its name combines the method and the input variable — the `sum_Loss`, `mean_Loss`, ... columns seen above. Named methods (`"mean"`, `"sum"`, ...) use the method name as the prefix; **function-handle** methods instead get a generic numbered prefix (`fun1_Loss`, `fun2_Loss`).
 
+**Override the naming with `VariableNamingRule` (R2026b)**, which takes three values:
+- `"numbered"` *(default)* — method name for named methods; generic numbered prefix (`fun1_`, `fun2_`) for function handles.
+- `"methodname"` — always derive the prefix from the method name, including for function handles (via `func2str`, e.g. `myFun_Loss` instead of `fun1_Loss`).
+- `"noprefix"` — drop the prefix so names match the input variables (`Loss`). Best when a single method makes the prefix redundant; avoid it when multiple methods would otherwise collide on the same name.
+
+```matlab
+% Single method → the prefix is redundant; keep the input names: Region, GroupCount, Loss, Customers
+G = groupsummary(T,"Region","mean",["Loss" "Customers"],VariableNamingRule="noprefix");
+```
+
+For named methods (like the examples above), `"numbered"` and `"methodname"` produce identical names — the two differ only for function-handle methods.
+
 ### On-the-fly binning
 
 `groupsummary` (and `groupcounts`, `groupfilter`, `grouptransform`) support binning rules as the grouping variable, so you don't need to create a binned column with `discretize` first. **When binning is needed only for a single aggregation — not reused downstream — prefer on-the-fly bin methods to keep the source table free of intermediate columns.**

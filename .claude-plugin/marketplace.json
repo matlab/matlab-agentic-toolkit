@@ -8,7 +8,7 @@
     {
       "name": "aerospace",
       "version": "0.2.2",
-      "description": "MATLAB, Aerospace Toolbox.",
+      "description": "Aerospace Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -24,7 +24,7 @@
     {
       "name": "ai-and-statistics",
       "version": "0.9.0",
-      "description": "MATLAB, Simulink, Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models.",
+      "description": "Curve Fitting Toolbox, Deep Learning Toolbox, Embedded Coder, Fixed-Point Designer, MATLAB Coder, MATLAB Compiler SDK, MATLAB Report Generator, Optimization Toolbox, Parallel Computing Toolbox, Statistics and Machine Learning Toolbox, Deep Learning Toolbox Converter for ONNX Model Format, Deep Learning Toolbox Converter for PyTorch Models, and Deep Learning Toolbox Converter for TensorFlow Models.",
       "author": {
         "name": "MathWorks"
       },
@@ -44,7 +44,7 @@
     {
       "name": "automotive",
       "version": "0.4.0",
-      "description": "MATLAB, Simulink, Automated Driving Toolbox, Computer Vision Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox.",
+      "description": "Automated Driving Toolbox, Computer Vision Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -69,7 +69,7 @@
     {
       "name": "cloud-solutions",
       "version": "0.2.0",
-      "description": "MATLAB, MATLAB Drive.",
+      "description": "MATLAB Drive.",
       "author": {
         "name": "MathWorks"
       },
@@ -86,7 +86,7 @@
     {
       "name": "code-generation",
       "version": "0.4.1",
-      "description": "MATLAB, Embedded Coder, Fixed-Point Designer, GPU Coder, MATLAB Coder, MATLAB Test, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models.",
+      "description": "Embedded Coder, Fixed-Point Designer, GPU Coder, MATLAB Coder, MATLAB Test, Parallel Computing Toolbox, and MATLAB Coder Support Package for PyTorch and LiteRT Models.",
       "author": {
         "name": "MathWorks"
       },
@@ -108,7 +108,7 @@
     {
       "name": "computational-biology",
       "version": "0.3.0",
-      "description": "MATLAB, SimBiology, and Statistics and Machine Learning Toolbox.",
+      "description": "SimBiology and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -125,7 +125,7 @@
     {
       "name": "computational-finance",
       "version": "0.4.0",
-      "description": "MATLAB, Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link.",
+      "description": "Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link.",
       "author": {
         "name": "MathWorks"
       },
@@ -146,7 +146,7 @@
     {
       "name": "control-systems",
       "version": "0.1.0",
-      "description": "MATLAB, Control System Toolbox, Predictive Maintenance Toolbox, Signal Processing Toolbox, Statistics and Machine Learning Toolbox, and System Identification Toolbox.",
+      "description": "Control System Toolbox, Predictive Maintenance Toolbox, Signal Processing Toolbox, Statistics and Machine Learning Toolbox, and System Identification Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -162,8 +162,8 @@
     },
     {
       "name": "image-processing-and-computer-vision",
-      "version": "0.10.0",
-      "description": "MATLAB, Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox, Lidar Toolbox, Medical Imaging Toolbox, and Optical Design and Simulation Library for Image Processing Toolbox.",
+      "version": "0.10.1",
+      "description": "Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox, Lidar Toolbox, Medical Imaging Toolbox, Optical Design and Simulation Library for Image Processing Toolbox, and Visual Inspection Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -182,7 +182,7 @@
     {
       "name": "math-and-optimization",
       "version": "0.3.0",
-      "description": "MATLAB, Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox.",
+      "description": "Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -199,7 +199,7 @@
     },
     {
       "name": "matlab-app-building",
-      "version": "0.3.2",
+      "version": "0.3.3",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -217,7 +217,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.7.0",
+      "version": "0.7.1",
       "description": "Create, debug, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -225,7 +225,6 @@
       "keywords": [
         "matlab",
         "debugging",
-        "testing",
         "code-review",
         "live-scripts"
       ],
@@ -236,7 +235,7 @@
     },
     {
       "name": "matlab-data-import-and-analysis",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "description": "Import, export, and analyze data in MATLAB using tables, timetables, filtering, aggregation, and time-series operations.",
       "author": {
         "name": "MathWorks"
@@ -247,24 +246,6 @@
         "data-analysis"
       ],
       "source": "./skills-catalog/matlab-data-import-and-analysis",
-      "category": "development",
-      "strict": false,
-      "skills": "./"
-    },
-    {
-      "name": "matlab-environment-and-settings",
-      "version": "0.1.1",
-      "description": "Diff MATLAB settings between releases and migrate startup scripts to correct setting paths.",
-      "author": {
-        "name": "MathWorks"
-      },
-      "keywords": [
-        "matlab",
-        "environment",
-        "settings",
-        "configuration"
-      ],
-      "source": "./skills-catalog/matlab-environment-and-settings",
       "category": "development",
       "strict": false,
       "skills": "./"
@@ -291,7 +272,7 @@
     },
     {
       "name": "matlab-programming",
-      "version": "0.1.4",
+      "version": "0.1.5",
       "description": "Write robust MATLAB functions with validated inputs.",
       "author": {
         "name": "MathWorks"
@@ -308,14 +289,15 @@
     },
     {
       "name": "matlab-software-development",
-      "version": "0.7.0",
-      "description": "Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, and develop build plans.",
+      "version": "0.8.0",
+      "description": "Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, manage packages, and develop build plans.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
         "software-development",
+        "testing",
         "packaging",
         "toolbox",
         "build tool",
@@ -330,7 +312,7 @@
     {
       "name": "parallel-computing",
       "version": "0.3.1",
-      "description": "MATLAB, Parallel Computing Toolbox, and MATLAB Parallel Server.",
+      "description": "Parallel Computing Toolbox and MATLAB Parallel Server.",
       "author": {
         "name": "MathWorks"
       },
@@ -348,7 +330,7 @@
     {
       "name": "radar",
       "version": "0.3.0",
-      "description": "MATLAB, Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox.",
+      "description": "Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -365,7 +347,7 @@
     {
       "name": "reporting-and-database-access",
       "version": "0.5.0",
-      "description": "MATLAB, Database Toolbox, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator.",
+      "description": "Database Toolbox, MATLAB Report Generator, Parallel Computing Toolbox, and Simulink Report Generator.",
       "author": {
         "name": "MathWorks"
       },
@@ -382,8 +364,8 @@
     },
     {
       "name": "rf-and-mixed-signal",
-      "version": "0.6.0",
-      "description": "MATLAB, Simulink, Antenna Toolbox, Mixed-Signal Blockset, RF Blockset, RF PCB Toolbox, RF Toolbox, SerDes Toolbox, Signal Integrity Toolbox, Signal Processing Toolbox, and Statistics and Machine Learning Toolbox.",
+      "version": "0.6.1",
+      "description": "Antenna Toolbox, Mixed-Signal Blockset, RF Blockset, RF PCB Toolbox, RF Toolbox, SerDes Toolbox, Signal Integrity Toolbox, Signal Processing Toolbox, and Statistics and Machine Learning Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -399,8 +381,8 @@
     },
     {
       "name": "robotics-and-autonomous-systems",
-      "version": "0.3.1",
-      "description": "MATLAB, Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.",
+      "version": "0.3.2",
+      "description": "Navigation Toolbox, UAV Toolbox, and Robotics System Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -419,7 +401,7 @@
     {
       "name": "signal-processing",
       "version": "0.8.0",
-      "description": "MATLAB, Simulink, Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Fixed-Point Designer, HDL Coder, Signal Processing Toolbox, and Wavelet Toolbox.",
+      "description": "Audio Toolbox, DSP HDL Toolbox, DSP System Toolbox, Fixed-Point Designer, HDL Coder, Signal Processing Toolbox, and Wavelet Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -438,7 +420,7 @@
     {
       "name": "test-and-measurement",
       "version": "0.8.0",
-      "description": "MATLAB, Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware.",
+      "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware.",
       "author": {
         "name": "MathWorks"
       },
@@ -467,8 +449,8 @@
     },
     {
       "name": "wireless-communications",
-      "version": "0.6.0",
-      "description": "MATLAB, 5G Toolbox, Bluetooth Toolbox, Communications Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, Wireless Testbench, WLAN Toolbox, and Wireless Testbench Support Package for NI USRP Radios.",
+      "version": "0.6.1",
+      "description": "5G Toolbox, Bluetooth Toolbox, Communications Toolbox, Satellite Communications Toolbox, Wireless Network Toolbox, Wireless Testbench, WLAN Toolbox, and Wireless Testbench Support Package for NI USRP Radios.",
       "author": {
         "name": "MathWorks"
       },

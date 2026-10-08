@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
 display-name: "Radar"
-description: MATLAB, Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox.
+description: Mapping Toolbox, Phased Array System Toolbox, Radar Toolbox, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox.
 keywords:
   - matlab
   - radar

@@ -1,10 +1,10 @@
 ---
 name: matlab-analyze-data
-description: Analyze data using MATLAB. Use when the task involves tables, timetables, time-series data, numeric arrays, sensor matrices, or gridded data — including but not limited to exploring, filtering, sorting, cleaning, transforming, aggregating, smoothing, padding, trimming, and answering questions about data. MATLAB provides extensive, easy-to-use built-in functions for these workflows with no additional products required.
+description: Analyze data using MATLAB. Use when the task involves tables, timetables, time-series data, numeric arrays, sensor matrices, or gridded data — including but not limited to exploring, row filtering, sorting, cleaning, transforming, aggregating, smoothing, padding, trimming, and answering questions about data. MATLAB provides extensive, easy-to-use built-in functions for these workflows with no additional products required.
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.4"
+  version: "1.5"
 ---
 
 # MATLAB Data Analysis
@@ -28,13 +28,15 @@ Generate idiomatic MATLAB code for tabular data analysis tasks using tables and 
 - Storing or retrieving passwords, tokens, or API keys (use `matlab-secure-credentials` instead)
 - Data lives in a relational database (use `matlab-use-database` or `matlab-use-duckdb` instead)
 - Building an ML training pipeline from labeled signal files (use `matlab-prepare-signal-data` instead)
+- Training classifiers or comparing ML model accuracy on tabular data (use `matlab-classify-tabular-data` instead)
+- Engineering or selecting features to optimize a supervised ML model (use `matlab-engineer-tabular-features` instead)
 - Code migration or replacing deprecated APIs (use `matlab-modernize-code` instead)
 
-## How to Use This Skill
+## Routing: Read references on all relevant topics
 
 This skill covers core MATLAB functions for tabular, time-series, and array-based data workflows — including numeric arrays, sensor matrices, and gridded data. These functions work natively with `table`, `timetable`, and numeric arrays, handle missing data correctly, and are performance-optimized. Prefer the modern functions recommended here (e.g., `groupsummary`, `datetime`, `fillmissing`, `smoothdata2`) over legacy alternatives (e.g., `accumarray`, `nanmean`, `datenum`). Override only if the user explicitly requests otherwise.
 
-**Each section below links to a reference file. ALWAYS read the reference file for the relevant topic before writing code.** Reference files contain correct syntax, common pitfalls, and "Avoid" patterns that prevent silent bugs. Skipping the reference risks using a deprecated approach or hitting a known pitfall.
+**Each section below links to a reference file. ALWAYS read the reference file for every relevant topic before writing code.** Reference files contain correct syntax, common pitfalls, and "Avoid" patterns that prevent silent bugs. Skipping the reference risks using a deprecated approach or hitting a known pitfall. After reading, state `Reference files read: [list]` at the top of your response.
 
 ### Key Functions — Available From
 
@@ -44,6 +46,7 @@ Most functions in this skill are available in R2023a or earlier. The following r
 |----------|---------------|---------|
 | `paddata`, `trimdata`, `resize` | R2023b | Pad, trim, or resize arrays to target length |
 | `smoothdata2` | R2023b | Smooth 2-D gridded data over rectangular windows |
+| `kde` | R2023b | Kernel density estimate for univariate data |
 | `clip` | R2024a | Clamp values to a range |
 | `islocalmax2`, `islocalmin2` | R2024a | Detect local extrema in 2-D gridded data |
 | `summary` (enhanced) | R2024b | Supports arrays (numeric, datetime, duration, logical); adds `Statistics`, `DataVariables`, `Detail` name-value args |
@@ -67,7 +70,7 @@ When data is already in a workspace variable, start by understanding its structu
 - Checking for duplicates, unique keys, and cardinality
 - Exploring time range, regularity, and temporal patterns
 
-**Functions:** `summary`, `head`, `size`, `jsonencode`, `anymissing`, `allfinite`, `ismissing`, `groupcounts`, `numunique`, `corrcoef`, `pivot`, `unique`, `isregular`, `isuniform`, `retime`
+**Functions:** `summary`, `head`, `size`, `jsonencode`, `anymissing`, `allfinite`, `ismissing`, `groupcounts`, `numunique`, `allunique`, `kde`, `corrcoef`, `pivot`, `unique`, `isregular`, `isuniform`, `retime`
 
 **Read:** [exploration.md](references/exploration.md)
 
@@ -83,7 +86,7 @@ Use modern MATLAB types instead of legacy alternatives. Modern types are faster,
 - Text data (comparing, searching, splitting, editing strings)
 - Categorical data (ordinal rankings, merging/renaming/reordering levels)
 
-**Functions:** `datetime`, `dateshift`, `year`, `month`, `day`, `weekday`, `quarter`, `hour`, `ymd`, `hms`, `hours`, `days`, `minutes`, `seconds`, `calmonths`, `caldays`, `string`, `matches`, `contains`, `startsWith`, `extractAfter`, `extractBefore`, `replace`, `erase`, `strip`, `split`, `count`, `categorical`, `mergecats`, `renamecats`, `removecats`, `reordercats`, `countcats`
+**Functions:** `datetime`, `dateshift`, `year`, `month`, `day`, `weekday`, `quarter`, `hour`, `timeofday`, `ymd`, `hms`, `hours`, `days`, `minutes`, `seconds`, `calmonths`, `caldays`, `string`, `matches`, `contains`, `startsWith`, `extractAfter`, `extractBefore`, `replace`, `erase`, `strip`, `split`, `count`, `categorical`, `mergecats`, `renamecats`, `removecats`, `reordercats`, `countcats`
 
 **Read:** [data-types.md](references/data-types.md)
 
@@ -139,7 +142,7 @@ Handle missing values and outliers using MATLAB's built-in detection and fill fu
 - Detecting, removing, or replacing outliers
 - Checking whether values fall within an expected range; clamping
 
-**Functions:** `ismissing`, `anymissing`, `standardizeMissing`, `fillmissing`, `rmmissing`, `isoutlier`, `rmoutliers`, `filloutliers`, `isbetween`, `allbetween`, `clip`, `isapprox`
+**Functions:** `ismissing`, `anymissing`, `standardizeMissing`, `fillmissing`, `rmmissing`, `isoutlier`, `rmoutliers`, `filloutliers`, `isbetween`, `allbetween`, `clip`
 
 **Read:** [data-cleaning.md](references/data-cleaning.md)
 
@@ -160,7 +163,7 @@ Filter, sort, reshape, normalize, bin, join, and manage table variables. Use vec
 - Reshaping between wide and tall formats (pivot, stack, unstack)
 - Joining/merging tables on key variables
 
-**Functions:** `sortrows`, `topkrows`, `rowfun`, `varfun`, `convertvars`, `renamevars`, `movevars`, `addvars`, `removevars`, `splitvars`, `mergevars`, `discretize`, `normalize`, `clip`, `rescale`, `pivot`, `stack`, `unstack`, `rows2vars`, `innerjoin`, `outerjoin`, `join`
+**Functions:** `sortrows`, `topkrows`, `rowfun`, `varfun`, `convertvars`, `renamevars`, `movevars`, `addvars`, `removevars`, `splitvars`, `mergevars`, `discretize`, `normalize`, `clip`, `rescale`, `isapprox`, `isbetween`, `pivot`, `stack`, `unstack`, `rows2vars`, `innerjoin`, `outerjoin`, `join`
 
 **Read:** [data-transformation.md](references/data-transformation.md)
 
@@ -235,7 +238,7 @@ When the task is answering a specific question about data (top-N, filtering, loo
 - Returning raw data values without substitution or mapping
 - Counting rows that match a condition (exact vs partial text matching)
 
-**Functions:** `topkrows`, `sortrows`, `groupsummary`, `standardizeMissing`, `matches`, `contains`, `height`, `nnz`
+**Functions:** `topkrows`, `sortrows`, `groupsummary`, `standardizeMissing`, `isapprox`, `matches`, `contains`, `height`, `nnz`
 
 **Read:** [answering-data-questions.md](references/answering-data-questions.md)
 

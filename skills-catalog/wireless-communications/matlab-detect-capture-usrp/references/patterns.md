@@ -45,7 +45,12 @@ ed.WindowLength = 300;             % <- set: integration window [0, 4095]
 
 %% Verify
 if status == 1
-    fprintf("Captured %d samples at %s (dropped: %d).\n", length(data), string(timestamp), droppedSamples);
+    r = max(abs(data).^2) / median(abs(data).^2);   % sanity ratio: real signal r >= 50
+    fprintf("Captured %d samples at %s (dropped: %d). Sanity ratio r = %.1f (>= 50 = real signal).\n", ...
+        numel(data), string(timestamp), droppedSamples, r);
+    if r < 50
+        warning("Sanity ratio below 50 - this looks like noise, not signal; see references/threshold-calibration.md.");
+    end
 else
     warning("No detection before timeout (status 0) - expected with no active signal; to tune see references/threshold-calibration.md.");
 end
@@ -84,7 +89,12 @@ ed.WindowLength = 300;             % <- set: integration window [0, 4095]
 
 %% Verify
 if status == 1
-    fprintf("Captured %d samples at %s (dropped: %d).\n", length(data), string(timestamp), droppedSamples);
+    r = max(abs(data).^2) / median(abs(data).^2);   % sanity ratio: real signal r >= 50
+    fprintf("Captured %d samples at %s (dropped: %d). Sanity ratio r = %.1f (>= 50 = real signal).\n", ...
+        numel(data), string(timestamp), droppedSamples, r);
+    if r < 50
+        warning("Sanity ratio below 50 - this looks like noise, not signal; see references/threshold-calibration.md.");
+    end
 else
     warning("No detection before timeout (status 0) - signal did not exceed the fixed threshold; measure it (see references/threshold-calibration.md).");
 end
@@ -125,7 +135,13 @@ pd.AdaptiveThresholdOffset = 0.001; % <- set: start at 0; raise only if false tr
 
 %% Verify
 if status == 1
-    fprintf("Captured %d samples at %s (dropped: %d).\n", length(data), string(timestamp), droppedSamples);
+    matched = filter(conj(flipud(pd.Preamble)), 1, data);
+    r = max(abs(matched).^2) / median(abs(matched).^2);   % real preamble fire: r > 100
+    fprintf("Captured %d samples at %s (dropped: %d). Sanity ratio r = %.1f (> 100 = real preamble).\n", ...
+        numel(data), string(timestamp), droppedSamples, r);
+    if r < 100
+        warning("Sanity ratio below 100 - marginal, or fired on noise instead of the preamble; see references/threshold-calibration.md.");
+    end
 else
     warning("No detection before timeout (status 0) - preamble not correlated; to tune see references/threshold-calibration.md.");
 end
@@ -171,7 +187,13 @@ plotThreshold(pd, milliseconds(1));
 
 %% Verify
 if status == 1
-    fprintf("Captured %d samples at %s (dropped: %d).\n", length(data), string(timestamp), droppedSamples);
+    matched = filter(conj(flipud(pd.Preamble)), 1, data);
+    r = max(abs(matched).^2) / median(abs(matched).^2);   % real preamble fire: r > 100
+    fprintf("Captured %d samples at %s (dropped: %d). Sanity ratio r = %.1f (> 100 = real preamble).\n", ...
+        numel(data), string(timestamp), droppedSamples, r);
+    if r < 100
+        warning("Sanity ratio below 100 - marginal, or fired on noise instead of the preamble; see references/threshold-calibration.md.");
+    end
 else
     warning("No detection before timeout (status 0) - preamble not above the fixed threshold; to tune see references/threshold-calibration.md.");
 end
@@ -206,8 +228,19 @@ numCaptures = 5;                   % <- set: number of consecutive captures (R20
 
 %% Verify
 if status > 0
-    fprintf("Successfully captured %d of %d requested signals.\n", status, numCaptures);
+    if iscell(data)                % NumCaptures > 1 returns a cell array, one cell per capture
+        firstCapture = data{1};
+    else
+        firstCapture = data;
+    end
+    r = max(abs(firstCapture).^2) / median(abs(firstCapture).^2);   % real signal r >= 50
+    fprintf("Successfully captured %d of %d requested signals (%d samples each).\n", ...
+        status, numCaptures, numel(firstCapture));
+    fprintf("Capture 1 sanity ratio r = %.1f (>= 50 = real signal).\n", r);
     fprintf("Timestamps (clock cycles): %s\n", mat2str(timestamp));
+    if r < 50
+        warning("Sanity ratio below 50 - this looks like noise, not signal; see references/threshold-calibration.md.");
+    end
 else
     warning("No signals captured before timeout - expected with no active signal; to tune see references/threshold-calibration.md.");
 end
@@ -254,7 +287,19 @@ stopTransmission(ed);
 
 %% Verify
 if status == 1
-    fprintf("Captured %d samples of test waveform (dropped: %d). Transmission stopped.\n", length(data), droppedSamples);
+    % A chirp is wideband, so the raw ratio under-reports: r ~15-20 is normal here.
+    % The matched filter against the known TX waveform is the authoritative check.
+    r = max(abs(data).^2) / median(abs(data).^2);
+    template = double(chirpSignal) / norm(double(chirpSignal));
+    mf = abs(filter(conj(flipud(template)), 1, data));
+    mfRatio = max(mf).^2 / median(mf).^2;
+    fprintf("Captured %d samples of test waveform (dropped: %d). Transmission stopped.\n", ...
+        numel(data), droppedSamples);
+    fprintf("Raw ratio r = %.1f (15-20 is normal for a chirp); matched-filter ratio = %.1f (>> 100 = real signal).\n", ...
+        r, mfRatio);
+    if mfRatio < 100
+        warning("Matched-filter ratio below 100 - the capture may be noise; see references/threshold-calibration.md.");
+    end
 else
     warning("No detection before timeout (status 0) - raise TransmitGain/RadioGain or set MinimumEnergy=0; see references/threshold-calibration.md.");
 end
@@ -277,15 +322,17 @@ pd.AdaptiveThresholdOffset = 0.001; % <- set: start at 0; raise if false trigger
 pd.RadioGain = 30;                 % <- set: dB (device-dependent range)
 
 % Define WLAN L-LTF preamble (legacy long training field)
+% wlanNonHTConfig defaults to CBW20, so wlanLLTF returns 160 samples at 20 MHz.
 lltf = wlanLLTF(wlanNonHTConfig);
-preamble = lltf(1:min(1024, length(lltf)));
-preamble = preamble / max(abs(preamble));
+preamble = lltf / max(abs(lltf));  % raw max|L-LTF| is ~1.44 - must scale into [-1, 1]
 pd.Preamble = preamble;
 
 % Define channels to scan (e.g., 2.4 GHz band channels 1, 6, 11)
 channelFreqs = [2.412e9, 2.437e9, 2.462e9];
 channelNames = ["Ch1", "Ch6", "Ch11"];
-sampleRate = 30.72e6;              % <- set: Hz
+% SampleRate MUST match the preamble's own rate, or the correlator never peaks.
+% CBW20 L-LTF is sampled at 20 MHz. Change the bandwidth and change this together.
+sampleRate = 20e6;                 % <- set: Hz (must equal the L-LTF bandwidth)
 pd.SampleRate = sampleRate;
 
 % Scan each channel
@@ -305,11 +352,18 @@ end
 
 %% Verify
 fprintf("Scan complete. Detected activity on %d of %d channels.\n", ...
-    length(captures), length(channelFreqs));
-if ~isempty(captures)
-    for k = 1:length(captures)
-        fprintf("  %s (%.3f GHz): %d samples captured\n", ...
-            captures(k).Channel, captures(k).Frequency/1e9, length(captures(k).Data));
+    numel(captures), numel(channelFreqs));
+if isempty(captures)
+    warning("No activity on any channel - first confirm SampleRate matches the preamble bandwidth (20 MHz for CBW20 L-LTF), then tune AdaptiveThresholdGain; see references/threshold-calibration.md.");
+else
+    for k = 1:numel(captures)
+        matched = filter(conj(flipud(pd.Preamble)), 1, captures(k).Data);
+        r = max(abs(matched).^2) / median(abs(matched).^2);   % real preamble fire: r > 100
+        fprintf("  %s (%.3f GHz): %d samples, sanity ratio r = %.1f (> 100 = real preamble)\n", ...
+            captures(k).Channel, captures(k).Frequency/1e9, numel(captures(k).Data), r);
+        if r < 100
+            warning("%s ratio below 100 - marginal, or fired on noise instead of the preamble; see references/threshold-calibration.md.", captures(k).Channel);
+        end
     end
 end
 ```
@@ -329,7 +383,7 @@ Loopback (SMA cable from `RF0:TX/RX` to `RF0:RX2`) is the standard development p
 | `MinimumEnergy` (Pattern A/E/F) | **0** over loopback | Let `EnergyDeltaThreshold` trigger on the dB rise — scale-invariant, fires whatever the absolute energy. A nonzero floor must sit **below** the measured signal energy or it blocks the trigger (the old "1" sat far above it and timed out) |
 | `FixedThreshold` (Pattern B) | **measure** (≈ ¼–½ of the measured peak) | Absolute → grab one reference with `FixedThreshold=1e-9`, compute `max(movsum(abs(x).^2,WindowLength))`, then set ¼–½ of that. The OTA example (500) sits far above a loopback signal and never fires |
 | `EnergyDeltaThreshold` (Pattern A/E/F) | **1.5 dB** at modest TransmitGain (~30); ~3 dB at high TransmitGain (~50) | The achievable dB rise scales with TransmitGain (SNR): at ~30 dB TX the rise is only ~2–3 dB, so a 3 dB delta never crosses → timeout. Start low (1.5 dB); raise to 6 dB only if false positives |
-| AdaptiveThresholdGain (Pattern C) | 0.5 | Default 8 in OTA examples is far too high for loopback's quiet baseline |
+| AdaptiveThresholdGain (Patterns C/G) | 0.3–0.5 | Anywhere in the loopback window `0.1-0.9` works; the patterns ship 0.3. Default 8 in OTA examples is far too high for loopback's quiet baseline |
 | `max\|data\|` | keep < 0.95 (hard rail 1.414) | √2 = int16 saturation; keep below the 0.95 guard band. At TxGain=50, N310 stays clean to ~RadioGain 70 (device-dependent: N310 0-75, N320/X410 0-60) |
 | First test | Adaptive with `MinimumEnergy=0`, or fixed with a measured threshold | Both fire deterministically over loopback |
 

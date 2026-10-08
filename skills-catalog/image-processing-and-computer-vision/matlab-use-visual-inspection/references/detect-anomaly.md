@@ -18,7 +18,7 @@ interface: `classify`, `predict`, `anomalyMap`.
 
 - Object detection with bounding boxes — use YOLOX skill
 - Binary classification with balanced classes — use standard deep learning
-- Template matching / part localization — use `matlab-match-shape`
+- Template matching / part localization — see `references/match-shape.md`
 - Pixel-level segmentation with class labels — use semantic segmentation
 
 ## Model Selection

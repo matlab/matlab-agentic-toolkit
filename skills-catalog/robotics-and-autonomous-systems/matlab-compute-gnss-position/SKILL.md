@@ -11,7 +11,7 @@ description: >
   orbit propagation, NMEA streaming, or RINEX v4.
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "1.1"
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 ---
 
@@ -34,7 +34,7 @@ GPS, GLONASS, Galileo, BeiDou, QZSS, NavIC/IRNSS, and SBAS.
 ## When NOT to Use
 
 - Carrier-phase positioning (RTK, PPP, ambiguity resolution)
-- Sensor fusion with IMU — use `matlab-system-identification` or INS filters
+- Sensor fusion with IMU — use `matlab-fuse-inertial-sensors` or INS filters
 - Satellite orbit propagation or scenario simulation — use Aerospace Toolbox
 - Real-time NMEA stream processing — use `nmeaParser` directly
 - RINEX v4 files — nested struct format requires different handling

@@ -32,9 +32,9 @@ telecentric lenses for high-precision cases.
 
 ## When NOT to Use
 
-- Counting objects — use `matlab-count-objects`
+- Counting objects — see `references/count-objects.md`
 - Defect detection (anomaly or bounding box) — use anomaly/detection skills
-- Template matching without measurement — use `matlab-match-shape`
+- Template matching without measurement — see `references/match-shape.md`
 
 ## Measurement Tools
 

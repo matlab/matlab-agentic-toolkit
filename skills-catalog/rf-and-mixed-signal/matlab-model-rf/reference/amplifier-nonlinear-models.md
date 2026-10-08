@@ -70,7 +70,7 @@ xlabel('Pin (dBm)'); ylabel('Pout (dBm)'); title('AM/AM Comparison');
 
 This single-sweep approach targets the same P1dB by construction: poly sets `OP1dB` directly, modified-rapp sets `Vsat` from `targetP1dB+3`, and saleh uses `OutputScaleDB` to shift the curve. Fine-tune by adjusting by the measured dB difference, then re-sweep once.
 
-For cascaded system P1dB in an rfbudget chain, use `computeAMPMTable(b, pinRange)` instead (see `matlab-analyze-rf-budget`).
+For cascaded system P1dB in an rfbudget chain, use `computeAMPMTable(b, pinRange)` instead (see `reference/rfbudget-analysis.md`).
 
 ## `poly` vs `cubic` Model
 

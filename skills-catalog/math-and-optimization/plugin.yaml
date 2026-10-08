@@ -1,6 +1,6 @@
 # Copyright 2026 The MathWorks, Inc.
 display-name: "Math and Optimization"
-description: MATLAB, Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox.
+description: Optimization Toolbox, Partial Differential Equation Toolbox, and Symbolic Math Toolbox.
 keywords:
   - matlab
   - optimization

@@ -3,7 +3,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: product-specific
-version: "1.0"
+version: "1.1"
 human-description: Detect and capture RF signals on USRP radios using energy or preamble triggers.
 matlab-release: ">=R2023b"
 toolkit: matlab-agentic-toolkit
@@ -19,3 +19,5 @@ required-tools:
   - check_matlab_code
 required-skills:
   - matlab-set-up-usrp-radio
+  - matlab-transmit-capture-usrp
+  - matlab-read-documentation

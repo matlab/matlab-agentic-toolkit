@@ -137,7 +137,7 @@ s = sparameters(ckt, freq);
 % Now apply TDR recipe from above
 ```
 
-**Building synthetic circuits for test data:** For node mapping rules (4-node for 2-port RF elements, 8-node for 4-port), `clone()` for element reuse, and multi-port `setports` patterns, see `matlab-compose-rf-circuit`.
+**Building synthetic circuits for test data:** For node mapping rules (4-node for 2-port RF elements, 8-node for 4-port), `clone()` for element reuse, and multi-port `setports` patterns, see `reference/circuit-composition.md`.
 
 ### Recipe: Synthetic Lossy Channel (No Circuit Construction)
 

@@ -1,6 +1,6 @@
 # uihtml Bridge Integration
 
-Wiring Chart.js charts to data from the MATLAB `uihtml` component. For the full bridge API (setup, events, serialization, error handling) see the `matlab-uihtml` skill. This guide covers only the chart side — how to receive data and drive chart updates.
+Wiring Chart.js charts to data from the MATLAB `uihtml` component. For the full bridge API (setup, events, serialization, error handling) see `bridge-guide.md`. This guide covers only the chart side — how to receive data and drive chart updates.
 
 ---
 

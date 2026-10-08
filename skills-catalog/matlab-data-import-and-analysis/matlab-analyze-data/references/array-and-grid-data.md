@@ -79,6 +79,12 @@ The same applies to `var`:
 rowVar = var(X,0,2);       % correct: per-row variance
 ```
 
+**Integer input (R2026b).** `var` and `std` now accept integer inputs (`int8`, `int16`, `int32`, `uint8`, `uint16`, `uint32`) directly — the explicit `double(...)` cast previously required for integer data is no longer needed:
+```matlab
+v = var(intData);          % intData is int16 — no double(intData) cast needed
+s = std(intData,0,2);      % per-row std of integer data
+```
+
 ### Specifying dimension explicitly
 
 When operating on matrices or multidimensional arrays, consider specifying the dimension if the input shape may vary or if dim=1 is not obvious from context. This makes intent clear and prevents surprises when data comes in as a row vs. a column. For straightforward cases where the default dimension is natural, omitting it is fine — MATLAB's defaults are designed to do the right thing for common usage patterns.
@@ -189,6 +195,12 @@ M = movstd(X,k,1,1);       % window=k, weight=1 (N), dim=1
 % More examples
 M = movstd(X,5,0,1);       % window=5, sample std, per column
 M = movvar(X,5,0,2);       % window=5, sample var, per row
+```
+
+**Second output: the moving mean (R2026b).** Like `std`/`var` (which return the mean as a second output — see "Getting oriented" above), `movstd` and `movvar` can return the moving mean used in the computation as a second output — no separate `movmean` call needed:
+```matlab
+[M,MM] = movstd(X,k,0,2);   % M = moving std, MM = moving mean (both along dim 2)
+[V,MM] = movvar(X,k);       % V = moving var, MM = moving mean (per column)
 ```
 
 ### Cumulative operations

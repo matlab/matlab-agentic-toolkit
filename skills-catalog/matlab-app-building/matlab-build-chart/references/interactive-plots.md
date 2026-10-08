@@ -96,11 +96,18 @@ ax.Toolbar.Visible = 'off';   % hide toolbar
 ax.Toolbar = [];               % remove entirely (performance boost)
 ```
 
-## Interaction Conflicts
+## Enable, Disable, and Customize Built-In Interactions
 
-- `WindowScrollWheelFcn` **disables** built-in zoom on uiaxes
-- `WindowButtonDownFcn` **conflicts with** data tip interaction
-- Fix: call `disableDefaultInteractivity(ax)` when using custom interactions, or `enableDefaultInteractivity(ax)` to restore
+- The following callbacks can cause MATLAB to disable built-in axes interactions:
+
+  - `WindowButtonDownFcn`
+  - `WindowButtonMotionFcn`
+  - `WindowButtonUpFcn`
+  - `WindowScrollWheelFcn`
+  - `ButtonDownFcn`
+
+- Use `ax.InteractionOptions` to customize supported interaction behavior, such as disabling pan or limiting zoom to specific dimensions.
+- Use `disableDefaultInteractivity(ax)` / `enableDefaultInteractivity(ax)` to disable or enable the built-in interaction set as a whole.
 
 ----
 

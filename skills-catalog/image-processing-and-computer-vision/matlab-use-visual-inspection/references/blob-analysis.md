@@ -16,9 +16,9 @@ be in pixels or in physical world units when camera calibration is available.
 ## When NOT to Use
 
 - Need to detect or segment objects first — segment first, then use this skill
-- Edge-based dimensional measurement (widths, gaps) — use `matlab-measure-gauging`
-- Object detection with bounding boxes from raw images — use `matlab-detect-objects`
-- Counting without measurement — use `matlab-count-objects`
+- Edge-based dimensional measurement (widths, gaps) — see `references/measure-gauging.md`
+- Object detection with bounding boxes from raw images — see `references/detect-objects.md`
+- Counting without measurement — see `references/count-objects.md`
 
 ## Getting Measurements in World Units
 

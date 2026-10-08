@@ -4,7 +4,7 @@ description: Diagnose MATLAB errors and unexpected behavior. Breakpoints, worksp
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "3.0"
+  version: "3.1"
 ---
 
 # Investigating and Debugging MATLAB Code with MCP Tools
@@ -24,7 +24,7 @@ questions about how MATLAB code works. Don't just guess from code alone.
 
 ## When NOT to Use
 
-- Code quality review without a runtime problem — use `matlab-reviewing-code` instead
+- Code quality review without a runtime problem — use `matlab-review-code` instead
 - Performance profiling — use performance optimization workflows
 - Writing tests for correctness — use `matlab-write-tests` instead
 - Understanding MATLAB APIs or language features without a specific bug

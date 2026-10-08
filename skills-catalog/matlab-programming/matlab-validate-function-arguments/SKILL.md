@@ -18,7 +18,7 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # MATLAB Function Argument Validation
@@ -37,7 +37,7 @@ Write robust MATLAB functions using `arguments` blocks with correct semantics fo
 ## When NOT to Use
 
 - Basic MATLAB programming without argument validation
-- App building or UI components (use `matlab-building-apps`)
+- App building or UI components (use `matlab-build-app`)
 - Unit testing (use `matlab-write-tests`)
 - General OOP class design unrelated to argument validation
 - Simple `if`/`error` guard clauses for runtime invariants inside a function body

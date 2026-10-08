@@ -18,7 +18,7 @@ GPU-accelerated inference, or interoperable ONNX for specialized hardware.
 ## When NOT to Use
 
 - Still training or tuning the model — finish training first
-- Need to choose a detection/anomaly approach — use `matlab-detect-objects` or anomaly skills
+- Need to choose a detection/anomaly approach — see `references/detect-objects.md` or `references/detect-anomaly.md`
 - Interactive visualization or labeling — keep in MATLAB desktop
 
 ## Deployment Targets
@@ -85,7 +85,7 @@ This preserves all UI functionality — live image display, charts, status
 indicators — without requiring MATLAB licenses on the monitoring workstation.
 
 For maximum rectification throughput in Compiler-deployed apps, use
-`images.geotrans.Warper` (see `matlab-blob-analysis` skill for the pattern).
+`images.geotrans.Warper` (see `references/blob-analysis.md` for the pattern).
 
 ### Code Generation Entry Point: Anomaly Detector
 

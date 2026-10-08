@@ -35,13 +35,33 @@ Absolute energy is radio-, gain-, and signal-specific. On an N310 SMA loopback t
 
 So do not hardcode `MinimumEnergy` / `FixedThreshold`. Read the real level once, then set from it:
 
+Set `ThresholdMethod` **before** transmission starts — switching fixed<->adaptive during a
+continuous transmission errors ("stop the ongoing transmission first"). If TX is already running,
+call `stopTransmission(ed)` first, set the method, then transmit again.
+
 ```matlab
-ed.ThresholdMethod = "fixed"; ed.FixedThreshold = 1e-9;   % tiny -> triggers immediately
-x = capture(ed, milliseconds(3), seconds(2));             % TX must be running
-peakEnergy = max(movsum(abs(double(x)).^2, ed.WindowLength));  % same units as the thresholds
-ed.FixedThreshold = 0.3 * peakEnergy;   % fixed: ~1/4-1/2 of the measured peak
-% adaptive alternative: ed.MinimumEnergy = 0; let EnergyDeltaThreshold (dB rise) trigger -- scale-invariant
+% 1. Set the method BEFORE transmitting (see the SKILL.md Always rule).
+ed.ThresholdMethod = "fixed";
+ed.FixedThreshold = 1e-9;                          % tiny -> triggers immediately
+
+% 2. Start TX now (Pattern F), or confirm the external signal is on the air.
+
+% 3. Grab one reference capture. Guard it: a timeout returns empty data.
+[x, ~, ~, status] = capture(ed, milliseconds(3), seconds(2));
+if status >= 1 && ~isempty(x)
+    if iscell(x)                                   % NumCaptures > 1 returns a cell array
+        x = x{1};
+    end
+    peakEnergy = max(movsum(abs(double(x)).^2, ed.WindowLength));  % same units as the thresholds
+    ed.FixedThreshold = 0.3 * peakEnergy;          % fixed: ~1/4-1/2 of the measured peak
+else
+    warning("Reference capture timed out - no energy to measure. Check the RF path (Step 1) first.");
+end
 ```
+
+Adaptive alternative — also set it before transmitting: `ed.ThresholdMethod = "adaptive"` with
+`ed.MinimumEnergy = 0`, and let `EnergyDeltaThreshold` (dB rise) trigger. That is scale-invariant,
+so it needs no reference capture at all.
 
 Prefer adaptive over loopback: the dB-rise trigger fires whatever the absolute scale, so you avoid chasing a moving absolute threshold.
 
@@ -80,6 +100,9 @@ First rule out noise jitter (Step 1: a symmetric Delta swing about 0 is noise, n
 After a successful capture:
 
 ```matlab
+if iscell(data)          % NumCaptures > 1 returns a cell array - score one capture
+    data = data{1};
+end
 r = max(abs(data).^2) / median(abs(data).^2);
 ```
 
@@ -136,9 +159,12 @@ Halve `AdaptiveThresholdGain` until the threshold curve drops below the correlat
 After a successful capture:
 
 ```matlab
+if iscell(data)          % NumCaptures > 1 returns a cell array - score one capture
+    data = data{1};
+end
 matched = filter(conj(flipud(pd.Preamble)), 1, data);
 peak = max(abs(matched).^2);
-base = prctile(abs(matched).^2, 50);
+base = median(abs(matched).^2);   % median is base MATLAB - no extra toolbox needed
 r = peak / base;
 ```
 

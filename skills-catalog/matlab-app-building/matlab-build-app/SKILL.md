@@ -3,7 +3,7 @@ name: matlab-build-app
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "2.2"
+  version: "2.3"
 description: >
   Build MATLAB apps from requirements to working code. Asks discovery questions
   (or skips them when the path is known), recommends UIFigure or UIHTML
