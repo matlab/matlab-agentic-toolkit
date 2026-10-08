@@ -77,7 +77,7 @@ Write and run tests, modernize legacy code, optimize performance and memory, doc
 | `matlab-optimize-performance` | Optimize performance of MATLAB code. |
 | `matlab-package-toolbox` | Package MATLAB code as an installable .mltbx toolbox. |
 | `matlab-run-tests` | Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines. |
-| `matlab-use-package-manager` | Manage and inspect MATLAB packages with the in-product MATLAB Package Manager (mpm). |
+| `matlab-use-package-manager` | Manage and inspect MATLAB packages with the in-product MATLAB Package Manager. |
 | `matlab-write-help` | Generate or improve MATLAB help text following MathWorks documentation standards. |
 | `matlab-write-performance-tests` | Write MATLAB performance tests using the matlab.perftest.TestCase framework. |
 | `matlab-write-tests` | Generate and structure MATLAB unit tests using class-based testing frameworks. |

@@ -3,7 +3,7 @@ schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
 version: "1.0"
-human-description: Manage and inspect MATLAB packages with the in-product MATLAB Package Manager (mpm).
+human-description: Manage and inspect MATLAB packages with the in-product MATLAB Package Manager.
 matlab-release: ">=R2026b"
 toolkit: matlab-agentic-toolkit
 required-products: []
