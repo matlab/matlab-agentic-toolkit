@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
 -->
 
 # MATLAB Agentic Toolkit
@@ -43,13 +43,19 @@ MATLAB&reg; Agentic Toolkit은 AI 에이전트가 MATLAB 및 해당 툴박스와
 ---
 ## MATLAB Agentic Toolkit 시작하기
 
-다음 단계에서는 MATLAB Agentic Toolkit을 사용하여 MATLAB MCP Server를 설치하고 에이전트에 스킬을 추가하는 방법을 보여줍니다.
+다음 단계에서는 MATLAB Agentic Toolkit을 사용하여 MATLAB MCP Server를 설치하고 에이전트에 스킬을 추가하는 방법을 보여줍니다. MATLAB Agentic Toolkit은 명령줄 또는 MATLAB에서 설정할 수 있습니다.
 
-> 참고: 로컬 파일에서의 설치, 오프라인 환경에서의 설치, 이 툴킷의 구성 옵션, 플랫폼별 참고 사항, 검증 절차, 문제 해결 및 인스톨러를 사용하지 않는 수동 설정에 대한 지침은 [구성 및 문제 해결](Configuration_and_Troubleshooting.ko.md)을 참조하십시오. MCP 서버가 이미 설치되어 있고 스킬만 추가해야 하는 경우 [스킬만 추가하기](Configuration_and_Troubleshooting.ko.md#adding-skills-only)를 참조하십시오.
+### 명령줄에서 MATLAB Agentic Toolkit 설치
+
+Claude Code, GitHub Copilot CLI 또는 OpenAI Codex를 사용하는 경우, Agentic Toolkit 인스톨러를 사용하여 운영 체제 명령줄에서 MATLAB Agentic Toolkit, Simulink Agentic Toolkit 및 MATLAB MCP Server를 함께 설정할 수 있습니다. 자세한 내용은 [Agentic Toolkit 인스톨러](https://github.com/matlab/agentic-toolkit-installer)를 참조하십시오. 또한 이 리포지토리를 참조하여 구성을 사용자 지정하거나 툴킷을 오프라인으로 설치할 수도 있습니다.
 
 ### MATLAB에서 MATLAB Agentic Toolkit 설치
 
-다음 단계에 따라 MATLAB에서 MATLAB Agentic Toolkit을 설치하십시오.
+MATLAB에서 직접 MATLAB Agentic Toolkit을 설치할 수도 있습니다.
+
+> 참고: 로컬 파일에서의 설치, 오프라인 환경에서의 설치, 이 툴킷의 구성 옵션, 플랫폼별 참고 사항, 검증 절차, 문제 해결 및 인스톨러를 사용하지 않는 수동 설정에 대한 지침은 [구성 및 문제 해결](Configuration_and_Troubleshooting.ko.md)을 참조하십시오. MCP 서버가 이미 설치되어 있고 스킬만 추가해야 하는 경우 [스킬만 추가하기](Configuration_and_Troubleshooting.ko.md#adding-skills-only)를 참조하십시오.
+
+MATLAB에서 툴킷을 설치하려면 다음 단계를 따르십시오.
 
 1. Agentic Toolkit 인스톨러 패키지를 다운로드하려면 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx)를 클릭하십시오.
 2. 다운로드한 파일을 MATLAB에서 열어 인스톨러 애드온을 설치하십시오.
@@ -69,11 +75,6 @@ shareMATLABSession()
 여러 MATLAB 세션을 실행 중인 경우 에이전트는 이 명령을 가장 최근에 실행한 MATLAB 세션에 연결됩니다.
 
 또는 이 명령을 MATLAB [시작 스크립트](https://www.mathworks.com/help/matlab/ref/startup.html)에 추가할 수도 있습니다.
-
-### 명령줄에서 MATLAB Agentic Toolkit 설치
-
-Claude Code 또는 OpenAI Codex를 사용하는 경우, Agentic Toolkit 인스톨러를 사용하여 운영 체제 명령줄에서 MATLAB Agentic Toolkit, Simulink Agentic Toolkit 및 MATLAB MCP Server를 함께 설정할 수도 있습니다. 자세한 내용은 [Agentic Toolkit 인스톨러](https://github.com/matlab/agentic-toolkit-installer)를 참조하십시오.
-
 
 ### 검증
 에이전트에 다음과 같이 질문하십시오.
@@ -151,7 +152,7 @@ MATLAB Agentic Toolkit 및 MATLAB MCP Server를 사용할 때는 모든 툴 호�
 ---
 ## 데이터 수집
 
-MATLAB MCP Server는 기본적으로 익명화된 사용 데이터를 수집합니다. 전체 세부 정보는 MCP 서버 문서의 [데이터 수집](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.ko.md#데이터-수집)을 참조하십시오. 데이터 수집을 거부하려면 [Disable Data Collection](Configuration_and_Troubleshooting.ko.md#데이터-수집-비활성화)을 참조하십시오.
+MATLAB MCP Server는 기본적으로 익명화된 사용 데이터를 수집합니다. 전체 세부 정보는 MCP 서버 문서의 [데이터 수집](https://github.com/matlab/matlab-mcp-server/blob/main/l10n/README.ko.md#데이터-수집)을 참조하십시오. 데이터 수집을 거부하려면 [데이터 수집 비활성화](Configuration_and_Troubleshooting.ko.md#데이터-수집-비활성화)를 참조하십시오.
 
 ---
 ## 라이선스 및 사용

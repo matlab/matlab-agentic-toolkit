@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
 -->
 
 # MATLAB Agentic Toolkit
@@ -43,13 +43,19 @@ MATLAB&reg; Agentic Toolkit を使用すると、AI エージェントに MATLAB
 ---
 ## MATLAB Agentic Toolkit の使用を開始する
 
-以下の手順では、MATLAB Agentic Toolkit を使用して MATLAB MCP Server をインストールし、エージェントにスキルを追加する方法を示します。
+以下の手順では、MATLAB Agentic Toolkit を使用して MATLAB MCP Server をインストールし、エージェントにスキルを追加する方法を示します。MATLAB Agentic Toolkit は、コマンド ラインまたは MATLAB からセットアップできます。
 
-> メモ: ローカル ファイルからのインストール、オフライン環境でのインストール、このツールキットの設定オプション、プラットフォーム固有の注意事項、検証手順、トラブルシューティング、インストーラーを使用しない手動セットアップについては、[構成とトラブルシューティング](Configuration_and_Troubleshooting.ja.md) を参照してください。MCP サーバーが既にインストールされていてスキルの追加のみが必要な場合は、[スキルのみの追加](Configuration_and_Troubleshooting.ja.md#adding-skills-only) を参照してください。
+### コマンド ラインからの MATLAB Agentic Toolkit のインストール
+
+Claude Code、GitHub Copilot CLI、または OpenAI Codex を使用している場合は、Agentic Toolkit Installer を使用して、オペレーティング システムのコマンド ラインで MATLAB Agentic Toolkit、Simulink Agentic Toolkit、MATLAB MCP Server をまとめてセットアップできます。詳細については、[Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer) を参照してください。このリポジトリを参照して、構成をカスタマイズしたり、ツールキットをオフラインでインストールしたりすることもできます。
 
 ### MATLAB からの MATLAB Agentic Toolkit のインストール
 
-MATLAB で MATLAB Agentic Toolkit のセットアップをするには、以下の手順に従います。
+MATLAB Agentic Toolkit は、MATLAB から直接インストールすることもできます。
+
+> メモ: ローカル ファイルからのインストール、オフライン環境でのインストール、このツールキットの設定オプション、プラットフォーム固有の注意事項、検証手順、トラブルシューティング、インストーラーを使用しない手動セットアップについては、[構成とトラブルシューティング](Configuration_and_Troubleshooting.ja.md)を参照してください。MCP サーバーが既にインストールされていてスキルの追加のみが必要な場合は、[スキルのみの追加](Configuration_and_Troubleshooting.ja.md#adding-skills-only)を参照してください。
+
+MATLAB からツールキットをインストールするには、以下の手順に従います。
 
 1. Agentic Toolkit インストーラー パッケージをダウンロードするには、[agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx) をクリックします。
 2. ダウンロードしたファイルを MATLAB で開いて、インストーラー アドオンをインストールします。
@@ -69,11 +75,6 @@ shareMATLABSession()
 複数の MATLAB セッションを実行している場合、エージェントは最後にこのコマンドを実行した MATLAB セッションに接続します。
 
 または、このコマンドを MATLAB の [startup スクリプト](https://www.mathworks.com/help/matlab/ref/startup.html) に追加することもできます。
-
-### コマンド ラインからの MATLAB Agentic Toolkit のインストール
-
-Claude Code または OpenAI Codex を使用している場合は、Agentic Toolkit Installer を使用して、オペレーティング システムのコマンド ラインで MATLAB Agentic Toolkit、Simulink Agentic Toolkit、MATLAB MCP Server をまとめてセットアップすることもできます。詳細については、[Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer) を参照してください。
-
 
 ### 検証
 エージェントに以下のように質問します。
