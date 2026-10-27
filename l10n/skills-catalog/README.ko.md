@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
 -->
 
 # 스킬 카탈로그
@@ -84,7 +84,7 @@ MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interlea
 | `matlab-optimize-performance` | MATLAB 코드의 성능을 최적화합니다. |
 | `matlab-package-toolbox` | MATLAB 코드를 설치 가능한 .mltbx 툴박스로 패키징합니다. |
 | `matlab-run-tests` | MATLAB 테스트 스위트를 실행하고, 코드 커버리지를 수집하고, CI/CD 파이프라인을 구성합니다. |
-| `matlab-use-package-manager` | 제품 내 MATLAB Package Manager(mpm)를 사용하여 MATLAB 패키지를 관리하고 검사합니다. |
+| `matlab-use-package-manager` | 제품 내 MATLAB Package Manager를 사용하여 MATLAB 패키지를 관리하고 검사합니다. |
 | `matlab-write-help` | MathWorks 문서화 표준에 따라 MATLAB 도움말 텍스트를 생성하거나 개선합니다. |
 | `matlab-write-performance-tests` | matlab.perftest.TestCase 프레임워크를 사용하여 MATLAB 성능 테스트를 작성합니다. |
 | `matlab-write-tests` | 클래스 기반 테스트 프레임워크를 사용하여 MATLAB 단위 테스트를 생성하고 구조화합니다. |
@@ -181,7 +181,7 @@ Control System Toolbox&trade;, Predictive Maintenance Toolbox&trade;, Signal Pro
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
-| `matlab-extract-battery-features` | 열화(degradation) 및 성능(health) 분석을 위해 사이클링 테스트 데이터에서 배터리 특징을 추출합니다. |
+| `matlab-extract-battery-features` | 사이클링, 펄스, EIS 및 현장 측정 데이터에서 배터리 특징을 추출합니다. |
 | `matlab-extract-rotating-machinery-features` | 상태 모니터링 및 결함 검출을 위해 회전 기계 진동 데이터에서 특징을 추출합니다. |
 | `matlab-identify-linear-system` | System Identification Toolbox를 사용하여 측정 데이터로부터 선형 동적 모델을 식별합니다. |
 
@@ -197,8 +197,6 @@ Computer Vision Toolbox, Deep Learning Toolbox, Image Processing Toolbox&trade;,
 | `matlab-integrate-pytorch-vision` | MPyReq를 사용하여 GitHub 리포지토리 또는 pip 패키지의 Python 영상 처리 및 컴퓨터 비전 모델을 MATLAB과 연동하는 인터페이스를 만듭니다. |
 | `matlab-model-optics` | Optical Design and Simulation Library를 사용하여 광학 시스템 및 광학 코팅을 구축하고, 가져오고, 분석하고, 최적화하고, 공차 분석(tolerance)을 수행합니다. |
 | `matlab-process-images` | MATLAB Image Processing Toolbox를 사용하여 영상을 처리, 분석, 변환합니다. |
-| `matlab-process-large-images` | blockedImage를 사용하여 대용량 영상을 처리합니다. |
-| `matlab-read-medical-data` | Image Processing Toolbox 및 Medical Imaging Toolbox API를 사용하여 의료 영상 데이터(DICOM, NIfTI, NRRD)를 읽고, 쓰고, 조작합니다. |
 | `matlab-read-write-point-cloud-file` | PLY, PCD, LAS/LAZ, PCAP, E57, IDC 형식으로 3차원 포인트 클라우드 데이터를 읽고 씁니다. |
 | `matlab-recognize-text` | ocr() 함수를 사용하여 MATLAB에서 OCR 파이프라인을 구축합니다. |
 | `matlab-register-point-clouds` | ICP, NDT, LOAM, FGR, 위상 상관(phase correlation), CPD 알고리즘을 사용하여 3차원 포인트 클라우드를 정합 및 정렬합니다. |

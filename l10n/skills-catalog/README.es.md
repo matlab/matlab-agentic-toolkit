@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
 -->
 
 # Catálogo de Skills
@@ -84,7 +84,7 @@ Escribir y ejecutar pruebas, modernizar código heredado, optimizar rendimiento 
 | `matlab-optimize-performance` | Optimizar el rendimiento del código de MATLAB. |
 | `matlab-package-toolbox` | Empaquetar código de MATLAB como una toolbox instalable .mltbx. |
 | `matlab-run-tests` | Ejecutar suites de pruebas de MATLAB, recopilar cobertura de código y configurar pipelines CI/CD. |
-| `matlab-use-package-manager` | Administrar e inspeccionar paquetes de MATLAB con MATLAB Package Manager (mpm) integrado en el producto. |
+| `matlab-use-package-manager` | Administrar e inspeccionar paquetes de MATLAB con MATLAB Package Manager integrado en el producto. |
 | `matlab-write-help` | Generar o mejorar texto de ayuda de MATLAB siguiendo los estándares de documentación de MathWorks. |
 | `matlab-write-performance-tests` | Escribir pruebas de rendimiento de MATLAB usando el framework matlab.perftest.TestCase. |
 | `matlab-write-tests` | Generar y estructurar pruebas unitarias de MATLAB usando frameworks de pruebas basados en clases. |
@@ -181,7 +181,7 @@ Soporte para Control System Toolbox&trade;, Predictive Maintenance Toolbox&trade
 
 | Skill | Qué le enseña a su agente |
 |-------|---------------------------|
-| `matlab-extract-battery-features` | Extraer características de baterías a partir de datos de pruebas de ciclado para análisis de degradación y salud. |
+| `matlab-extract-battery-features` | Extraer características de baterías a partir de datos de ciclado, pulsos, EIS y mediciones en campo. |
 | `matlab-extract-rotating-machinery-features` | Extraer características de datos de vibración de maquinaria rotativa para monitoreo de condición y detección de fallas. |
 | `matlab-identify-linear-system` | Identificar modelos dinámicos lineales a partir de datos de medición usando System Identification Toolbox. |
 
@@ -197,8 +197,6 @@ Soporte para Computer Vision Toolbox, Deep Learning Toolbox, Image Processing To
 | `matlab-integrate-pytorch-vision` | Crear interfaces de MATLAB para modelos de procesamiento de imágenes y visión artificial de Python a partir de repositorios de GitHub o paquetes pip usando MPyReq. |
 | `matlab-model-optics` | Compilar, importar, analizar, optimizar y toleranciar sistemas ópticos y recubrimientos usando la Optical Design and Simulation Library. |
 | `matlab-process-images` | Procesar, analizar y transformar imágenes usando MATLAB Image Processing Toolbox. |
-| `matlab-process-large-images` | Procesar imágenes grandes usando blockedImage. |
-| `matlab-read-medical-data` | Leer, escribir y manipular datos de imágenes médicas (DICOM, NIfTI, NRRD) usando las API de Image Processing Toolbox y Medical Imaging Toolbox. |
 | `matlab-read-write-point-cloud-file` | Leer y escribir datos de nubes de puntos 3D en formatos PLY, PCD, LAS/LAZ, PCAP, E57 e IDC. |
 | `matlab-recognize-text` | Compilar pipelines de OCR en MATLAB usando la función ocr(). |
 | `matlab-register-point-clouds` | Registrar y alinear nubes de puntos 3D usando algoritmos ICP, NDT, LOAM, FGR, correlación de fase y CPD. |

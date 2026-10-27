@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
 -->
 
 # 技能目录
@@ -84,7 +84,7 @@ Source English Markdown:
 | `matlab-optimize-performance` | 优化 MATLAB 代码的性能。 |
 | `matlab-package-toolbox` | 将 MATLAB 代码打包为可安装的 .mltbx 工具箱。 |
 | `matlab-run-tests` | 运行 MATLAB 测试套件、收集代码覆盖率并配置 CI/CD 流水线。 |
-| `matlab-use-package-manager` | 使用产品内置的 MATLAB Package Manager (mpm) 管理和检查 MATLAB 包。 |
+| `matlab-use-package-manager` | 使用产品内置的 MATLAB Package Manager 管理和检查 MATLAB 包。 |
 | `matlab-write-help` | 按照 MathWorks 文档标准生成或改进 MATLAB 帮助文本。 |
 | `matlab-write-performance-tests` | 使用 matlab.perftest.TestCase 框架编写 MATLAB 性能测试。 |
 | `matlab-write-tests` | 使用基于类的测试框架生成和组织 MATLAB 单元测试。 |
@@ -181,7 +181,7 @@ Source English Markdown:
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
-| `matlab-extract-battery-features` | 从循环测试数据中提取电池特征，用于退化和健康分析。 |
+| `matlab-extract-battery-features` | 从循环、脉冲、EIS 和现场测量数据中提取电池特征。 |
 | `matlab-extract-rotating-machinery-features` | 从旋转机械振动数据中提取特征，用于状态监测和故障检测。 |
 | `matlab-identify-linear-system` | 使用 System Identification Toolbox 从测量数据中辨识线性动态模型。 |
 
@@ -197,8 +197,6 @@ Source English Markdown:
 | `matlab-integrate-pytorch-vision` | 使用 MPyReq 从 GitHub 存储库或 pip 包创建 Python 图像处理和计算机视觉模型的 MATLAB 接口。 |
 | `matlab-model-optics` | 使用 Optical Design and Simulation Library 构建、导入、分析、优化光学系统和镀膜并进行公差分析。 |
 | `matlab-process-images` | 使用 MATLAB Image Processing Toolbox 处理、分析和变换图像。 |
-| `matlab-process-large-images` | 使用 blockedImage 处理大型图像。 |
-| `matlab-read-medical-data` | 使用 Image Processing Toolbox 和 Medical Imaging Toolbox API 读取、写入和操作医学影像数据 (DICOM、NIfTI、NRRD)。 |
 | `matlab-read-write-point-cloud-file` | 以 PLY、PCD、LAS/LAZ、PCAP、E57 和 IDC 格式读写 3D 点云数据。 |
 | `matlab-recognize-text` | 使用 ocr() 函数在 MATLAB 中构建 OCR 流水线。 |
 | `matlab-register-point-clouds` | 使用 ICP、NDT、LOAM、FGR、相位相关和 CPD 算法对齐和配准 3D 点云。 |

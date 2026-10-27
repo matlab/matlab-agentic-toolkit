@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
 -->
 
 # MATLAB Agentic Toolkit
@@ -43,13 +43,19 @@ MATLAB&reg; Agentic Toolkit 允许您通过为 AI 智能体提供高效使用 MA
 ---
 ## 开始使用 MATLAB Agentic Toolkit
 
-以下步骤展示了如何使用 MATLAB Agentic Toolkit 安装 MATLAB MCP Server 并向您的智能体添加技能。
+以下步骤展示了如何使用 MATLAB Agentic Toolkit 安装 MATLAB MCP Server 并向您的智能体添加技能。您可以使用命令行或 MATLAB 设置 MATLAB Agentic Toolkit。
+
+### 使用命令行安装 MATLAB Agentic Toolkit
+
+如果您使用的是 Claude Code、GitHub Copilot CLI 或 OpenAI Codex，您可以使用 Agentic Toolkit Installer 在操作系统命令行中同时设置 MATLAB Agentic Toolkit、Simulink Agentic Toolkit 和 MATLAB MCP Server。有关详细信息，请参阅 [Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer)。您还可以参考此仓库来自定义配置或离线安装这些工具包。
+
+### 使用 MATLAB 安装 MATLAB Agentic Toolkit
+
+您也可以直接在 MATLAB 中安装 MATLAB Agentic Toolkit。
 
 > 注意：有关从本地文件安装、在离线环境中安装、此工具包的配置设置选项、平台特定说明、验证步骤、故障排除以及不使用安装程序的手动设置的说明，请参阅[配置和故障排除](Configuration_and_Troubleshooting.zh-cn.md)。如果您已安装 MCP 服务器且只需要添加技能，请参阅[仅添加技能](Configuration_and_Troubleshooting.zh-cn.md#adding-skills-only)。
 
-### 从 MATLAB 安装 MATLAB Agentic Toolkit
-
-按照以下步骤在 MATLAB 中设置 MATLAB Agentic Toolkit。
+要在 MATLAB 中安装该工具包，请按照以下步骤操作。
 
 1. 要下载 Agentic Toolkit 安装程序包，请点击 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx)。
 2. 使用 MATLAB 打开下载的文件以安装安装程序附加功能。
@@ -69,11 +75,6 @@ shareMATLABSession()
 如果您正在运行多个 MATLAB 会话，智能体将连接到您最近运行此命令的 MATLAB 会话。
 
 或者，您也可以将此命令添加到 MATLAB [启动脚本](https://www.mathworks.com/help/matlab/ref/startup.html)中。
-
-### 从命令行安装 MATLAB Agentic Toolkit
-
-如果您使用的是 Claude Code 或 OpenAI Codex，也可以使用 Agentic Toolkit Installer 在操作系统命令行中同时设置 MATLAB Agentic Toolkit、Simulink Agentic Toolkit 和 MATLAB MCP Server。有关详细信息，请参阅 [Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer)。
-
 
 ### 验证
 向您的智能体提问：

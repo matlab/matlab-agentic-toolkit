@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 99face6879f8ff173a5dee635d0918d10e21d40c
+- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
 -->
 
 # スキル カタログ
@@ -84,7 +84,7 @@ MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルを�
 | `matlab-optimize-performance` | MATLAB コードのパフォーマンスを最適化する。 |
 | `matlab-package-toolbox` | MATLAB コードをインストール可能な .mltbx ツールボックスとしてパッケージ化する。 |
 | `matlab-run-tests` | MATLAB テスト スイートを実行し、コード カバレッジを収集して、CI/CD パイプラインを構成する。 |
-| `matlab-use-package-manager` | 製品内の MATLAB パッケージ マネージャー (mpm) を使用して MATLAB パッケージを管理および検査する。 |
+| `matlab-use-package-manager` | 製品内の MATLAB パッケージ マネージャーを使用して MATLAB パッケージを管理および検査する。 |
 | `matlab-write-help` | MathWorks ドキュメント標準に従って MATLAB ヘルプ テキストを生成または改善する。 |
 | `matlab-write-performance-tests` | matlab.perftest.TestCase フレームワークを使用して MATLAB パフォーマンス テストを記述する。 |
 | `matlab-write-tests` | クラスベースのテスト フレームワークを使用して MATLAB ユニット テストを生成および構造化する。 |
@@ -181,7 +181,7 @@ Control System Toolbox&trade;、Predictive Maintenance Toolbox&trade;、Signal P
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
-| `matlab-extract-battery-features` | 劣化および健全性の分析のためにサイクル テスト データからバッテリー特徴量を抽出する。 |
+| `matlab-extract-battery-features` | サイクル、パルス、EIS、およびフィールド測定のデータからバッテリー特徴量を抽出する。 |
 | `matlab-extract-rotating-machinery-features` | 状態監視および故障検出のために回転機械振動データから特徴量を抽出する。 |
 | `matlab-identify-linear-system` | System Identification Toolbox を使用して計測データから線形動的モデルを同定する。 |
 
@@ -197,8 +197,6 @@ Computer Vision Toolbox、Deep Learning Toolbox、Image Processing Toolbox&trade
 | `matlab-integrate-pytorch-vision` | MPyReq を使用して GitHub リポジトリまたは pip パッケージの Python イメージ処理およびコンピューター ビジョン モデル用の MATLAB インターフェースを作成する。 |
 | `matlab-model-optics` | Optical Design and Simulation Library を使用して光学系とコーティングを構築、インポート、分析、最適化、公差解析を行う。 |
 | `matlab-process-images` | MATLAB Image Processing Toolbox を使用してイメージを処理、解析、変換する。 |
-| `matlab-process-large-images` | blockedImage を使用して大きなイメージを処理する。 |
-| `matlab-read-medical-data` | Image Processing Toolbox と Medical Imaging Toolbox API を使用して医用画像データ (DICOM、NIfTI、NRRD) の読み書きおよび操作を行う。 |
 | `matlab-read-write-point-cloud-file` | PLY、PCD、LAS/LAZ、PCAP、E57、IDC 形式で 3D 点群データを読み書きする。 |
 | `matlab-recognize-text` | ocr() 関数を使用して MATLAB で OCR パイプラインを構築する。 |
 | `matlab-register-point-clouds` | ICP、NDT、LOAM、FGR、位相相関、CPD アルゴリズムを使用して 3D 点群の位置合わせを行う。 |
