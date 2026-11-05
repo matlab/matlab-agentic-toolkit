@@ -111,7 +111,7 @@ Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Co
 
 ### Automotive ([`automotive`](./automotive/))
 
-Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, Optimization Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
+Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
