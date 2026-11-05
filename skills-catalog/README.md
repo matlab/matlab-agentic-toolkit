@@ -165,7 +165,7 @@ Supports Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financia
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Access financial, economic, climate, and government data from Bloomberg&reg;, FRED&reg;, Haver, Datastream&trade;, NOAA, and US agencies. |
+| `matlab-access-datafeed` | Access financial, economic, climate, and government data from Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, LSEG&reg; Datastream&trade;, National Oceanic and Atmospheric Administration, and US agencies. |
 | `matlab-optimize-portfolio` | Formulate and solve mean-variance portfolio optimization problems. |
 | `matlab-price-instrument` | Price financial instruments using Monte Carlo, FFT, or interest-rate trees. |
 | `matlab-use-spreadsheet-link` | Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link. |
