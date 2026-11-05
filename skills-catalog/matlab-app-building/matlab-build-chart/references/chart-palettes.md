@@ -22,6 +22,17 @@ colororder("earth")   % Muted earth
 colororder("dye")     % Vibrant saturated
 ```
 
+## Calling colororder Correctly
+
+**Call `colororder` after plotting.** Calling it before `plot` on axes with `NextPlot` set to `'replace'` (the default) will lose the color order when the first plot command resets the axes.
+
+```matlab
+fig = figure;
+ax = axes(fig);
+plot(ax, x, y1, x, y2, x, y3);
+colororder(ax, "gem");   % Applied after plotting — colors update correctly
+```
+
 ## Theme-Adaptive Plots with SeriesIndex
 
 For plots that auto-adapt between light/dark without custom colors:
@@ -35,7 +46,7 @@ p2 = plot(ax, data2);  % SeriesIndex = 2 (auto)
 % When theme switches: gem[1] → glow[1], gem[2] → glow[2] automatically
 ```
 
-**Important:** Do NOT set line colors explicitly if you want adaptive behavior. `plot(ax, data, 'r')` forces `ColorMode = "manual"`.
+**Important:** Do NOT set line colors explicitly if you want adaptive behavior. `plot(ax, data, 'r')` forces `ColorMode = "manual"`. Use `p.SeriesIndex = 3` to change a line's color within the current colororder.
 
 ## colororder vs colormap
 

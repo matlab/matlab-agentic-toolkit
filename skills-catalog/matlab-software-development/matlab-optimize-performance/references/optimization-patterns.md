@@ -30,7 +30,7 @@ for i = 1:numel(A)
 end
 
 % After: O(N log K) with discretize
-idx = discretize(A, [-inf; levels(:); inf]);
+idx = discretize(A, [-inf; levels(:); inf]) - 1;
 ```
 
 ### filter — replace recursive accumulation loops
@@ -204,9 +204,8 @@ Simplify redundant math operations.
 % Before: flip + cumsum + flip (3 passes)
 Y = flip(cumsum(flip(X)));
 
-% After: single cumsum + subtraction (2 passes, no flip)
-cs = cumsum(X);
-Y = cs(end) - cs + X;
+% After: one pass, no flip (and no cancellation at the tail)
+Y = cumsum(X, 'reverse');
 ```
 
 ```matlab

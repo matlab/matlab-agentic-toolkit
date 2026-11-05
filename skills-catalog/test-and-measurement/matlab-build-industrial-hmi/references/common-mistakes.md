@@ -2,7 +2,7 @@
 
 Wrong/correct code pairs for the bugs that show up most often when wrapping a monitoring script into an HMI. Grouped by domain. Each entry has **Symptom → Wrong → Right → Why**, so the agent can match a user's reported failure mode without re-deriving the fix.
 
-> **Look up one entry — don't read this file top to bottom.** It's a 26-entry lookup table.
+> **Look up one entry — don't read this file top to bottom.** It's a 33-entry lookup table.
 > - **Have an error message?** `Grep` this file for a distinctive substring of it — most entries quote the exact string MATLAB prints.
 > - **Chasing an anti-pattern by concept** (e.g. "green button", "forgot Theme")? Find it in the index below and `Grep` for its **Grep for** token.
 >
@@ -19,6 +19,7 @@ Wrong/correct code pairs for the bugs that show up most often when wrapping a mo
 | 3 | `delete()` on an `opc.ua.Subscription` | `Cannot access method 'delete'` |
 | 4 | Repeated `subscribe()` accumulates channel listeners | `accumulate channel listeners` |
 | 5 | Numeric `bitand` on a string `AccessLevelCurrent` (R2026a) | `bitand` |
+| 32 | Teardown body on `CloseRequestFcn` instead of `delete(app)` | `Teardown body on` |
 
 **ISA-101 / gray-field violations**
 
@@ -28,10 +29,15 @@ Wrong/correct code pairs for the bugs that show up most often when wrapping a mo
 | 7 | `uialert`/`uiconfirm`/`msgbox` for live process alarms | `alarm-fatigue` |
 | 8 | Green for "normal" or "connected" | `Green for "normal"` |
 | 9 | Auto-scaling trend `YLim` | `Auto-scaling trend` |
+| 29 | Live trend left with its default pan/zoom toolbar | `default pan/zoom toolbar` |
 | 10 | 60-second trend window for a process variable | `60-second trend window` |
 | 11 | Inverting gray-field to a "dark-field" palette | `dark-field` |
 | 12 | `uilabel` for a precise numeric reading | `precise numeric reading` |
 | 26 | Green Start / red Stop command buttons | `Green Start` |
+| 27 | `BackgroundColor` on a switch / lamp / knob → hard error | `Unrecognized property BackgroundColor` |
+| 28 | `FontColor` on a `uitable` / `uipanel` → hard error | `Unrecognized property FontColor` |
+| 30 | Alarm banner recolored without setting `FontColor` | `banner without FontColor` |
+| 31 | Latched alarm severity with no Acknowledge control | `latched with no Acknowledge` |
 
 **Protocol-specific silent failures**
 
@@ -45,11 +51,17 @@ Wrong/correct code pairs for the bugs that show up most often when wrapping a mo
 | 18 | Modbus poll timer without `BusyMode='drop'` | `BusyMode` |
 | 19 | `evt.Value` instead of `evt.Data.Value` (OPC UA) | `nests value data` |
 | 20 | Trend X axis collapses from 1601-epoch server timestamps | `1601` |
-| 21 | Subscription handle assigned to a local variable | `local variable in a classdef` |
+| 21 | Live-data handle (subscription, timer, client, trace) in a local variable | `local variable in a classdef` |
 | 22 | Trend `XLim` fixed at construction, never scrolled | `never updated in callback` |
-| 23 | `ScaleColors` set on a non-linear gauge (silently inert) | `non-linear gauge` |
+| 23 | `ScaleColorLimits` outside the gauge `Limits` (bands silently clipped) | `silently clipped` |
 | 24 | Forgetting `Theme='light'` → child widgets stay dark | `near-black` |
 | 25 | Direct AFSDK `.NET` calls instead of `piclient`/`afclient` | `AFSDK` |
+
+**Verification and hand-off**
+
+| # | Anti-pattern | Grep for |
+|---|---|---|
+| 33 | Design-report numbers retyped from intent, or keys renamed / nested / pretty-printed | `re-shaped design-report` |
 
 ---
 
@@ -288,6 +300,8 @@ animatedline(ax, 'MaximumNumPoints', 300);
 ```
 
 **Why:** Operators read trends positionally — "is this near the alarm line?" only works when the alarm line stays put. Auto-scale jumps with the signal and the alarm line moves with it. Provide a per-trend "auto-scale" toggle for exploration, but never as the default. See `references/trend-config-reference.md`.
+
+**The one exemption:** when **no range exists to fix it to** — an MQTT topic or a Modbus holding register whose engineering range the source script never states, and the user hasn't given one — autoscale is the honest choice. Leave `YLim` on auto, label the axis `<unit> (no spec range)`, and write that on the spec's trend row so the reviewer can supply the range. This is the only case; a range you could have read off the node, the register table, or the user's prompt is not "no range exists". See `references/server-agnostic-discovery.md`, which routes a rangeless numeric here.
 
 ---
 
@@ -565,7 +579,7 @@ end
 
 ---
 
-### 21. Subscription handle assigned to a local variable in a classdef
+### 21. Live-data handle assigned to a local variable in a classdef
 
 **Symptom:** `subscribe()` returns without error, the connection lamp shows connected, but the data-change callback never fires. No warning, no error.
 
@@ -591,6 +605,8 @@ end
 ```
 
 **Why:** `opc.ua.Subscription` is a handle whose listener registration on the underlying `opc.ua.Channel` is kept alive only while at least one MATLAB reference to the handle exists. A local variable in a method is GC-eligible the moment the method returns, so the handle is released and the listener detaches — even though the OPC UA session itself is still up. Storing the handle on a property keeps it alive for the life of the app. See `references/app-designer-gotchas.md`.
+
+**This is not an OPC UA rule — it is the rule for every live-data handle.** The same GC releases a `timer` (it never fires, so a Modbus or PI dashboard sits at its startup values forever), a `modbus`/`piclient`/`mqttclient` client (the next poll errors on a deleted object), and an `animatedline` (`addpoints` throws on an invalid handle, so the trend stays empty). **Every handle the app touches after `startupFcn` returns lives on a property** — client, subscription, timer, and one trace handle per trend. If a widget owns its own subscription or trace, store it on that widget's struct entry (see #4). The spec template has an App-state row for exactly this, and the self-audit box "every timer, client, subscription and line handle has an App state row" is the check.
 
 ---
 
@@ -628,25 +644,25 @@ end
 
 ---
 
-### 23. `ScaleColors` set on a non-linear gauge
+### 23. `ScaleColorLimits` outside the gauge `Limits` (bands silently clipped)
 
-**Symptom:** no error, but no color bands appear on the gauge — the alarm thresholds set at construction are silently ignored.
+**Symptom:** no error, but the warn/alarm bands never appear — the gauge shows only the normal band, or no band at all. Applies to every gauge style (linear, semicircular, circular, ninetydegree).
 
 **Wrong:**
 ```matlab
-g = uigauge(parent, 'semicircular', 'Limits', [0 150]);
+g = uigauge(parent, 'semicircular');            % Limits left at default [0 100]
 g.ScaleColors      = [0.5 0.5 0.5; 1 0.7 0; 0.85 0 0];
-g.ScaleColorLimits = [0 90; 90 100; 100 150];   % silently ignored
+g.ScaleColorLimits = [0 200; 200 230; 230 250]; % warn/alarm bands lie above 100 - clipped
 ```
 
 **Right:**
 ```matlab
-g = uigauge(parent, 'linear', 'Limits', [0 150]);
+g = uigauge(parent, 'semicircular', 'Limits', [0 250]);   % node spec range first
 g.ScaleColors      = [0.5 0.5 0.5; 1 0.7 0; 0.85 0 0];
-g.ScaleColorLimits = [0 90; 90 100; 100 150];
+g.ScaleColorLimits = [0 200; 200 230; 230 250];
 ```
 
-**Why:** `ScaleColors`/`ScaleColorLimits` are only honoured by `uigauge('linear')`. The `'semicircular'`, `'circular'`, and `'ninetydegree'` gauge styles accept the assignment without error but render no color bands. If the layout demands a non-linear gauge style and alarm bands are required, indicate alarm state with a colored frame, an adjacent `uilamp`, or a status badge. See `references/alarm-patterns.md` Pattern A.
+**Why:** the gauge draws only the part of each band that falls inside `Limits`; a band wholly outside is accepted without error and drawn nowhere. `ScaleColors`/`ScaleColorLimits` are honoured by all four gauge styles (verified on R2026a), so the fix is never a different style — it is setting `Limits` to the node's spec range so every threshold band lies inside it. See `references/alarm-patterns.md` Pattern A.
 
 ---
 
@@ -733,6 +749,315 @@ uilabel(g, 'Text', 'Stopped');
 ```
 
 **Why:** color means *exception*. Buttons are present on the screen no matter what the process is doing, so they carry no status meaning and must stay neutral gray. Green `[0 0.6 0]` is reserved for operator-verified-OK and red `[0.85 0 0]` for critical alarms; spending them on buttons desensitizes the operator and steals contrast from real alarms. Say *what pressing does* with the label; say *what the equipment is doing* with a separate lamp/badge. The one convention-based exception is a red E-Stop (it mirrors the physical mushroom button operators are trained on) — even then, pair it with a confirm-both-engage-and-release dialog rather than leaning on color. This holds on both the programmatic and the `matlab-build-app` serialization paths. See `references/color-and-layout-rules.md` §"Command buttons and controls are neutral" and `references/write-safeguards-reference.md` for E-Stop.
+
+---
+
+### 27. `BackgroundColor` on a switch, lamp, knob, or checkbox
+
+**Symptom:** construction dies outright — the app never builds:
+> `Error using uiswitch`
+> `Unrecognized property BackgroundColor for class RockerSwitch`
+
+This is the trap laid by the neutral-chrome rule itself: "switches must be neutral widget gray"
+reads as *set `BackgroundColor` to `[0.86 0.86 0.86]`*, and on a switch that property does not
+exist.
+
+**Wrong:**
+```matlab
+% Trying to apply the neutral-chrome palette value to a switch
+toggle = uiswitch(g, 'rocker', 'Items', {'Fixed','Auto'}, ...
+    'BackgroundColor', [0.86 0.86 0.86]);      % ERRORS — no such property
+lamp = uilamp(g, 'BackgroundColor', [0.5 0.5 0.5]);   % ERRORS — lamps use Color
+```
+
+**Right:**
+```matlab
+% Switches are neutral already — don't paint them. Tint the container instead.
+wrap   = uigridlayout(g, [1 1], 'BackgroundColor', [0.86 0.86 0.86], 'Padding', [4 4 4 4]);
+toggle = uiswitch(wrap, 'rocker', 'Items', {'Fixed','Auto'});
+
+% A lamp's state color is Color, not BackgroundColor — and that IS the ISA-101 signal.
+lamp = uilamp(g, 'Color', [0.5 0.5 0.5]);      % gray idle
+```
+
+**Why:** verified on R2026a, `BackgroundColor` **does not exist** on `Switch`, `RockerSwitch`,
+`ToggleSwitch`, `Lamp`, `CheckBox`, or `Knob`. It **does** exist on `Button`, `StateButton`,
+`Spinner`, `DropDown`, `EditField`, `NumericEditField`, `TextArea`, `Label`, `Table`, `Panel`,
+`GridLayout`, and the gauges. Unlike a band clipped outside the gauge `Limits` (entry 23), this fails
+loudly rather than silently — which is better, but it still costs the whole build. Check
+`isprop(h,'BackgroundColor')` if unsure. See `color-and-layout-rules.md` §"Command buttons and
+controls are neutral".
+
+---
+
+### 28. `FontColor` on a `uitable` or `uipanel`
+
+**Symptom:** construction dies outright — the app never builds:
+> `Error using uitable`
+> `Unrecognized property FontColor for class Table.`
+
+Same trap as entry 27, one property over. The gray-field rule says every widget needs an
+explicit text-color override, and `FontColor` is the right name on almost every component — so
+it gets carried onto the node table, where the property is `ForegroundColor`.
+
+**Wrong:**
+```matlab
+% Carrying FontColor from the label/button recipes onto a table or panel
+app.FlowTable = uitable(g, ...
+    'BackgroundColor', [0.86 0.86 0.86], ...
+    'FontColor',       [0.10 0.10 0.10]);      % ERRORS — no such property on Table
+app.Group = uipanel(g, 'Title', 'Flows', 'FontColor', [0.10 0.10 0.10]);   % ERRORS too
+```
+
+**Right:**
+```matlab
+% Tables and panels spell it ForegroundColor.
+app.FlowTable = uitable(g, ...
+    'BackgroundColor', [0.86 0.86 0.86], ...
+    'ForegroundColor', [0.10 0.10 0.10]);
+app.Group = uipanel(g, 'Title', 'Flows', 'ForegroundColor', [0.10 0.10 0.10]);
+
+% Inside uistyle it IS FontColor — that's a style object, not the table.
+s = uistyle('BackgroundColor', [0.85 0 0], 'FontColor', [1 1 1]);
+addStyle(app.FlowTable, s, 'row', alarmedRows);
+```
+
+**Why:** verified on R2026a, `uitable` and `uipanel` are the two components in a typical HMI that
+carry `ForegroundColor` and **not** `FontColor`. Everything else you paint — `Label`, `Button`,
+`EditField`, `NumericEditField`, `Spinner`, `DropDown`, `ListBox`, `TextArea`, `CheckBox`,
+`RockerSwitch`, and both gauge shapes — carries `FontColor` and not `ForegroundColor`. The
+`uistyle` object used for conditional row coloring is the confusing case: it takes `FontColor`,
+because the style is not the table. Like entry 27 this fails loudly, and like entry 27 it costs
+the whole build. Check `isprop(h,'FontColor')` if unsure.
+
+### 29. Live trend left with its default pan/zoom toolbar
+
+**Symptom:** nothing errors and nothing looks wrong. The trend has a correct fixed `YLim`, unit
+labels and threshold `yline`s — then an operator brushes the axes, the hover toolbar appears, and
+one drag or scroll silently rescales the live trend. From then on the axis lies about the process:
+a value above the alarm threshold can sit mid-axis looking unremarkable, the `yline`s move off
+screen, and **nothing in the UI records that the view was moved**. The next shift inherits it.
+
+`uiaxes` ships with `Toolbar.Visible = 'on'` and a full `DefaultAxesInteractionSet`, so this is
+the default state, not something anyone opted into. It is the same failure as entry 9 — an axis
+that no longer means what its labels claim — arriving by interaction instead of by construction,
+which is why fixing entry 9 alone does not cover it.
+
+**Wrong:**
+```matlab
+ax = uiaxes(parent, 'XLim', [0 300], 'YLim', [0 250]);   % fixed limits...
+ylabel(ax, 'Temperature (°C)');
+yline(ax, 230, '--', 'Color', [0.85 0 0]);
+% ...and left interactive: pan, zoom, datatips and restore-view all live
+```
+
+**Right:**
+```matlab
+ax = uiaxes(parent, 'XLim', [0 300], 'YLim', [0 250]);
+ylabel(ax, 'Temperature (°C)');
+yline(ax, 230, '--', 'Color', [0.85 0 0]);
+
+% A live trend is a read-only instrument.
+ax.Toolbar.Visible = 'off';
+ax.Interactions    = [];
+```
+
+**Why:** verified on R2026a — setting `Toolbar.Visible='off'` and `Interactions=[]` leaves
+`YLimMode` at `'manual'` and the limits settable, so the fixed-`YLim` contract is unaffected;
+only operator-initiated rescaling goes away. This does not remove exploration, it relocates it:
+the sanctioned mechanism is the explicit per-trend autoscale toggle in
+`references/trend-config-reference.md`, which is a visible control with a known state an operator
+and a reviewer can both read. An ad-hoc drag has neither. Caught by a smoke-test screenshot, not
+by any code review — the defect is invisible in source and only shows up in a running app.
+
+---
+
+### 30. Alarm banner recolored without setting `FontColor`
+
+**Symptom:** the banner works. It goes amber on warning and saturated red on critical, lists the
+right nodes, spans row 1. Then the one state that matters most is the hardest to read: near-black
+text on `[0.85 0 0]`. Nothing errors, a screenshot at full size looks acceptable, and the defect
+only bites at the distance a control-room screen is actually read from.
+
+This happens because `BackgroundColor` is state-driven while `FontColor` usually is not, so it gets
+set once at construction — or not at all, leaving the default — and then never revisited. A banner
+is the one widget whose face crosses from a light neutral to two saturated colors, so it is the one
+widget where a fixed font color cannot be right for every state.
+
+**Wrong:**
+```matlab
+% Constructed once, near-black on panel face — correct for exactly one of four states
+app.Banner = uilabel(g, 'FontColor', [0.10 0.10 0.10], ...
+    'BackgroundColor', [0.86 0.86 0.86]);
+...
+app.Banner.BackgroundColor = [0.85 0 0];    % critical: text is now unreadable
+```
+
+**Right:**
+```matlab
+% FontColor moves with BackgroundColor, in the same branch
+switch severity
+    case "critical"
+        app.Banner.BackgroundColor = [0.85 0   0];
+        app.Banner.FontColor       = [1 1 1];
+    case "warning"
+        app.Banner.BackgroundColor = [1 0.7 0];
+        app.Banner.FontColor       = [0.10 0.10 0.10];
+    otherwise
+        app.Banner.BackgroundColor = [0.86 0.86 0.86];
+        app.Banner.FontColor       = [0.10 0.10 0.10];
+end
+```
+
+**Why:** ISA-101 picks a muted red so it does not glare, which also means it is dark — dark enough
+that near-black text on it has almost no contrast. White text restores it. The rule generalizes to
+any state-colored widget: if `BackgroundColor` is assigned in a branch, `FontColor` belongs in the
+same branch. Pattern B in `references/alarm-patterns.md` shows it wired correctly.
+
+---
+
+### 31. Latched alarm severity with no Acknowledge control
+
+**Symptom:** the first alarm of the shift turns the banner red and it never goes back. Values
+return to normal, gauges drop into their gray bands, and the banner still reads critical — because
+latching is doing exactly what it was asked to do and nothing in the UI can clear it. Operators
+learn to ignore the banner, which is the alarm-fatigue failure ISA-18.2 exists to prevent, reached
+from the opposite direction to entry 7's popups.
+
+The usual cause is a design document: "latched severity" is written into a spec or a hand-off note
+because it is the standard SCADA behavior, while the Acknowledge button that makes it work is left
+to be inferred. It never is.
+
+**Wrong:**
+```matlab
+% Latch on the rising edge, and nothing anywhere clears it
+if value >= app.HighCritical
+    app.AlarmLatched = true;
+end
+% ...no Acknowledge button in the layout
+```
+
+**Right — pick one deliberately.** Either latch *and* give it a control:
+```matlab
+app.AckButton = uibutton(g, 'Text', 'ACK', 'BackgroundColor', [0.86 0.86 0.86], ...
+    'ButtonPushedFcn', @(~,~) acknowledge(app));
+app.AckButton.Enable = matlab.lang.OnOffSwitchState(app.AlarmLatched && ~app.AlarmActive);
+```
+or do not latch, and track active severity instead:
+```matlab
+app.AlarmActive = value >= app.HighCritical;   % clears on its own when the value returns
+```
+
+**Why:** latching is a promise that something can un-latch it. `AlarmLatched` with no writer that
+clears it is a one-way state machine, and the banner becomes a permanent decoration rather than an
+indicator. Pattern C in `references/alarm-patterns.md` gives the latched pair; Pattern B gives the
+active-severity alternative. In a spec hand-off, the word and the button ship together or neither
+does — a consumer building from the document cannot invent the control.
+
+---
+
+### 32. Teardown body on `CloseRequestFcn` instead of `delete(app)`
+
+**Symptom:** the window closes and the app keeps running. A poll timer fires every second against
+deleted widgets, so the command window fills with
+> `Invalid or deleted object.`
+
+minutes after the operator closed the screen, and `timerfindall` still lists the timer. The client
+stays connected, holding its session on the server. Closing by hand seems to work — the leak only
+shows up when something closes the app *programmatically*, which is how every test, script, and eval
+closes it.
+
+**Wrong:**
+```matlab
+% Teardown hung off the figure's close callback
+app.UIFigure.CloseRequestFcn = @(~,~) shutdown(app);
+...
+function shutdown(app)
+    stop(app.PollTimer);
+    delete(app.PollTimer);
+    disconnect(app.Client);
+    delete(app.UIFigure);
+end
+```
+
+**Right:**
+```matlab
+methods (Access = public)
+    function delete(app)                    % the destructor owns teardown
+        if ~isempty(app.PollTimer) && isvalid(app.PollTimer)
+            stop(app.PollTimer);
+            delete(app.PollTimer);
+        end
+        app.Subscription = opc.ua.Subscription.empty;   % no public delete - entry 3
+        if ~isempty(app.Client)
+            disconnect(app.Client);
+        end
+        if ~isempty(app.UIFigure) && isvalid(app.UIFigure)
+            delete(app.UIFigure);
+        end
+    end
+end
+...
+app.UIFigure.CloseRequestFcn = @(~,~) delete(app);   % routes only, no body
+```
+
+**Why:** `CloseRequestFcn` runs only when something asks the *figure* to close — the window's X, or
+`close(fig)`. `delete(app)` deletes the figure directly and never invokes it, so a teardown that
+lives there is skipped exactly in the automated path. Putting the body in `delete(app)` covers both
+directions: the destructor runs when the object is deleted, cleared, or goes out of scope, and the
+one-line `CloseRequestFcn` funnels the operator's click into the same code. This is also why the
+verification step in the workflow exercises `delete(app)` rather than `close(fig)` — it is the path
+that finds this bug.
+
+---
+
+### 33. A retyped or re-shaped design-report readback
+
+**Symptom:** two shapes, one cause. Either the verification report carries confident numbers that
+never came from MATLAB — `figureColor` is `[0.78 0.78 0.78]` because that is what the code *says*,
+not because anything read it back — or the report is real but unreadable downstream: keys renamed or
+nested, JSON pretty-printed, the file written into a subfolder. In both cases the step that exists
+to catch a discrepancy reports none, and a silently clipped alarm band (entry 23) or an autoscaling
+trend (entry 9) ships.
+
+**Wrong:**
+```matlab
+% Numbers from memory of what was written, keys invented on the spot
+report.figure.Color = [0.78 0.78 0.78];      % nested: "Color" collides with any earlier Color
+report.gauges       = 4;                     % counted by reading the constructor calls
+report.callback     = 'polls every second, updates gauge and trend';   % a summary, not the code
+fid = fopen(fullfile(pwd, 'reports', 'design-report.json'), 'w');      % subfolder
+fwrite(fid, jsonencode(report, 'PrettyPrint', true));
+```
+
+**Right:** copy `assets/designReportReadback.m` beside the app **verbatim**, keeping its filename —
+it is a function, so there is nothing to edit. Call it with the app class and its spec file:
+`designReportReadback("<AppClass>", "<AppClass>-hmi-spec.md")` (inline via `evaluate_matlab_code` is
+fine — a function's local functions resolve when the function is called). It constructs the app, reads the
+values off the live figure, extracts the callback and the write calls from the source, and writes a
+compact flat `design-report.json` at the top level of the working folder, then runs `delete(app)` and
+reports leaked figures and timers:
+```matlab
+report.figureColor = fig.Color;                                  % read back, not declared
+report.gaugeCount  = numel(findall(fig, 'Type', 'uilineargauge'));
+report.callbackExcerpt = char(capChars(liveDataCallback(src), 3000));   % fileread + regexp
+fwrite(fid, jsonencode(report));                                 % compact, PrettyPrint off
+```
+
+**Why:** a number typed from memory is the *intent* restated, and intent cannot disagree with itself
+— which is the entire value of the readback. `fig.Color` read off the constructed figure can come
+back `[0.94 0.94 0.94]` when a theme overrode it; a declared `[0.78 0.78 0.78]` never will. The
+shape rules are just as load-bearing, because the report is consumed by exact-key extraction: flat
+unique names (a nested `"Color"` is ambiguous with every other `"Color"`), compact encoding, scalars
+first with the code excerpt last, top level of the working folder, and no draft printed before the
+real file is written. Full contract: `assets/design-report-schema.json`.
+
+**Self-check after every run:** open `design-report.json` and confirm its first key is
+`"reportFormat":"hmi-report/1"` and the flat scalars are present (`gaugeCount`,
+`writePathsWithConfirm`, `autoscaleTrendAxisCount`, …). If it is nested (a `gauges[]` array, a
+`dataWiring` object) or missing keys, it was re-authored — delete it and re-run the **unchanged**
+function. Hand-written numbers discard the only check that catches a silently clipped alarm band
+(entry 23) or an autoscaled trend (entry 9).
 
 ---
 

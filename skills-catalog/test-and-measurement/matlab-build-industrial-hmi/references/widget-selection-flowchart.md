@@ -23,8 +23,8 @@ For each node:
   Does the node have a defined min/max range AND fit on the screen?
     YES → Is the user's goal "monitor at a glance"?
             YES → uigauge ('semicircular' single KPI, 'linear' for side-by-side rows)
-                  ⚠ If the node has alarm thresholds (LL/L/H/HH) → use 'linear' only:
-                  only `uigauge('linear')` supports `ScaleColors`/`ScaleColorLimits`.
+                  ⚠ If the node has alarm thresholds (LL/L/H/HH) → key `ScaleColors`/
+                  `ScaleColorLimits` to them (any gauge style) and set `Limits` to cover every band.
             NO  → uieditfield('numeric','Editable',false) for precise reading
     NO  ↓
 
@@ -44,7 +44,7 @@ For each node:
 
 | Condition | Widget | Notes |
 |-----------|--------|-------|
-| Single value, known range, glance-monitoring | `uigauge('linear')` or `uigauge('semicircular')` | `Limits` = sensor spec range, not observed range. Only `'linear'` supports `ScaleColors`/`ScaleColorLimits` — choose linear when the node has alarm thresholds and color bands are required; semicircular/circular/ninetydegree have no alarm-band support. |
+| Single value, known range, glance-monitoring | `uigauge('linear')` or `uigauge('semicircular')` | `Limits` = sensor spec range, not observed range. Prefer `'linear'` (the default): a row of linear indicators lets the operator compare values and spot an outlier at a glance, which round dials make harder (High Performance HMI practice). `'semicircular'` suits a lone KPI. Both support `ScaleColors`/`ScaleColorLimits`; bands outside `Limits` are silently clipped, so the spec range must cover every threshold. |
 | Single value, trend matters more than current reading | `uiaxes` + `animatedline` | Set `MaximumNumPoints` from `WindowSeconds / UpdatePeriod` |
 | Single value, precise digits matter (setpoints, calculated outputs) | `uieditfield('numeric','Editable',false)` | `ValueDisplayFormat` for units and precision |
 | Setpoint + actual shown together | Gauge with setpoint marker (yline overlay) OR adjacent numeric pair | Operator must see deviation without mental math |
@@ -100,9 +100,10 @@ gl   = uigridlayout(panel, [1 2], 'ColumnWidth', {30, '1x'});
 lamp = uilamp(gl, 'Color', [0.5 0.5 0.5]);   % gray = unknown/idle
 lbl  = uilabel(gl, 'Text', 'Idle', 'FontWeight', 'bold');
 
-% State change handler (e.g., from subscription callback):
-%   lamp.Color = [0 0.6 0]; lbl.Text = 'Running';
-%   lamp.Color = [0.85 0 0]; lbl.Text = 'Fault';
+% State change handler (e.g., from subscription callback).
+% Blue for running, red for fault — never green for "running".
+%   lamp.Color = [0.4 0.6 1.0]; lbl.Text = 'Running';
+%   lamp.Color = [0.85 0 0];    lbl.Text = 'Fault';
 ```
 
 ### Multi-state badge (enumerated label)
@@ -116,7 +117,8 @@ badge = uilabel(panel, ...
     'HorizontalAlignment', 'center');
 
 % On state change: set both Text and BackgroundColor.
-%   badge.Text = 'RUNNING'; badge.BackgroundColor = [0 0.6 0];
+% Blue for running, red for fault — never green for "running".
+%   badge.Text = 'RUNNING'; badge.BackgroundColor = [0.4 0.6 1.0];
 %   badge.Text = 'FAULT';   badge.BackgroundColor = [0.85 0 0];
 ```
 
@@ -136,10 +138,11 @@ val = uieditfield(panel, 'numeric', ...
 nodeTable = uitable(panel, ...
     'ColumnName',  {'Node','Value','Units','State','Updated'}, ...
     'RowStriping', 'off', ...
-    'BackgroundColor', [0.86 0.86 0.86]);
+    'BackgroundColor', [0.86 0.86 0.86], ...
+    'ForegroundColor', [0.10 0.10 0.10]);   % NOT FontColor — see common-mistakes.md entry 28
 
 % Conditional row coloring (set in update callback):
-%   s = uistyle('BackgroundColor',[0.85 0 0],'FontColor',[1 1 1]);
+%   s = uistyle('BackgroundColor',[0.85 0 0],'FontColor',[1 1 1]);   % uistyle DOES take FontColor
 %   addStyle(nodeTable, s, 'row', alarmedRows);
 ```
 

@@ -49,11 +49,12 @@ Import, export, and analyze data in MATLAB using tables, timetables, filtering, 
 
 ### MATLAB External Language Interfaces ([`matlab-external-language-interfaces`](./matlab-external-language-interfaces/))
 
-Call Python&reg; libraries from MATLAB and upgrade MEX files to the interleaved complex API
+Call Python&reg; libraries from MATLAB, configure the Java&reg; Runtime Environment (JRE&trade;), and upgrade MEX files to the interleaved complex API
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-call-python` | Call Python libraries from MATLAB using the py. interface. |
+| `matlab-configure-java` | Configure the Java Runtime Environment (JRE), including installing OpenJDK, choosing a JDK, and interpreting load status. |
 | `matlab-upgrade-mex-ic` | Convert C, C++, and Fortran MEX files from the separate complex API to the interleaved complex API with MX_HAS_INTERLEAVED_COMPLEX guards for SC/IC builds and performance verification. |
 
 ### MATLAB Programming ([`matlab-programming`](./matlab-programming/))
@@ -74,7 +75,7 @@ Write and run tests, modernize legacy code, optimize performance and memory, doc
 | `matlab-instrument-opentelemetry-tracing` | Add OpenTelemetry tracing spans to MATLAB functions with correct context propagation and lifecycle. |
 | `matlab-modernize-code` | Modernize removed or discouraged MATLAB functions and patterns. |
 | `matlab-optimize-memory` | Find and fix memory bottlenecks in MATLAB code using a structured measure-profile-optimize-verify workflow. |
-| `matlab-optimize-performance` | Optimize performance of MATLAB code. |
+| `matlab-optimize-performance` | Optimize performance of MATLAB code using a profile-guided workflow, including low-overhead sampling-based profiling for per-line hotspot analysis. |
 | `matlab-package-toolbox` | Package MATLAB code as an installable .mltbx toolbox. |
 | `matlab-run-tests` | Run MATLAB test suites, collect code coverage, and configure CI/CD pipelines. |
 | `matlab-use-package-manager` | Manage and inspect MATLAB packages with the in-product MATLAB Package Manager. |
@@ -110,11 +111,12 @@ Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Co
 
 ### Automotive ([`automotive`](./automotive/))
 
-Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
+Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, Optimization Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-cosimulate-sumo-simulink` | Build Simulink models that co-simulate with Eclipse&trade; SUMO traffic simulator. |
+| `matlab-fit-tire-model` | Fit a tire model to measured force and moment data and export it to a .tir file. |
 | `matlab-import-driving-data` | Import recorded driving sensor data (GPS, camera, lidar, actor tracks) into scenariobuilder.* objects and synchronize, crop, offset, and normalize timestamps before scenario building. |
 | `matlab-use-ncap-protocol` | Generate Euro NCAP test scenarios and variants, translate between simulators, and compute scores. |
 | `matlab-use-scenario-builder` | Build driving scenes, scenarios, road surfaces, and 3D assets from recorded sensor data and export to RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG, or Unreal Engine&reg;. |
@@ -163,7 +165,7 @@ Supports Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financia
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Connect to Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, and LSEG&reg; Datastream to retrieve financial and economic data using the Datafeed Toolbox. |
+| `matlab-access-datafeed` | Access financial, economic, climate, and government data from Bloomberg&reg;, FRED&reg;, Haver, Datastream&trade;, NOAA, and US agencies. |
 | `matlab-optimize-portfolio` | Formulate and solve mean-variance portfolio optimization problems. |
 | `matlab-price-instrument` | Price financial instruments using Monte Carlo, FFT, or interest-rate trees. |
 | `matlab-use-spreadsheet-link` | Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link. |
@@ -305,7 +307,7 @@ Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Imag
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
-| `matlab-build-industrial-hmi` | Build industrial-grade SCADA/HMI dashboards in MATLAB following ISA-101 conventions. Produces a real App Designer app (.mlapp) by handing serialization to matlab-build-app when available, and falls back to a programmatic .m app otherwise. |
+| `matlab-build-industrial-hmi` | Build industrial-grade SCADA/HMI dashboards in MATLAB following ISA-101 conventions. Writes a reviewable HMI spec, stops for the user's approval, then hands the approved spec to matlab-build-app to produce a real App Designer app (.mlapp) when it is available, and falls back to a programmatic .m app otherwise. |
 | `matlab-call-nidaqmx` | Translate NI-DAQmx C functions into correct calldaqlib MATLAB calls. |
 | `matlab-connect-arduino` | Discover, configure, and connect to Arduino&reg; boards from MATLAB via USB. |
 | `matlab-connect-bluetooth-low-energy-device` | Discover and connect to Bluetooth Low Energy peripheral devices from MATLAB. |

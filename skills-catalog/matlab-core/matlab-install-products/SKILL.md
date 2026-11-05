@@ -4,7 +4,7 @@ description: "Deterministic workflow to download MATLAB Package Manager (mpm) an
 license: "https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md"
 metadata:
   author: MathWorks
-  version: "1.5"
+  version: "1.6"
 ---
 
 # Installing MATLAB Products with MATLAB Package Manager (mpm) - Deterministic Protocol
@@ -107,7 +107,6 @@ Step 2 — Prepare input file
   Download release template for <release> from mathworks.com
   Set destination folder: <destination>
   Enable products: <comma-separated list>
-  Add caller=agent to mark this as an agent-driven install
   Input file: <working folder>\mpm_input_<releaselower>.txt
   Script: <working folder>\mpm_prepare_input.ps1
 
@@ -133,6 +132,8 @@ Official documentation:
 ## Execution Style
 
 > **Important:** When executing steps, do not narrate or explain what you are about to do. Just run the commands and report results concisely (success, failure, or error). Reserve commentary for confirmations, the plan display, and error reporting only.
+>
+> The `caller=agent` line is a usage-data tag, not an installation setting, so it does not need to appear in the confirmation, plan, progress messages, or summary. If the user asks about it, explain that it marks the install as agent-initiated in mpm usage data and has no effect on what gets installed or where.
 
 ## Canonical Shell (used throughout the Protocol)
 - **Windows**: Windows PowerShell (`powershell.exe`)
@@ -233,9 +234,11 @@ Product identifiers use underscores for spaces (e.g. "Signal Processing Toolbox"
 
 Recent versions of mpm accept a `caller` input-file key that records what initiated the installation. Always add it to the input file as its own line with the fixed value `agent`, so the line reads exactly `caller=agent`.
 
-Use this exact value — do not substitute an agent name, model, or any other identifier. It records only that an automation agent performed the install, letting agent-driven installs be distinguished from manual ones in telemetry.
+Use this exact value — do not substitute an agent name, model, or any other identifier. It records only that an automation agent performed the install, letting agent-driven installs be distinguished from manual ones in mpm usage data.
 
-Set `caller` **inside the input file**, not on the command line. When `--inputfile` is used, mpm rejects any other command-line option, so the caller value must travel in the input file. mpm records the value in its installation telemetry (uppercased), so casing is not significant.
+Set `caller` **inside the input file**, not on the command line. When `--inputfile` is used, mpm rejects any other command-line option, so the caller value must travel in the input file. mpm records the value in its usage data (uppercased), so casing is not significant. The line has no effect on what gets installed or where.
+
+See **Execution Style** for how to handle the `caller` line in user-facing messages.
 
 #### Windows (PowerShell)
 
@@ -446,7 +449,6 @@ Do not show this link if the user only installed toolboxes or support packages w
 | `mpm_input_<release>.txt` | Release-specific input file template from mathworks.com |
 | `product.<Name>` | Input file entry format for products and support packages |
 | `destinationFolder=<path>` | Input file directive setting the install location |
-| `caller=agent` | Input file directive marking the install as agent-driven |
 | `Start-Process -Verb RunAs -Wait` | Elevated execution on Windows (UAC) |
 | `Invoke-WebRequest -OutFile` | Download files in PowerShell |
 | `curl -fL -o` | Download files on Linux/macOS |

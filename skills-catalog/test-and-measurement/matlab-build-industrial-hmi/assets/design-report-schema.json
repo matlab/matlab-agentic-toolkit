@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hmi-report/1",
+  "title": "hmi-report/1 - HMI design readback",
+  "description": "The contract for design-report.json: what a built HMI actually is, read back off the constructed figure and its source rather than declared from intent. Emit it by copying assets/designReportReadback.m beside the app VERBATIM (no edits, no rename) and calling it as a function, designReportReadback(\"<AppClass>\", \"<AppClass>-hmi-spec.md\") - it implements every derivation below. Do not hand-roll the shape or re-author your own readback, because the keys are graded by exact name. Four emission rules: (1) write it at the TOP LEVEL of the working folder, never a subfolder; (2) compact jsonencode, PrettyPrint off; (3) all scalars first, writeCalls and callbackExcerpt LAST, so every scalar lands before byte 10,000 of the file; (4) never print a draft report before writing the real one. Anti-pattern: common-mistakes.md #33.",
+  "type": "object",
+  "x-keyOrder": [
+    "reportFormat", "appName", "buildPath", "specFile", "matlabRelease", "readbackTime",
+    "figureColor", "figureTheme",
+    "bannerGridRow", "bannerSpansAllColumns", "bannerText",
+    "gaugeCount", "bandedGaugeCount", "bandsOutsideLimitsGaugeCount",
+    "grayNormalBandGaugeCount", "greenBandGaugeCount",
+    "buttonCount", "saturatedCommandButtonCount", "numericReadoutCount",
+    "trendAxisCount", "autoscaleTrendAxisCount", "trendsWithThresholdLines",
+    "trendsWithUnitLabel", "animatedLineCount", "trendMaxNumPoints",
+    "writablesTotal", "confirmDialogCount",
+    "writePathsTotal", "writePathsWithConfirm", "writePathsWithoutConfirm",
+    "dataWiringMechanism", "pollPeriodSeconds", "modalAlarmDialogCount",
+    "writeCalls", "callbackExcerpt"
+  ],
+  "x-sentinels": {
+    "-1": "Not determinable, and not guessed. Every source-derived key reports -1 when the app is a .mlapp, because a .mlapp is a binary and its code cannot be read with fileread. Report the -1; never fill the value in from memory of what you wrote.",
+    "0 on trendMaxNumPoints": "At least one animatedline has no MaximumNumPoints - an unbounded trend buffer."
+  },
+  "x-sizeBudget": "~1.7 KB of scalars plus one callback excerpt capped at 3,000 characters, so ~4.7 KB worst case regardless of HMI size. The signal inventory is NOT duplicated here - the spec file owns it - which is what keeps the report fixed-size as the HMI grows.",
+  "required": [
+    "reportFormat", "appName", "buildPath", "specFile", "figureColor", "figureTheme",
+    "bannerGridRow", "gaugeCount", "bandsOutsideLimitsGaugeCount", "grayNormalBandGaugeCount",
+    "greenBandGaugeCount", "saturatedCommandButtonCount", "trendAxisCount",
+    "autoscaleTrendAxisCount", "trendsWithThresholdLines", "writePathsTotal",
+    "writePathsWithConfirm", "writePathsWithoutConfirm", "dataWiringMechanism",
+    "modalAlarmDialogCount", "writeCalls", "callbackExcerpt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "reportFormat": {
+      "const": "hmi-report/1",
+      "description": "Format marker. Must be the literal first key."
+    },
+    "appName": {
+      "type": "string",
+      "description": "Class name of the built app, as constructed."
+    },
+    "buildPath": {
+      "type": "string",
+      "description": "Absolute path of the app file, from which(appClass)."
+    },
+    "specFile": {
+      "type": "string",
+      "description": "Filename of the reviewed <AppName>-hmi-spec.md beside the app."
+    },
+    "matlabRelease": {
+      "type": "string",
+      "description": "version('-release'), e.g. \"2026a\"."
+    },
+    "readbackTime": {
+      "type": "string",
+      "description": "datetime('now') at readback. Provenance: the report was produced by a launch, not typed."
+    },
+    "figureColor": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 3,
+      "maxItems": 3,
+      "description": "fig.Color off the live figure. Gray-field is [0.78,0.78,0.78]."
+    },
+    "figureTheme": {
+      "type": "string",
+      "description": "char(fig.Theme.BaseColorStyle). Must be \"light\" - see SKILL.md and common-mistakes #24."
+    },
+    "bannerGridRow": {
+      "type": "integer",
+      "description": "Layout.Row of the alarm banner, identified structurally as the uilabel spanning every column of its parent GridLayout on the lowest such row. 1 is compliant. -1 means no full-width label was found, i.e. no banner."
+    },
+    "bannerSpansAllColumns": {
+      "type": "boolean",
+      "description": "True when that label's Layout.Column covers 1..numel(parent.ColumnWidth)."
+    },
+    "bannerText": {
+      "type": "string",
+      "description": "The banner's Text at readback - \"SYSTEM NORMAL\" when no alarm is active."
+    },
+    "gaugeCount": {
+      "type": "integer",
+      "description": "All four gauge types: uilineargauge, uigauge (circular), uisemicirculargauge, uininetydegreegauge."
+    },
+    "bandedGaugeCount": {
+      "type": "integer",
+      "description": "Gauges with a non-empty ScaleColors."
+    },
+    "bandsOutsideLimitsGaugeCount": {
+      "type": "integer",
+      "description": "Banded gauges with a ScaleColorLimits row reaching outside the gauge Limits. Must be 0: the part of a band outside Limits is silently clipped, so an alarm band can vanish without error (common-mistakes #23). Applies to all four gauge styles."
+    },
+    "grayNormalBandGaugeCount": {
+      "type": "integer",
+      "description": "Banded gauges carrying a neutral-gray [0.5 0.5 0.5] band within 0.02. Should equal bandedGaugeCount - every banded gauge's normal band is neutral gray."
+    },
+    "greenBandGaugeCount": {
+      "type": "integer",
+      "description": "Banded gauges carrying any saturated-green band (g>0.4, r<0.4, b<0.4). Must be 0 - green is reserved for operator-verified-OK, never for \"normal\" (common-mistakes #8)."
+    },
+    "buttonCount": {
+      "type": "integer",
+      "description": "uibutton plus uistatebutton."
+    },
+    "saturatedCommandButtonCount": {
+      "type": "integer",
+      "description": "Buttons whose BackgroundColor spread (max-min channel) exceeds 0.35, excluding any whose Text matches e-?stop|emergency. Must be 0: command buttons are neutral-faced chrome, run state lives on a lamp (common-mistakes #26). The desaturated write flash [0.7 1 0.7] spreads only 0.30 and reverts, so a correct app scores 0 at rest."
+    },
+    "numericReadoutCount": {
+      "type": "integer",
+      "description": "uinumericeditfield count - the precise-readout widget. Feeds the 12-readout quantity cap."
+    },
+    "trendAxisCount": {
+      "type": "integer",
+      "description": "findall Type 'axes' - uiaxes report as 'axes'. Feeds the 4-trend cap."
+    },
+    "autoscaleTrendAxisCount": {
+      "type": "integer",
+      "description": "Axes with YLimMode 'auto'. Must be 0 unless the signal genuinely has no spec range, the one documented exemption in common-mistakes #9."
+    },
+    "trendsWithThresholdLines": {
+      "type": "integer",
+      "description": "Axes containing at least one ConstantLine (yline). Every trend of an alarmed signal needs warn/alarm lines at the source gauge's ScaleColorLimits values."
+    },
+    "trendsWithUnitLabel": {
+      "type": "integer",
+      "description": "Axes with a non-empty YLabel.String."
+    },
+    "animatedLineCount": {
+      "type": "integer",
+      "description": "AnimatedLine objects. Trends append with addpoints, never plot() or an XData/YData assignment."
+    },
+    "trendMaxNumPoints": {
+      "type": "integer",
+      "description": "Minimum MaximumNumPoints across all animatedlines, so a short buffer cannot hide behind a long one. 300 = the 5-minute rolling default at 1 s. 0 = an unbounded buffer; -1 = no animatedline."
+    },
+    "writablesTotal": {
+      "type": "integer",
+      "description": "Operator-settable widgets: uispinner, uistatebutton, the switch family, knobs, sliders."
+    },
+    "confirmDialogCount": {
+      "type": "integer",
+      "description": "uiconfirm( occurrences in the source."
+    },
+    "writePathsTotal": {
+      "type": "integer",
+      "description": "Functions in the source that call writeValue/write/invoke. Counted from the source, not from a widget callback, because the confirm may sit on a Send button rather than on the spinner."
+    },
+    "writePathsWithConfirm": {
+      "type": "integer",
+      "description": "Of those, how many also call uiconfirm."
+    },
+    "writePathsWithoutConfirm": {
+      "type": "integer",
+      "description": "writePathsTotal - writePathsWithConfirm. Must be 0: every write to the process confirms first, default option Cancel (common-mistakes #6)."
+    },
+    "dataWiringMechanism": {
+      "enum": ["subscribe", "timer", "subscribe+timer", "none", ""],
+      "description": "Read off the source: subscribe( present, timer( present, or both. OPC UA must be \"subscribe\"; Modbus/MQTT-poll/PI/PI AF are \"timer\". \"\" means the source was unreadable."
+    },
+    "pollPeriodSeconds": {
+      "type": "number",
+      "description": "The timer Period from the source, or -1 when there is no timer."
+    },
+    "modalAlarmDialogCount": {
+      "type": "integer",
+      "description": "uialert/uiconfirm/msgbox/errordlg/warndlg calls inside the LIVE-DATA callback only. Must be 0 - a popup per alarm notification is the ISA-18.2 alarm-fatigue anti-pattern (common-mistakes #7). A uialert in a write-failure path is legitimate and is deliberately not counted."
+    },
+    "writeCalls": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Every protocol write/invoke line from the source, verbatim and uncommented. Argument order is graded here - extracted code cannot misreport itself, whereas a spec row can."
+    },
+    "callbackExcerpt": {
+      "type": "string",
+      "maxLength": 3000,
+      "description": "Body of the live-data callback, verbatim from the source via fileread, identified as the function that calls addpoints (fallback: the one with drawnow limitrate). Always the last key. This is the mechanically extracted copy of the protocol-specific logic - never a retyped or summarized version."
+    }
+  }
+}

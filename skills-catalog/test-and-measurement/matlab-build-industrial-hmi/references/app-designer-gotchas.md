@@ -206,7 +206,14 @@ Treating `AccessLevelCurrent` as numeric in R2026a returns surprising results (s
 
 ### Cleaning up timers in the destructor
 
-App Designer apps must explicitly stop and delete timers in their `delete` method, or `CloseRequestFcn`. A leaked timer keeps firing after the figure closes — and the callback references invalid handles.
+App Designer apps must explicitly stop and delete timers in their `delete` method. A leaked timer
+keeps firing after the figure closes — and the callback references invalid handles.
+
+**The body goes in `delete(app)`; `CloseRequestFcn` only routes to it.** These are not two places
+you may choose between. `delete(app)` is the one path *both* closing routes reach — clicking the
+window X fires `CloseRequestFcn`, but every test, script and eval closes the app with `delete(app)`
+directly and never fires it at all. Put the teardown body on `CloseRequestFcn` and programmatic
+close leaks every timer, subscription and client.
 
 ```matlab
 methods (Access = public)

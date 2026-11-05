@@ -1,9 +1,10 @@
 # Copyright 2026 The MathWorks, Inc.
 display-name: "MATLAB External Language Interfaces"
-description: Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API.
+description: Call Python libraries from MATLAB, configure the Java Runtime Environment (JRE), and upgrade MEX files to the interleaved complex API.
 keywords:
   - matlab
   - python
+  - java
   - c/c++
   - mex
   - external-interfaces

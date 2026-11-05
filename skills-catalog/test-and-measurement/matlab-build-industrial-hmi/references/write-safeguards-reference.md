@@ -7,7 +7,7 @@ Industrial HMIs control physical equipment. Every write path must have safeguard
 1. **No direct inline editing of live values.** A live readout and a setpoint are different widgets. The setpoint shows the *target*, not the current value.
 2. **Confirm before write.** `uiconfirm` dialog showing node, old, new, units. The default option is **Cancel**, not Apply.
 3. **Display min/max bounds.** A `uilabel` adjacent to the field showing the valid range, in addition to `Limits` enforcement.
-4. **Visual feedback on success/failure.** Brief background flash (green on success, red on failure). Operator must never be uncertain whether the write took effect.
+4. **Visual feedback on success/failure.** Brief background flash — **desaturated** green `[0.7 1 0.7]` on success, **desaturated** red `[1 0.7 0.7]` on failure — reverting to the component's original face after ~0.4 s. Operator must never be uncertain whether the write took effect. Use the pastels, **not** the saturated `[0 0.6 0]` / `[0.85 0 0]` pair: those two are the ISA-101 *exception* colors, reserved for real alarm state, and a control that borrows them competes with the alarm it should be making stand out. This is precisely why flashing a **button** face stays compatible with the neutral-command-button rule — the flash is transient and desaturated, so the button is still chrome. See `color-and-layout-rules.md`, "Command buttons and controls are neutral".
 5. **Separate read and write areas.** Setpoint controls live in their own panel (right side or bottom row), distinguishable by background color or border. Never inline a setpoint inside a live-readout grid.
 
 ## Pattern A — Bounded numeric setpoint with confirm and feedback
@@ -211,7 +211,7 @@ Call this in the connection state-change handler and the E-Stop callback.
 |---------|-----|
 | Single Apply button writes all 4 setpoints with no confirm | One Apply button + confirm dialog showing the diff |
 | `Limits` set on the spinner but no adjacent range label | Add `range: lo - hi units` `uilabel` next to every writable field |
-| Write succeeds but operator can't tell — no UI feedback | Background flash green (or use a `Status: Sent` label) |
+| Write succeeds but operator can't tell — no UI feedback | Desaturated background flash that reverts after ~0.4 s: `[0.7 1 0.7]` ok, `[1 0.7 0.7]` fail (or a `Status: Sent` label). Never saturated green `[0 0.6 0]` / red `[0.85 0 0]` — reserved, and a face left recolored reads as status |
 | Catch error, swallow it silently | `uialert` with the underlying message + revert UI to the old value |
 | E-Stop toggles without confirm | Confirm both engage and release |
 | Reading `Value` from the writable spinner to display the live node value | Live readouts and setpoints are separate widgets |

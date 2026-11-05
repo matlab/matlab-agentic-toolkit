@@ -97,8 +97,14 @@ ttAvg = read(piClient, "Sinusoid", ...
 
 ### Polling pattern (mirrors Modbus)
 
+**Lay out and `drawnow` before constructing the client.** `piclient` / `afclient` against an
+unreachable server block for **~21 s** before throwing, and no name-value shortens it — `Timeout`
+bounds per-transaction response waiting, not the TCP connect. Paint the gray-field screen, set the
+comms lamp gray with a "Connecting…" banner, `drawnow`, then construct inside a `try` (the Modbus
+block in `protocol-cheatsheet.md` shows the full shape and applies verbatim here).
+
 ```matlab
-% In startupFcn, after constructing the client and laying out widgets:
+% startupFcn, after the layout is up and drawn, and the client constructed:
 app.TagList   = ["Sinusoid", "SinusoidU", "CDT158"];
 app.StartTime = datetime("now");
 
@@ -134,7 +140,7 @@ function pollPI(app)
 end
 ```
 
-`BusyMode = "drop"` is mandatory — without it, slow archive responses queue up timer callbacks and the UI stalls. Stop and delete `app.PollTimer` in `delete(app)` (see `app-designer-gotchas.md`).
+`BusyMode = "drop"` is mandatory — without it, slow archive responses queue up timer callbacks and the UI stalls. Stop and delete `app.PollTimer` in `delete(app)`, and wire `app.UIFigure.CloseRequestFcn = @(~,~) delete(app);` so closing the window routes to that same body (see `app-designer-gotchas.md`).
 
 ### Write (setpoint) with safeguards
 
@@ -332,7 +338,7 @@ end
 - `widget-selection-flowchart.md` — once the AF-attribute or PI-tag classification is done, the widget choice is the same as for OPC UA / Modbus / MQTT.
 - `write-safeguards-reference.md` — confirm + flash + range-label pattern; same shape for `write(piClient, …)`, `write(modbus, …)`, `writeValue(opcua, …)`. The PI write block above is the protocol-specific call inside the `try`.
 - `protocol-cheatsheet.md` — the Modbus polling-timer block applies verbatim to PI / AF; cross-reference there for `BusyMode='drop'` rationale.
-- `app-designer-gotchas.md` — timer cleanup in `delete(app)`, struct property defaults, listener leaks. PI/AF dashboards are timer-driven, so the cleanup gotcha matters.
+- `app-designer-gotchas.md` — timer cleanup in `delete(app)` with `CloseRequestFcn` routing to it, struct property defaults, listener leaks. PI/AF dashboards are timer-driven, so the cleanup gotcha matters.
 - `common-mistakes.md` #25 — direct AFSDK `.NET` calls vs `piclient` / `afclient`.
 
 ----

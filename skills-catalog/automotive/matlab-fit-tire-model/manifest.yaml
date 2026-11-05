@@ -1,0 +1,25 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Fit a tire model to measured force and moment data and export it to a .tir file.
+matlab-release: ">=R2025a"
+toolkit: matlab-agentic-toolkit
+# The tireData/tireModel/vdyntire.tiremodels API ships in the Extended Tire Features
+# for Vehicle Dynamics Blockset support package (add-on to Vehicle Dynamics Blockset).
+# Floor is R2025a: the core query accessors the workflow depends on,
+# vdyntire.tiremodels.fitTypes and modelTypes (the C1 "query, never hardcode" path),
+# were both introduced in R2025a, later than tireData.import (R2024b).
+# tireModel.fitTypeDependency is R2026a but is a secondary/diagnostic tool, not the
+# core path, so it is annotated "Available From" in the SKILL.md Key Functions table
+# rather than raising the floor.
+required-products:
+  - Vehicle Dynamics Blockset   # Extended Tire Features API; needed for every operation
+  - Optimization Toolbox        # required for fit and convert (the primary workflow);
+                                # import, inspect, plot, and export run without it
+optional-products: []
+required-tools:
+  - evaluate_matlab_code
+required-skills: []
+
+# Copyright 2026 The MathWorks, Inc.

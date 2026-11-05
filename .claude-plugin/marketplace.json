@@ -43,8 +43,8 @@
     },
     {
       "name": "automotive",
-      "version": "0.4.1",
-      "description": "Automated Driving Toolbox, Computer Vision Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox.",
+      "version": "0.5.0",
+      "description": "Automated Driving Toolbox, Computer Vision Toolbox, Optimization Toolbox, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox, Vehicle Dynamics Blockset, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator, and Scenario Builder for Automated Driving Toolbox.",
       "author": {
         "name": "MathWorks"
       },
@@ -124,7 +124,7 @@
     },
     {
       "name": "computational-finance",
-      "version": "0.4.0",
+      "version": "0.4.1",
       "description": "Datafeed Toolbox, Financial Instruments Toolbox, Financial Toolbox, and Spreadsheet Link.",
       "author": {
         "name": "MathWorks"
@@ -199,7 +199,7 @@
     },
     {
       "name": "matlab-app-building",
-      "version": "0.3.3",
+      "version": "0.3.4",
       "description": "Build MATLAB apps programmatically using UI components, layouts, callbacks, and web integration.",
       "author": {
         "name": "MathWorks"
@@ -217,7 +217,7 @@
     },
     {
       "name": "matlab-core",
-      "version": "0.7.1",
+      "version": "0.7.2",
       "description": "Create, debug, review, and manage MATLAB code and installations. Every toolkit user needs these.",
       "author": {
         "name": "MathWorks"
@@ -252,14 +252,15 @@
     },
     {
       "name": "matlab-external-language-interfaces",
-      "version": "0.1.1",
-      "description": "Call Python libraries from MATLAB and upgrade MEX files to the interleaved complex API.",
+      "version": "0.2.0",
+      "description": "Call Python libraries from MATLAB, configure the Java Runtime Environment (JRE), and upgrade MEX files to the interleaved complex API.",
       "author": {
         "name": "MathWorks"
       },
       "keywords": [
         "matlab",
         "python",
+        "java",
         "c/c++",
         "mex",
         "external-interfaces",
@@ -289,7 +290,7 @@
     },
     {
       "name": "matlab-software-development",
-      "version": "0.8.1",
+      "version": "0.8.2",
       "description": "Write and run tests, modernize legacy code, optimize performance and memory, document and create toolboxes, create projects, manage packages, and develop build plans.",
       "author": {
         "name": "MathWorks"
@@ -419,7 +420,7 @@
     },
     {
       "name": "test-and-measurement",
-      "version": "0.8.0",
+      "version": "0.8.1",
       "description": "Data Acquisition Toolbox, Image Acquisition Toolbox, Image Processing Toolbox, Industrial Communication Toolbox, Vehicle Network Toolbox, and MATLAB Support Package for Arduino Hardware.",
       "author": {
         "name": "MathWorks"

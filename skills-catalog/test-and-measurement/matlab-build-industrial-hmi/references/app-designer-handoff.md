@@ -1,24 +1,53 @@
 # App Designer Build & Serialization — Hand-off to `matlab-build-app`
 
 This skill owns **what an industrial HMI is** (gray-field, alarms-at-source, write
-safeguards, fixed-range trends, protocol wiring). It does **not** own the mechanics of
-building and serializing an App Designer app — that belongs to the `matlab-build-app`
-skill, which bundles the `AppDesignerAgentInterface` tool. Design the HMI here; hand the
-finished design to the parent to persist it.
+safeguards, fixed-range trends, protocol wiring). It does **not** build or serialize the
+App Designer app itself — that is the `matlab-build-app` skill's job. Design the HMI here,
+write the design into an **HMI spec file the user reviews**, then hand that approved file
+over to be built and persisted.
 
-**The parent is the single source of truth for all serialization mechanics.** Everything
-about *how* to drive `AppDesignerAgentInterface` — the verb reference, which file format
-to emit (`.mlapp` vs plain-text `.m`), release requirements, `save()`/`validate()`/
-`finalize()` semantics, chunked-call discipline, editing an existing app, and the
-callback-vs-method rules — lives in the parent's
-`references/app-designer/agent-guide-shared.md` (then the format-specific
-`agent-guide-mlapp.md`). Read it before driving the API; it may change per release, so do
-not rely on any mechanic restated from memory. This file covers only what is
-**HMI-specific** and must not be delegated.
+The hand-off is a **file, not a conversation**: fill `assets/hmi-spec-template.md` into
+`<AppName>-hmi-spec.md`. That file is the entire contract between the two skills — it can be
+reviewed, corrected, version-controlled, and graded on its own, and either side can be tested
+without the other.
 
-**Fallback:** when the parent is unavailable, fall back to the programmatic-`.m` path the
-other references describe — no HMI content changes, just a different output format. The
-generated app runs identically; it just won't open in App Designer.
+**`matlab-build-app` owns how the app is built and saved** — creating the components,
+applying their properties and callbacks, choosing the file format, and the whole
+save/open/edit lifecycle. This skill does not need to know any of that and must not
+restate it. Hand it the approved spec file; it consults its own guides for the mechanics
+and produces the app.
+
+This file specifies only the **HMI-specific design**: which components to use, which
+domain property values make them ISA-101-compliant, where they go, and the domain callback
+logic they carry. The spec template is the *form* those decisions are written into; the
+recipes below are the *catalog* they are chosen from.
+
+## Availability and fallback
+
+`matlab-build-app` either appears in your available skills or it does not — that check is
+free. **Invoke it when it's listed; fall back when it isn't. Never search the filesystem
+for it.**
+
+Invoke it **under the exact name it appears as in your available-skills list** — it may be
+plugin-scoped (`<plugin-name>:matlab-build-app`) or bare. Only the listed form resolves, so
+read the name off the list rather than typing a guessed slash command or hardcoding a prefix.
+That same list entry *is* the availability check.
+
+- **Listed → invoke it and hand it the approved spec file.** It owns locating and loading
+  its own build tooling, choosing the file format, and the whole save/open/edit lifecycle.
+  This skill never names, paths, or loads any of that.
+- **Not listed → fall back immediately** to the programmatic `.m` path this skill's other
+  references describe. Build it yourself from the same approved spec. No HMI content changes,
+  just a different output format — the app runs identically, it just won't open in App
+  Designer. Tell the user the `matlab-build-app` skill wasn't available, so the app is a `.m`
+  classdef rather than a `.mlapp`, and that enabling the `matlab-app-building` plugin and
+  rebuilding from the same spec produces a `.mlapp`.
+
+Do **not** probe the disk for its skill folder. A recursive search across the directories
+above this skill can run for tens of minutes on a large or cloud-synced tree and still miss,
+because in a normal install `matlab-build-app` ships in a **different plugin**
+(`matlab-app-building`) rather than as a sibling of this skill. Absent from your skill list is
+a sufficient and final answer.
 
 ---
 
@@ -26,65 +55,83 @@ generated app runs identically; it just won't open in App Designer.
 
 | Concern | Owner | Notes |
 |---|---|---|
-| Serialization, file format, lifecycle, verb API | **parent** | `references/app-designer/agent-guide-shared.md` — the authority |
-| UIFigure structural mechanics (grid, panels, components, callback wiring) | **parent** | parent `references/uifigure/*` |
-| Editing an existing App Designer app | **parent** | `open()` + `inspect()` + minimal verbs + `save()` |
-| Layout archetype skeleton | **parent** | plant overview ≈ **Dashboard**; area/detail ≈ Dashboard/Explorer |
-| MVVM for large multi-screen HMIs | **parent** (optional) | parent `references/uifigure/mvvm-guide.md` |
+| **Writing the HMI spec, and getting it reviewed** | **HMI** | the artifact, the review gate, and the corrections are this skill's |
+| Building & serializing the app (components, properties, callbacks, file format, save/open/edit) | **`matlab-build-app`** | hand it the approved spec file; it owns all the mechanics |
+| UIFigure structural mechanics (grid, panels, components, callback wiring) | **`matlab-build-app`** | it decides how the spec becomes an app |
+| Editing an existing App Designer app | **`matlab-build-app`** | hand it the change; it edits in place rather than rebuilding |
+| Layout archetype skeleton | **`matlab-build-app`** | plant overview ≈ **Dashboard**; area/detail ≈ Dashboard/Explorer |
+| MVVM for large multi-screen HMIs | **`matlab-build-app`** (optional) | it decides when MVVM is warranted |
 | Architecture (UIFigure vs UIHTML) | **short-circuit** | HMI is **always UIFigure** — don't ask |
 | Serialization format choice | **short-circuit** | default **`.mlapp`** — don't ask unless the user wants source-controllable app files |
 | Theming / colors / dark mode | **HMI — override** | gray-field is mandatory; **never** route to `matlab-apply-theme` |
 | Trends | **HMI — override** | `animatedline` + fixed `YLim` + `yline`; **never** route to `matlab-build-chart` |
 | Protocol wiring, alarms-at-source, write safeguards, widget selection, quantity caps | **HMI** | pure domain |
+| **Component choice + domain property VALUES + placement + callback bodies** | **HMI** | the spec form — *what* to build, never *how* to emit it |
 
-The two overrides are deliberate: the parent delegates color to `matlab-apply-theme` (which
-supports dark mode) and plots to `matlab-build-chart` (general-purpose axes). Both
-conflict with HMI rules — keep them here.
+The two overrides are deliberate: `matlab-build-app` would normally delegate color to
+`matlab-apply-theme` (which supports dark mode) and plots to `matlab-build-chart`
+(general-purpose axes). Both conflict with HMI rules — keep them here.
 
 ---
 
 ## Hand-off protocol
 
 1. **Design first, here.** Classify nodes → pick widgets → lay out by hierarchy → plan
-   alarms, trends, writes, protocol wiring, using this skill's references. The parent
-   never decides HMI content.
-2. **Read the parent's docs before driving the API.** The parent's
-   `references/app-designer/agent-guide-shared.md` (then `agent-guide-mlapp.md`) is the
-   single source of truth for the verbs, file-format decision, and lifecycle. For
-   structure, parent `references/uifigure/*` and `references/archetypes/dashboard.md`.
-3. **Drive `AppDesignerAgentInterface`** per the parent guide, applying the HMI→verb
-   mapping below for the domain-specific choices (gray-field, alarm bands, palette).
-4. **Open it in App Designer once** at the very end so the user sees it rendered. (The
-   parent guide calls this `finalize()`; never say "finalize" to the user — offer it as
-   "open it in App Designer so you can take a look.")
+   alarms, trends, writes, protocol wiring, using this skill's references. Then express the
+   result in the spec form, not in prose. `matlab-build-app` never decides HMI content.
+2. **Write the spec.** Fill `assets/hmi-spec-template.md` into `<AppName>-hmi-spec.md` next to
+   where the app will live. Sections 8 and 7 are filled from the component and behavior recipes
+   below; section 5 is self-audited before you present anything. Keep it under 10 KB where
+   the app allows — sections 1-6 are a fixed size, so trim section 8 first.
+3. **STOP for review.** Present a summary of at most ten lines plus the file path, then **wait**.
+   Apply the user's corrections **to the spec** — never to a built app — and re-present. Stamp
+   `Review status: APPROVED <date>` once they agree. Proceed without waiting **only** when the
+   user has pre-approved the build or the session cannot take a reply (a batch or eval run); in
+   that case leave the status `UNREVIEWED` and say so in your summary. "The user seems busy" and
+   "the prompt said build it" are **not** bypasses.
+4. **Branch on the skill list.** Listed → invoke `matlab-build-app` under its listed name and
+   hand it the approved spec file. Not listed → build the programmatic `.m` app yourself from
+   that same spec. Either way, **ask that it be shown in App Designer** at the end so the user
+   sees it rendered — offer it as "open it in App Designer so you can take a look."
 
-**Editing an existing HMI** — to add alarms/writes/trends to an app that already exists,
-do not rebuild it: `open()` + `inspect()` + minimal verbs + `save()`. The *what to add*
-is HMI domain (below); the *how* is the parent's editing discipline — see its shared
-guide.
+**Editing an existing HMI** is a delta, not a rebuild. Threshold: at most 2 new signals, at
+most 3 new or changed components, and no new screen → delta path; anything larger gets a full
+spec and a full review.
+
+- **Spec exists** → patch only the affected rows in sections 2/7/8, add a section 9 change-log
+  line, and present *just the diff* ("3 rows added, 1 changed — say go") for a one-line confirm.
+  Untouched rows are not re-reviewed.
+- **No spec exists** (the HMI predates this, or came from elsewhere) → do **not**
+  reverse-engineer a full spec. Write a delta spec covering only the touched items, headed
+  `Existing app: <file>; components not listed are unchanged.` Then gate on that.
+
+Either way the section 5 self-audit is scoped to the touched rows. The *what to add* is HMI
+domain; the *how* is `matlab-build-app`'s job.
 
 ---
 
-## HMI → verb mapping
+## Component recipes — fill section 8 of the spec from these
 
-The snippets below apply the HMI domain rules through `AppDesignerAgentInterface`. `ab` is
-the handle returned by the parent's `create(...)`/`open(...)`. **For verb syntax and
-gotchas — `Layout` as a struct, cell-valued props, `setCallbackCode` vs `addMethod`,
-property ordering — the parent's `agent-guide-shared.md` and `agent-guide-mlapp.md` are
-authoritative.** What follows is HMI content, not an API reference.
+**This is the catalog, keyed by role; `assets/hmi-spec-template.md` section 8 is the instance,
+one row per actual component.** Look a role up here, then write the chosen component type and
+its property values into the spec. Nothing here is copied into the spec wholesale.
 
-**Gray-field figure** — set both `Color` **and** `Theme`; containers are **not
-transparent**, so set `BackgroundColor` on every `GridLayout`/`Panel` too or they paint
-default gray blocks:
+Each recipe gives a *role*, the App Designer *component type* to use, the *domain property
+values* that make it ISA-101-compliant, and its *placement*. **These are HMI content
+decisions, not build instructions** — the values in the "Domain properties" column are the
+part that must not be delegated.
 
-```matlab
-ab.setProperty("UIFigure", "Color", [0.78 0.78 0.78]);
-ab.setProperty("UIFigure", "Theme", "light");   % mandatory — see note below
-ab.setProperty("UIFigure", "Name", "Pump Station Overview");
-ab.addComponent("GridLayout", "MainGrid", "UIFigure", struct( ...
-    'RowHeight', {{40, '1x'}}, 'ColumnWidth', {{'1x','1x','1x'}}, ...
-    'BackgroundColor', [0.78 0.78 0.78]));
-```
+### Gray-field figure
+
+The figure is the single most important compliance surface. Set **both** `Color` and
+`Theme`; containers are **not** transparent, so every `GridLayout`/`Panel` also carries
+`BackgroundColor` or it paints a default gray block.
+
+| Role | Component type | Domain properties (values) | Placement |
+|---|---|---|---|
+| Root figure | `UIFigure` | `Color` = `[0.78 0.78 0.78]`; `Theme` = `light`; `Name` = the station/screen title | root |
+| Structural grid | `GridLayout` | `BackgroundColor` = `[0.78 0.78 0.78]`; rows/columns per archetype (banner row + content rows) | on the figure |
+| Container panel / sub-grid | `Panel` / `GridLayout` | `BackgroundColor` = `[0.78 0.78 0.78]` (or `[0.86 0.86 0.86]` for a visually distinct secondary zone) | nested |
 
 > **`Theme='light'` is mandatory.** Gray-field `Color` alone does **not** satisfy the
 > dark-theme defense: on a dark-themed MATLAB desktop, gauge bodies, axes, tables, and
@@ -93,154 +140,103 @@ ab.addComponent("GridLayout", "MainGrid", "UIFigure", struct( ...
 > is the single-point fix. Set **both** on every HMI figure. See
 > `color-and-layout-rules.md` §Dark-theme defense and `common-mistakes.md` entry 24.
 
-**Use only the ISA-101 palette — don't free-hand colors.** When driving verbs it is easy
-to reach for "a red" or "a green"; use these exact values (from
-`color-and-layout-rules.md`) and nothing else:
+### ISA-101 palette — the only colors to use
 
-| Role | RGB | Use |
-|---|---|---|
-| Critical / alarm | `[0.85 0 0]` | HH/LL band, critical banner, fault |
-| Warning | `[1 0.7 0]` | H/L band, advisory |
-| Connection / info | `[0.4 0.6 1.0]` | comms lamp, data quality — **blue, not green** |
-| Normal / neutral | `[0.5 0.5 0.5]` | gauge normal band, idle lamp, control chrome |
-| Confirmed-good (rare) | `[0 0.6 0]` | green — **only** operator-verified-OK, never "running"/"connected" |
-| Page / panel | `[0.78 0.78 0.78]` / `[0.86 0.86 0.86]` | figure / container backgrounds |
+Whatever component the spec calls for, its colors come **only** from the ISA-101 palette.
+When specifying a color value, never free-hand "a red" or "a green" — use the exact triplets
+in **`color-and-layout-rules.md` §Gray-field palette**, which is the single source for them
+(critical, warning, comms blue, neutral gray, verified-OK green, page/panel gray). Read them
+there rather than re-copying, so the two files can't drift. The rule that matters for the
+spec: **color means exception** — blue (not green) for connection, gray for normal, green
+reserved for operator-verified-OK only. (The gray-field page/panel values appear literally
+in the figure rows above because they are the figure's defining build property, not a
+per-component color choice.)
 
-**Alarm gauge at source** — use a **linear** gauge for color bands; the normal band is
-neutral gray `[0.5 0.5 0.5]`, never green:
+### Process values, alarms, controls, status
 
-```matlab
-ab.addComponent("LinearGauge", "FlowGauge", "MainGrid", struct( ...
-    'Limits', [0 100], ...
-    'ScaleColors', {{[0.85 0 0],[0.5 0.5 0.5],[0.85 0 0]}}, ...
-    'ScaleColorLimits', [0 20; 20 80; 80 100], ...
-    'Layout', struct('Row',2,'Column',1)));
-```
+| Role | Component type | Domain properties (values) | Placement |
+|---|---|---|---|
+| **Alarm gauge (at source)** | `LinearGauge` | `Limits` = node range; `ScaleColors` = `{normal, warn, crit}` — **normal band is the neutral-gray palette color, never green**; warn is the warning color, crit is the critical color; `ScaleColorLimits` = one row per band matching the node's warn/alarm thresholds | center / primary visualization grid |
+| **Analog readout, no alarm** | `LinearGauge` | `Limits` = node range; single neutral-gray band over the full range | center grid |
+| **Binary state (valve, pump, run)** | `Lamp` | `Color` = neutral gray idle; comms blue when on/connected; **never green for "running"**. Always pair with an adjacent `Label` | with its label |
+| **Writable setpoint** | `Spinner` | `Limits` = node range; `Value` = current; confirm-before-write in the callback (default option **Cancel**) | **secondary zone** (right/bottom panel), never the center grid |
+| **Command button** | `Button` | `Text` differentiates (e.g. `START`/`STOP`); **neutral face** — default or panel gray, **no green Start, no red Stop**. Run state lives on a separate lamp, not the button | control zone |
+| **Status lamp (comms/running)** | `Lamp` | `Color` = neutral gray idle → comms blue when up (**never green**). Always pair with a `Label` (e.g. "Disconnected") | status grid |
+| **Alarm banner** | `Label` | `Text` = `SYSTEM NORMAL` (present even with no alarms); `FontWeight` = `bold`; `HorizontalAlignment` = `center`; `BackgroundColor` = neutral panel gray → critical color on active alarm; spans full width of **row 1** | top row, spanning all columns |
+| **Alarm-list table** | `Table` | `ColumnName` = `{Timestamp, Node, Severity, Value, State}`; `Data` driven from code | detail zone |
+| **High-count homogeneous readouts** (> gauge cap) | `Table` | one row per node; conditional `BackgroundColor` styling for out-of-range | detail zone |
+| **Multi-area navigation** | `TabGroup` + `Tab` | one `Tab` per plant area, plus an Overview tab; each area tab carries its own gauges **and its own trend axes** | on the main grid |
+| **Trend** | `UIAxes` | created as a component, then drawn into from code per `trend-config-reference.md`, with **all four** of: `animatedline`; **fixed `YLim` matching the sensor spec** (never left on autoscale); an **axis unit label** (`ylabel` with units, `xlabel` time); **no interactive axes toolbar** — `Toolbar.Visible='off'` and `Interactions=[]`, set in **startup code, never as a component property**: `Toolbar` is a handle to an `AxesToolbar` object, so an App Designer `.mlapp` save rejects it with `MATLAB:class:RequireClass` (`Value must be 'matlab.graphics.Graphics'`). Put it on the trend-rendering behavior row of spec section 7, not in a section 8 row; and — whenever the trended node has alarm thresholds — **threshold `yline`s at the same warn/alarm values as the source gauge's `ScaleColorLimits`** (`'HandleVisibility','off'`). A trend of an alarmed node with no threshold lines or no unit label is incomplete. **Never** route to `matlab-build-chart` | spans the trend row |
 
-> **Bands only work on `LinearGauge`.** Adding `ScaleColors` to a `Gauge` (circular),
-> `SemicircularGauge`, or `NinetyDegreeGauge` is **accepted by the verb without error but
-> silently inert** — the bands never render. If a design needs alarm bands, the widget
-> must be `LinearGauge`; otherwise indicate alarm state with an adjacent lamp or colored
-> frame.
+> **Bands must lie inside `Limits`.** `LinearGauge` is the default alarm gauge, but every
+> gauge style renders `ScaleColors`. Whatever the type, `Limits` must cover every
+> `ScaleColorLimits` row — a band outside it is silently clipped. Full rationale:
+> `common-mistakes.md` entry 23.
 
-**Writable setpoint** — `Spinner` with `Limits`; confirm the write in the callback, and
-place write controls in a **secondary zone** (a right or bottom panel visually separated
-from the center visualization), never in the center grid where an accidental click lands:
+> **Command buttons carry no status color** — neutral face, no green Start / red Stop; run
+> state lives on a lamp. The lone exception is a red **E-Stop** with a confirm dialog. Full
+> rule + rationale: `color-and-layout-rules.md` §Command buttons and controls are neutral;
+> confirm dialog in `write-safeguards-reference.md`. Disable write controls when
+> disconnected (`Enable` = `off`) in the disconnect handler.
 
-```matlab
-ab.addComponent("Spinner", "SetpointSpinner", "MainGrid", struct( ...
-    'Limits',[0 100], 'Value',50, 'Layout', struct('Row',2,'Column',3)));
-ab.addCallback("SetpointSpinner", "ValueChangedFcn", "onSetpoint");
-ab.setCallbackCode("onSetpoint", strjoin([ ...
-    "newVal = app.SetpointSpinner.Value;" ...
-    "sel = uiconfirm(app.UIFigure, sprintf(""Set setpoint to %g %%?"", newVal), ...
-        ""Confirm Write"", ""Options"", {""Apply"",""Cancel""}, ""DefaultOption"", 2, ""CancelOption"", 2);" ...
-    "if sel == ""Apply""" ...
-    "    % writeValue(app.Client, node, newVal);" ...
-    "    app.SetpointSpinner.BackgroundColor = [0 0.6 0];   % success flash (verified-OK green)" ...
-    "end" ], newline));
-```
+### Behavior recipes — fill section 7 of the spec from these
 
-**Command buttons — neutral gray, differentiate by label.** `Button` carries no status
-meaning; **never** a green Start / red Stop (that spends the two alarm colors on
-always-visible chrome — see `common-mistakes.md` entry 26). Leave the default face or use
-`[0.86 0.86 0.86]`; distinguish by `Text`. Run/stopped state goes on a separate lamp,
-not the button:
+These are **the MATLAB the app should contain** — domain behavior this skill owns. You
+supply each body and its role; how it gets installed is `matlab-build-app`'s job. The role
+tells it how to wire the body: an **event handler** on a component event (e.g. a setpoint's
+value-changed callback), a **method** invoked by handle (e.g. a `subscribe` data-change
+callback passed as `@app.onData`), or app state held as **private properties** initialized
+in `startupFcn`. The code for each already lives in a reference file — read it there and hand
+`matlab-build-app` the body with its role; do not restate the code here.
 
-```matlab
-ab.addComponent("Button", "StartButton", "ControlGrid", struct( ...
-    'Text','START', 'Layout', struct('Row',1,'Column',1)));   % neutral face — no color
-ab.addComponent("Button", "StopButton",  "ControlGrid", struct( ...
-    'Text','STOP',  'Layout', struct('Row',1,'Column',2)));   % neutral face — no color
-ab.addCallback("StartButton", "ButtonPushedFcn", "onStart");
-```
+Spell the **data-wiring contract** out on the spec's live-data row, because it is the part a
+builder cannot infer and a reviewer needs to check: the update mechanism (subscription, or a
+polling timer and its period), the callback's argument shape, how one notification is
+dispatched to the right signal, and the call used to append a point to a trend.
 
-> The one convention-based exception is a red **E-Stop** (it mirrors the physical
-> mushroom button) — even then pair it with a confirm-both-engage-and-release dialog
-> (`write-safeguards-reference.md`) rather than relying on the color. Disable write
-> controls when disconnected (`Enable` `"off"`) in the disconnect handler.
+- **Confirm-before-write** — an **event handler** on a setpoint `Spinner`'s
+  `ValueChangedFcn`; default option Cancel, echo old/new value and units, then a **desaturated
+  flash that reverts** — `[0.7 1 0.7]` on success, `[1 0.7 0.7]` on failure, back to the normal
+  face after ~0.4 s. Not verified-OK green `[0 0.6 0]` and not alarm red `[0.85 0 0]`: those are
+  reserved, and a control left recolored reads as status rather than acknowledgement. Body +
+  rationale: `write-safeguards-reference.md`.
+- **Live data handler** — a `subscribe` data-change callback invoked by handle, so a
+  **method** (`@app.onData`), wired in `startupFcn`; the client/subscription/timer it touches
+  are **private properties**. Body + OPC UA notification contract:
+  `app-designer-gotchas.md`.
+- **Teardown** — the **body belongs in `delete(app)`** (stop and delete timers, drop the
+  subscription handle, disconnect the client); the figure's `CloseRequestFcn` is a one-line event
+  handler that *routes* to it, `@(~,~) delete(app)`. Specify it that way round on the spec row:
+  putting the body on `CloseRequestFcn` leaks everything on programmatic close, which is how every
+  test and eval closes the app. Body + lifecycle rules: `app-designer-gotchas.md`.
 
-**Status lamp — blue for comms, gray idle; pair with a label.** Green is reserved for
-operator-verified-OK, so a "connected" or "running" lamp is **blue `[0.4 0.6 1.0]`** (or
-gray `[0.5 0.5 0.5]` when idle), never green. A lamp alone is ambiguous — always add an
-adjacent `Label`:
-
-```matlab
-ab.addComponent("Lamp",  "ConnLamp",  "StatusGrid", struct( ...
-    'Color',[0.5 0.5 0.5], 'Layout', struct('Row',1,'Column',1)));   % gray idle; blue when up
-ab.addComponent("Label", "ConnLabel", "StatusGrid", struct( ...
-    'Text','Disconnected', 'Layout', struct('Row',1,'Column',2)));
-```
-
-**Alarm banner** — a `Label` spanning row 1 across the full width, present even when there
-are no alarms:
-
-```matlab
-ab.addComponent("Label", "AlarmBanner", "MainGrid", struct( ...
-    'Text','SYSTEM NORMAL', 'FontWeight','bold', 'HorizontalAlignment','center', ...
-    'BackgroundColor',[0.75 0.75 0.75], 'Layout', struct('Row',1,'Column',[1 3])));
-```
-
-**Alarm-list table** — a `Table` (uitable) with the standard alarm columns. Set
-`ColumnName`; drive `Data` from a `cell`/`table` in code. Keep it in the detail zone:
-
-```matlab
-ab.addComponent("Table", "AlarmList", "MainGrid", struct( ...
-    'ColumnName', {{'Timestamp','Node','Severity','Value','State'}}, ...
-    'Layout', struct('Row',3,'Column',[1 3])));
-```
-
-**Protocol handler and cleanup** — a `subscribe` data-change handler is called by handle
-(`@app.onData`), so it is a method; declare app state bare and initialize it in
-`startupFcn`; stop timers and drop subscriptions on close:
-
-```matlab
-ab.addProperty("Client", "", "private");
-ab.addProperty("Subscription", "", "private");
-ab.addProperty("PollTimer", "", "private");
-
-ab.addMethod("onData", strjoin([ ...
-    "function onData(app, ~, notification)" ...
-    "    v = notification.Data.Value;   % R2026a OPC UA contract" ...
-    "    app.FlowGauge.Value = v;" ...
-    "end" ], newline), "private");
-% In startupFcn: app.Subscription = subscribe(app.Client, nodeList, @app.onData);
-
-ab.addCallback("UIFigure", "CloseRequestFcn", "onClose");
-ab.setCallbackCode("onClose", strjoin([ ...
-    "if ~isempty(app.PollTimer) && isvalid(app.PollTimer); stop(app.PollTimer); delete(app.PollTimer); end" ...
-    "app.Subscription = opc.ua.Subscription.empty;   % no public delete; drop the handle" ...
-    "delete(app);" ], newline));
-```
-
-**Trends** (`animatedline`, fixed `YLim`, threshold `yline`s) are created in code, not as
-a gauge component — build a `UIAxes` component via the parent, then draw into it from
-`startupFcn`/handlers per `references/trend-config-reference.md`.
+Trends (`animatedline`, fixed `YLim`, threshold `yline`s) are drawn into the `UIAxes`
+component from `startupFcn`/handlers per `references/trend-config-reference.md` — not
+configured as gauge properties.
 
 ---
 
-## Pre-serialize domain-compliance checklist
+## Compliance self-audit
 
-The parent's `validate()`/`save()` check **loadability, not HMI correctness** — every
-ISA-101 violation below still saves cleanly. Before you serialize (and before you open it
-in App Designer), self-audit the design against these build-time rules (each is a real
-failure observed on this path):
+The compliance checklist is **section 5 of the spec** (`assets/hmi-spec-template.md`) — tick
+every box there before presenting the spec for review. A build check confirms *loadability, not
+HMI correctness*: every ISA-101 violation on that list still saves cleanly. If a box won't
+tick, **fix the spec, not the built app.**
 
-- [ ] **`Theme='light'` set on the figure** (not just `Color`) — `inspect()` and confirm `UIFigure.Props` lists `Theme`.
-- [ ] **Command buttons/controls are neutral gray** — no green Start, no red Stop. Run state is on a lamp, not the button.
-- [ ] **Only ISA-101 palette colors used** — critical `[0.85 0 0]`, warning `[1 0.7 0]`, comms blue `[0.4 0.6 1.0]`, neutral `[0.5 0.5 0.5]`; no free-handed reds/greens.
-- [ ] **Connection/running indicators are blue or gray, not green** — green is reserved for operator-verified-OK.
-- [ ] **Gauge normal band is gray `[0.5 0.5 0.5]`**, and any `ScaleColors` gauge is a `LinearGauge` (bands are silently inert on circular).
-- [ ] **Alarm banner spans row 1**, present even when there are no alarms.
-- [ ] **Write controls are in a secondary zone**, not the center visualization.
-- [ ] **Quantity caps:** ≤ 6 gauges, ≤ 4 trend axes, ≤ 12 numeric readouts, ≤ 5 saturated-color elements on screen.
-- [ ] **Like-typed analogs use like widgets** — don't mix a gauge and a numeric field for two temperatures in one panel.
-- [ ] **Every writable field has a range label and confirm-before-write** (default option Cancel).
+After the app is built, **read it back rather than re-reading the spec**: copy
+`assets/designReportReadback.m` beside the app **verbatim** (keep the filename — do not edit,
+rename or re-author it), and call the function with the app class and its spec file:
+`designReportReadback("<AppClass>", "<AppClass>-hmi-spec.md")` (inline via `evaluate_matlab_code`
+is fine — a function's local functions resolve when it is called). It constructs the app, pulls the ISA-101 values off the live figure, extracts the
+live-data callback and the protocol write lines from the source, emits `design-report.json`, and
+exercises `delete(app)` — so the teardown check above happens inside the same run, and leaked
+figures and timers are counted rather than assumed.
 
-If any box is unchecked, fix it with a verb before serializing — not after.
-
-After serializing, confirm the app instantiates and tears down cleanly (`app = MyHmi;`
-then `delete(app);` — no leaked timers, subscriptions, or figures).
+The readback closes the gap this section opens: the spec's section 5 is what the design *claims*,
+and the checklist is ticked before anything exists. The report is what the app *is*. Where they
+disagree the report wins and the app gets fixed — the two ways to lose that check are hand-writing
+the numbers and renaming or nesting the keys (`common-mistakes.md` #33). Key names, sentinel
+values, and the four emission rules: `assets/design-report-schema.json`.
 
 ---
 

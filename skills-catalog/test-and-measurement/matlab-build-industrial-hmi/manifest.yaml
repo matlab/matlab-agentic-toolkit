@@ -2,13 +2,22 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.1"
-human-description: Build industrial-grade SCADA/HMI dashboards in MATLAB following ISA-101 conventions. Produces a real App Designer app (.mlapp) by handing serialization to matlab-build-app when available, and falls back to a programmatic .m app otherwise.
+version: "1.2"
+human-description: Build industrial-grade SCADA/HMI dashboards in MATLAB following ISA-101 conventions. Writes a reviewable HMI spec, stops for the user's approval, then hands the approved spec to matlab-build-app to produce a real App Designer app (.mlapp) when it is available, and falls back to a programmatic .m app otherwise.
 matlab-release: ">=R2023b"  # opc.ua subscribe() introduced in R2023b; required by core OPC UA pattern. PI AF (afclient) requires R2026a — flagged "Available From" in Key Functions table. Real App Designer .mlapp output needs R2025a+ (via matlab-build-app); plain-text .m+.xml needs R2026b+.
-required-tools:
-  - evaluate_matlab_code
-  - detect_matlab_toolboxes
-required-skills: []
+toolkit: matlab-agentic-toolkit
 required-products:
   - Industrial Communication Toolbox
-toolkit: matlab-agentic-toolkit
+optional-products: []
+required-tools:
+  - evaluate_matlab_code   # workflow step 11 calls the designReportReadback(...) function inline; its local functions resolve when the function is called
+  - detect_matlab_toolboxes
+# matlab-build-app owns App Designer serialization; this skill hands it the approved
+# <AppName>-hmi-spec.md file to emit a real .mlapp. The hand-off is file-mediated
+# (contract: hmi-spec/1, assets/hmi-spec-template.md), so neither skill depends on the
+# other's internals. The dependency is soft — required-skills cannot express that — so
+# SKILL.md checks availability first and builds the programmatic .m app itself from the
+# same spec when the skill is absent. Listed here because the field is declarative
+# packaging metadata and nothing enforces it at load time.
+required-skills:
+  - matlab-build-app

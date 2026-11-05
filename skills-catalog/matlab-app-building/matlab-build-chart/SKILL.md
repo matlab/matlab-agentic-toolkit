@@ -3,7 +3,7 @@ name: matlab-build-chart
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 description: >
   Create and customize MATLAB charts and plots. Plot types (line, scatter,
   bar, histogram, heatmap, surface), axes configuration, annotations, data tips,
@@ -13,11 +13,6 @@ description: >
   animating charts, or arranging multiple axes. Triggers: plot, chart, graph, axes,
   uiaxes, annotation, data tips, animation, tiledlayout, colororder, heatmap, scatter,
   figure, visualization, export.
-allowed-tools:
-  - Read
-  - Write
-  - Edit
-  - Bash
 ---
 
 # MATLAB Chart Builder
@@ -177,6 +172,7 @@ Do NOT write the plan to a file unless (a) the user explicitly asks for a spec t
 - MUST use `drawnow limitrate` for animations — never bare `drawnow` in tight loops
 - PREFER `tiledlayout`/`nexttile` over `subplot()` for multiple axes
 - PREFER `exportgraphics()` for publication-quality export
+- Do NOT close the figure after exporting unless the user asks — the user expects to see the plot in MATLAB
 
 ### Additional constraints in uifigure apps
 

@@ -63,6 +63,14 @@ end
 
 The `for i = 1:numel(nodes)` indexing pattern works equally well for the common 1-node-changed case and the multi-node burst case — no special-casing needed.
 
+Wire it with the publishing interval set **explicitly** to the rate the screen needs (seconds; the default is 1). Stating it records the intended rate in the code and is required for any rate other than 1 s:
+
+```matlab
+app.Subscription = subscribe(app.UAClient, nodes, ...
+    @(sub, notification) onDataChange(app, sub, notification), ...
+    PublishInterval = 1);                      % ~1 Hz; 0.5 for 2 Hz
+```
+
 ### Vectorized callback shape (matches Explorer-generated scripts)
 
 ```matlab
@@ -259,8 +267,32 @@ end
 
 ### Polling pattern for Modbus live updates
 
+Ordering matters in `startupFcn`: **lay out and `drawnow` first, construct the client second,
+start the timer third.** `modbus('tcpip', host, port)` against an unreachable host blocks
+**~21 s** before throwing, and `'Timeout'` does not shorten it (it bounds per-transaction
+response waiting, not the OS-level TCP connect: measured 21.5 s at the default, 21.1 s at
+`Timeout=1`, 21.1 s at `Timeout=0.5`). The same block applies to `opcua`/`connect`, `mqttclient`,
+`piclient` and `afclient`. Connect before the first `drawnow` and the operator gets a frozen MATLAB
+with no window for 21 s, then on failure no window at all:
+
 ```matlab
-% In startupFcn, after constructing the client:
+% startupFcn, after createComponents has laid out the gray-field screen:
+app.CommsLamp.Color   = [0.5 0.5 0.5];          % gray = not yet connected
+app.AlarmBanner.Text  = "Connecting to " + host + "…";
+drawnow                                          % screen is up BEFORE the blocking call
+
+try
+    app.Client = modbus('tcpip', host, port);
+    app.CommsLamp.Color  = [0.4 0.6 1.0];       % blue = comms up, never green
+    app.AlarmBanner.Text = "SYSTEM NORMAL";
+catch ME
+    app.AlarmBanner.Text = "No connection: " + ME.message;
+    return                                       % leave the screen up, writes disabled
+end
+```
+
+```matlab
+% Then, with a live client:
 app.PollTimer = timer( ...
     'ExecutionMode', 'fixedSpacing', ...
     'BusyMode',      'drop', ...

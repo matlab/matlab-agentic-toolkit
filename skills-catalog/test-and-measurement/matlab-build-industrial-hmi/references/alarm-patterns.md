@@ -34,7 +34,7 @@ ELSE                            → Normal   (gray-field)
 
 ## Pattern A — Gauge `ScaleColors` keyed to LL/L/H/HH
 
-> **`ScaleColors` requires `'linear'`** — on `'semicircular'`, `'circular'`, and `'ninetydegree'` gauges these properties are silently ignored (no error, no color bands). Use linear gauges when alarm bands are needed; if the layout demands a non-linear gauge, indicate alarm state with a colored frame, an adjacent lamp, or a status badge instead.
+> **Set `Limits` before the bands, and make it cover them.** `ScaleColors`/`ScaleColorLimits` work on all four gauge styles (`'linear'`, `'semicircular'`, `'circular'`, `'ninetydegree'`), but only the part of a band inside `Limits` is drawn — a band outside it is silently clipped (no error, no color). Set `Limits` to the node's spec range so every LL/L/H/HH band lies inside it. See `references/common-mistakes.md` entry 23.
 
 The most important pattern: encode the alarm thresholds **at construction**, so the alarm state is visible in the gauge itself with no runtime logic. The agent does not need to recompute "is this alarm" on every update — the gauge does it visually.
 
@@ -130,9 +130,20 @@ function refreshBanner(app)
 end
 ```
 
+Note the `FontColor` assignment in **every** branch. That is not decoration. The banner's face
+moves between saturated red, warning amber, comms blue and the neutral panel face, and the default
+near-black text is barely readable on red at control-room distance. Set `FontColor` in the same
+branch that sets `BackgroundColor`, never as a one-off at construction — see anti-pattern 30.
+
 ## Pattern C — Latched alarm with Acknowledge button
 
 A latched alarm keeps the alarm state visible until the operator acknowledges it, even if the underlying value has returned to normal. This is the standard SCADA pattern (matches ISA-18.2).
+
+**Latching and its Acknowledge control are one unit.** Latching without an ACK button leaves no
+path back to normal — the banner holds its worst color for the rest of the session, which is worse
+than not latching at all. If a design has no Acknowledge button, it must not latch: escalate while
+the value is out of limits and clear when it returns (Pattern B). Wherever a hand-off document or
+spec says "latched", it has to name the Acknowledge button too. See anti-pattern 31.
 
 ```matlab
 properties (Access = private)

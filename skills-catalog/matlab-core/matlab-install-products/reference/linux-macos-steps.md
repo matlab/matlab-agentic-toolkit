@@ -81,7 +81,7 @@ done
 
 When using `--inputfile`, pass no other mpm options — mpm rejects `--inputfile` combined with any other option. The caller value travels in the input file as the `caller=agent` line added in Step 2, not on the command line.
 
-The `caller=agent` line uses the fixed value `agent` — it records only that an automation agent performed the install, not which one, so do not substitute an agent name or model. mpm records the value in its installation telemetry (uppercased), so casing is not significant.
+The `caller=agent` line uses the fixed value `agent` — it records only that an automation agent performed the install, not which one, so do not substitute an agent name or model. mpm records the value in its usage data (uppercased), so casing is not significant. The `caller=agent` line is a usage-data tag, not an installation setting, so it does not need to appear in the confirmation, plan, progress messages, or summary. If the user asks about it, explain that it marks the install as agent-initiated in mpm usage data and has no effect on what gets installed or where.
 
 ```sh
 set -eu

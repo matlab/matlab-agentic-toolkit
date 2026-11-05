@@ -33,6 +33,19 @@ MaximumNumPoints = WindowSeconds / UpdatePeriodSeconds
 
 ## Pattern: 5-minute trend with thresholds
 
+**Every production trend carries all five of these — none is optional:** (1) a fixed `YLim`
+matching the sensor spec (never left on autoscale), (2) a unit `ylabel` and a time `xlabel`,
+(3) an `animatedline` trace, (4) — whenever the trended node has alarm thresholds —
+threshold `yline`s at the **same warn/alarm values as the source gauge's `ScaleColorLimits`**,
+and (5) **no interactive axes toolbar**: `ax.Toolbar.Visible = 'off'` and `ax.Interactions = []`.
+A `uiaxes` ships with a visible toolbar and a full default interaction set, so an operator can
+pan or zoom a live trend and silently defeat the fixed `YLim` — the axis then lies about the
+process while looking normal, and nothing in the UI says it was moved. Exploration belongs on
+the explicit per-trend toggle below, which is auditable; an ad-hoc drag is not.
+A trend of an alarmed node rendered with an autoscaled axis, no unit label, or no threshold
+lines is incomplete, not a minimal-but-acceptable default. The thresholds and the gauge bands
+must agree — they describe the same physical limits.
+
 ```matlab
 % Construct the axis with fixed limits matching the sensor spec.
 ax = uiaxes(parent, 'XLim', [0 300], 'YLim', [0 250]);
@@ -41,15 +54,27 @@ ylabel(ax, 'Temperature (°C)');
 grid(ax,  'on');
 ax.GridColor = [0.7 0.7 0.7];
 
+% A live trend is a read-only instrument: no toolbar, no pan, no zoom.
+ax.Toolbar.Visible = 'off';
+ax.Interactions    = [];
+
 % Threshold lines: drawn ONCE at construction. They persist for the life of the app.
+% Set 'HandleVisibility','off' so a later legend('show') does NOT pick them up as
+% generic 'data1'/'data2' entries — the on-line 'Label' already identifies them.
+% 'LabelHorizontalAlignment','left' puts the label text in the axes' upper-left region.
+% If this trend also carries a legend, that is where the legend goes too — see
+% "Threshold labels and the legend collide" below before keeping both on the left.
 yline(ax, 200, '--', 'Color', [1 0.7 0],  'LineWidth', 1.2, ...
-    'Label', 'Warn 200°C', 'LabelHorizontalAlignment', 'left');
+    'Label', 'Warn 200°C', 'LabelHorizontalAlignment', 'left', ...
+    'HandleVisibility', 'off');
 yline(ax, 230, '--', 'Color', [0.85 0 0], 'LineWidth', 1.5, ...
-    'Label', 'Alarm 230°C', 'LabelHorizontalAlignment', 'left');
+    'Label', 'Alarm 230°C', 'LabelHorizontalAlignment', 'left', ...
+    'HandleVisibility', 'off');
 
 % Optional: setpoint line, different style so operators can tell it apart.
 yline(ax, 180, ':', 'Color', [0.4 0.6 1.0], 'LineWidth', 1.0, ...
-    'Label', 'Setpoint', 'LabelHorizontalAlignment', 'right');
+    'Label', 'Setpoint', 'LabelHorizontalAlignment', 'right', ...
+    'HandleVisibility', 'off');
 
 % The trace: 300 points at 1 s update = 5 min rolling window.
 trace = animatedline(ax, 'MaximumNumPoints', 300, ...
@@ -76,8 +101,34 @@ t1 = animatedline(ax, 'MaximumNumPoints', 300, 'Color', [0   0   0  ], ...
     'DisplayName', 'WeldRobot1');
 t2 = animatedline(ax, 'MaximumNumPoints', 300, 'Color', [0.2 0.2 0.7], ...
     'DisplayName', 'WeldRobot2');
-legend(ax, 'show', 'Location', 'northwest');
+% Legend OUTSIDE the plot box: it cannot cover the live trace (which lives at the
+% right edge of a rolling window) and it cannot collide with the threshold labels
+% (which sit at the left). See "Threshold labels and the legend collide" below.
+legend(ax, 'show', 'Location', 'northoutside', 'Orientation', 'horizontal');
+% Give every trace a 'DisplayName' and hide non-trace lines from the legend
+% ('HandleVisibility','off' on threshold/setpoint ylines above). Otherwise
+% legend('show') auto-labels the unnamed lines 'data1', 'data2', … and the
+% legend fills with threshold clutter instead of just the traces.
 ```
+
+### Threshold labels and the legend collide
+
+`'HandleVisibility','off'` keeps the `yline`s out of the legend's *entries*, but it does nothing
+about where their **label text** is drawn. A `yline` label with
+`'LabelHorizontalAlignment','left'` lands in the axes' upper-left — the same place
+`'Location','northwest'` puts the legend box. On a short HMI trend they overlap and the
+threshold value becomes unreadable.
+
+Pick one of these; don't leave both on the left:
+
+| Trend has | Do this |
+|---|---|
+| Legend **and** threshold labels | `legend(…,'Location','northoutside','Orientation','horizontal')` — outside the plot box, so it can collide with neither the labels nor the trace |
+| Threshold labels, single trace (no legend) | Keep labels `'left'`; nothing to collide with |
+| Legend inside the axes, by preference | Then set the threshold labels `'LabelHorizontalAlignment','right'` instead, and keep the legend at `'northwest'` |
+
+Avoid `'Location','northeast'` for an inside legend on a rolling trend — the newest samples are
+at the right edge, which is exactly what the operator is watching.
 
 For 2 traces with **different units**, use `yyaxis`. For 3+ different-unit traces, use separate panels — never cram different-unit traces onto a `yyaxis` plot.
 
@@ -139,6 +190,8 @@ The rolling-XLim block above keeps `[0 300]` for the first 5 minutes (so the axi
 | Auto-scale `YLim` left as default | Gradual drift hidden by axis jumping with the signal | `YLim = sensorSpec` at construction |
 | 60-second window for a process trend | Too short to spot transients in process context | `MaximumNumPoints = 300` at 1 s |
 | Threshold drawn dynamically every tick | Jitter, redraw cost, occasional disappearance | `yline` once at construction; persists forever |
+| Threshold `yline`s left with default handle visibility | `legend('show')` pulls them in as `data1`/`data2`… — the legend fills with threshold clutter, not traces | `'HandleVisibility','off'` on every threshold/setpoint `yline`; the on-line `'Label'` already names it |
+| Threshold labels `'left'` **and** legend `'northwest'` | Both land in the axes' upper-left; the label text renders under the legend box and the threshold value is unreadable. `HandleVisibility` doesn't help — it governs legend *entries*, not label placement | Move the legend outside: `'Location','northoutside','Orientation','horizontal'` (or keep it `'northwest'` and set the labels `'LabelHorizontalAlignment','right'`) |
 | `XLim` fixed at construction, never updated in callback | After the window expires, new points are drawn off-screen — the trace appears to freeze at the right edge | Update `XLim = [elapsed-300, elapsed]` in the data callback once `elapsed > 300` |
 | Mixing units on a single axis | Operator misreads the magnitude | `yyaxis` for two units; separate panels for more |
 | `drawnow` (no `limitrate`) in callback | Updates stack up under high node activity | `drawnow limitrate` |
