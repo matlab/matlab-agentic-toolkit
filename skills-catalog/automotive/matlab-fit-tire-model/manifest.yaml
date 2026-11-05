@@ -14,7 +14,9 @@ toolkit: matlab-agentic-toolkit
 # core path, so it is annotated "Available From" in the SKILL.md Key Functions table
 # rather than raising the floor.
 required-products:
-  - Vehicle Dynamics Blockset   # Extended Tire Features API; needed for every operation
+  - Vehicle Dynamics Blockset   # base product for the support package below
+  - Extended Tire Features for Vehicle Dynamics Blockset
+                                # tireData/tireModel API; needed for every operation
   - Optimization Toolbox        # required for fit and convert (the primary workflow);
                                 # import, inspect, plot, and export run without it
 optional-products: []
