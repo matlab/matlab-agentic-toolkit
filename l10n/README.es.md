@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # MATLAB Agentic Toolkit
@@ -106,7 +106,7 @@ Después de instalar MATLAB Agentic Toolkit, su agente puede usar skills selecci
 | [**MATLAB Core**](skills-catalog/README.es.md#matlab-core-matlab-core) | Crear, depurar, revisar y administrar código e instalaciones de MATLAB |
 | [**MATLAB App Building**](skills-catalog/README.es.md#matlab-app-building-matlab-app-building) | Compilar aplicaciones de MATLAB programáticamente usando componentes de interfaz de usuario, diseños, callbacks e integración web |
 | [**MATLAB Data Import and Analysis**](skills-catalog/README.es.md#matlab-data-import-and-analysis-matlab-data-import-and-analysis) | Importar, exportar y analizar datos en MATLAB usando tablas, horarios, filtrado, agregación y operaciones de series temporales |
-| [**MATLAB External Language Interfaces**](skills-catalog/README.es.md#matlab-external-language-interfaces-matlab-external-language-interfaces) | Invocar bibliotecas de Python&reg; desde MATLAB y actualizar archivos MEX a la API interleaved complex |
+| [**MATLAB External Language Interfaces**](skills-catalog/README.es.md#matlab-external-language-interfaces-matlab-external-language-interfaces) | Invocar bibliotecas de Python&reg; desde MATLAB, configurar Java&reg; Runtime Environment (JRE&trade;) y actualizar archivos MEX a la API interleaved complex |
 | [**MATLAB Programming**](skills-catalog/README.es.md#matlab-programming-matlab-programming) | Escribir funciones de MATLAB robustas con entradas validadas |
 | [**MATLAB Software Development**](skills-catalog/README.es.md#matlab-software-development-matlab-software-development) | Escribir y ejecutar pruebas, modernizar código heredado, optimizar rendimiento y memoria, documentar y crear toolboxes, crear proyectos, administrar paquetes y desarrollar planes de compilación |
 
@@ -116,7 +116,7 @@ Después de instalar MATLAB Agentic Toolkit, su agente puede usar skills selecci
 |-------------|--------------------|
 | [**Aerospace**](skills-catalog/README.es.md#aerospace-aerospace) | Aerospace Toolbox&trade; |
 | [**AI and Statistics**](skills-catalog/README.es.md#ai-and-statistics-ai-and-statistics) | Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade;, Fixed-Point Designer&trade;, MATLAB Coder&trade;, MATLAB Compiler SDK&trade;, MATLAB Report Generator&trade;, Optimization Toolbox&trade;, Parallel Computing Toolbox&trade;, Statistics and Machine Learning Toolbox&trade;, Deep Learning Toolbox Converter for ONNX Model Format&trade;, Deep Learning Toolbox Converter for PyTorch Models&trade; y Deep Learning Toolbox Converter for TensorFlow Models&trade; |
-| [**Automotive**](skills-catalog/README.es.md#automotive-automotive) | Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; y Scenario Builder for Automated Driving Toolbox&trade; |
+| [**Automotive**](skills-catalog/README.es.md#automotive-automotive) | Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; y Scenario Builder for Automated Driving Toolbox&trade; |
 | [**Cloud Solutions**](skills-catalog/README.es.md#cloud-solutions-cloud-solutions) | MATLAB Drive&trade; |
 | [**Code Generation**](skills-catalog/README.es.md#code-generation-code-generation) | Embedded Coder, Fixed-Point Designer, GPU Coder&trade;, MATLAB Coder, MATLAB Test&trade;, Parallel Computing Toolbox y MATLAB Coder Support Package for PyTorch and LiteRT Models&trade; |
 | [**Computational Biology**](skills-catalog/README.es.md#computational-biology-computational-biology) | SimBiology&trade; y Statistics and Machine Learning Toolbox |

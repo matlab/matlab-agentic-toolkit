@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # MATLAB Agentic Toolkit
@@ -107,7 +107,7 @@ MATLAB Agentic Toolkit のインストール後、エージェントは MathWork
 | [**MATLAB 基本機能**](skills-catalog/README.ja.md#matlab-基本機能-matlab-core) | MATLAB コードとインストールの作成、デバッグ、レビュー、管理 |
 | [**MATLAB アプリ作成**](skills-catalog/README.ja.md#matlab-アプリ作成-matlab-app-building) | UI コンポーネント、レイアウト、コールバック、Web 統合を使用して MATLAB アプリをプログラムで作成 |
 | [**MATLAB データ インポートと解析**](skills-catalog/README.ja.md#matlab-データ-インポートと解析-matlab-data-import-and-analysis) | table、timetable、フィルタリング、集計、時系列演算を使用した MATLAB でのデータのインポート、エクスポート、解析 |
-| [**MATLAB 外部言語インターフェイス**](skills-catalog/README.ja.md#matlab-外部言語インターフェイス-matlab-external-language-interfaces) | MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルをインターリーブされた複素数 API にアップグレード |
+| [**MATLAB 外部言語インターフェイス**](skills-catalog/README.ja.md#matlab-外部言語インターフェイス-matlab-external-language-interfaces) | MATLAB から Python&reg; ライブラリを呼び出し、Java&reg; Runtime Environment (JRE&trade;) を構成し、MEX ファイルをインターリーブされた複素数 API にアップグレード |
 | [**MATLAB プログラミング**](skills-catalog/README.ja.md#matlab-プログラミング-matlab-programming) | 入力検証を備えた堅牢な MATLAB 関数の記述 |
 | [**MATLAB ソフトウェア開発**](skills-catalog/README.ja.md#matlab-ソフトウェア開発-matlab-software-development) | テストの記述と実行、レガシ コードの最新化、パフォーマンスとメモリの最適化、ドキュメント作成とツールボックスの作成、プロジェクトの作成、パッケージの管理、ビルド プランの作成 |
 
@@ -117,7 +117,7 @@ MATLAB Agentic Toolkit のインストール後、エージェントは MathWork
 |-------------|--------------------|
 | [**航空宇宙関連**](skills-catalog/README.ja.md#航空宇宙関連-aerospace) | Aerospace Toolbox&trade; |
 | [**AI および統計**](skills-catalog/README.ja.md#ai-および統計-ai-and-statistics) | Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&trade;、Fixed-Point Designer&trade;、MATLAB Coder&trade;、MATLAB Compiler SDK&trade;、MATLAB Report Generator&trade;、Optimization Toolbox&trade;、Parallel Computing Toolbox&trade;、Statistics and Machine Learning Toolbox&trade;、Deep Learning Toolbox Converter for ONNX Model Format&trade;、Deep Learning Toolbox Converter for PyTorch Models&trade;、Deep Learning Toolbox Converter for TensorFlow Models&trade; |
-| [**自動車関連**](skills-catalog/README.ja.md#自動車関連-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; |
+| [**自動車関連**](skills-catalog/README.ja.md#自動車関連-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; |
 | [**クラウド ソリューション**](skills-catalog/README.ja.md#クラウド-ソリューション-cloud-solutions) | MATLAB Drive&trade; |
 | [**コード生成**](skills-catalog/README.ja.md#コード生成-code-generation) | Embedded Coder、Fixed-Point Designer、GPU Coder&trade;、MATLAB Coder、MATLAB Test&trade;、Parallel Computing Toolbox、MATLAB Coder Support Package for PyTorch and LiteRT Models&trade; |
 | [**情報生命科学**](skills-catalog/README.ja.md#情報生命科学-computational-biology) | SimBiology&trade;、Statistics and Machine Learning Toolbox |

@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # Catálogo de Skills
@@ -56,11 +56,12 @@ Importar, exportar y analizar datos en MATLAB usando tablas, horarios, filtrado,
 
 ### MATLAB External Language Interfaces ([`matlab-external-language-interfaces`](../../skills-catalog/matlab-external-language-interfaces/))
 
-Invocar bibliotecas de Python&reg; desde MATLAB y actualizar archivos MEX a la API interleaved complex
+Invocar bibliotecas de Python&reg; desde MATLAB, configurar Java&reg; Runtime Environment (JRE&trade;) y actualizar archivos MEX a la API interleaved complex
 
 | Skill | Qué le enseña a su agente |
 |-------|---------------------------|
 | `matlab-call-python` | Invocar bibliotecas de Python desde MATLAB usando la interfaz py. |
+| `matlab-configure-java` | Configurar Java Runtime Environment (JRE), incluida la instalación de OpenJDK, la elección de un JDK y la interpretación del estado de carga. |
 | `matlab-upgrade-mex-ic` | Convertir archivos MEX de C, C++ y Fortran de la API separate complex a la API interleaved complex con guards MX_HAS_INTERLEAVED_COMPLEX para compilaciones SC/IC y verificación de rendimiento. |
 
 ### MATLAB Programming ([`matlab-programming`](../../skills-catalog/matlab-programming/))
@@ -81,7 +82,7 @@ Escribir y ejecutar pruebas, modernizar código heredado, optimizar rendimiento 
 | `matlab-instrument-opentelemetry-tracing` | Agregar spans de trazado OpenTelemetry a funciones de MATLAB con propagación de contexto y ciclo de vida correctos. |
 | `matlab-modernize-code` | Modernizar funciones y patrones eliminados o desaconsejados de MATLAB. |
 | `matlab-optimize-memory` | Encontrar y corregir cuellos de botella de memoria en código de MATLAB usando un flujo de trabajo estructurado de medición-perfilado-optimización-verificación. |
-| `matlab-optimize-performance` | Optimizar el rendimiento del código de MATLAB. |
+| `matlab-optimize-performance` | Optimizar el rendimiento del código de MATLAB usando un flujo de trabajo guiado por perfilado, incluido el perfilado basado en muestreo de baja sobrecarga para analizar puntos críticos por línea. |
 | `matlab-package-toolbox` | Empaquetar código de MATLAB como una toolbox instalable .mltbx. |
 | `matlab-run-tests` | Ejecutar suites de pruebas de MATLAB, recopilar cobertura de código y configurar pipelines CI/CD. |
 | `matlab-use-package-manager` | Administrar e inspeccionar paquetes de MATLAB con MATLAB Package Manager integrado en el producto. |
@@ -117,11 +118,12 @@ Soporte para Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedde
 
 ### Automotive ([`automotive`](../../skills-catalog/automotive/))
 
-Soporte para Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; y Scenario Builder for Automated Driving Toolbox&trade;
+Soporte para Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; y Scenario Builder for Automated Driving Toolbox&trade;
 
 | Skill | Qué le enseña a su agente |
 |-------|---------------------------|
 | `matlab-cosimulate-sumo-simulink` | Compilar modelos de Simulink que co-simulan con el simulador de tráfico Eclipse&trade; SUMO. |
+| `matlab-fit-tire-model` | Ajustar un modelo de neumático a datos medidos de fuerza y momento y exportarlo a un archivo .tir. |
 | `matlab-import-driving-data` | Importar datos de sensores de conducción grabados (GPS, cámara, lidar, tracks de actores) en objetos scenariobuilder.* y sincronizar, recortar, desplazar y normalizar marcas de tiempo antes de la construcción del escenario. |
 | `matlab-use-ncap-protocol` | Generar escenarios de prueba Euro NCAP y variantes, traducir entre simuladores y calcular puntuaciones. |
 | `matlab-use-scenario-builder` | Compilar escenas de conducción, escenarios, superficies de carretera y activos 3D a partir de datos de sensores grabados y exportar a RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG o Unreal Engine&reg;. |
@@ -170,7 +172,7 @@ Soporte para Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Fina
 
 | Skill | Qué le enseña a su agente |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Conectarse a Bloomberg&reg;, FRED&reg;, Haver Analytics&reg; y LSEG&reg; Datastream para recopilar datos financieros y económicos usando Datafeed Toolbox. |
+| `matlab-access-datafeed` | Acceder a datos financieros, económicos, climáticos y gubernamentales de Bloomberg&reg;, FRED&reg;, Haver, Datastream&trade;, NOAA y agencias de EE. UU. |
 | `matlab-optimize-portfolio` | Formular y resolver problemas de optimización de cartera de media-varianza. |
 | `matlab-price-instrument` | Valorar instrumentos financieros usando Monte Carlo, FFT o árboles de tasa de interés. |
 | `matlab-use-spreadsheet-link` | Escribir macros VBA y funciones de hoja de cálculo para intercambiar datos con Excel usando Spreadsheet Link. |
@@ -312,7 +314,7 @@ Soporte para Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, 
 
 | Skill | Qué le enseña a su agente |
 |-------|---------------------------|
-| `matlab-build-industrial-hmi` | Compilar dashboards SCADA/HMI de grado industrial en MATLAB siguiendo las convenciones ISA-101. Produce una aplicación real de App Designer (.mlapp) delegando la serialización a matlab-build-app cuando está disponible, y recurre a una aplicación programática .m en caso contrario. |
+| `matlab-build-industrial-hmi` | Compilar dashboards SCADA/HMI de grado industrial en MATLAB siguiendo las convenciones ISA-101. Escribe una especificación de HMI revisable, se detiene hasta obtener la aprobación del usuario y luego entrega la especificación aprobada a matlab-build-app para producir una aplicación real de App Designer (.mlapp) cuando matlab-build-app está disponible, y recurre a una aplicación programática .m en caso contrario. |
 | `matlab-call-nidaqmx` | Traducir funciones C de NI-DAQmx a llamadas calldaqlib correctas en MATLAB. |
 | `matlab-connect-arduino` | Descubrir, configurar y conectarse a placas Arduino&reg; desde MATLAB mediante USB. |
 | `matlab-connect-bluetooth-low-energy-device` | Descubrir y conectarse a dispositivos periféricos Bluetooth Low Energy desde MATLAB. |

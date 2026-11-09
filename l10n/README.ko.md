@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # MATLAB Agentic Toolkit
@@ -107,7 +107,7 @@ MATLAB Agentic Toolkit을 설치한 후에는 에이전트가 MathWorks&reg;가 
 | [**MATLAB 코어**](skills-catalog/README.ko.md#matlab-코어-matlab-core) | MATLAB 코드를 생성, 디버그, 검토하고 MATLAB 설치를 관리 |
 | [**MATLAB 앱 작성**](skills-catalog/README.ko.md#matlab-앱-작성-matlab-app-building) | UI 컴포넌트, 레이아웃, 콜백, 웹 통합을 사용하여 프로그래밍 방식으로 MATLAB 앱 작성 |
 | [**MATLAB 데이터 가져오기 및 분석**](skills-catalog/README.ko.md#matlab-데이터-가져오기-및-분석-matlab-data-import-and-analysis) | 테이블, 타임테이블, 필터링, 집계, 시계열 연산을 사용하여 MATLAB에서 데이터 가져오기, 내보내기 및 분석 |
-| [**MATLAB 외부 언어 인터페이스**](skills-catalog/README.ko.md#matlab-외부-언어-인터페이스-matlab-external-language-interfaces) | MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interleaved complex API(실수부/허수부 결합형 복소수 API)로 업그레이드 |
+| [**MATLAB 외부 언어 인터페이스**](skills-catalog/README.ko.md#matlab-외부-언어-인터페이스-matlab-external-language-interfaces) | MATLAB에서 Python&reg; 라이브러리를 호출하고, Java&reg; Runtime Environment(JRE&trade;)를 구성하고, MEX 파일을 interleaved complex API(실수부/허수부 결합형 복소수 API)로 업그레이드 |
 | [**MATLAB 프로그래밍**](skills-catalog/README.ko.md#matlab-프로그래밍-matlab-programming) | 입력값 유효성을 검사하는 견고한 MATLAB 함수 작성 |
 | [**MATLAB 소프트웨어 개발**](skills-catalog/README.ko.md#matlab-소프트웨어-개발-matlab-software-development) | 테스트 작성 및 실행, 레거시 코드 현대화, 성능 및 메모리 최적화, 툴박스 문서화 및 생성, 프로젝트 생성, 패키지 관리, 빌드 계획 개발 |
 
@@ -117,7 +117,7 @@ MATLAB Agentic Toolkit을 설치한 후에는 에이전트가 MathWorks&reg;가 
 |-------------|--------------------|
 | [**항공우주**](skills-catalog/README.ko.md#항공우주-aerospace) | Aerospace Toolbox&trade; |
 | [**AI 및 통계학**](skills-catalog/README.ko.md#ai-및-통계학-ai-and-statistics) | Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade;, Fixed-Point Designer&trade;, MATLAB Coder&trade;, MATLAB Compiler SDK&trade;, MATLAB Report Generator&trade;, Optimization Toolbox&trade;, Parallel Computing Toolbox&trade;, Statistics and Machine Learning Toolbox&trade;, Deep Learning Toolbox Converter for ONNX Model Format&trade;, Deep Learning Toolbox Converter for PyTorch Models&trade;, Deep Learning Toolbox Converter for TensorFlow Models&trade; |
-| [**자동차**](skills-catalog/README.ko.md#자동차-automotive) | Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; |
+| [**자동차**](skills-catalog/README.ko.md#자동차-automotive) | Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; |
 | [**클라우드 솔루션**](skills-catalog/README.ko.md#클라우드-솔루션-cloud-solutions) | MATLAB Drive&trade; |
 | [**코드 생성**](skills-catalog/README.ko.md#코드-생성-code-generation) | Embedded Coder, Fixed-Point Designer, GPU Coder&trade;, MATLAB Coder, MATLAB Test&trade;, Parallel Computing Toolbox, MATLAB Coder Support Package for PyTorch and LiteRT Models&trade; |
 | [**계산 생물학**](skills-catalog/README.ko.md#계산-생물학-computational-biology) | SimBiology&trade;, Statistics and Machine Learning Toolbox |

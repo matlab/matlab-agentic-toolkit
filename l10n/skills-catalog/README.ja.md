@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # スキル カタログ
@@ -56,11 +56,12 @@ table、timetable、フィルタリング、集計、時系列演算を使用し
 
 ### MATLAB 外部言語インターフェイス ([`matlab-external-language-interfaces`](../../skills-catalog/matlab-external-language-interfaces/))
 
-MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルをインターリーブされた複素数 API にアップグレード
+MATLAB から Python&reg; ライブラリを呼び出し、Java&reg; Runtime Environment (JRE&trade;) を構成し、MEX ファイルをインターリーブされた複素数 API にアップグレード
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
 | `matlab-call-python` | py. インターフェイスを使用して MATLAB から Python ライブラリを呼び出す。 |
+| `matlab-configure-java` | OpenJDK のインストール、JDK の選択、読み込みステータスの解釈を含め、Java Runtime Environment (JRE) を構成する。 |
 | `matlab-upgrade-mex-ic` | C、C++、Fortran MEX ファイルを実数/虚数分離型複素数 API からインターリーブされた複素数 API に変換し、SC/IC ビルドおよびパフォーマンス検証用に MX_HAS_INTERLEAVED_COMPLEX ガードを追加する。 |
 
 ### MATLAB プログラミング ([`matlab-programming`](../../skills-catalog/matlab-programming/))
@@ -81,7 +82,7 @@ MATLAB から Python&reg; ライブラリを呼び出し、MEX ファイルを�
 | `matlab-instrument-opentelemetry-tracing` | MATLAB 関数に、正しいコンテキスト伝播とライフサイクル管理を備えた  OpenTelemetry トレーシング スパンを追加する。 |
 | `matlab-modernize-code` | 削除または非推奨の MATLAB 関数とパターンを最新化する。 |
 | `matlab-optimize-memory` | 構造化された測定、プロファイリング、最適化、および検証から成るワークフローを使用して MATLAB コードのメモリ ボトルネックを見つけて修正する。 |
-| `matlab-optimize-performance` | MATLAB コードのパフォーマンスを最適化する。 |
+| `matlab-optimize-performance` | 行単位のホットスポット分析が可能な、低オーバーヘッドのサンプリング ベース プロファイリングを含む、プロファイルに基づくワークフローを使用して MATLAB コードのパフォーマンスを最適化する。 |
 | `matlab-package-toolbox` | MATLAB コードをインストール可能な .mltbx ツールボックスとしてパッケージ化する。 |
 | `matlab-run-tests` | MATLAB テスト スイートを実行し、コード カバレッジを収集して、CI/CD パイプラインを構成する。 |
 | `matlab-use-package-manager` | 製品内の MATLAB パッケージ マネージャーを使用して MATLAB パッケージを管理および検査する。 |
@@ -117,11 +118,12 @@ Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&tra
 
 ### 自動車関連 ([`automotive`](../../skills-catalog/automotive/))
 
-Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; をサポート
+Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; をサポート
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
 | `matlab-cosimulate-sumo-simulink` | Eclipse&trade; SUMO Traffic Simulator とコシミュレーションする Simulink モデルを構築する。 |
+| `matlab-fit-tire-model` | 測定された力およびモーメントのデータにタイヤ モデルを当てはめ、.tir ファイルにエクスポートする。 |
 | `matlab-import-driving-data` | 記録された運転センサー データ (GPS、カメラ、LiDAR、アクター トラック) を scenariobuilder.* オブジェクトにインポートし、シナリオ構築前にタイムスタンプを同期、トリミング、オフセット、正規化する。 |
 | `matlab-use-ncap-protocol` | Euro NCAP テスト シナリオとバリアントを生成し、シミュレーター間で変換し、スコアを計算する。 |
 | `matlab-use-scenario-builder` | 記録されたセンサー データから運転シーン、シナリオ、路面、3D アセットを構築し、RoadRunner、drivingScenario、OpenSCENARIO、OpenDRIVE、OpenCRG、Unreal Engine&reg; にエクスポートする。 |
@@ -170,7 +172,7 @@ Datafeed Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolb
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Datafeed Toolbox を使用して Bloomberg&reg;、FRED&reg;、Haver Analytics&reg;、LSEG&reg; Datastream に接続し、金融・経済データを取得する。 |
+| `matlab-access-datafeed` | Bloomberg&reg;、FRED&reg;、Haver、Datastream&trade;、NOAA、米国政府機関から金融、経済、気候、政府のデータにアクセスする。 |
 | `matlab-optimize-portfolio` | 平均分散ポートフォリオ最適化問題を定式化し、求解する。 |
 | `matlab-price-instrument` | モンテ カルロ、FFT、金利ツリーを使用して金融商品の価格を計算する。 |
 | `matlab-use-spreadsheet-link` | Spreadsheet Link を使用して Excel とデータを交換するための VBA マクロとワークシート関数を記述する。 |
@@ -312,7 +314,7 @@ Data Acquisition Toolbox&trade;、Image Acquisition Toolbox&trade;、Image Proce
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
-| `matlab-build-industrial-hmi` | ISA-101 規約に従って MATLAB で産業グレードの SCADA/HMI ダッシュボードを構築する。matlab-build-app が使用可能な場合はシリアル化を matlab-build-app に委譲して実際の App Designer アプリ (.mlapp) を生成し、そうでない場合はプログラムによる .m アプリにフォールバックする。 |
+| `matlab-build-industrial-hmi` | ISA-101 規約に従って MATLAB で産業グレードの SCADA/HMI ダッシュボードを構築する。レビュー可能な HMI 仕様を作成し、ユーザーの承認を待ってから、matlab-build-app が使用可能な場合は承認された仕様を matlab-build-app に渡して実際の App Designer アプリ (.mlapp) を生成し、そうでない場合はプログラムによる .m アプリにフォールバックする。 |
 | `matlab-call-nidaqmx` | NI-DAQmx C 関数を正しい MATLAB calldaqlib 呼び出しに変換する。 |
 | `matlab-connect-arduino` | USB 経由で MATLAB から Arduino&reg; ボードを検出、構成、接続する。 |
 | `matlab-connect-bluetooth-low-energy-device` | MATLAB から Bluetooth Low Energy 周辺デバイスを検出・接続する。 |

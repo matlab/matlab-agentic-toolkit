@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # 技能目录
@@ -56,11 +56,12 @@ Source English Markdown:
 
 ### MATLAB 外部语言接口 ([`matlab-external-language-interfaces`](../../skills-catalog/matlab-external-language-interfaces/))
 
-从 MATLAB 调用 Python&reg; 库并将 MEX 文件升级到交错式复数 API
+从 MATLAB 调用 Python&reg; 库、配置 Java&reg; Runtime Environment (JRE&trade;) 并将 MEX 文件升级到交错式复数 API
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
 | `matlab-call-python` | 使用 py. 接口从 MATLAB 调用 Python 库。 |
+| `matlab-configure-java` | 配置 Java Runtime Environment (JRE)，包括安装 OpenJDK、选择 JDK 和解释加载状态。 |
 | `matlab-upgrade-mex-ic` | 将 C、C++ 和 Fortran MEX 文件从独立复数 API 转换为交错式复数 API，并添加用于 SC/IC 构建和性能验证的 MX_HAS_INTERLEAVED_COMPLEX 保护。 |
 
 ### MATLAB 编程 ([`matlab-programming`](../../skills-catalog/matlab-programming/))
@@ -80,8 +81,8 @@ Source English Markdown:
 | `matlab-configure-toml-project` | 创建和编辑 matlab.toml 工程文件：文件夹、依赖项、标签、导出配置文件、生命周期脚本和 MATLAB 包元数据。 |
 | `matlab-instrument-opentelemetry-tracing` | 使用正确的上下文传播和生命周期向 MATLAB 函数添加 OpenTelemetry 追踪 span。 |
 | `matlab-modernize-code` | 现代化已移除或不建议使用的 MATLAB 函数和模式。 |
-| `matlab-optimize-memory` | 使用结构化的测量-分析-优化-验证工作流查找并修复 MATLAB 代码中的内存瓶颈。 |
-| `matlab-optimize-performance` | 优化 MATLAB 代码的性能。 |
+| `matlab-optimize-memory` | 使用结构化的测量-探查-优化-验证工作流查找并修复 MATLAB 代码中的内存瓶颈。 |
+| `matlab-optimize-performance` | 使用基于探查的工作流优化 MATLAB 代码的性能，包括用于逐行热点分析的低开销、基于采样的探查。 |
 | `matlab-package-toolbox` | 将 MATLAB 代码打包为可安装的 .mltbx 工具箱。 |
 | `matlab-run-tests` | 运行 MATLAB 测试套件、收集代码覆盖率并配置 CI/CD 流水线。 |
 | `matlab-use-package-manager` | 使用产品内置的 MATLAB Package Manager 管理和检查 MATLAB 包。 |
@@ -117,11 +118,12 @@ Source English Markdown:
 
 ### 汽车 ([`automotive`](../../skills-catalog/automotive/))
 
-支持 Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade;
+支持 Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade;
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
 | `matlab-cosimulate-sumo-simulink` | 构建与 Eclipse&trade; SUMO 交通仿真器联合仿真的 Simulink 模型。 |
+| `matlab-fit-tire-model` | 将轮胎模型拟合到测得的力和力矩数据，并将其导出为 .tir 文件。 |
 | `matlab-import-driving-data` | 将记录的驾驶传感器数据 (GPS、摄像头、lidar、交通参与者轨迹) 导入 scenariobuilder.* 对象，并在场景构建之前同步、裁剪、偏移和规范化时间戳。 |
 | `matlab-use-ncap-protocol` | 生成 Euro NCAP 测试场景和变体，在仿真器之间转换，并计算分数。 |
 | `matlab-use-scenario-builder` | 从记录的传感器数据构建驾驶静态场景和动态场景、道路表面和 3D 资产，并导出到 RoadRunner、drivingScenario、OpenSCENARIO、OpenDRIVE、OpenCRG 或 Unreal Engine&reg;。 |
@@ -170,7 +172,7 @@ Source English Markdown:
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | 使用 Datafeed Toolbox 连接到 Bloomberg&reg;、FRED&reg;、Haver Analytics&reg; 和 LSEG&reg; Datastream 以检索金融和经济数据。 |
+| `matlab-access-datafeed` | 访问来自 Bloomberg&reg;、FRED&reg;、Haver、Datastream&trade;、NOAA 和美国政府机构的金融、经济、气候和政府数据。 |
 | `matlab-optimize-portfolio` | 构建和求解均值-方差投资组合优化问题。 |
 | `matlab-price-instrument` | 使用蒙特卡罗、FFT 或利率树对金融工具进行定价。 |
 | `matlab-use-spreadsheet-link` | 使用 Spreadsheet Link 编写 VBA 宏和工作表函数以与 Excel 交换数据。 |
@@ -312,7 +314,7 @@ Source English Markdown:
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
-| `matlab-build-industrial-hmi` | 按照 ISA-101 规范在 MATLAB 中构建工业级 SCADA/HMI 仪表板。在 matlab-build-app 可用时将序列化委托给它以生成真正的 App 设计工具应用程序 (.mlapp)，否则回退到编程式 .m 应用程序。 |
+| `matlab-build-industrial-hmi` | 遵循 ISA-101 规范在 MATLAB 中构建工业级 SCADA/HMI 仪表板。编写可供审查的 HMI 规格说明，在暂停并等待用户批准后，将获批的规格说明交付给 matlab-build-app 以生成真实的 App 设计工具应用 (.mlapp)；若 matlab-build-app 不可用，则回退为程序化的 .m 应用。 |
 | `matlab-call-nidaqmx` | 将 NI-DAQmx C 函数转换为正确的 MATLAB calldaqlib 调用。 |
 | `matlab-connect-arduino` | 通过 USB 从 MATLAB 发现、配置和连接 Arduino&reg; 开发板。 |
 | `matlab-connect-bluetooth-low-energy-device` | 从 MATLAB 发现并连接 Bluetooth Low Energy 外围设备。 |

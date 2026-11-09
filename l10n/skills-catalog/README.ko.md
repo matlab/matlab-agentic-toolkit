@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 9a163aef296e622dabdf52e8a5468351ea83d759
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # 스킬 카탈로그
@@ -56,11 +56,12 @@ UI 컴포넌트, 레이아웃, 콜백, 웹 통합을 사용하여 프로그래�
 
 ### MATLAB 외부 언어 인터페이스 ([`matlab-external-language-interfaces`](../../skills-catalog/matlab-external-language-interfaces/))
 
-MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interleaved complex API(실수부/허수부 결합형 복소수 API)로 업그레이드
+MATLAB에서 Python&reg; 라이브러리를 호출하고, Java&reg; Runtime Environment(JRE&trade;)를 구성하고, MEX 파일을 interleaved complex API(실수부/허수부 결합형 복소수 API)로 업그레이드
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
 | `matlab-call-python` | py. 인터페이스를 사용하여 MATLAB에서 Python 라이브러리를 호출합니다. |
+| `matlab-configure-java` | OpenJDK 설치, JDK 선택, 로드 상태 해석을 포함하여 Java Runtime Environment(JRE)를 구성합니다. |
 | `matlab-upgrade-mex-ic` | C, C++ 및 Fortran MEX 파일을 separate complex API(실수부/허수부 분리형 복소수 API)에서 interleaved complex API로 변환하고, SC/IC 빌드를 위한 MX_HAS_INTERLEAVED_COMPLEX 가드를 적용하며, 성능 검증을 수행합니다.  |
 
 ### MATLAB 프로그래밍 ([`matlab-programming`](../../skills-catalog/matlab-programming/))
@@ -81,7 +82,7 @@ MATLAB에서 Python&reg; 라이브러리를 호출하고, MEX 파일을 interlea
 | `matlab-instrument-opentelemetry-tracing` | 올바른 컨텍스트 전파 및 라이프사이클을 적용하여 MATLAB 함수에 OpenTelemetry 추적 스팬(tracing span)을 추가합니다. |
 | `matlab-modernize-code` | 제거되었거나 권장되지 않는 MATLAB 함수와 패턴을 현대화합니다. |
 | `matlab-optimize-memory` | 구조화된 측정-프로파일링-최적화-검증 워크플로를 사용하여 MATLAB 코드의 메모리 병목 현상을 찾아 해결합니다. |
-| `matlab-optimize-performance` | MATLAB 코드의 성능을 최적화합니다. |
+| `matlab-optimize-performance` | 프로파일 기반 워크플로를 사용하여 MATLAB 코드의 성능을 최적화합니다. 여기에는 라인별 핫스팟 분석을 위한 오버헤드가 낮은 샘플링 기반 프로파일링이 포함됩니다. |
 | `matlab-package-toolbox` | MATLAB 코드를 설치 가능한 .mltbx 툴박스로 패키징합니다. |
 | `matlab-run-tests` | MATLAB 테스트 스위트를 실행하고, 코드 커버리지를 수집하고, CI/CD 파이프라인을 구성합니다. |
 | `matlab-use-package-manager` | 제품 내 MATLAB Package Manager를 사용하여 MATLAB 패키지를 관리하고 검사합니다. |
@@ -117,11 +118,12 @@ Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade
 
 ### 자동차 ([`automotive`](../../skills-catalog/automotive/))
 
-Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; 지원
+Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; 지원
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
 | `matlab-cosimulate-sumo-simulink` | Eclipse&trade; SUMO 교통 시뮬레이터와 연동 시뮬레이션하는 Simulink 모델을 구축합니다. |
+| `matlab-fit-tire-model` | 측정된 힘 및 모멘트 데이터에 타이어 모델을 피팅하고 .tir 파일로 내보냅니다. |
 | `matlab-import-driving-data` | 기록된 주행 센서 데이터(GPS, 카메라, 라이다, 액터 추적)를 scenariobuilder.* 객체로 가져오고, 시나리오 작성 전에 타임스탬프 동기화, 자르기, 오프셋, 정규화를 수행합니다. |
 | `matlab-use-ncap-protocol` | Euro NCAP 테스트 시나리오와 변형 시나리오를 생성하고, 시뮬레이터 간 변환을 수행하고, 점수를 계산합니다. |
 | `matlab-use-scenario-builder` | 기록된 센서 데이터를 기반으로 주행 장면(scene), 시나리오, 노면(road surface), 3D 에셋을 구축하고 RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG, Unreal Engine&reg;으로 내보냅니다. |
@@ -170,7 +172,7 @@ Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Datafeed Toolbox를 사용하여 Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, LSEG&reg; Datastream에 연결하고 금융 및 경제 데이터를 가져옵니다. |
+| `matlab-access-datafeed` | Bloomberg&reg;, FRED&reg;, Haver, Datastream&trade;, NOAA 및 미국 정부 기관에서 제공하는 금융, 경제, 기후 및 정부 데이터에 액세스합니다. |
 | `matlab-optimize-portfolio` | 평균-분산 포트폴리오 최적화 문제를 정식화하고 풉니다. |
 | `matlab-price-instrument` | 몬테카를로, FFT 또는 금리 트리(interest-rate tree)를 사용하여 금융 상품 가격을 결정합니다. |
 | `matlab-use-spreadsheet-link` | Spreadsheet Link를 사용하여 Excel과 데이터를 주고받기 위한 VBA 매크로와 워크시트 함수를 작성합니다. |
@@ -312,7 +314,7 @@ Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Image Process
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
-| `matlab-build-industrial-hmi` | MATLAB에서 ISA-101 규약을 준수하는 산업용 SCADA/HMI 대시보드를 구축합니다. 사용 가능한 경우 직렬화(serialization)를 matlab-build-app에 위임하여 실제 앱 디자이너 앱(.mlapp)을 생성하고, 그렇지 않은 경우 프로그래밍 방식의 .m 앱으로 대체합니다. |
+| `matlab-build-industrial-hmi` | MATLAB에서 ISA-101 규약을 준수하는 산업용 SCADA/HMI 대시보드를 구축합니다. 검토 가능한 HMI 사양을 작성하고 사용자의 승인을 기다렸다가 승인된 사양을 matlab-build-app에 전달하여, 가능한 경우 실제 앱 디자이너 앱(.mlapp)을 생성하고, 그렇지 않은 경우 프로그래밍 방식의 .m 앱으로 대체합니다. |
 | `matlab-call-nidaqmx` | NI-DAQmx C 함수를 올바른 calldaqlib MATLAB 호출로 변환합니다. |
 | `matlab-connect-arduino` | USB를 통해 MATLAB에서 Arduino&reg; 보드를 검색하고, 구성하고, 연결합니다. |
 | `matlab-connect-bluetooth-low-energy-device` | MATLAB에서 Bluetooth Low Energy 주변 기기를 검색하고 연결합니다. |

@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 9d183a0d3b69e994d69be02b55dfda78297bb0e4
+- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
 -->
 
 # MATLAB Agentic Toolkit
@@ -107,7 +107,7 @@ shareMATLABSession()
 | [**MATLAB 核心**](skills-catalog/README.zh-cn.md#matlab-核心-matlab-core) | 创建、调试、审查和管理 MATLAB 代码及安装 |
 | [**MATLAB App 构建**](skills-catalog/README.zh-cn.md#matlab-app-构建-matlab-app-building) | 使用 UI 组件、布局、回调和 Web 集成以编程方式构建 MATLAB 应用程序 |
 | [**MATLAB 数据导入和分析**](skills-catalog/README.zh-cn.md#matlab-数据导入和分析-matlab-data-import-and-analysis) | 使用表、timetable、筛选、聚合和时间序列操作在 MATLAB 中导入、导出和分析数据 |
-| [**MATLAB 外部语言接口**](skills-catalog/README.zh-cn.md#matlab-外部语言接口-matlab-external-language-interfaces) | 从 MATLAB 调用 Python&reg; 库并将 MEX 文件升级到 interleaved complex API |
+| [**MATLAB 外部语言接口**](skills-catalog/README.zh-cn.md#matlab-外部语言接口-matlab-external-language-interfaces) | 从 MATLAB 调用 Python&reg; 库、配置 Java&reg; Runtime Environment (JRE&trade;) 并将 MEX 文件升级到 interleaved complex API |
 | [**MATLAB 编程**](skills-catalog/README.zh-cn.md#matlab-编程-matlab-programming) | 编写具有经过验证的输入的稳健 MATLAB 函数 |
 | [**MATLAB 软件开发**](skills-catalog/README.zh-cn.md#matlab-软件开发-matlab-software-development) | 编写和运行测试、现代化遗留代码、优化性能和内存、编写文档和创建工具箱、创建工程、管理包和制定构建计划 |
 
@@ -117,7 +117,7 @@ shareMATLABSession()
 |-------------|--------------------|
 | [**航空航天**](skills-catalog/README.zh-cn.md#航空航天-aerospace) | Aerospace Toolbox&trade; |
 | [**AI 和统计**](skills-catalog/README.zh-cn.md#ai-和统计-ai-and-statistics) | Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&trade;、Fixed-Point Designer&trade;、MATLAB Coder&trade;、MATLAB Compiler SDK&trade;、MATLAB Report Generator&trade;、Optimization Toolbox&trade;、Parallel Computing Toolbox&trade;、Statistics and Machine Learning Toolbox&trade;、Deep Learning Toolbox Converter for ONNX Model Format&trade;、Deep Learning Toolbox Converter for PyTorch Models&trade; 和 Deep Learning Toolbox Converter for TensorFlow Models&trade; |
-| [**汽车**](skills-catalog/README.zh-cn.md#汽车-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade; |
+| [**汽车**](skills-catalog/README.zh-cn.md#汽车-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade; |
 | [**云解决方案**](skills-catalog/README.zh-cn.md#云解决方案-cloud-solutions) | MATLAB Drive&trade; |
 | [**代码生成**](skills-catalog/README.zh-cn.md#代码生成-code-generation) | Embedded Coder、Fixed-Point Designer、GPU Coder&trade;、MATLAB Coder、MATLAB Test&trade;、Parallel Computing Toolbox 和 MATLAB Coder Support Package for PyTorch and LiteRT Models&trade; |
 | [**计算生物学**](skills-catalog/README.zh-cn.md#计算生物学-computational-biology) | SimBiology&trade; 和 Statistics and Machine Learning Toolbox |
