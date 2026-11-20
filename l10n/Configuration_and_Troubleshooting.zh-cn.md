@@ -37,7 +37,7 @@ Source English Markdown:
 |----------|----------------|
 | MCP 服务器二进制文件 | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — 下载适用于您平台的二进制文件 (例如 `matlab-mcp-server-macos-arm64`、`matlab-mcp-server-windows-x64.exe`)。 |
 | MCP 服务器工具箱 | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — 下载 `MATLABMCPServerToolbox.mltbx`。 |
-| Agentic Toolkit 安装程序包 | [Simulink Agentic Toolkit latest release](https://github.com/matlab/simulink-agentic-toolkit/releases/latest) — 下载 `agenticToolkitInstaller.mltbx`。 |
+| Agentic Toolkit 安装程序包 | [Simulink Agentic Toolkit SATK-2026.11.b release](https://github.com/matlab/simulink-agentic-toolkit/releases/SATK-2026.11.b) — 下载 `agenticToolkitInstaller.mltbx`。 |
 | MATLAB Agentic Toolkit | 从 [GitHub](https://github.com/matlab/matlab-agentic-toolkit) 克隆或下载。 |
 | Simulink Agentic Toolkit | 从 [GitHub](https://github.com/matlab/simulink-agentic-toolkit) 克隆或下载。仅在安装 Simulink Agentic Toolkit 时才需要。|
 

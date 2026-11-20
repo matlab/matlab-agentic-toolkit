@@ -30,7 +30,7 @@ To install MATLAB Agentic Toolkit in an offline or air-gapped environment, first
 |----------|----------------|
 | MCP server binary | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download the binary for your platform (e.g., `matlab-mcp-server-macos-arm64`, `matlab-mcp-server-windows-x64.exe`). |
 | MCP server toolbox | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — download `MATLABMCPServerToolbox.mltbx`. |
-| Agentic toolkit installer package | [Simulink Agentic Toolkit latest release](https://github.com/matlab/simulink-agentic-toolkit/releases/latest) — download `agenticToolkitInstaller.mltbx`. |
+| Agentic toolkit installer package | [Simulink Agentic Toolkit SATK-2026.11.b release](https://github.com/matlab/simulink-agentic-toolkit/releases/SATK-2026.11.b) — download `agenticToolkitInstaller.mltbx`. |
 | MATLAB Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/matlab-agentic-toolkit). |
 | Simulink Agentic Toolkit | Clone or download from [GitHub](https://github.com/matlab/simulink-agentic-toolkit). Required only when installing Simulink Agentic Toolkit.|
 

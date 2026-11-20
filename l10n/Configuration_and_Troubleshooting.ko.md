@@ -37,7 +37,7 @@ Source English Markdown:
 |----------|----------------|
 | MCP Server 바이너리 | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — 사용 중인 플랫폼에 맞는 바이너리를 다운로드하십시오 (예: `matlab-mcp-server-macos-arm64`, `matlab-mcp-server-windows-x64.exe`). |
 | MCP Server Toolbox | [MATLAB MCP Server latest release](https://github.com/matlab/matlab-mcp-server/releases/latest) — `MATLABMCPServerToolbox.mltbx`를 다운로드하십시오. |
-| Agentic Toolkit 인스톨러 패키지 | [Simulink Agentic Toolkit latest release](https://github.com/matlab/simulink-agentic-toolkit/releases/latest) — `agenticToolkitInstaller.mltbx`를 다운로드하십시오. |
+| Agentic Toolkit 인스톨러 패키지 | [Simulink Agentic Toolkit SATK-2026.11.b release](https://github.com/matlab/simulink-agentic-toolkit/releases/SATK-2026.11.b) — `agenticToolkitInstaller.mltbx`를 다운로드하십시오. |
 | MATLAB Agentic Toolkit | [GitHub](https://github.com/matlab/matlab-agentic-toolkit)에서 복제하거나 다운로드하십시오. |
 | Simulink Agentic Toolkit | [GitHub](https://github.com/matlab/simulink-agentic-toolkit)에서 복제하거나 다운로드하십시오. Simulink Agentic Toolkit을 설치할 때만 필요합니다.|
 

@@ -57,7 +57,7 @@ MATLAB&reg; Agentic Toolkit 允许您通过为 AI 智能体提供高效使用 MA
 
 要在 MATLAB 中安装该工具包，请按照以下步骤操作。
 
-1. 要下载 Agentic Toolkit 安装程序包，请点击 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx)。
+1. 要下载 Agentic Toolkit 安装程序包，请点击 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/download/SATK-2026.11.b/agenticToolkitInstaller.mltbx)。
 2. 使用 MATLAB 打开下载的文件以安装安装程序附加功能。
 3. 在 MATLAB 中运行以下命令。
 
@@ -137,7 +137,7 @@ shareMATLABSession()
 ---
 ## 更新 MATLAB Agentic Toolkit
 
-要更新工具包，请点击 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx) 下载最新的安装程序附加功能。使用 MATLAB 打开下载的文件，然后在 MATLAB 中运行以下命令。
+要更新工具包，请点击 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/download/SATK-2026.11.b/agenticToolkitInstaller.mltbx) 下载安装程序附加功能。使用 MATLAB 打开下载的文件，然后在 MATLAB 中运行以下命令。
 
 ```matlab
 setupAgenticToolkit("update")

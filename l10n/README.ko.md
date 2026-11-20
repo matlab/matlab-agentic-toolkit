@@ -57,7 +57,7 @@ MATLAB에서 직접 MATLAB Agentic Toolkit을 설치할 수도 있습니다.
 
 MATLAB에서 툴킷을 설치하려면 다음 단계를 따르십시오.
 
-1. Agentic Toolkit 인스톨러 패키지를 다운로드하려면 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx)를 클릭하십시오.
+1. Agentic Toolkit 인스톨러 패키지를 다운로드하려면 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/download/SATK-2026.11.b/agenticToolkitInstaller.mltbx)를 클릭하십시오.
 2. 다운로드한 파일을 MATLAB에서 열어 인스톨러 애드온을 설치하십시오.
 3. MATLAB에서 다음 명령을 실행하십시오.
 
@@ -137,7 +137,7 @@ MATLAB Agentic Toolkit을 설치한 후에는 에이전트가 MathWorks&reg;가 
 ---
 ## MATLAB Agentic Toolkit 업데이트하기
 
-툴킷을 업데이트하려면 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/latest/download/agenticToolkitInstaller.mltbx)를 클릭하여 최신 인스톨러 애드온을 다운로드하십시오. 다운로드한 파일을 MATLAB에서 열고 MATLAB에서 다음 명령을 실행하십시오.
+툴킷을 업데이트하려면 [agenticToolkitInstaller.mltbx](https://github.com/matlab/simulink-agentic-toolkit/releases/download/SATK-2026.11.b/agenticToolkitInstaller.mltbx)를 클릭하여 인스톨러 애드온을 다운로드하십시오. 다운로드한 파일을 MATLAB에서 열고 MATLAB에서 다음 명령을 실행하십시오.
 
 ```matlab
 setupAgenticToolkit("update")
