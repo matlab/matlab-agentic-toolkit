@@ -1,0 +1,17 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "2.0"
+human-description: Simulate RoadRunner scenarios programmatically via MATLAB and Simulink co-simulation.
+matlab-release: ">=R2024a"
+required-tools:
+  - evaluate_matlab_code
+  - check_matlab_code
+required-skills: 
+  - roadrunner-manage-project
+required-products:
+  - Automated Driving Toolbox
+  - RoadRunner Scenario
+  - RoadRunner
+toolkit: matlab-agentic-toolkit

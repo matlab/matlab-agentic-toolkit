@@ -1,12 +1,12 @@
-# Scripts — implementation rules
+# Use Built-in Functions and Treat Templates as Opaque
 
-These rules govern any code in `scripts/` and any inline MATLAB the orchestrator generates that calls the same APIs.
+Follow these rules in every helper in `scripts/` and in any inline MATLAB you write that calls the same APIs.
 
 ## Use built-in functions, not custom code
 
 Before writing any computation, check whether a built-in function or method already does what you need. The following must come from MATLAB:
 
-- `kfoldLoss` / `loss` — never manually compute error rates from predictions
+- `kfoldLoss` / `loss` — never manually compute error rates from predictions. Two helpers are the only exceptions, each for a case those functions cannot score: `score_holdout_test` when `loss` returns NaN (a boosted ensemble that kept no learner), and `aggregate_nested_cv_loss` for out-of-fold predictions from separately optimized models. Both weight observations exactly as `loss` does.
 - `testckfold` / `testcholdout` — never implement manual paired t-tests or McNemar's test
 - `predict` — never reimplement prediction logic
 - `binofit` — never manually compute binomial confidence intervals
@@ -32,7 +32,7 @@ mdl = fit(templates{m}, X, Y);
 
 ## Sparse data
 
-- Do NOT call `var` on sparse matrices — it densifies the matrix and can exhaust memory. Use `scripts/find_zero_variance_columns.m` (sparse-safe) instead.
+- Do NOT call `var` on sparse matrices — it densifies the matrix and can exhaust memory. Use `scripts/helpers/find_zero_variance_columns.m` (sparse-safe) instead.
 
 ## Training-time rules
 
@@ -44,6 +44,8 @@ mdl = fit(templates{m}, X, Y);
 
 - Use plain `figure;`. Do NOT pass `'Position'` — let MATLAB use its default placement.
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

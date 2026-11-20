@@ -1,48 +1,75 @@
-function mdl = retrain_with_hpo(modelDef, X, Y, useUniformPrior)
+function mdl = retrain_with_hpo(modelDef, X, Y, useUniformPrior, options)
 % RETRAIN_WITH_HPO  Retrain a modelDef with single-shot HPO on X, Y.
 %
 %   MDL = RETRAIN_WITH_HPO(MODELDEF, X, Y, USEUNIFORMPRIOR) calls the
 %   fitc* function baked into MODELDEF.fnName with
-%   'OptimizeHyperparameters','auto' and returns a deployable trained
-%   model. This is the single-shot HPO used by workflow-script export —
-%   the nested-CV design in the skill's Step 11 does not produce a
-%   single deployable set of hyperparameters, so the exported workflow
-%   re-runs HPO on the full training set instead. Users should expect
-%   the estimated accuracy from the skill run to be a slight
-%   overestimate for this configuration.
+%   'OptimizeHyperparameters' and returns a deployable trained model. This
+%   is the single-shot HPO used by workflow-script export and by
+%   save_selected_models for models optimized on the CV path — the
+%   nested-CV design in the skill's Step 11 does not produce a single
+%   deployable set of hyperparameters, so HPO is re-run on the full
+%   training set instead. Users should expect the estimated accuracy from
+%   the skill run to be a slight overestimate for this configuration.
 %
-%   For ECOC models (fnName == 'fitcecoc'), the 'Coding' argument is
-%   omitted so the optimizer searches over coding designs. The inner
-%   learner template is passed via 'Learners'.
+%   What is searched follows references/hpo.md:
+%     - ECOC (fitcecoc): 'auto' with the model's own inner learner as
+%       'Learners'; 'Coding' is omitted so the coding design is searched.
+%     - Ensembles (fitcensemble): 'auto' with the model's own inner learner
+%       as 'Learners' (it keeps, e.g., the trees' MaxNumSplits); Method,
+%       NumLearningCycles and LearnRate are searched, so they are not passed.
+%     - Quadratic discriminants (fitcdiscr with a quadratic DiscrimType):
+%       {'DiscrimType','Gamma'}. 'auto' searches Delta, which a quadratic
+%       discriminant does not have, and every evaluation fails.
+%     - Everything else: 'auto' with the model's own settings.
+%
+%   MDL = RETRAIN_WITH_HPO(..., 'MaxObjectiveEvaluations', N) limits the
+%   search (default 30, the bayesopt default).
 
     arguments
         modelDef (1,1) struct
         X
         Y
         useUniformPrior (1,1) logical = false
+        options.MaxObjectiveEvaluations (1,1) double {mustBePositive, mustBeInteger} = 30
     end
 
     priorNV = prior_nv(useUniformPrior);
-    hpoNV = {'OptimizeHyperparameters', 'auto', ...
-             'HyperparameterOptimizationOptions', ...
-             struct('ShowPlots', false, 'Verbose', 0)};
+    hpoOpts = struct('ShowPlots', false, 'Verbose', 1, ...
+        'MaxObjectiveEvaluations', options.MaxObjectiveEvaluations);
+    autoNV = {'OptimizeHyperparameters', 'auto', ...
+              'HyperparameterOptimizationOptions', hpoOpts};
+
+    fprintf(1, 'HPO retrain of %s started (%d evaluations)\n', ...
+        modelDef.name, options.MaxObjectiveEvaluations);
+    t0 = tic;
 
     switch modelDef.fnName
         case 'fitcecoc'
-            innerFn = modelDef.innerLearner_fnName;
-            innerArgs = struct_to_nv(modelDef.innerLearner_hyperparameters);
-            if template_needs_type(innerFn)
-                innerArgs = [innerArgs, {'Type','classification'}];
-            end
-            innerTmpl = feval(innerFn, innerArgs{:});
-            mdl = fitcecoc(X, Y, 'Learners', innerTmpl, ...
-                priorNV{:}, hpoNV{:});
+            mdl = fitcecoc(X, Y, 'Learners', model_inner_template(modelDef), ...
+                priorNV{:}, autoNV{:});
         case 'fitcensemble'
-            argsNV = struct_to_nv(modelDef.hyperparameters);
-            mdl = fitcensemble(X, Y, argsNV{:}, priorNV{:}, hpoNV{:});
+            mdl = fitcensemble(X, Y, 'Learners', model_inner_template(modelDef), ...
+                priorNV{:}, autoNV{:});
+        case 'fitcdiscr'
+            args = modelDef.hyperparameters;
+            if isfield(args, 'DiscrimType') && contains(lower(args.DiscrimType), 'quadratic')
+                args = rmfield(args, 'DiscrimType');
+                argsNV = struct_to_nv(args);
+                mdl = fitcdiscr(X, Y, argsNV{:}, priorNV{:}, ...
+                    'OptimizeHyperparameters', {'DiscrimType', 'Gamma'}, ...
+                    'HyperparameterOptimizationOptions', hpoOpts);
+            else
+                argsNV = struct_to_nv(args);
+                mdl = fitcdiscr(X, Y, argsNV{:}, priorNV{:}, autoNV{:});
+            end
         otherwise
             argsNV = struct_to_nv(modelDef.hyperparameters);
-            mdl = feval(modelDef.fnName, X, Y, argsNV{:}, priorNV{:}, hpoNV{:});
+            mdl = feval(modelDef.fnName, X, Y, argsNV{:}, priorNV{:}, autoNV{:});
+    end
+    fprintf(1, 'HPO retrain of %s finished in %.1f s\n', modelDef.name, toc(t0));
+
+    if nargout == 0
+        clear mdl
     end
 end
 
@@ -63,12 +90,6 @@ function nv = struct_to_nv(s)
         nv{2*k-1} = fns{k};
         nv{2*k}   = s.(fns{k});
     end
-end
-
-% -------------------------------------------------------------------------
-function tf = template_needs_type(templateFn)
-    tf = ismember(templateFn, {'templateTree','templateSVM','templateLinear', ...
-        'templateKernel','templateGAM'});
 end
 
 % Copyright 2026 The MathWorks, Inc.

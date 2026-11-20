@@ -33,6 +33,10 @@ function mdl = retrain_with_resume(modelDef, X, Y, extraCycles, useUniformPrior)
     priorNV = prior_nv(useUniformPrior);
     argsNV  = struct_to_nv(args);
 
+    fprintf(1, 'Retraining %s with %d learning cycles\n', ...
+        modelDef.name, args.NumLearningCycles);
+    t0 = tic;
+
     if ~isempty(modelDef.innerLearner_fnName)
         innerNV = struct_to_nv(modelDef.innerLearner_hyperparameters);
         if template_needs_type(modelDef.innerLearner_fnName)
@@ -42,6 +46,11 @@ function mdl = retrain_with_resume(modelDef, X, Y, extraCycles, useUniformPrior)
         mdl = fitcensemble(X, Y, argsNV{:}, 'Learners', innerTmpl, priorNV{:});
     else
         mdl = fitcensemble(X, Y, argsNV{:}, priorNV{:});
+    end
+    fprintf(1, 'Retrained %s in %.1f s\n', modelDef.name, toc(t0));
+
+    if nargout == 0
+        clear mdl
     end
 end
 

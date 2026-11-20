@@ -15,6 +15,10 @@ function r = resolve_recipe(r, flags)
 
     r.args              = resolve_struct(r.args, flags);
     r.innerLearner_args = resolve_struct(r.innerLearner_args, flags);
+
+    if nargout == 0
+        clear r
+    end
 end
 
 function s = resolve_struct(s, flags)

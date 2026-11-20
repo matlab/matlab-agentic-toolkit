@@ -1,132 +1,131 @@
 ---
 name: matlab-optimize-portfolio
-description: Help users formulate and solve portfolio optimization problems using Financial Toolbox's Portfolio object. Covers mean-variance (Markowitz), maximum Sharpe ratio (tangency), and efficient frontier workflows. Use when users ask about portfolio optimization, Markowitz, efficient frontier, Sharpe ratio, or attempt to use generic solvers (quadprog, fmincon, ga, problem-based optimize) for portfolio problems.
+description: >
+  Formulate and solve portfolio optimization problems in MATLAB. Routes to the
+  Financial Toolbox Portfolio object for mean-variance (Markowitz), minimum-
+  variance, target-return, maximum Sharpe ratio, and efficient frontier
+  problems with bounds, budget, group, turnover, tracking-error, or
+  cardinality constraints; or to the problem-based framework
+  (optimproblem/optimvar/solve) when constraints exceed what Portfolio can
+  express: integer round lots, whole shares, per-lot or fixed commissions,
+  minimum trade sizes, semi-integer positions, wash-sale rules, realized
+  capital-gains caps, tax-loss harvesting, asymmetric or bucketed transaction-
+  cost caps, or a custom efficient frontier over such constraints. Use when
+  users ask about portfolio optimization, when they attempt quadprog, fmincon,
+  intlinprog, or ga for a portfolio problem, or when code rounds Portfolio
+  weights to whole shares or lots.
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.0"
+  version: "2.0"
 ---
 
-# Portfolio Optimization with Financial Toolbox
+# Portfolio Optimization in MATLAB
 
-You are helping a user formulate and solve a portfolio optimization problem using MATLAB's Financial Toolbox `Portfolio` object.
+Formulate and solve portfolio optimization problems in MATLAB. Route to the
+correct framework — the Financial Toolbox `Portfolio` object or the
+problem-based framework (`optimproblem`/`optimvar`/`solve`) — based on the
+constraints in the user's request, then follow that framework's reference for
+implementation details.
 
 ## When to Use
 
 - User wants to optimize a portfolio (minimize variance, maximize Sharpe ratio, trace efficient frontier)
-- User asks about Markowitz, mean-variance, minimum-variance, or tangency portfolios
-- User asks about the efficient frontier or target-return portfolios
-- User is trying to use fmincon, quadprog, ga, or problem-based optimize for portfolio optimization (redirect to Portfolio object)
-- User asks how to set up constraints for portfolio optimization (bounds, groups, turnover, one-way turnover, cardinality, semicontinuous)
-- User asks about mean-variance with cardinality or semi-continuous constraints
-- User gets errors from Portfolio, estimateMaxSharpeRatio, estimateFrontier, or related methods
+- User asks about Markowitz, mean-variance, minimum-variance, target-return, or tangency portfolios
+- User asks how to set up portfolio constraints (bounds, groups, turnover, one-way turnover, tracking error, cardinality, semicontinuous)
+- User mentions **integer lots**, **round lots**, **whole shares**, or a **per-lot** / **per-trade** / **fixed** commission
+- User mentions a **minimum trade size**, **semi-integer** position, or an either/or bound (`|w-w0| >= δ` OR `w = w0`)
+- User mentions **wash sale**, **realized capital gains**, **tax-loss harvesting**, or **tax-aware rebalancing**
+- User asks for an efficient frontier over constraints such as asymmetric or class-varying transaction-cost caps
+- User is trying to use `quadprog`, `fmincon`, `intlinprog`, `ga`, or problem-based `solve` for a portfolio problem
+- Visible code applies `round`/`floor`/`ceil` to `Portfolio` output to obtain whole shares or lots
+- User gets errors from `Portfolio`, `estimateMaxSharpeRatio`, `estimateFrontier`, or related methods
 
 ## When NOT to Use
 
-- User has a general optimization problem (QP, NLP, MILP) that is NOT financial asset allocation (e.g., filter design, resource allocation, mixture proportions) — use `matlab-solve-optimization`
+- General optimization problem (QP, NLP, MILP) that is NOT financial asset allocation (e.g., filter design, resource allocation, mixture proportions) — use `matlab-solve-optimization`
 - User needs to retrieve market data from Bloomberg, FRED, or Haver Analytics — use `matlab-access-datafeed`
 - User wants to predict returns or portfolio weights using neural networks or ML — use `matlab-train-network`
 - User only wants to clean, explore, or summarize a returns table without optimization — use `matlab-analyze-data`
 - User wants Experiment Manager parameter sweeps (not portfolio frontier) — use `matlab-use-experiment-manager`
-- User wants CVaR, MAD, or other non-mean-variance risk measures — use `PortfolioCVaR` or `PortfolioMAD` classes (not covered by this skill)
+- Covariance estimation from historical returns (`cov`, `covarianceShrinkage`, `covarianceDenoising`, `nearcorr`)
+- Fixed-income analytics — yield curves, key-rate durations, cash-flow modeling
+- Scenario-based or stochastic optimization — multi-stage, chance constraints
+- CVaR, MAD, or other non-variance risk measures (`PortfolioCVaR`, `PortfolioMAD`), custom objectives (`estimateCustomObjectivePortfolio`), or custom frontiers over non-variance risk — **not covered by this skill.** Tell the user so, then proceed without this skill's guidance.
 
-## Key Principle
+## Framework Routing
 
-**Always use the `Portfolio` class** — never let users manually code the optimization with `fmincon` or `quadprog`. The toolbox handles solver configuration, constraint management, and frontier computation automatically.
+Identify the framework from the user's constraints and read the corresponding reference:
 
-If the user is already attempting a manual solver approach, acknowledge their work, then show how the Portfolio object achieves the same result with less code and fewer pitfalls.
+| Framework | Reference | When to Use |
+|-----------|-----------|-------------|
+| `Portfolio` object | `references/portfolio-object.md` | Mean-variance, max Sharpe, or efficient frontier where **every** constraint is one the `Portfolio` object accepts |
+| Problem-based | `references/problem-based.md` | **Any** constraint the `Portfolio` object cannot express, alone or mixed with constraints it accepts |
 
-## Step 1: Identify the Formulation
+### Routing Rules
 
-Determine which problem the user is trying to solve:
+**Read exactly one reference (and any relevant sub-references).** Apply the rules in order; the first match wins:
 
-| User wants to... | Formulation | Reference |
-|------------------|-------------|-----------|
-| Minimize portfolio risk (no return target) | Mean-variance (min-variance) | [formulation-mean-variance.md](references/formulation-mean-variance.md) |
-| Minimize risk for a given target return | Mean-variance (target-return) | [formulation-mean-variance.md](references/formulation-mean-variance.md) |
-| Trace the efficient frontier | Mean-variance (frontier) | [formulation-mean-variance.md](references/formulation-mean-variance.md) |
-| Maximize risk-adjusted return (Sharpe ratio) | Max Sharpe / tangency | [formulation-max-sharpe.md](references/formulation-max-sharpe.md) |
+1. **Risk measure is not variance** (CVaR, MAD, downside deviation, custom risk) -> say this case is not covered by this skill and read neither reference
+2. **Any constraint the `Portfolio` object cannot express** -> `references/problem-based.md`. One such constraint is enough, whatever else is in the problem:
+   - Integer lots or whole shares
+   - Fixed or per-lot commissions
+   - Minimum trade size on the change `w-w0`
+   - Semi-integer positions
+   - Wash-sale rules, realized capital-gains caps, tax-loss harvesting
+   - A cap on total, asymmetric, or bucketed transaction cost
+3. **Visible code rounds `Portfolio` output** (`round`/`floor`/`ceil` on weights to get shares or lots) -> `references/problem-based.md`
+4. **User names a `Portfolio` API** (`Portfolio`, `estimateFrontier*`, `estimateMaxSharpeRatio`, `setBounds`, ...) -> `references/portfolio-object.md`
+5. **User writes `quadprog`/`fmincon`/`optimproblem` for a problem the `Portfolio` object can express** -> `references/portfolio-object.md`, and show the `Portfolio` equivalent
+6. **Ambiguous** (e.g., "optimize my portfolio") -> `references/portfolio-object.md`
 
-Consult the relevant formulation file for problem-specific guidance and methods.
+**Lookalike constraints** — check these before applying rule 2:
 
-## Step 2: Determine What Data the User Has
+| Constraint | Framework |
+|------------|-----------|
+| Semi-continuous on the level: `w = 0` OR `L <= w <= U` | `Portfolio` (`setBounds(..., 'BoundType', 'Conditional')`) |
+| Minimum trade on the change: `\|w-w0\| >= δ` OR `w = w0` | Problem-based |
+| Proportional costs in net return | `Portfolio` (`setCosts`) |
+| Proportional costs alone, not as part of net return | Problem-based |
+| Cap on total cost, or a fixed fee per trade or lot | Problem-based |
+| Cardinality on its own | `Portfolio` (`setMinMaxNumAssets`) |
 
-Ask (if not clear) whether they have:
-- A matrix of historical asset returns (or prices that need converting)
-- Pre-computed mean returns (mu) and covariance matrix (Sigma)
-- A risk-free rate (relevant for Sharpe ratio; defaults to 0 if unspecified)
+## Shared Conventions
 
-## Step 3: Create the Portfolio Object
+Both frameworks share these conventions:
 
-See [reference-core.md](references/reference-core.md) for all creation patterns. The most common:
+- Validate MATLAB code with `check_matlab_code` and run it with `evaluate_matlab_code` (or `run_matlab_file` for a saved script) before returning it
+- Plot efficient frontiers with risk on the x-axis and return on the y-axis
+- Never `round`/`floor`/`ceil` continuous weights to obtain shares or lots
+- State the decision-variable unit (weights, dollars, or shares) and use it consistently
+- Always use `datetime` for dates (not `datenum`)
+- Do not reuse `p` for both the `Portfolio` object and a price vector
 
-**From return statistics:**
-```matlab
-p = Portfolio('AssetMean', mu, 'AssetCovar', Sigma);
-```
+## Common Mistakes (Cross-Framework)
 
-**From historical returns:**
-```matlab
-p = Portfolio;
-p = setAssetMoments(p, mean(returns)', cov(returns));
-```
-
-## Step 4: Set Constraints
-
-Always set constraints. At minimum, use default constraints (fully invested, long-only):
-```matlab
-p = setDefaultConstraints(p);
-```
-
-For other constraint types (bounds, groups, turnover, one-way turnover, cardinality), see [reference-core.md](references/reference-core.md).
-
-## Step 5: Solve
-
-Use the method appropriate to the formulation (see the formulation file). Common patterns:
-```matlab
-wMinVar = estimateFrontierLimits(p, 'Min');       % minimum-variance
-wTarget = estimateFrontierByReturn(p, targetRet); % target-return
-wSharpe = estimateMaxSharpeRatio(p);              % max Sharpe ratio
-wFrontier = estimateFrontier(p, 20);              % efficient frontier
-```
-
-## Step 6: Analyze and Visualize
-
-Use built-in methods for portfolio statistics — never compute them manually:
-```matlab
-portRisk = estimatePortRisk(p, w);
-portRet  = estimatePortReturn(p, w);
-[risk, ret] = estimatePortMoments(p, w);
-```
-
-Always use `plotFrontier` as the primary frontier visualization — add custom annotations (special portfolios, CAL line) with `hold on`/`hold off` afterward:
-```matlab
-wFrontier = estimateFrontier(p, 20);
-plotFrontier(p, wFrontier);
-hold on
-[risk, ret] = estimatePortMoments(p, wSpecial);
-plot(risk, ret, 'r*', 'MarkerSize', 12);
-hold off
-```
-
-## Common Pitfalls
-
-1. **Manual solver usage** — quadprog/fmincon for portfolio problems is error-prone; Portfolio handles it.
-2. **Missing constraints** — A Portfolio without constraints is underdetermined.
-3. **Redundant solves** — Pass weights to `plotFrontier`, not a number of portfolios, if you already solved.
-4. **Manual risk/return formulas** — Use `estimatePortRisk`, `estimatePortReturn`, `estimatePortMoments`.
-5. **Cardinality/semicontinuous constraints** — When calling `estimateMaxSharpeRatio`, specify `'Method','iterative'` (MATLAB auto-selects with a warning if omitted, but explicit is cleaner). Frontier methods (`estimateFrontier`, `estimateFrontierLimits`, `estimateFrontierByReturn`) auto-detect these constraints and select the mixed-integer solver internally — do NOT pass `'Method','iterative'` to them.
-
-## Tone
-
-Be direct and practical. Show working MATLAB code. If the user provides data, use their actual data. If not, use a small illustrative example so they can see the pattern and adapt.
+| Mistake | Correct |
+|---------|---------|
+| Hand-coded `quadprog`/`fmincon` for a problem the `Portfolio` object can express | Use the `Portfolio` object — see `references/portfolio-object.md` |
+| Forcing integer lots or fixed commissions into `Portfolio` with workarounds | Formulate in `optimproblem`/`optimvar` — see `references/problem-based.md` |
+| Continuous solve followed by `round` to get lots | Formulate an integer program with `optimvar(..., 'Type', 'integer')` — see `references/problem-based.md` |
+| `abs()` on a signed decision variable | Linearize with auxiliary variables (magnitude aux or buy/sell split) — see `references/problem-based.md` |
+| Assuming `setCosts` can cap total transaction cost | `setCosts` models proportional costs only; a cost cap needs `references/problem-based.md` |
 
 ## Reference Materials
 
-- [reference-core.md](references/reference-core.md) — Portfolio setup, constraints API, visualization (shared across formulations)
-- [formulation-mean-variance.md](references/formulation-mean-variance.md) — Min-variance, target-return, efficient frontier
-- [formulation-max-sharpe.md](references/formulation-max-sharpe.md) — Max Sharpe ratio / tangency portfolio
-- [examples.md](references/examples.md) — Complete runnable examples for all formulations
+- `references/portfolio-object.md` — `Portfolio` object workflow: formulation choice, creation, constraints, solving, analysis, visualization
+  - `references/portfolio-object/reference-core.md` — Portfolio setup, constraints API, visualization
+  - `references/portfolio-object/formulation-mean-variance.md` — Min-variance, target-return, efficient frontier
+  - `references/portfolio-object/formulation-max-sharpe.md` — Max Sharpe ratio / tangency portfolio
+  - `references/portfolio-object/examples.md` — Complete runnable examples for all formulations
+- `references/problem-based.md` — Problem-based workflow for custom constraints: formulate, dispatch, validate
+  - `references/problem-based/mip-recognition.md` — MIP class recognition, MIP anti-patterns
+  - `references/problem-based/trade-aux-variables.md` — Trade-magnitude aux vars, buy/sell aux split
+  - `references/problem-based/disjunctive-big-m.md` — Min-trade and semi-integer big-M disjunctions
+  - `references/problem-based/tax-aware-constraints.md` — Wash-sale rules, realized cap-gains caps
+  - `references/problem-based/problem-based-framework.md` — Problem-based default, `fcn2optimexpr`, `solve` dispatch, solver options
+  - `references/problem-based/problem-data-hygiene.md` — Decision-variable units, rescaling, coefficient-range checks
+  - `references/problem-based/custom-frontier.md` — Endpoint problems, inequality target sweep, frontier plot convention
 
 ----
 

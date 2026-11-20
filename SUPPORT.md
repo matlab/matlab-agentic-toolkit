@@ -8,7 +8,7 @@ For MATLAB&reg; MCP Server issues, see the [MATLAB MCP Server](https://github.co
 
 ## Before You File an Issue
 
-- Check the [Getting Started](https://github.com/matlab/matlab-agentic-toolkit/blob/main/GETTING_STARTED.md) guide for setup and usage instructions.
+- Check the [Get Started with MATLAB Agentic Toolkit](https://github.com/matlab/matlab-agentic-toolkit#get-started-with-matlab-agentic-toolkit) guide for setup and usage instructions.
 - Search [existing issues](https://github.com/matlab/matlab-agentic-toolkit/issues) to see if your question or bug has already been reported.
 
 ----

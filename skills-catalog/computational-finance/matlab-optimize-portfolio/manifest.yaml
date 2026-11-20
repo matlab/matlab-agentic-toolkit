@@ -2,13 +2,16 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
-human-description: Formulate and solve mean-variance portfolio optimization problems.
+version: "2.0"
+human-description: Optimize portfolios with the Portfolio object, or the problem-based framework for custom constraints.
 matlab-release: ">=R2021a"
 toolkit: matlab-agentic-toolkit
 required-products:
   - Financial Toolbox
-optional-products: []
+  - Optimization Toolbox           # required by Financial Toolbox; problem-based path uses it directly
+  - Statistics and Machine Learning Toolbox   # required by Financial Toolbox
+optional-products:
+  - Global Optimization Toolbox    # MIQP/MINLP dispatched to ga
 required-tools:
   - evaluate_matlab_code
   - check_matlab_code

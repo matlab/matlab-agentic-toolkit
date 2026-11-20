@@ -99,7 +99,7 @@ Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Co
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-analyze-reliability` | Fit life distributions and accelerated life models for reliability analysis. |
-| `matlab-classify-tabular-data` | Classify tabular data by comparing candidate models and identifying the statistically equivalent top tier. |
+| `matlab-classify-tabular-data` | Compare classifiers on tabular data and identify the statistically equivalent top tier. |
 | `matlab-deploy-embedded-ai` | Deploy AI models to embedded hardware using MATLAB and Simulink. |
 | `matlab-engineer-tabular-features` | Engineer and select the best features for single-response tabular classification or regression in MATLAB. |
 | `matlab-fit-curve` | Fit curves and surfaces interactively using the Curve Fitter app. |
@@ -111,7 +111,7 @@ Supports Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Co
 
 ### Automotive ([`automotive`](./automotive/))
 
-Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
+Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Extended Tire Features for Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, and Scenario Builder for Automated Driving Toolbox&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -119,15 +119,11 @@ Supports Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadR
 | `matlab-fit-tire-model` | Fit a tire model to measured force and moment data and export it to a .tir file. |
 | `matlab-import-driving-data` | Import recorded driving sensor data (GPS, camera, lidar, actor tracks) into scenariobuilder.* objects and synchronize, crop, offset, and normalize timestamps before scenario building. |
 | `matlab-use-ncap-protocol` | Generate Euro NCAP test scenarios and variants, translate between simulators, and compute scores. |
-| `matlab-use-scenario-builder` | Build driving scenes, scenarios, road surfaces, and 3D assets from recorded sensor data and export to RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG, or Unreal Engine&reg;. |
-| `roadrunner-asset-mapping` | Generate RoadRunner asset path lookup tables for map format conversions in MATLAB. |
-| `roadrunner-build-scenario-from-osc` | Interpret an OpenSCENARIO 1.x file and recreate the scenario programmatically in RoadRunner. |
-| `roadrunner-convert-lanelet2-to-rrhd` | Convert Lanelet2 maps (.osm) to RoadRunner HD Map (.rrhd) format using MATLAB. |
-| `roadrunner-core` | Connect to RoadRunner from MATLAB and manage project, scene, and scenario lifecycle. |
-| `roadrunner-import-scene` | Connect to RoadRunner and import HD Map or OpenDRIVE files into a new scene using MATLAB. |
-| `roadrunner-rrhd-authoring` | Build RoadRunner HD Map entities in MATLAB — lanes, boundaries, markings, junctions, signs, signals, barriers, parking. |
-| `roadrunner-scenario-authoring` | Programmatically create RoadRunner driving scenarios from MATLAB. |
-| `roadrunner-scenario-simulating` | Simulate RoadRunner scenarios programmatically via MATLAB and Simulink co-simulation. |
+| `matlab-use-scenario-builder` | Build driving scenes, scenarios, road surfaces, and 3D assets from recorded sensor data and export to RoadRunner, drivingScenario, OpenSCENARIO&reg;, OpenDRIVE&reg;, OpenCRG&reg;, or Unreal Engine&reg;. |
+| `roadrunner-author-scenario` | Programmatically create RoadRunner driving scenarios from MATLAB, from a description or an OpenSCENARIO 1.x file. |
+| `roadrunner-build-rrhd-map` | Author RoadRunner HD Maps, convert Lanelet2 maps, and import them into RoadRunner. |
+| `roadrunner-manage-project` | Connect to RoadRunner from MATLAB and manage project, scene, and scenario lifecycle. |
+| `roadrunner-simulate-scenario` | Simulate RoadRunner scenarios programmatically via MATLAB and Simulink co-simulation. |
 
 ### Cloud Solutions ([`cloud-solutions`](./cloud-solutions/))
 
@@ -161,13 +157,14 @@ Supports SimBiology&trade; and Statistics and Machine Learning Toolbox
 
 ### Computational Finance ([`computational-finance`](./computational-finance/))
 
-Supports Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox&trade;, and Spreadsheet Link&trade;
+Supports Datafeed Toolbox&trade;, Econometrics Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox&trade;, and Spreadsheet Link&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-access-datafeed` | Access financial, economic, climate, and government data from Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, LSEG&reg; Datastream&trade;, National Oceanic and Atmospheric Administration, and US agencies. |
-| `matlab-optimize-portfolio` | Formulate and solve mean-variance portfolio optimization problems. |
+| `matlab-optimize-portfolio` | Optimize portfolios with the Portfolio object, or the problem-based framework for custom constraints. |
 | `matlab-price-instrument` | Price financial instruments using Monte Carlo, FFT, or interest-rate trees. |
+| `matlab-specify-ssm` | Convert state-space equations from an image or text into an Econometrics Toolbox ssm object. |
 | `matlab-use-spreadsheet-link` | Write VBA macros and worksheet functions for exchanging data with Excel using Spreadsheet Link. |
 
 ### Control Systems ([`control-systems`](./control-systems/))
@@ -221,12 +218,13 @@ Supports Parallel Computing Toolbox and MATLAB Parallel Server&trade;
 
 ### Radar ([`radar`](./radar/))
 
-Supports Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Radar Toolbox&trade;, Sensor Fusion and Tracking Toolbox, and Signal Processing Toolbox
+Supports Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Radar Toolbox&trade;, Sensor Fusion and Tracking Toolbox, Signal Processing Toolbox, and 3D Scenarios
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Design, select, and analyze radar and sonar waveforms using the Phased Array System Toolbox. |
 | `matlab-design-radar` | Design, configure, and analyze radar systems in the Radar Designer app. |
+| `matlab-design-scenario` | Design, simulate, and analyze 3D geographic scenarios with terrain, buildings, and actors. |
 | `matlab-import-tracking-data` | Import raw tracking data (CSV, XLSX, TXT, or MATLAB tables) into objectDetection arrays and objectTrack arrays used by Sensor Fusion and Tracking Toolbox. |
 | `matlab-simulate-radar-detections` | Simulate statistical radar detections for surveillance and tracking radar scenarios. |
 
@@ -323,7 +321,7 @@ Supports Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Imag
 
 ### Wireless Communications ([`wireless-communications`](./wireless-communications/))
 
-Supports 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, Wireless Testbench&trade;, WLAN Toolbox&trade;, and Wireless Testbench Support Package for NI USRP Radios&trade;
+Supports 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, Wireless Testbench&trade;, WLAN Toolbox&trade;, 6G Exploration Library for 5G Toolbox&trade;, and Wireless Testbench Support Package for NI USRP Radios&trade;
 
 | Skill | What it teaches your agent |
 |-------|---------------------------|
@@ -335,6 +333,7 @@ Supports 5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbo
 | `matlab-generate-gnss-waveform` | Generate GNSS baseband waveforms (GPS, Galileo, NavIC) with physically realistic or user-specified channel impairments using the Satellite Communications Toolbox. |
 | `matlab-generate-wlan-waveform` | Generate standard-compliant IEEE 802.11 WLAN waveforms. |
 | `matlab-set-up-usrp-radio` | Set up and verify NI USRP radios for use with Wireless Testbench. |
+| `matlab-simulate-6g-system` | Build pre-6G waveform, link-level, ISAC, RIS, AI, and cell-free MIMO simulations. |
 | `matlab-simulate-bluetooth-network` | Simulate Bluetooth system-level networks including BLE, Classic BR/EDR, and LE Audio. |
 | `matlab-simulate-wireless-network` | Set up and run wireless network simulations using wirelessNetworkSimulator. |
 | `matlab-transmit-capture-usrp` | Transmit and capture RF waveforms using Wireless Testbench with NI USRP radios. |

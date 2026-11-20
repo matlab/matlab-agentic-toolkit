@@ -43,8 +43,8 @@ function exportedPath = export_workflow_script(scriptPath, config)
 %       .datasetLabel       char, short human-readable label for
 %                             comments (e.g., 'fisheriris', 'tamayo')
 %
-%   The generated script depends only on this skill directory being on
-%   the MATLAB path — it uses the same helpers (apply_preproc,
+%   The generated script needs only this skill directory: it changes into
+%   scripts/helpers (and back afterwards) to use the same helpers (apply_preproc,
 %   build_model_definitions, retrain_with_hpo, retrain_with_resume,
 %   save_selected_models) the interactive workflow uses.
 
@@ -68,6 +68,10 @@ function exportedPath = export_workflow_script(scriptPath, config)
         fprintf(fid, '%s\n', lines{k});
     end
     exportedPath = scriptPath;
+
+    if nargout == 0
+        clear exportedPath
+    end
 end
 
 % -------------------------------------------------------------------------
@@ -95,12 +99,22 @@ function lines = build_script_lines(cfg)
     lines{end+1} = sprintf('SKILL_PATH = %s;', mat_literal_char(cfg.skillPath));
     lines{end+1} = '';
     lines{end+1} = '% ------------------ LOAD DATA ------------------';
-    lines{end+1} = '% Match the interactive workflow''s no-addpath convention: cd into';
-    lines{end+1} = '% scripts/helpers/ so helpers resolve on the current working folder.';
+    lines{end+1} = '% Load and resolve paths BEFORE changing folder, so a relative';
+    lines{end+1} = '% NEW_DATA_PATH or MODEL_SAVE_PATH means relative to your folder.';
     lines{end+1} = 'ORIGINAL_DIR = pwd;';
-    lines{end+1} = 'cleanupCwd = onCleanup(@() cd(ORIGINAL_DIR));';
-    lines{end+1} = 'cd(fullfile(SKILL_PATH, ''scripts'', ''helpers''));';
     lines{end+1} = 'D = load(NEW_DATA_PATH);';
+    lines{end+1} = 'if isempty(regexp(MODEL_SAVE_PATH, ''^([A-Za-z]:)?[\\/]'', ''once''))';
+    lines{end+1} = '    modelSavePathAbs = fullfile(ORIGINAL_DIR, MODEL_SAVE_PATH);';
+    lines{end+1} = 'else';
+    lines{end+1} = '    modelSavePathAbs = MODEL_SAVE_PATH;';
+    lines{end+1} = 'end';
+    lines{end+1} = '% Like the interactive workflow, leave the MATLAB path unchanged: cd into';
+    lines{end+1} = '% scripts/helpers/ so helpers resolve on the current working folder.';
+    lines{end+1} = '% A script shares its caller''s workspace, so an onCleanup object would';
+    lines{end+1} = '% outlive the script; the try/catch below returns to ORIGINAL_DIR on';
+    lines{end+1} = '% success and on error instead.';
+    lines{end+1} = 'cd(fullfile(SKILL_PATH, ''scripts'', ''helpers''));';
+    lines{end+1} = 'try';
     lines{end+1} = 'assert(isfield(D, ''Xnew'') && isfield(D, ''Ynew''), ...';
     lines{end+1} = '    ''Expected .mat file to contain Xnew and Ynew.'');';
     lines{end+1} = 'X = D.Xnew;';
@@ -184,8 +198,13 @@ function lines = build_script_lines(cfg)
     lines{end+1} = '    ''sourceDataset'', NEW_DATA_PATH, ...';
     lines{end+1} = '    ''flags'', flags);';
     lines{end+1} = 'savedPath = save_selected_models(selectedNames, modelDefs, trainedModels, ...';
-    lines{end+1} = '    X, Y, MODEL_SAVE_PATH, metadata, useCompact);';
+    lines{end+1} = '    X, Y, modelSavePathAbs, metadata, useCompact);';
     lines{end+1} = 'fprintf(''Saved %d model(s) to %s\n'', numel(selectedNames), savedPath);';
+    lines{end+1} = 'catch scriptErr';
+    lines{end+1} = '    cd(ORIGINAL_DIR);';
+    lines{end+1} = '    rethrow(scriptErr);';
+    lines{end+1} = 'end';
+    lines{end+1} = 'cd(ORIGINAL_DIR);';
     lines{end+1} = '';
     lines{end+1} = '% Note: HPO on the CV path uses single-shot HPO on the full training set';
     lines{end+1} = '% (not the nested design from Step 11 of the interactive skill). Expect';

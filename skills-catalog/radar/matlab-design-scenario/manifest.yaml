@@ -1,0 +1,15 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "1.0"
+human-description: Design, simulate, and analyze 3D geographic scenarios with terrain, buildings, and actors.
+matlab-release: ">=R2026b"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - Mapping Toolbox
+  - 3D Scenarios
+optional-products: []
+required-tools:
+  - evaluate_matlab_code
+required-skills: []

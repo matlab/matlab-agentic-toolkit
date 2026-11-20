@@ -1,0 +1,21 @@
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+version: "1.0"
+human-description: Build pre-6G waveform, link-level, ISAC, RIS, AI, and cell-free MIMO simulations.
+matlab-release: ">=R2026b"
+toolkit: matlab-agentic-toolkit
+required-products:
+  - 5G Toolbox
+  - 6G Exploration Library for 5G Toolbox
+optional-products:
+  - Communications Toolbox
+  - Phased Array System Toolbox
+  - Parallel Computing Toolbox
+  - Deep Learning Toolbox
+  - Wireless Network Toolbox
+required-tools:
+  - evaluate_matlab_code
+required-skills:
+  - matlab-read-documentation
+# Copyright 2026 The MathWorks, Inc.

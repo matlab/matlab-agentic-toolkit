@@ -1,0 +1,19 @@
+# Copyright 2026 The MathWorks, Inc.
+
+schema-version: 1
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: cross-product
+version: "2.0"
+human-description: Author RoadRunner HD Maps, convert Lanelet2 maps, and import them into RoadRunner.
+matlab-release: ">=R2026b"
+required-tools:
+  - evaluate_matlab_code
+  - run_matlab_file
+required-skills:
+  - roadrunner-manage-project
+required-products:
+  - RoadRunner
+  - RoadRunner Scene Builder
+  - Automated Driving Toolbox
+optional-products: []
+toolkit: matlab-agentic-toolkit

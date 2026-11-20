@@ -1,5 +1,6 @@
 function plot_training_time(modelNames, trainTime, acc, topTierIdx)
-    [~, order] = sort(acc, 'descend');
+    % Same order as plot_accuracy_bars: best first, a NaN accuracy last.
+    [~, order] = sort(acc, 'descend', 'MissingPlacement', 'last');
     namesSorted = modelNames(order);
     timeSorted = trainTime(order);
     nModels = numel(modelNames);

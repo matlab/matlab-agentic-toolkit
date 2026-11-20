@@ -1,4 +1,4 @@
-function savedPath = save_selected_models(selectedNames, modelDefs, trainedModels, X, Y, savePath, metadata, useCompact)
+function savedPath = save_selected_models(selectedNames, modelDefs, trainedModels, X, Y, savePath, metadata, useCompact, options)
 % SAVE_SELECTED_MODELS  Save user-selected trained classifiers to a .mat file.
 %
 %   SAVE_SELECTED_MODELS(NAMES, MODELDEFS, TRAINED, X, Y, PATH, META, USECOMPACT)
@@ -32,6 +32,17 @@ function savedPath = save_selected_models(selectedNames, modelDefs, trainedModel
 %                        deployment but no longer capable of resubstitution
 %                        loss or CV.
 %
+%   Name-value options:
+%       'HpoModels'        cellstr — models the user optimized in Step 11.
+%                        On the CV path nested CV leaves no single
+%                        optimized model, so a CV-wrapped model on this
+%                        list is saved as a single-shot HPO fit on (X, Y)
+%                        via retrain_with_hpo (the same refit the exported
+%                        workflow script performs), not as its pre-search
+%                        recipe. Default {}.
+%       'UseUniformPrior'  logical, the run's prior, for that refit
+%                        (default false).
+%
 %   Output:
 %       savedPath      the actual path the file was written to (same as
 %                        the input, but returned for logging).
@@ -50,6 +61,8 @@ function savedPath = save_selected_models(selectedNames, modelDefs, trainedModel
         savePath (1,:) char
         metadata (1,1) struct
         useCompact (1,1) logical = true
+        options.HpoModels cell = {}
+        options.UseUniformPrior (1,1) logical = false
     end
 
     allNames = {modelDefs.name};
@@ -65,7 +78,16 @@ function savedPath = save_selected_models(selectedNames, modelDefs, trainedModel
         end
         mdl = trainedModels{idx};
         if is_cv_wrapper(mdl)
-            mdl = modelDefs(idx).fitFcn(X, Y);
+            t0 = tic;
+            if ismember(name, options.HpoModels)
+                mdl = retrain_with_hpo(modelDefs(idx), X, Y, options.UseUniformPrior);
+            else
+                mdl = modelDefs(idx).fitFcn(X, Y);
+            end
+            fprintf(1, 'Model %d/%d: %s retrained in %.1f s\n', ...
+                k, numel(selectedNames), name, toc(t0));
+        else
+            fprintf(1, 'Model %d/%d: %s ready for saving\n', k, numel(selectedNames), name);
         end
         if useCompact && ismethod(mdl, 'compact')
             mdl = compact(mdl);
@@ -86,6 +108,10 @@ function savedPath = save_selected_models(selectedNames, modelDefs, trainedModel
     end
     save(savePath, '-struct', 'saveStruct');
     savedPath = savePath;
+
+    if nargout == 0
+        clear savedPath
+    end
 end
 
 % -------------------------------------------------------------------------

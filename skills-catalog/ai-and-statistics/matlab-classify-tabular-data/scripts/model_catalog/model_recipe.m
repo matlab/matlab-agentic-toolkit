@@ -65,6 +65,10 @@ function r = model_recipe(id, fnName, args, varargin)
     r.binaryOnly          = logical(p.Results.BinaryOnly);
     r.multiclassECOC      = logical(p.Results.MulticlassECOC);
     r.condition           = p.Results.Condition;
+
+    if nargout == 0
+        clear r
+    end
 end
 
 % Copyright 2026 The MathWorks, Inc.

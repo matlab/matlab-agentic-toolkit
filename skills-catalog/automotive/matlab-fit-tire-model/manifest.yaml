@@ -1,7 +1,7 @@
 schema-version: 1
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 scope: cross-product
-version: "1.0"
+version: "1.1"
 human-description: Fit a tire model to measured force and moment data and export it to a .tir file.
 matlab-release: ">=R2025a"
 toolkit: matlab-agentic-toolkit

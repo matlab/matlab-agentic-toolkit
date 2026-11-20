@@ -18,7 +18,7 @@ routeVars = ["Filename" "alpha" "kappa" "Fz" "gamma" "V"];   % VariableNames def
 spans = summaryTable(td, VariableNames=routeVars, DataStat="range");  % span: large = swept, small = held
 means = summaryTable(td, VariableNames=routeVars, DataStat="mean");   % mean of each, held or swept
 subsetFxPure = td(spans.kappa > 0.05 & abs(means.alpha) < 0.01);   % kappa swept, alpha held at 0
-subsetFyPure = td(spans.alpha > 0.05 & spans.kappa < 0.01);        % alpha swept, kappa ~ 0
+subsetFyPure = td(spans.alpha > 0.05 & abs(means.kappa) < 0.01);   % alpha swept, kappa held at 0
 
 % C1 runtime: reassign so each fit builds on the previous (dependency order).
 mdl = tireModel.new(modelType);

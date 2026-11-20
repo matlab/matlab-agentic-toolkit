@@ -1,0 +1,14 @@
+# Copyright 2026 The MathWorks, Inc.
+schema-version: 1
+version: "1.0"
+license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
+scope: product-specific
+toolkit: matlab-agentic-toolkit
+human-description: Convert state-space equations from an image or text into an Econometrics Toolbox ssm object.
+matlab-release: ">=R2021a"
+required-products:
+  - Econometrics Toolbox
+optional-products:
+  - Optimization Toolbox
+required-tools: []
+required-skills: []

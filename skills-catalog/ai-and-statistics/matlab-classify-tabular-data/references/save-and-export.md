@@ -1,6 +1,6 @@
 # Save Trained Models and Export a Retraining Workflow Script
 
-This reference is dispatched from the orchestrator after Step 12 (Summary) has been delivered to the user. It covers the two optional wrap-up steps:
+Run these two optional steps after the Step 12 summary has been delivered:
 
 - **Step 13** — save any of the trained models to a `.mat` file for later reuse (`save_selected_models`).
 - **Step 14** — emit a self-contained MATLAB script that reproduces the entire workflow on new data (`export_workflow_script`). Only offered if the user saved at least one model in Step 13.
@@ -51,11 +51,13 @@ metadata = struct( ...
     'accuracyCI',      accCI);
 
 savedPath = save_selected_models(selectedNames, modelDefs, trainedModels, ...
-    X, Y, savePath, metadata, useCompact);
+    X, Y, savePath, metadata, useCompact, ...
+    'HpoModels', hpoModelNames, 'UseUniformPrior', useUniformPrior);   % hpoModelNames: {} if no Step 11
 fprintf('Saved %d model(s) to %s\n', numel(selectedNames), savedPath);
 ```
 
-- `trainedModels` is a cell array aligned with `modelDefs`. On the holdout path each cell holds the trained model returned by `train_and_score_holdout`; on the CV path each cell holds the cross-validated model returned by `train_and_score_cv`. The helper detects CV-wrapped models and **retrains them on the full `(X, Y)` via `modelDefs(k).fitFcn`** so the saved model is directly usable via `predict(loadedModel, XNew)`.
+- `trainedModels` is a cell array aligned with `modelDefs`. On the holdout path each cell holds the trained model returned by `train_and_score_holdout`; on the CV path each cell holds the cross-validated model returned by `train_and_score_cv` (Step 6 stores these as `cvModels` — pass `cvModels` as `trainedModels`). The helper detects CV-wrapped models and **retrains them on the full `(X, Y)` via `modelDefs(k).fitFcn`** so the saved model is directly usable via `predict(loadedModel, XNew)`.
+- **Models optimized in Step 11 on the CV path** (`hpoModelNames`): nested CV leaves no single optimized model, so the helper saves a **single-shot HPO fit on the full `(X, Y)`** (`retrain_with_hpo`, the same refit the Step 14 script performs) instead of the pre-search recipe. Tell the user, once, that the saved optimized model comes from that refit and that its accuracy estimate is the nested-CV one from Step 11, a slight overestimate for this configuration. On the holdout path the optimized model already replaced its original in `trainedModels` and is saved as is.
 - On the CV path, pass the full `X` and `Y` as arguments 4 and 5. On the holdout path, pass `XTrain` and `YTrain` — but note the helper only uses them when a cell contains a CV wrapper, which the holdout path never produces.
 - The helper sanitizes model names for `save`: `LinearSVM-OVO` becomes the variable name `LinearSVM_OVO`. The original name is preserved in `metadata.modelNameMap`.
 
@@ -100,6 +102,8 @@ The generated `.m` loads new data (`Xnew`, `Ynew`) from a `.mat` file the user s
 
 Stratified subsampling from Step 5 (a training-speed hack, not a data-preparation decision), and interactive Step 10 "resume with more trees" decisions unless captured in `resumeCycles`. Everything else — feature omissions, class removals, class merges, zero-variance drops — replays exactly.
 
----
+----
 
 Copyright 2026 The MathWorks, Inc.
+
+----

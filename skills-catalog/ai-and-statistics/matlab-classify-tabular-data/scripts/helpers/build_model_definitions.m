@@ -42,8 +42,8 @@ function modelDefs = build_model_definitions(flags, skillPath, varargin)
 %
 %   Because the OVO+OVA expansion happens here, callers never need to
 %   remember it — the branch table's multiclassECOC flag automatically
-%   becomes two trained models. See select-classifiers.md § Multiclass
-%   ECOC wrapping for the spec this implements.
+%   becomes two trained models. The skill spec (internal/specs,
+%   Architecture) lists the invariants this implements.
 %
 %   Required FLAGS fields:
 %       interp                 char: 'low' | 'high'
@@ -123,6 +123,10 @@ function modelDefs = build_model_definitions(flags, skillPath, varargin)
             modelDefs(end+1) = plain_def(r, XSeed, YSeed, useUniformPrior); %#ok<AGROW>
         end
     end
+
+    if nargout == 0
+        clear modelDefs
+    end
 end
 
 % -------------------------------------------------------------------------
@@ -183,12 +187,14 @@ function tmpl = build_template(r, XSeed, YSeed)
 % wrapping this is the learner passed as 'Learners'; for a plain
 % (non-ECOC) recipe this is the returned template itself.
 %
-% NOTE — .template is exercised only on the HOLDOUT path. The CV path uses
-% .cvFitFcn, which calls the raw fitc* function directly (never the
-% template). This means the pre-R2026b trained-NN placeholder built below
-% sits unused on .template when the workflow is CV-only — that is
-% intentional; do not remove the placeholder to save memory without
-% updating train_and_score_holdout in step.
+% NOTE — .template TRAINS models only on the HOLDOUT path. CV-path training
+% uses .cvFitFcn, which calls the raw fitc* function directly (never the
+% template). But the CV-path pairwise comparison (compute_pairwise_pvalues_cv
+% -> testckfold) refits every pair from .template, so .template must keep
+% describing the model .cvFitFcn trains; a template left stale (e.g. after
+% a boosting resume) makes the comparison test a different model. Do not
+% remove the pre-R2026b trained-NN placeholder built below to save memory
+% without updating train_and_score_holdout in step.
     if nargin < 2, XSeed = []; end
     if nargin < 3, YSeed = []; end
     templateFn = fitc_to_template(r.fnName);
@@ -230,12 +236,15 @@ end
 
 % -------------------------------------------------------------------------
 function tf = template_needs_type(templateFn)
-% templateTree/SVM/Linear/Kernel/GAM support both classification and
-% regression and error at fit time without an explicit Type. templateKNN
+% templateTree/SVM/Linear/Kernel/GAM/NeuralNetwork support both
+% classification and regression and error at fit time without an explicit
+% Type (fit() raises stats:classreg:learning:FitTemplate:fit:BadType).
+% testckfold accepts an untyped template, which hid the NeuralNetwork case
+% on the CV path; fit() on the holdout path does not. templateKNN
 % and templateDiscriminant are classification-only and REJECT the Type
 % name-value; templateNaiveBayes accepts it but does not need it.
     tf = ismember(templateFn, {'templateTree','templateSVM','templateLinear', ...
-        'templateKernel','templateGAM'});
+        'templateKernel','templateGAM','templateNeuralNetwork'});
 end
 
 % -------------------------------------------------------------------------

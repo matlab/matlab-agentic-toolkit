@@ -18,6 +18,10 @@ function s = sanitize_model_name(name)
     if ~isempty(s) && ~isletter(s(1)) && s(1) ~= '_'
         s = ['m_', s];
     end
+
+    if nargout == 0
+        clear s
+    end
 end
 
 % Copyright 2026 The MathWorks, Inc.

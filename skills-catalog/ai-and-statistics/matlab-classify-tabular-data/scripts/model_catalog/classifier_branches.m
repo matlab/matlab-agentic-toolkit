@@ -27,8 +27,7 @@
 %   Branches DO NOT know about isImbalanced. Imbalanced boosting
 %   overrides live in imbalanced_boosting.m — a parallel table applied
 %   after the base branch is chosen. Keeping the two tables separate
-%   preserves the reviewability of the base branches (they read exactly
-%   as they did in the pre-refactor markdown).
+%   keeps each base branch readable on its own.
 
 % model_recipe() lives alongside the branch tables in scripts/model_catalog/.
 % The agent calls build_model_definitions() from scripts/helpers/, which

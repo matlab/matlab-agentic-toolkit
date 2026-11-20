@@ -1,5 +1,6 @@
 function plot_accuracy_bars(modelNames, acc, accCI, topTierIdx, titleStr)
-    [accSorted, order] = sort(acc, 'descend');
+    % A model with no accuracy (NaN) goes last; sort puts NaN first in descending order.
+    [accSorted, order] = sort(acc, 'descend', 'MissingPlacement', 'last');
     namesSorted = modelNames(order);
     ciSorted = accCI(order, :);
     nModels = numel(modelNames);

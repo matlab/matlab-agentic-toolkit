@@ -1,15 +1,15 @@
 function [boostModel, trainTime, acc, accCI, YHat] = resume_boosting_holdout(boostModel, nMoreTrees, XTest, YTest)
+    fprintf(1, 'Resuming boosting with %d more learning cycles\n', nMoreTrees);
     tic;
     boostModel = resume(boostModel, nMoreTrees);
     trainTime = toc;
+    fprintf(1, 'Boosting resumed in %.1f s\n', trainTime);
 
-    err = loss(boostModel, XTest, YTest);
-    YHat = predict(boostModel, XTest);
-    acc = 1 - err;
+    [acc, accCI, YHat] = score_holdout_test(boostModel, XTest, YTest);
 
-    NTest = numel(YTest);
-    [~, ci] = binofit(round(err * NTest), NTest, 0.05);
-    accCI = 1 - fliplr(ci);
+    if nargout == 0
+        clear boostModel trainTime acc accCI YHat
+    end
 end
 
 % Copyright 2026 The MathWorks, Inc.

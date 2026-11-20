@@ -14,9 +14,9 @@ This page shows you how to configure the MATLAB&reg; Agentic Toolkit. For an ove
 
 - MATLAB R2021a or later 
 - AI coding agent that supports MCP servers and skills. Supported agents are configured automatically. Otherwise, refer to your agent’s documentation to manually configure the MCP server and install skills. Supported agents include:
-  - Claude Code  
+  - Claude&reg; Code  
   - GitHub&reg; Copilot  
-  - OpenAI&reg; Codex  
+  - OpenAI&reg; Codex&reg;  
   - Gemini&trade; CLI  
   - Amp
 

@@ -38,4 +38,7 @@ THRESHOLDS.holdout_smallest_class    = 300;    % recommend holdout when smallest
 THRESHOLDS.subsample_smallest_class  = 100;    % subsample only when smallestClass >= 100
 THRESHOLDS.subsample_total           = 20000;  % target: floor(subsample_total / nClasses) per class
 
+% Pairwise-comparison memory threshold
+THRESHOLDS.sparse_densify_max_bytes  = 2e9;    % CV-path pairwise test densifies sparse X only when full(X) <= this many bytes; else holdout fallback
+
 % Copyright 2026 The MathWorks, Inc.

@@ -13,7 +13,7 @@ description: >
 license: https://www.mathworks.com/content/dam/mathworks/license/pmrl/license.md
 metadata:
   author: MathWorks
-  version: "1.2"
+  version: "1.3"
 ---
 
 # Generate 5G NR Waveforms
@@ -33,6 +33,7 @@ measurement, simulation, and verification using `nrWaveformGenerator`.
 - Channel modeling or propagation — use `nrCDLChannel`, `nrTDLChannel`
 - Receiver processing or decoding — use `nrPDSCHDecode`, `nrDLSCHDecoder`
 - Link-level simulation end-to-end
+- 6G / pre-6G waveforms (`pre6G*`) and 5G or 6G ISAC (sensing with a 5G waveform, TR 38.901 ISAC channel) — use `matlab-simulate-6g-system`
 
 ## API Choice
 

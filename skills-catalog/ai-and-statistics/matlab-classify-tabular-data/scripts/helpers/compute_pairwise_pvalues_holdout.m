@@ -10,6 +10,10 @@ function [pvalMatrix, hMatrix] = compute_pairwise_pvalues_holdout(YHat, YTest, a
             hMatrix(i,j)    = hij; hMatrix(j,i)    = hij;
         end
     end
+
+    if nargout == 0
+        clear pvalMatrix hMatrix
+    end
 end
 
 % Copyright 2026 The MathWorks, Inc.
