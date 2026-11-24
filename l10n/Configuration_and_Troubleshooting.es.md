@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./Configuration_and_Troubleshooting.md
 - Branch: main
-- Commit: 36431d841616bc7bcc461fe0413e822e557f5c32
+- Commit: 8c559914c661fb7395d7bf9b4c8cecf55739080b
 -->
 
 # Configuración y solución de problemas
@@ -21,9 +21,9 @@ Esta página muestra cómo configurar MATLAB&reg; Agentic Toolkit. Para obtener 
 
 - MATLAB R2021a o posterior
 - Agente de codificación de IA que admita servidores MCP y skills. Los agentes compatibles se configuran automáticamente. De lo contrario, consulte la documentación de su agente para configurar manualmente el servidor MCP e instalar skills. Los agentes compatibles incluyen:
-  - Claude Code  
+  - Claude&reg; Code  
   - GitHub&reg; Copilot  
-  - OpenAI&reg; Codex  
+  - OpenAI&reg; Codex&reg;  
   - Gemini&trade; CLI  
   - Amp
 

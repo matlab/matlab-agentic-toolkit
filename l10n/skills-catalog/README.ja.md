@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
+- Commit: 7223dbeeacdccf5b6421b6528cf4600465ec87e8
 -->
 
 # スキル カタログ
@@ -106,7 +106,7 @@ Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&tra
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
 | `matlab-analyze-reliability` | 信頼性分析のために寿命分布モデルと加速寿命モデルを当てはめる。 |
-| `matlab-classify-tabular-data` | 候補モデルを比較し、統計的に同等な上位モデル群を特定して表形式データを分類する。 |
+| `matlab-classify-tabular-data` | 表形式データで分類器を比較し、統計的に同等な上位分類器群を特定する。 |
 | `matlab-deploy-embedded-ai` | MATLAB と Simulink を使用して AI モデルを組み込みハードウェアにデプロイする。 |
 | `matlab-engineer-tabular-features` | MATLAB で単一応答の表形式分類または回帰に最適な特徴量を作成・選択する。 |
 | `matlab-fit-curve` | 曲線フィッター アプリを使用して対話的に曲線と曲面を当てはめる。 |
@@ -118,7 +118,7 @@ Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&tra
 
 ### 自動車関連 ([`automotive`](../../skills-catalog/automotive/))
 
-Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; をサポート
+Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Extended Tire Features for Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; をサポート
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
@@ -126,15 +126,11 @@ Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner�
 | `matlab-fit-tire-model` | 測定された力およびモーメントのデータにタイヤ モデルを当てはめ、.tir ファイルにエクスポートする。 |
 | `matlab-import-driving-data` | 記録された運転センサー データ (GPS、カメラ、LiDAR、アクター トラック) を scenariobuilder.* オブジェクトにインポートし、シナリオ構築前にタイムスタンプを同期、トリミング、オフセット、正規化する。 |
 | `matlab-use-ncap-protocol` | Euro NCAP テスト シナリオとバリアントを生成し、シミュレーター間で変換し、スコアを計算する。 |
-| `matlab-use-scenario-builder` | 記録されたセンサー データから運転シーン、シナリオ、路面、3D アセットを構築し、RoadRunner、drivingScenario、OpenSCENARIO、OpenDRIVE、OpenCRG、Unreal Engine&reg; にエクスポートする。 |
-| `roadrunner-asset-mapping` | MATLAB でマップ形式を変換するための RoadRunner アセット パス ルックアップ テーブルを生成する。 |
-| `roadrunner-build-scenario-from-osc` | OpenSCENARIO 1.x ファイルを解釈し、RoadRunner でプログラム的にシナリオを再作成する。 |
-| `roadrunner-convert-lanelet2-to-rrhd` | MATLAB を使用して Lanelet2 マップ (.osm) を RoadRunner HD Map (.rrhd) 形式に変換する。 |
-| `roadrunner-core` | MATLAB から RoadRunner に接続し、プロジェクト、シーン、シナリオのライフサイクルを管理する。 |
-| `roadrunner-import-scene` | RoadRunner に接続し、MATLAB を使用して HD Map または OpenDRIVE ファイルを新しいシーンにインポートする。 |
-| `roadrunner-rrhd-authoring` | MATLAB で RoadRunner HD Map エンティティを構築する — レーン、境界、マーキング、ジャンクション、標識、信号、バリア、駐車場。 |
-| `roadrunner-scenario-authoring` | MATLAB からプログラム的に RoadRunner 運転シナリオを作成する。 |
-| `roadrunner-scenario-simulating` | MATLAB と Simulink のコシミュレーションを通じてプログラム的に RoadRunner シナリオのシミュレーションを実行する。 |
+| `matlab-use-scenario-builder` | 記録されたセンサー データから運転シーン、シナリオ、路面、3D アセットを構築し、RoadRunner、drivingScenario、OpenSCENARIO&reg;、OpenDRIVE&reg;、OpenCRG&reg;、Unreal Engine&reg; にエクスポートする。 |
+| `roadrunner-author-scenario` | 説明または OpenSCENARIO 1.x ファイルから、MATLAB でプログラム的に RoadRunner 運転シナリオを作成する。 |
+| `roadrunner-build-rrhd-map` | RoadRunner HD Map を作成し、Lanelet2 マップを変換して、RoadRunner にインポートする。 |
+| `roadrunner-manage-project` | MATLAB から RoadRunner に接続し、プロジェクト、シーン、シナリオのライフサイクルを管理する。 |
+| `roadrunner-simulate-scenario` | MATLAB と Simulink のコシミュレーションを通じてプログラム的に RoadRunner シナリオのシミュレーションを実行する。 |
 
 ### クラウド ソリューション ([`cloud-solutions`](../../skills-catalog/cloud-solutions/))
 
@@ -168,13 +164,14 @@ SimBiology&trade;、Statistics and Machine Learning Toolbox をサポート
 
 ### 金融工学 ([`computational-finance`](../../skills-catalog/computational-finance/))
 
-Datafeed Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade;、Spreadsheet Link&trade; をサポート
+Datafeed Toolbox&trade;、Econometrics Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade;、Spreadsheet Link&trade; をサポート
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Bloomberg&reg;、FRED&reg;、Haver、Datastream&trade;、NOAA、米国政府機関から金融、経済、気候、政府のデータにアクセスする。 |
-| `matlab-optimize-portfolio` | 平均分散ポートフォリオ最適化問題を定式化し、求解する。 |
+| `matlab-access-datafeed` | Bloomberg&reg;、FRED&reg;、Haver Analytics&reg;、LSEG&reg; Datastream&trade;、米国海洋大気庁 (National Oceanic and Atmospheric Administration)、米国政府機関から金融、経済、気候、政府のデータにアクセスする。 |
+| `matlab-optimize-portfolio` | Portfolio オブジェクト、またはカスタム制約に対応する問題ベースのフレームワークを使用してポートフォリオを最適化する。 |
 | `matlab-price-instrument` | モンテ カルロ、FFT、金利ツリーを使用して金融商品の価格を計算する。 |
+| `matlab-specify-ssm` | 画像またはテキストの状態空間方程式を Econometrics Toolbox の ssm オブジェクトに変換する。 |
 | `matlab-use-spreadsheet-link` | Spreadsheet Link を使用して Excel とデータを交換するための VBA マクロとワークシート関数を記述する。 |
 
 ### 制御システム ([`control-systems`](../../skills-catalog/control-systems/))
@@ -228,12 +225,13 @@ Parallel Computing Toolbox、MATLAB Parallel Server&trade; をサポート
 
 ### レーダー ([`radar`](../../skills-catalog/radar/))
 
-Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox、Signal Processing Toolbox をサポート
+Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox、Signal Processing Toolbox、3D Scenarios をサポート
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Phased Array System Toolbox を使用してレーダーおよびソナー波形を設計、選択、分析する。 |
 | `matlab-design-radar` | レーダー デザイナー アプリでレーダー システムを設計、構成、分析する。 |
+| `matlab-design-scenario` | 地形、建物、アクターを含む 3D 地理シナリオを設計、シミュレーション、分析する。 |
 | `matlab-import-tracking-data` | 生のトラッキング データ (CSV、XLSX、TXT、または MATLAB table) を Sensor Fusion and Tracking Toolbox で使用される objectDetection 配列と objectTrack 配列にインポートする。 |
 | `matlab-simulate-radar-detections` | 監視およびトラッキング レーダー シナリオの統計的なレーダー検出をシミュレーションする。 |
 
@@ -330,7 +328,7 @@ Data Acquisition Toolbox&trade;、Image Acquisition Toolbox&trade;、Image Proce
 
 ### 無線通信 ([`wireless-communications`](../../skills-catalog/wireless-communications/))
 
-5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade;、Wireless Testbench Support Package for NI USRP Radios&trade; をサポート
+5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade;、6G Exploration Library for 5G Toolbox&trade;、Wireless Testbench Support Package for NI USRP Radios&trade; をサポート
 
 | スキル | スキルがエージェントに提供する機能 |
 |-------|---------------------------|
@@ -342,6 +340,7 @@ Data Acquisition Toolbox&trade;、Image Acquisition Toolbox&trade;、Image Proce
 | `matlab-generate-gnss-waveform` | Satellite Communications Toolbox を使用して、物理的に現実的なチャネル劣化要因またはユーザー指定のチャネル劣化要因を含む GNSS ベースバンド波形 (GPS, Galileo, NavIC) を生成する。 |
 | `matlab-generate-wlan-waveform` | IEEE 802.11 準拠の WLAN 波形を生成する。 |
 | `matlab-set-up-usrp-radio` | Wireless Testbench で使用するための NI USRP ラジオをセットアップ・検証する。 |
+| `matlab-simulate-6g-system` | Pre-6G の波形、リンクレベル、ISAC、RIS、AI、cell-free MIMO のシミュレーションを構築する。 |
 | `matlab-simulate-bluetooth-network` | BLE、Classic BR/EDR、LE Audio を含む Bluetooth システム レベル ネットワークをシミュレーションする。 |
 | `matlab-simulate-wireless-network` | wirelessNetworkSimulator を使用して無線ネットワーク シミュレーションをセットアップ・実行する。 |
 | `matlab-transmit-capture-usrp` | NI USRP ラジオと Wireless Testbench を使用して RF 波形を送信・キャプチャする。 |

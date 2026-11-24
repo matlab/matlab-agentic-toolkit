@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./Configuration_and_Troubleshooting.md
 - Branch: main
-- Commit: 36431d841616bc7bcc461fe0413e822e557f5c32
+- Commit: 8c559914c661fb7395d7bf9b4c8cecf55739080b
 -->
 
 # 構成とトラブルシューティング
@@ -21,9 +21,9 @@ Source English Markdown:
 
 - MATLAB R2021a 以降
 - MCP サーバーとスキルをサポートする AI コーディング エージェント。サポートされているエージェントは自動的に構成されます。それ以外の場合は、エージェントのドキュメントを参照して、MCP サーバーを手動で構成し、スキルをインストールしてください。サポートされているエージェントには以下が含まれます。
-  - Claude Code
+  - Claude&reg; Code
   - GitHub&reg; Copilot
-  - OpenAI&reg; Codex
+  - OpenAI&reg; Codex&reg;
   - Gemini&trade; CLI
   - Amp
 
