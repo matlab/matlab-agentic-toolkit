@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./Configuration_and_Troubleshooting.md
 - Branch: main
-- Commit: 36431d841616bc7bcc461fe0413e822e557f5c32
+- Commit: 8c559914c661fb7395d7bf9b4c8cecf55739080b
 -->
 
 # 구성 및 문제 해결
@@ -21,9 +21,9 @@ Source English Markdown:
 
 - MATLAB R2021a 이상
 - MCP 서버 및 스킬을 지원하는 AI 코딩 에이전트. 지원되는 에이전트는 자동으로 구성됩니다. 지원되지 않는 에이전트의 경우에는 해당 에이전트 문서를 참조하여 MCP 서버를 수동으로 구성하고 스킬을 설치하십시오. 지원되는 에이전트에는 다음이 포함됩니다.
-  - Claude Code
+  - Claude&reg; Code
   - GitHub&reg; Copilot
-  - OpenAI&reg; Codex
+  - OpenAI&reg; Codex&reg;
   - Gemini&trade; CLI
   - Amp
 

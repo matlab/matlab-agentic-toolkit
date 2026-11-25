@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
+- Commit: 7223dbeeacdccf5b6421b6528cf4600465ec87e8
 -->
 
 # 技能目录
@@ -106,7 +106,7 @@ Source English Markdown:
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
 | `matlab-analyze-reliability` | 拟合寿命分布和加速寿命模型以进行可靠性分析。 |
-| `matlab-classify-tabular-data` | 通过比较候选模型并识别统计上等效的最优模型组来对表格数据进行分类。 |
+| `matlab-classify-tabular-data` | 比较用于表格数据的分类器，并识别统计上等效的最优模型组。 |
 | `matlab-deploy-embedded-ai` | 使用 MATLAB 和 Simulink 将 AI 模型部署到嵌入式硬件。 |
 | `matlab-engineer-tabular-features` | 为 MATLAB 中的单响应表格分类或回归进行特征工程并选择最佳特征。 |
 | `matlab-fit-curve` | 使用曲线拟合器以交互方式拟合曲线和曲面。 |
@@ -118,7 +118,7 @@ Source English Markdown:
 
 ### 汽车 ([`automotive`](../../skills-catalog/automotive/))
 
-支持 Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade;
+支持 Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Extended Tire Features for Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade; 和 Scenario Builder for Automated Driving Toolbox&trade;
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
@@ -126,15 +126,11 @@ Source English Markdown:
 | `matlab-fit-tire-model` | 将轮胎模型拟合到测得的力和力矩数据，并将其导出为 .tir 文件。 |
 | `matlab-import-driving-data` | 将记录的驾驶传感器数据 (GPS、摄像头、lidar、交通参与者轨迹) 导入 scenariobuilder.* 对象，并在场景构建之前同步、裁剪、偏移和规范化时间戳。 |
 | `matlab-use-ncap-protocol` | 生成 Euro NCAP 测试场景和变体，在仿真器之间转换，并计算分数。 |
-| `matlab-use-scenario-builder` | 从记录的传感器数据构建驾驶静态场景和动态场景、道路表面和 3D 资产，并导出到 RoadRunner、drivingScenario、OpenSCENARIO、OpenDRIVE、OpenCRG 或 Unreal Engine&reg;。 |
-| `roadrunner-asset-mapping` | 在 MATLAB 中为地图格式转换生成 RoadRunner 资产路径查找表。 |
-| `roadrunner-build-scenario-from-osc` | 解释 OpenSCENARIO 1.x 文件并在 RoadRunner 中以编程方式重新创建场景。 |
-| `roadrunner-convert-lanelet2-to-rrhd` | 使用 MATLAB 将 Lanelet2 地图 (.osm) 转换为 RoadRunner HD Map (.rrhd) 格式。 |
-| `roadrunner-core` | 从 MATLAB 连接到 RoadRunner 并管理工程、动态场景和静态场景生命周期。 |
-| `roadrunner-import-scene` | 连接到 RoadRunner 并使用 MATLAB 将 HD Map 或 OpenDRIVE 文件导入新场景。 |
-| `roadrunner-rrhd-authoring` | 在 MATLAB 中构建 RoadRunner HD Map 实体：车道、边界、标线、交叉口、标志、信号灯、护栏、停车区域。 |
-| `roadrunner-scenario-authoring` | 从 MATLAB 以编程方式创建 RoadRunner 驾驶场景。 |
-| `roadrunner-scenario-simulating` | 通过 MATLAB 和 Simulink 联合仿真以编程方式仿真 RoadRunner 场景。 |
+| `matlab-use-scenario-builder` | 从记录的传感器数据创建驾驶静态场景和动态场景、道路表面和 3D 资产，并导出到 RoadRunner、drivingScenario、OpenSCENARIO&reg;、OpenDRIVE&reg;、OpenCRG&reg; 或 Unreal Engine&reg;。 |
+| `roadrunner-author-scenario` | 从 MATLAB 以编程方式创建 RoadRunner 驾驶场景，可基于描述或 OpenSCENARIO 1.x 文件。 |
+| `roadrunner-build-rrhd-map` | 创建 RoadRunner HD Map、转换 Lanelet2 地图，并将其导入 RoadRunner。 |
+| `roadrunner-manage-project` | 从 MATLAB 连接到 RoadRunner 并管理工程、动态场景和静态场景生命周期。 |
+| `roadrunner-simulate-scenario` | 通过 MATLAB 和 Simulink 联合仿真以编程方式仿真 RoadRunner 场景。 |
 
 ### 云解决方案 ([`cloud-solutions`](../../skills-catalog/cloud-solutions/))
 
@@ -168,13 +164,14 @@ Source English Markdown:
 
 ### 计算金融 ([`computational-finance`](../../skills-catalog/computational-finance/))
 
-支持 Datafeed Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade; 和 Spreadsheet Link&trade;
+支持 Datafeed Toolbox&trade;、Econometrics Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade; 和 Spreadsheet Link&trade;
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | 访问来自 Bloomberg&reg;、FRED&reg;、Haver、Datastream&trade;、NOAA 和美国政府机构的金融、经济、气候和政府数据。 |
-| `matlab-optimize-portfolio` | 构建和求解均值-方差投资组合优化问题。 |
+| `matlab-access-datafeed` | 访问来自 Bloomberg&reg;、FRED&reg;、Haver Analytics&reg;、LSEG&reg; Datastream&trade;、美国国家海洋和大气管理局以及美国政府机构的金融、经济、气候和政府数据。 |
+| `matlab-optimize-portfolio` | 使用 Portfolio 对象优化投资组合，或使用基于问题的框架处理自定义约束。 |
 | `matlab-price-instrument` | 使用蒙特卡罗、FFT 或利率树对金融工具进行定价。 |
+| `matlab-specify-ssm` | 将图像或文本中的状态空间方程转换为 Econometrics Toolbox ssm 对象。 |
 | `matlab-use-spreadsheet-link` | 使用 Spreadsheet Link 编写 VBA 宏和工作表函数以与 Excel 交换数据。 |
 
 ### 控制系统 ([`control-systems`](../../skills-catalog/control-systems/))
@@ -228,12 +225,13 @@ Source English Markdown:
 
 ### 雷达 ([`radar`](../../skills-catalog/radar/))
 
-支持 Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox 和 Signal Processing Toolbox
+支持 Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox、Signal Processing Toolbox 和 3D Scenarios
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | 使用 Phased Array System Toolbox 设计、选择和分析雷达和声呐波形。 |
 | `matlab-design-radar` | 在雷达设计器中设计、配置和分析雷达系统。 |
+| `matlab-design-scenario` | 设计、仿真和分析包含地形、建筑物和参与者的 3D 地理场景。 |
 | `matlab-import-tracking-data` | 将原始跟踪数据 (CSV、XLSX、TXT 或 MATLAB 表) 导入 Sensor Fusion and Tracking Toolbox 使用的 objectDetection 数组和 objectTrack 数组。 |
 | `matlab-simulate-radar-detections` | 为监视和跟踪雷达场景仿真统计雷达探测。 |
 
@@ -330,7 +328,7 @@ Source English Markdown:
 
 ### 无线通信 ([`wireless-communications`](../../skills-catalog/wireless-communications/))
 
-支持 5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade; 和 Wireless Testbench Support Package for NI USRP Radios&trade;
+支持 5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade;、6G Exploration Library for 5G Toolbox&trade; 和 Wireless Testbench Support Package for NI USRP Radios&trade;
 
 | 技能 | 教给智能体的内容 |
 |-------|---------------------------|
@@ -342,6 +340,7 @@ Source English Markdown:
 | `matlab-generate-gnss-waveform` | 使用 Satellite Communications Toolbox 生成具有物理真实或用户指定信道损伤的 GNSS 基带波形 (GPS、Galileo、NavIC)。 |
 | `matlab-generate-wlan-waveform` | 生成符合 IEEE 802.11 标准的 WLAN 波形。 |
 | `matlab-set-up-usrp-radio` | 设置和验证用于 Wireless Testbench 的 NI USRP 射频设备。 |
+| `matlab-simulate-6g-system` | 创建 pre-6G 波形、链路级、ISAC、RIS、AI 和无蜂窝 MIMO 仿真。 |
 | `matlab-simulate-bluetooth-network` | 仿真包括 BLE、Classic BR/EDR 和 LE Audio 在内的 Bluetooth 系统级网络。 |
 | `matlab-simulate-wireless-network` | 使用 wirelessNetworkSimulator 设置和运行无线网络仿真。 |
 | `matlab-transmit-capture-usrp` | 使用 NI USRP 射频设备和 Wireless Testbench 发射和捕获 RF 波形。 |

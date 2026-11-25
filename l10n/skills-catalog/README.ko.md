@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./skills-catalog/README.md
 - Branch: main
-- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
+- Commit: 7223dbeeacdccf5b6421b6528cf4600465ec87e8
 -->
 
 # 스킬 카탈로그
@@ -106,7 +106,7 @@ Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
 | `matlab-analyze-reliability` | 신뢰성 분석을 위해 수명 분포와 가속 수명 모델을 피팅합니다. |
-| `matlab-classify-tabular-data` | 여러 후보 모델을 비교하고 통계적으로 동등한 최상위 모델군(top tier)을 식별하여 테이블 형식 데이터를 분류합니다. |
+| `matlab-classify-tabular-data` | 테이블 형식 데이터에 분류기를 적용하여 비교하고 통계적으로 동등한 최상위 그룹(top tier)을 식별합니다. |
 | `matlab-deploy-embedded-ai` | MATLAB과 Simulink를 사용하여 AI 모델을 임베디드 하드웨어에 배포합니다. |
 | `matlab-engineer-tabular-features` | MATLAB에서 단일 응답 변수에 대한 테이블 형식 분류 또는 회귀에 사용할 최적의 특징을 엔지니어링하고 선택합니다. |
 | `matlab-fit-curve` | 곡선 피팅기 앱을 사용하여 대화형 방식으로 곡선과 곡면을 피팅합니다. |
@@ -118,7 +118,7 @@ Curve Fitting Toolbox&trade;, Deep Learning Toolbox&trade;, Embedded Coder&trade
 
 ### 자동차 ([`automotive`](../../skills-catalog/automotive/))
 
-Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; 지원
+Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, RoadRunner Scenario, RoadRunner Scene Builder, Sensor Fusion and Tracking Toolbox&trade;, Vehicle Dynamics Blockset&trade;, Extended Tire Features for Vehicle Dynamics Blockset&trade;, Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;, Scenario Builder for Automated Driving Toolbox&trade; 지원
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
@@ -126,15 +126,11 @@ Automated Driving Toolbox&trade;, Computer Vision Toolbox&trade;, RoadRunner, Ro
 | `matlab-fit-tire-model` | 측정된 힘 및 모멘트 데이터에 타이어 모델을 피팅하고 .tir 파일로 내보냅니다. |
 | `matlab-import-driving-data` | 기록된 주행 센서 데이터(GPS, 카메라, 라이다, 액터 추적)를 scenariobuilder.* 객체로 가져오고, 시나리오 작성 전에 타임스탬프 동기화, 자르기, 오프셋, 정규화를 수행합니다. |
 | `matlab-use-ncap-protocol` | Euro NCAP 테스트 시나리오와 변형 시나리오를 생성하고, 시뮬레이터 간 변환을 수행하고, 점수를 계산합니다. |
-| `matlab-use-scenario-builder` | 기록된 센서 데이터를 기반으로 주행 장면(scene), 시나리오, 노면(road surface), 3D 에셋을 구축하고 RoadRunner, drivingScenario, OpenSCENARIO, OpenDRIVE, OpenCRG, Unreal Engine&reg;으로 내보냅니다. |
-| `roadrunner-asset-mapping` | MATLAB에서 맵 형식 변환을 위한 RoadRunner 에셋 경로 룩업 테이블을 생성합니다. |
-| `roadrunner-build-scenario-from-osc` | OpenSCENARIO 1.x 파일을 해석하고 해당 시나리오를 RoadRunner에서 프로그래밍 방식으로 재구성합니다. |
-| `roadrunner-convert-lanelet2-to-rrhd` | MATLAB을 사용하여 Lanelet2 맵(.osm)을 RoadRunner HD Map(.rrhd) 형식으로 변환합니다. |
-| `roadrunner-core` | MATLAB에서 RoadRunner에 연결하고 프로젝트, 장면, 시나리오 라이프사이클을 관리합니다. |
-| `roadrunner-import-scene` | MATLAB에서 RoadRunner에 연결하고 HD Map 또는 OpenDRIVE 파일을 새 장면으로 가져옵니다. |
-| `roadrunner-rrhd-authoring` | MATLAB에서 차선, 경계, 표식, 교차로, 표지판, 신호, 장벽, 주차장 등의 RoadRunner HD Map 엔터티를 구축합니다. |
-| `roadrunner-scenario-authoring` | MATLAB에서 프로그래밍 방식으로 RoadRunner 주행 시나리오를 생성합니다. |
-| `roadrunner-scenario-simulating` | MATLAB 및 Simulink 연동 시뮬레이션을 통해 프로그래밍 방식으로 RoadRunner 시나리오를 시뮬레이션합니다. |
+| `matlab-use-scenario-builder` | 기록된 센서 데이터를 기반으로 주행 장면(scene), 시나리오, 노면(road surface), 3D 에셋을 생성하고 RoadRunner, drivingScenario, OpenSCENARIO&reg;, OpenDRIVE&reg;, OpenCRG&reg;, Unreal Engine&reg;으로 내보냅니다. |
+| `roadrunner-author-scenario` | 설명 또는 OpenSCENARIO 1.x 파일을 바탕으로 MATLAB에서 프로그래밍 방식으로 RoadRunner 주행 시나리오를 생성합니다. |
+| `roadrunner-build-rrhd-map` | RoadRunner HD Map을 작성하고, Lanelet2 맵을 변환하고, 이를 RoadRunner로 가져옵니다. |
+| `roadrunner-manage-project` | MATLAB에서 RoadRunner에 연결하고 프로젝트, 장면, 시나리오 라이프사이클을 관리합니다. |
+| `roadrunner-simulate-scenario` | MATLAB 및 Simulink 연동 시뮬레이션을 통해 프로그래밍 방식으로 RoadRunner 시나리오를 시뮬레이션합니다. |
 
 ### 클라우드 솔루션 ([`cloud-solutions`](../../skills-catalog/cloud-solutions/))
 
@@ -168,13 +164,14 @@ SimBiology&trade;, Statistics and Machine Learning Toolbox 지원
 
 ### 계산 금융 ([`computational-finance`](../../skills-catalog/computational-finance/))
 
-Datafeed Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox&trade;, Spreadsheet Link&trade; 지원
+Datafeed Toolbox&trade;, Econometrics Toolbox&trade;, Financial Instruments Toolbox&trade;, Financial Toolbox&trade;, Spreadsheet Link&trade; 지원
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
-| `matlab-access-datafeed` | Bloomberg&reg;, FRED&reg;, Haver, Datastream&trade;, NOAA 및 미국 정부 기관에서 제공하는 금융, 경제, 기후 및 정부 데이터에 액세스합니다. |
-| `matlab-optimize-portfolio` | 평균-분산 포트폴리오 최적화 문제를 정식화하고 풉니다. |
+| `matlab-access-datafeed` | Bloomberg&reg;, FRED&reg;, Haver Analytics&reg;, LSEG&reg; Datastream&trade;, 미국 국립해양대기청(National Oceanic and Atmospheric Administration) 및 미국 정부 기관에서 제공하는 금융, 경제, 기후 및 정부 데이터에 액세스합니다. |
+| `matlab-optimize-portfolio` | Portfolio 객체를 사용하거나, 사용자 지정 제약 조건이 필요한 경우 문제 기반 프레임워크를 사용하여 포트폴리오를 최적화합니다. |
 | `matlab-price-instrument` | 몬테카를로, FFT 또는 금리 트리(interest-rate tree)를 사용하여 금융 상품 가격을 결정합니다. |
+| `matlab-specify-ssm` | 이미지 또는 텍스트로 제공된 상태공간 방정식을 Econometrics Toolbox ssm 객체로 변환합니다. |
 | `matlab-use-spreadsheet-link` | Spreadsheet Link를 사용하여 Excel과 데이터를 주고받기 위한 VBA 매크로와 워크시트 함수를 작성합니다. |
 
 ### 제어 시스템 ([`control-systems`](../../skills-catalog/control-systems/))
@@ -228,12 +225,13 @@ Parallel Computing Toolbox, MATLAB Parallel Server&trade; 지원
 
 ### 레이다 ([`radar`](../../skills-catalog/radar/))
 
-Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Radar Toolbox&trade;, Sensor Fusion and Tracking Toolbox, Signal Processing Toolbox 지원
+Mapping Toolbox&trade;, Phased Array System Toolbox&trade;, Radar Toolbox&trade;, Sensor Fusion and Tracking Toolbox, Signal Processing Toolbox, 3D Scenarios 지원
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
 | `matlab-design-radar-waveform` | Phased Array System Toolbox를 사용하여 레이다 및 소나 파형을 설계하고, 선택하고, 분석합니다. |
 | `matlab-design-radar` | 레이다 디자이너 앱에서 레이다 시스템을 설계하고, 구성하고, 분석합니다. |
+| `matlab-design-scenario` | 지형, 건물, 액터가 포함된 3차원 지리 시나리오를 설계하고, 시뮬레이션하고, 분석합니다. |
 | `matlab-import-tracking-data` | 원시 추적 데이터(CSV, XLSX, TXT 또는 MATLAB 테이블)를 Sensor Fusion and Tracking Toolbox에서 사용되는 objectDetection 배열 및 objectTrack 배열로 가져옵니다. |
 | `matlab-simulate-radar-detections` | 감시 및 추적 레이다 시나리오를 위한 통계적 레이다 검출을 시뮬레이션합니다. |
 
@@ -330,7 +328,7 @@ Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Image Process
 
 ### 무선 통신 ([`wireless-communications`](../../skills-catalog/wireless-communications/))
 
-5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, Wireless Testbench&trade;, WLAN Toolbox&trade;, Wireless Testbench Support Package for NI USRP Radios&trade; 지원
+5G Toolbox&trade;, Bluetooth&reg; Toolbox&trade;, Communications Toolbox&trade;, Satellite Communications Toolbox&trade;, Wireless Network Toolbox&trade;, Wireless Testbench&trade;, WLAN Toolbox&trade;, 6G Exploration Library for 5G Toolbox&trade;, Wireless Testbench Support Package for NI USRP Radios&trade; 지원
 
 | 스킬 | 에이전트에 가르치는 내용 |
 |-------|---------------------------|
@@ -342,6 +340,7 @@ Data Acquisition Toolbox&trade;, Image Acquisition Toolbox&trade;, Image Process
 | `matlab-generate-gnss-waveform` | Satellite Communications Toolbox를 사용하여 물리적으로 현실적인 채널 손상 또는 사용자 지정된 채널 손상이 포함된 GNSS 기저대역 파형(GPS, Galileo, NavIC)을 생성합니다. |
 | `matlab-generate-wlan-waveform` | 표준을 준수하는 IEEE 802.11 WLAN 파형을 생성합니다. |
 | `matlab-set-up-usrp-radio` | Wireless Testbench에서 NI USRP 라디오를 사용할 수 있도록 설정하고 검증합니다. |
+| `matlab-simulate-6g-system` | pre-6G 파형, 링크 수준, ISAC, RIS, AI 및 셀 프리(cell-free) MIMO 시뮬레이션을 생성합니다. |
 | `matlab-simulate-bluetooth-network` | BLE, Classic BR/EDR, LE Audio를 포함한 Bluetooth 시스템 수준 네트워크를 시뮬레이션합니다. |
 | `matlab-simulate-wireless-network` | wirelessNetworkSimulator를 사용하여 무선 네트워크 시뮬레이션을 설정하고 실행합니다. |
 | `matlab-transmit-capture-usrp` | Wireless Testbench에서 NI USRP 라디오를 사용하여 RF 파형을 송신하고 캡처합니다. |

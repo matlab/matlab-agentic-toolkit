@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./Configuration_and_Troubleshooting.md
 - Branch: main
-- Commit: 36431d841616bc7bcc461fe0413e822e557f5c32
+- Commit: 8c559914c661fb7395d7bf9b4c8cecf55739080b
 -->
 
 # 配置和故障排除
@@ -21,9 +21,9 @@ Source English Markdown:
 
 - MATLAB R2021a 或更高版本
 - 支持 MCP 服务器和技能的 AI 编码智能体。支持的智能体会自动配置。否则，请参阅智能体的文档并手动配置 MCP 服务器以及安装技能。支持的智能体包括:
-  - Claude Code
+  - Claude&reg; Code
   - GitHub&reg; Copilot
-  - OpenAI&reg; Codex
+  - OpenAI&reg; Codex&reg;
   - Gemini&trade; CLI
   - Amp
 

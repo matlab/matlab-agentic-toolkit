@@ -2,7 +2,7 @@
 Source English Markdown:
 - File: ./README.md
 - Branch: main
-- Commit: 472cc1deb1f8d1245237de0d7a148f067a87c21c
+- Commit: 7223dbeeacdccf5b6421b6528cf4600465ec87e8
 -->
 
 # MATLAB Agentic Toolkit
@@ -34,9 +34,9 @@ MATLAB&reg; Agentic Toolkit を使用すると、AI エージェントに MATLAB
 
 * MATLAB R2021a 以降
 * MCP サーバーとスキルをサポートする AI コーディング エージェント。サポートされているエージェントは自動的に設定されます。それ以外の場合は、エージェントのドキュメントを参照して MCP サーバーを手動で構成し、スキルをインストールしてください。サポートされているエージェントは以下のとおりです。
-    - Claude Code
+    - Claude&reg; Code
     - GitHub&reg; Copilot
-    - OpenAI&reg; Codex
+    - OpenAI&reg; Codex&reg;
     - Gemini&trade; CLI
     - Amp
 
@@ -47,7 +47,7 @@ MATLAB&reg; Agentic Toolkit を使用すると、AI エージェントに MATLAB
 
 ### コマンド ラインからの MATLAB Agentic Toolkit のインストール
 
-Claude Code、GitHub Copilot CLI、または OpenAI Codex を使用している場合は、Agentic Toolkit Installer を使用して、オペレーティング システムのコマンド ラインで MATLAB Agentic Toolkit、Simulink Agentic Toolkit、MATLAB MCP Server をまとめてセットアップできます。詳細については、[Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer) を参照してください。このリポジトリを参照して、構成をカスタマイズしたり、ツールキットをオフラインでインストールしたりすることもできます。
+Claude Code、GitHub Copilot CLI、Visual Studio&reg; Code の GitHub Copilot、または OpenAI Codex を使用している場合は、Agentic Toolkit Installer を使用して、オペレーティング システムのコマンド ラインで MATLAB Agentic Toolkit、Simulink Agentic Toolkit、MATLAB MCP Server をまとめてセットアップできます。詳細については、[Agentic Toolkit Installer](https://github.com/matlab/agentic-toolkit-installer) を参照してください。このリポジトリを参照して、構成をカスタマイズしたり、ツールキットをオフラインでインストールしたりすることもできます。
 
 ### MATLAB からの MATLAB Agentic Toolkit のインストール
 
@@ -117,22 +117,22 @@ MATLAB Agentic Toolkit のインストール後、エージェントは MathWork
 |-------------|--------------------|
 | [**航空宇宙関連**](skills-catalog/README.ja.md#航空宇宙関連-aerospace) | Aerospace Toolbox&trade; |
 | [**AI および統計**](skills-catalog/README.ja.md#ai-および統計-ai-and-statistics) | Curve Fitting Toolbox&trade;、Deep Learning Toolbox&trade;、Embedded Coder&trade;、Fixed-Point Designer&trade;、MATLAB Coder&trade;、MATLAB Compiler SDK&trade;、MATLAB Report Generator&trade;、Optimization Toolbox&trade;、Parallel Computing Toolbox&trade;、Statistics and Machine Learning Toolbox&trade;、Deep Learning Toolbox Converter for ONNX Model Format&trade;、Deep Learning Toolbox Converter for PyTorch Models&trade;、Deep Learning Toolbox Converter for TensorFlow Models&trade; |
-| [**自動車関連**](skills-catalog/README.ja.md#自動車関連-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; |
+| [**自動車関連**](skills-catalog/README.ja.md#自動車関連-automotive) | Automated Driving Toolbox&trade;、Computer Vision Toolbox&trade;、RoadRunner、RoadRunner Scenario、RoadRunner Scene Builder、Sensor Fusion and Tracking Toolbox&trade;、Vehicle Dynamics Blockset&trade;、Extended Tire Features for Vehicle Dynamics Blockset&trade;、Automated Driving Toolbox Interface for Eclipse SUMO Traffic Simulator&trade;、Scenario Builder for Automated Driving Toolbox&trade; |
 | [**クラウド ソリューション**](skills-catalog/README.ja.md#クラウド-ソリューション-cloud-solutions) | MATLAB Drive&trade; |
 | [**コード生成**](skills-catalog/README.ja.md#コード生成-code-generation) | Embedded Coder、Fixed-Point Designer、GPU Coder&trade;、MATLAB Coder、MATLAB Test&trade;、Parallel Computing Toolbox、MATLAB Coder Support Package for PyTorch and LiteRT Models&trade; |
 | [**情報生命科学**](skills-catalog/README.ja.md#情報生命科学-computational-biology) | SimBiology&trade;、Statistics and Machine Learning Toolbox |
-| [**金融工学**](skills-catalog/README.ja.md#金融工学-computational-finance) | Datafeed Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade;、Spreadsheet Link&trade; |
+| [**金融工学**](skills-catalog/README.ja.md#金融工学-computational-finance) | Datafeed Toolbox&trade;、Econometrics Toolbox&trade;、Financial Instruments Toolbox&trade;、Financial Toolbox&trade;、Spreadsheet Link&trade; |
 | [**制御システム**](skills-catalog/README.ja.md#制御システム-control-systems) | Control System Toolbox&trade;、Predictive Maintenance Toolbox&trade;、Signal Processing Toolbox&trade;、Statistics and Machine Learning Toolbox、System Identification Toolbox&trade; |
 | [**イメージ処理とコンピューター ビジョン**](skills-catalog/README.ja.md#イメージ処理とコンピューター-ビジョン-image-processing-and-computer-vision) | Computer Vision Toolbox、Deep Learning Toolbox、Image Processing Toolbox&trade;、Lidar Toolbox&trade;、Medical Imaging Toolbox&trade;、Optical Design and Simulation Library for Image Processing Toolbox&trade;、Visual Inspection Toolbox&trade; |
 | [**数学および最適化**](skills-catalog/README.ja.md#数学および最適化-math-and-optimization) | Optimization Toolbox、Partial Differential Equation Toolbox&trade;、Symbolic Math Toolbox&trade; |
 | [**並列計算**](skills-catalog/README.ja.md#並列計算-parallel-computing) | Parallel Computing Toolbox、MATLAB Parallel Server&trade; |
-| [**レーダー**](skills-catalog/README.ja.md#レーダー-radar) | Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox、Signal Processing Toolbox |
+| [**レーダー**](skills-catalog/README.ja.md#レーダー-radar) | Mapping Toolbox&trade;、Phased Array System Toolbox&trade;、Radar Toolbox&trade;、Sensor Fusion and Tracking Toolbox、Signal Processing Toolbox、3D Scenarios |
 | [**レポートとデータベース アクセス**](skills-catalog/README.ja.md#レポートとデータベース-アクセス-reporting-and-database-access) | Database Toolbox&trade;、MATLAB Report Generator、Parallel Computing Toolbox、Simulink Report Generator&trade; |
 | [**RF およびミックスド シグナル**](skills-catalog/README.ja.md#rf-およびミックスド-シグナル-rf-and-mixed-signal) | Antenna Toolbox&trade;、Mixed-Signal Blockset&trade;、RF Blockset&trade;、RF PCB Toolbox&trade;、RF Toolbox&trade;、SerDes Toolbox&trade;、Signal Integrity Toolbox、Signal Processing Toolbox、Statistics and Machine Learning Toolbox |
 | [**ロボティクスおよび自律システム**](skills-catalog/README.ja.md#ロボティクスおよび自律システム-robotics-and-autonomous-systems) | Navigation Toolbox&trade;、UAV Toolbox&trade;、Robotics System Toolbox&trade; |
 | [**信号処理**](skills-catalog/README.ja.md#信号処理-signal-processing) | Audio Toolbox&trade;、DSP HDL Toolbox&trade;、DSP System Toolbox&trade;、Fixed-Point Designer、HDL Coder&trade;、Signal Processing Toolbox、Wavelet Toolbox&trade; |
 | [**テストと計測**](skills-catalog/README.ja.md#テストと計測-test-and-measurement) | Data Acquisition Toolbox&trade;、Image Acquisition Toolbox&trade;、Image Processing Toolbox、Industrial Communication Toolbox&trade;、Vehicle Network Toolbox&trade;、MATLAB Support Package for Arduino Hardware&trade; |
-| [**無線通信**](skills-catalog/README.ja.md#無線通信-wireless-communications) | 5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade;、Wireless Testbench Support Package for NI USRP Radios&trade; |
+| [**無線通信**](skills-catalog/README.ja.md#無線通信-wireless-communications) | 5G Toolbox&trade;、Bluetooth&reg; Toolbox&trade;、Communications Toolbox&trade;、Satellite Communications Toolbox&trade;、Wireless Network Toolbox&trade;、Wireless Testbench&trade;、WLAN Toolbox&trade;、6G Exploration Library for 5G Toolbox&trade;、Wireless Testbench Support Package for NI USRP Radios&trade; |
 <!-- END SKILLS -->
 ---
 ## MATLAB Agentic Toolkit の更新
